@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LayoutDashboard, Users, Trophy, BarChart3, Settings as SettingsIcon, Calendar as CalendarIcon, Receipt, LogOut, Inbox, Menu, X, Monitor, Medal } from 'lucide-react';
+import { LayoutDashboard, Users, Trophy, BarChart3, Settings as SettingsIcon, Calendar as CalendarIcon, Receipt, LogOut, Inbox, Menu, X, Monitor, Medal, Shield, History } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Separator } from "@/components/ui/separator"
@@ -17,6 +17,8 @@ const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'schedule', label: 'Schedule', icon: CalendarIcon },
     { id: 'members', label: 'Members', icon: Users, roles: ['admin', 'receptionist', 'coach'] },
+    { id: 'roles', label: 'Roles', icon: Shield, roles: ['admin'] },
+    { id: 'audit-logs', label: 'Audit Logs', icon: History, roles: ['admin'] },
     { id: 'leads', label: 'Leads', icon: Inbox, roles: ['admin', 'receptionist'] },
     { id: 'billing', label: 'Facturación', icon: Receipt, roles: ['admin', 'receptionist'] },
     { id: 'wods', label: 'WODs', icon: Trophy },

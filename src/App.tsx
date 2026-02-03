@@ -8,12 +8,15 @@ import { Wods } from './pages/Wods';
 import { Analytics } from './pages/Analytics';
 import { Settings } from './pages/Settings';
 import { Dashboard } from './pages/Dashboard';
+import { Roles } from './pages/Roles';
 import { Schedule } from './pages/Schedule';
 import { Billing } from './pages/Billing';
 import { Benchmarks } from './pages/Benchmarks';
 import { BoxDisplay } from './pages/BoxDisplay';
 import { Competitions } from './pages/Competitions';
+import { AuditLogs } from './pages/AuditLogs';
 import { ThemeProvider } from './components/theme-provider';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import './index.css';
 
 function App() {
@@ -41,7 +44,7 @@ function App() {
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
       .from('profiles')
-      .select('*, role_id')
+      .select('*')
       .eq('id', userId)
       .single();
 
@@ -69,23 +72,55 @@ function App() {
   const renderPage = () => {
     switch (activePage) {
       case 'members':
-        return <Members userProfile={userProfile} />;
+        return (
+          <ProtectedRoute userProfile={userProfile} allowedRoles={['admin', 'coach', 'receptionist']}>
+            <Members userProfile={userProfile} />
+          </ProtectedRoute>
+        );
       case 'leads':
-        return <Leads />;
+        return (
+          <ProtectedRoute userProfile={userProfile} allowedRoles={['admin', 'receptionist']}>
+            <Leads />
+          </ProtectedRoute>
+        );
       case 'wods':
         return <Wods />;
       case 'analytics':
-        return <Analytics />;
+        return (
+          <ProtectedRoute userProfile={userProfile} allowedRoles={['admin']}>
+            <Analytics />
+          </ProtectedRoute>
+        );
       case 'settings':
         return <Settings />;
       case 'schedule':
         return <Schedule />;
       case 'billing':
-        return <Billing />;
+        return (
+          <ProtectedRoute userProfile={userProfile} allowedRoles={['admin', 'receptionist']}>
+            <Billing />
+          </ProtectedRoute>
+        );
+      case 'roles':
+        return (
+          <ProtectedRoute userProfile={userProfile} allowedRoles={['admin']}>
+            <Roles />
+          </ProtectedRoute>
+        );
+      case 'audit-logs':
+        return (
+          <ProtectedRoute userProfile={userProfile} allowedRoles={['admin']}>
+            <AuditLogs />
+          </ProtectedRoute>
+        );
       case 'benchmarks':
         return <Benchmarks />;
       case 'competitions':
-        return <Competitions />;
+        return (
+          <ProtectedRoute userProfile={userProfile} allowedRoles={['admin', 'coach']}>
+            <Competitions />
+          </ProtectedRoute>
+        );
       case 'dashboard':
       default:
         return <Dashboard userProfile={userProfile} />;

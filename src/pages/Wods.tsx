@@ -3,11 +3,10 @@ import { supabase } from '@/lib/supabaseClient';
 import {
     Plus,
     Flame,
-    Clock,
     Trophy,
-    TrendingUp,
-    Activity,
-    Users
+    Shield,
+    Check,
+    Info
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

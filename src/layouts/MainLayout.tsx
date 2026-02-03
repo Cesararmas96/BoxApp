@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
+import { ModeToggle } from '@/components/mode-toggle';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -28,8 +29,9 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
         <div className="flex min-h-screen bg-background text-foreground">
             {/* Sidebar */}
             <aside className="fixed left-0 top-0 hidden h-full w-64 flex-col border-r bg-card lg:flex">
-                <div className="flex h-16 items-center px-6">
+                <div className="flex h-16 items-center justify-between px-6">
                     <span className="text-xl font-bold tracking-tight text-primary">BOX MANAGER</span>
+                    <ModeToggle />
                 </div>
 
                 <Separator />
@@ -78,11 +80,14 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
             </aside>
 
             {/* Mobile Header (Hidden on Desktop) */}
-            <div className="lg:hidden flex fixed top-0 w-full h-16 items-center px-4 border-b bg-card z-50">
-                <Button variant="ghost" size="icon" className="mr-4">
-                    <Menu className="h-6 w-6" />
-                </Button>
-                <span className="text-lg font-bold text-primary">BOX MANAGER</span>
+            <div className="lg:hidden flex fixed top-0 w-full h-16 items-center justify-between px-4 border-b bg-card z-50">
+                <div className="flex items-center">
+                    <Button variant="ghost" size="icon" className="mr-4">
+                        <Menu className="h-6 w-6" />
+                    </Button>
+                    <span className="text-lg font-bold text-primary">BOX MANAGER</span>
+                </div>
+                <ModeToggle />
             </div>
 
             {/* Main Content */}

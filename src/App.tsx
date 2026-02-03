@@ -8,6 +8,7 @@ import { Wods } from './pages/Wods';
 import { Analytics } from './pages/Analytics';
 import { Settings } from './pages/Settings';
 import { Dashboard } from './pages/Dashboard';
+import { ThemeProvider } from './components/theme-provider';
 import './index.css';
 
 function App() {
@@ -29,7 +30,11 @@ function App() {
   }, []);
 
   if (!session) {
-    return <Login />;
+    return (
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <Login />
+      </ThemeProvider>
+    );
   }
 
   const renderPage = () => {
@@ -51,9 +56,11 @@ function App() {
   };
 
   return (
-    <MainLayout activePage={activePage} onNavigate={setActivePage}>
-      {renderPage()}
-    </MainLayout>
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <MainLayout activePage={activePage} onNavigate={setActivePage}>
+        {renderPage()}
+      </MainLayout>
+    </ThemeProvider>
   );
 }
 

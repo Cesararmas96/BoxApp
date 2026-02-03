@@ -47,7 +47,11 @@ interface Profile {
     location_id?: string;
 }
 
-export const Members: React.FC = () => {
+interface MembersProps {
+    userProfile?: any;
+}
+
+export const Members: React.FC<MembersProps> = ({ userProfile }) => {
     const [members, setMembers] = useState<Profile[]>([]);
     const [loading, setLoading] = useState(true);
     const [open, setOpen] = useState(false);
@@ -134,102 +138,104 @@ export const Members: React.FC = () => {
                     <p className="text-muted-foreground text-sm">Manage your box community and roles.</p>
                 </div>
 
-                <Dialog open={open} onOpenChange={setOpen}>
-                    <DialogTrigger asChild>
-                        <Button className="gap-2">
-                            <UserPlus className="h-4 w-4" /> Add Member
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
-                        <DialogHeader>
-                            <DialogTitle>Add New Member</DialogTitle>
-                            <DialogDescription>
-                                Create a new athlete profile. You can link their account later.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <form onSubmit={handleAddMember} className="space-y-4 py-4">
-                            <div className="grid grid-cols-2 gap-4">
+                {userProfile?.role_id === 'admin' && (
+                    <Dialog open={open} onOpenChange={setOpen}>
+                        <DialogTrigger asChild>
+                            <Button className="gap-2">
+                                <UserPlus className="h-4 w-4" /> Add Member
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                            <DialogHeader>
+                                <DialogTitle>Add New Member</DialogTitle>
+                                <DialogDescription>
+                                    Create a new athlete profile. You can link their account later.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <form onSubmit={handleAddMember} className="space-y-4 py-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">First Name</label>
+                                        <Input
+                                            placeholder="John"
+                                            value={newMember.firstName}
+                                            onChange={(e) => setNewMember({ ...newMember, firstName: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">Last Name</label>
+                                        <Input
+                                            placeholder="Doe"
+                                            value={newMember.lastName}
+                                            onChange={(e) => setNewMember({ ...newMember, lastName: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium">First Name</label>
+                                    <label className="text-sm font-medium">Email Address</label>
                                     <Input
-                                        placeholder="John"
-                                        value={newMember.firstName}
-                                        onChange={(e) => setNewMember({ ...newMember, firstName: e.target.value })}
-                                        required
+                                        type="email"
+                                        placeholder="john@example.com"
+                                        value={newMember.email}
+                                        onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium">Last Name</label>
-                                    <Input
-                                        placeholder="Doe"
-                                        value={newMember.lastName}
-                                        onChange={(e) => setNewMember({ ...newMember, lastName: e.target.value })}
-                                        required
-                                    />
+                                    <label className="text-sm font-medium">Role</label>
+                                    <select
+                                        className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                                        value={newMember.roleId}
+                                        onChange={(e) => setNewMember({ ...newMember, roleId: e.target.value })}
+                                    >
+                                        <option value="athlete">Athlete</option>
+                                        <option value="coach">Coach</option>
+                                        <option value="receptionist">Receptionist</option>
+                                        <option value="admin">Admin</option>
+                                    </select>
                                 </div>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">Email Address</label>
-                                <Input
-                                    type="email"
-                                    placeholder="john@example.com"
-                                    value={newMember.email}
-                                    onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">Role</label>
-                                <select
-                                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                                    value={newMember.roleId}
-                                    onChange={(e) => setNewMember({ ...newMember, roleId: e.target.value })}
-                                >
-                                    <option value="athlete">Athlete</option>
-                                    <option value="coach">Coach</option>
-                                    <option value="receptionist">Receptionist</option>
-                                    <option value="admin">Admin</option>
-                                </select>
-                            </div>
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium italic text-muted-foreground flex items-center gap-2">
-                                    <Stethoscope className="h-3 w-3" /> Medical History (Optional)
-                                </label>
-                                <Input
-                                    placeholder="Injuries, conditions..."
-                                    value={newMember.medicalHistory}
-                                    onChange={(e) => setNewMember({ ...newMember, medicalHistory: e.target.value })}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium flex items-center gap-2">
-                                        <Phone className="h-3 w-3" /> Emergency Contact
+                                    <label className="text-sm font-medium italic text-muted-foreground flex items-center gap-2">
+                                        <Stethoscope className="h-3 w-3" /> Medical History (Optional)
                                     </label>
                                     <Input
-                                        placeholder="Name"
-                                        value={newMember.emergencyName}
-                                        onChange={(e) => setNewMember({ ...newMember, emergencyName: e.target.value })}
+                                        placeholder="Injuries, conditions..."
+                                        value={newMember.medicalHistory}
+                                        onChange={(e) => setNewMember({ ...newMember, medicalHistory: e.target.value })}
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Phone</label>
-                                    <Input
-                                        placeholder="+123..."
-                                        value={newMember.emergencyPhone}
-                                        onChange={(e) => setNewMember({ ...newMember, emergencyPhone: e.target.value })}
-                                    />
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium flex items-center gap-2">
+                                            <Phone className="h-3 w-3" /> Emergency Contact
+                                        </label>
+                                        <Input
+                                            placeholder="Name"
+                                            value={newMember.emergencyName}
+                                            onChange={(e) => setNewMember({ ...newMember, emergencyName: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">Phone</label>
+                                        <Input
+                                            placeholder="+123..."
+                                            value={newMember.emergencyPhone}
+                                            onChange={(e) => setNewMember({ ...newMember, emergencyPhone: e.target.value })}
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                            <DialogFooter>
-                                <Button type="submit" disabled={loading}>
-                                    {loading ? "Adding..." : "Confirm Member"}
-                                </Button>
-                            </DialogFooter>
-                        </form>
-                    </DialogContent>
-                </Dialog>
+                                <DialogFooter>
+                                    <Button type="submit" disabled={loading}>
+                                        {loading ? "Adding..." : "Confirm Member"}
+                                    </Button>
+                                </DialogFooter>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
+                )}
             </div>
 
             <Card>

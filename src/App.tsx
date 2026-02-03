@@ -59,7 +59,7 @@ function App() {
   const renderPage = () => {
     switch (activePage) {
       case 'members':
-        return <Members />;
+        return <Members userProfile={userProfile} />;
       case 'leads':
         return <Leads />;
       case 'wods':
@@ -76,7 +76,7 @@ function App() {
         return <Benchmarks />;
       case 'dashboard':
       default:
-        return <Dashboard />;
+        return <Dashboard userProfile={userProfile} />;
     }
   };
 

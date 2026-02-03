@@ -21,8 +21,14 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from "@/components/ui/progress"
+import { AthleteDashboard } from '@/components/AthleteDashboard';
+import { CoachDashboard } from '@/components/CoachDashboard';
 
-export const Dashboard: React.FC = () => {
+interface DashboardProps {
+    userProfile?: any;
+}
+
+export const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
     const [stats, setStats] = useState({
         members: 0,
         activeWOD: 'Murph Challenge',
@@ -40,6 +46,31 @@ export const Dashboard: React.FC = () => {
 
         setStats(prev => ({ ...prev, members: count || 0 }));
     };
+
+    // Role-based rendering
+    if (userProfile?.role_id === 'athlete') {
+        return (
+            <div className="space-y-6">
+                <div>
+                    <h1 className="text-3xl font-black italic tracking-tighter uppercase text-primary">Athlete Hub</h1>
+                    <p className="text-muted-foreground">Welcome back, {userProfile.full_name || 'Athlete'}</p>
+                </div>
+                <AthleteDashboard />
+            </div>
+        );
+    }
+
+    if (userProfile?.role_id === 'coach') {
+        return (
+            <div className="space-y-6">
+                <div>
+                    <h1 className="text-3xl font-black italic tracking-tighter uppercase text-primary">Coach Command</h1>
+                    <p className="text-muted-foreground">System check: All class profiles loaded</p>
+                </div>
+                <CoachDashboard />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8">

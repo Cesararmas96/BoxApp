@@ -19,10 +19,43 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from '@/lib/supabaseClient';
 
 export const Settings: React.FC = () => {
     const [boxName, setBoxName] = useState('Box Manager');
     const [primaryColor, setPrimaryColor] = useState('#FF3B30');
+    const [passwords, setPasswords] = useState({ new: '', confirm: '' });
+    const [isChangingPass, setIsChangingPass] = useState(false);
+    const [passError, setPassError] = useState<string | null>(null);
+    const [passSuccess, setPassSuccess] = useState(false);
+
+    const handlePasswordChange = async () => {
+        setPassError(null);
+        setPassSuccess(false);
+
+        if (passwords.new.length < 6) {
+            setPassError("Password must be at least 6 characters.");
+            return;
+        }
+
+        if (passwords.new !== passwords.confirm) {
+            setPassError("Passwords do not match.");
+            return;
+        }
+
+        setIsChangingPass(true);
+        const { error } = await supabase.auth.updateUser({
+            password: passwords.new
+        });
+
+        if (error) {
+            setPassError(error.message);
+        } else {
+            setPassSuccess(true);
+            setPasswords({ new: '', confirm: '' });
+        }
+        setIsChangingPass(false);
+    };
 
     return (
         <div className="space-y-6">
@@ -129,35 +162,53 @@ export const Settings: React.FC = () => {
                     </Card>
                 </TabsContent>
 
-                <TabsContent value="notifications" className="py-6">
+                <TabsContent value="security" className="py-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Communication Preferences</CardTitle>
-                            <CardDescription>Choose how and when members receive updates.</CardDescription>
+                            <CardTitle>Account Security</CardTitle>
+                            <CardDescription>Update your password and manage security settings.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <Smartphone className="h-4 w-4 text-muted-foreground" />
-                                    <div className="space-y-0.5">
-                                        <Label>Daily WOD Notifications</Label>
-                                        <p className="text-sm text-muted-foreground font-light">Send push notification when WOD is published.</p>
-                                    </div>
-                                </div>
-                                <Switch defaultChecked />
+                            <div className="space-y-2">
+                                <Label htmlFor="new-password">New Password</Label>
+                                <Input
+                                    id="new-password"
+                                    type="password"
+                                    placeholder="••••••••"
+                                    value={passwords.new}
+                                    onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
+                                />
                             </div>
-                            <Separator />
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <Bell className="h-4 w-4 text-muted-foreground" />
-                                    <div className="space-y-0.5">
-                                        <Label>Event Reminders</Label>
-                                        <p className="text-sm text-muted-foreground font-light">Notify members 2 hours before an event.</p>
-                                    </div>
-                                </div>
-                                <Switch defaultChecked />
+                            <div className="space-y-2">
+                                <Label htmlFor="confirm-password">Confirm New Password</Label>
+                                <Input
+                                    id="confirm-password"
+                                    type="password"
+                                    placeholder="••••••••"
+                                    value={passwords.confirm}
+                                    onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
+                                />
                             </div>
                         </CardContent>
+                        <CardFooter className="border-t bg-muted/20 py-4 flex flex-col items-stretch gap-4">
+                            {passError && (
+                                <p className="text-xs font-medium text-destructive">{passError}</p>
+                            )}
+                            {passSuccess && (
+                                <p className="text-xs font-medium text-emerald-500">Password updated successfully!</p>
+                            )}
+                            <Button
+                                className="ml-auto gap-2"
+                                disabled={isChangingPass}
+                                onClick={handlePasswordChange}
+                            >
+                                {isChangingPass ? "Updating..." : (
+                                    <>
+                                        <Save className="h-4 w-4" /> Change Password
+                                    </>
+                                )}
+                            </Button>
+                        </CardFooter>
                     </Card>
                 </TabsContent>
             </Tabs>

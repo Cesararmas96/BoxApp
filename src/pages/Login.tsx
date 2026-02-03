@@ -19,6 +19,7 @@ export const Login: React.FC = () => {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [isSignUp, setIsSignUp] = useState(false);
+    const [isResetting, setIsResetting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const handleAuth = async (e: React.FormEvent) => {
@@ -26,14 +27,23 @@ export const Login: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const { error } = isSignUp
-            ? await supabase.auth.signUp({ email, password })
-            : await supabase.auth.signInWithPassword({ email, password });
+        if (isResetting) {
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: `${window.location.origin}/reset-password`,
+            });
+            if (error) setError(error.message);
+            else alert('Check your email for the password reset link!');
+            setIsResetting(false);
+        } else {
+            const { error } = isSignUp
+                ? await supabase.auth.signUp({ email, password })
+                : await supabase.auth.signInWithPassword({ email, password });
 
-        if (error) {
-            setError(error.message);
-        } else if (isSignUp) {
-            alert('Verification email sent!');
+            if (error) {
+                setError(error.message);
+            } else if (isSignUp) {
+                alert('Verification email sent!');
+            }
         }
         setLoading(false);
     };
@@ -57,10 +67,10 @@ export const Login: React.FC = () => {
                 <Card className="border shadow-2xl overflow-hidden">
                     <CardHeader className="space-y-1 pb-6 text-center">
                         <CardTitle className="text-2xl font-bold tracking-tight">
-                            {isSignUp ? "Create athlete account" : "Welcome back, athlete"}
+                            {isResetting ? "Reset Password" : (isSignUp ? "Create athlete account" : "Welcome back, athlete")}
                         </CardTitle>
                         <CardDescription className="text-muted-foreground text-sm font-light">
-                            {isSignUp ? "Join the community today" : "Enter your credentials to enter the box"}
+                            {isResetting ? "Enter your email to receive a reset link" : (isSignUp ? "Join the community today" : "Enter your credentials to enter the box")}
                         </CardDescription>
                     </CardHeader>
 
@@ -89,23 +99,33 @@ export const Login: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <div className="flex justify-between">
-                                    <Label htmlFor="pass">Password</Label>
-                                    {!isSignUp && <Button variant="link" className="text-[10px] h-auto p-0 text-muted-foreground font-light">Forgot?</Button>}
+                            {!isResetting && (
+                                <div className="space-y-2">
+                                    <div className="flex justify-between">
+                                        <Label htmlFor="pass">Password</Label>
+                                        {!isSignUp && (
+                                            <Button
+                                                variant="link"
+                                                className="text-[10px] h-auto p-0 text-muted-foreground font-light"
+                                                onClick={(e) => { e.preventDefault(); setIsResetting(true); }}
+                                            >
+                                                Forgot?
+                                            </Button>
+                                        )}
+                                    </div>
+                                    <div className="relative">
+                                        <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                            id="pass"
+                                            type="password"
+                                            className="pl-10 focus-visible:ring-primary h-10"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            required
+                                        />
+                                    </div>
                                 </div>
-                                <div className="relative">
-                                    <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                        id="pass"
-                                        type="password"
-                                        className="pl-10 focus-visible:ring-primary h-10"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        required
-                                    />
-                                </div>
-                            </div>
+                            )}
 
                             <Button
                                 type="submit"
@@ -115,7 +135,7 @@ export const Login: React.FC = () => {
                                 {loading ? (
                                     <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
-                                    isSignUp ? "Start Training" : "Enter Box"
+                                    isResetting ? "Send Reset Link" : (isSignUp ? "Start Training" : "Enter Box")
                                 )}
                             </Button>
                         </form>
@@ -123,13 +143,17 @@ export const Login: React.FC = () => {
 
                     <CardFooter className="flex flex-col gap-4 border-t bg-muted/30 py-4">
                         <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                            <span>{isSignUp ? "Already a member?" : "New athlete?"}</span>
+                            <span>{isResetting ? "Remembered your password?" : (isSignUp ? "Already a member?" : "New athlete?")}</span>
                             <Button
                                 variant="link"
                                 className="text-primary font-bold h-auto p-0"
-                                onClick={() => { setIsSignUp(!isSignUp); setError(null); }}
+                                onClick={() => {
+                                    if (isResetting) setIsResetting(false);
+                                    else setIsSignUp(!isSignUp);
+                                    setError(null);
+                                }}
                             >
-                                {isSignUp ? "Log In" : "Register Now"}
+                                {isResetting ? "Log In" : (isSignUp ? "Log In" : "Register Now")}
                             </Button>
                         </div>
                     </CardFooter>

@@ -1,0 +1,162 @@
+import React, { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabaseClient';
+import {
+    Activity,
+    Users,
+    Trophy,
+    TrendingUp,
+    Zap,
+    Clock,
+    Flame,
+    Calendar
+} from 'lucide-react';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+    CardFooter
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Progress } from "@/components/ui/progress"
+
+export const Dashboard: React.FC = () => {
+    const [stats, setStats] = useState({
+        members: 0,
+        activeWOD: 'Murph Challenge',
+        attendance: 85
+    });
+
+    useEffect(() => {
+        fetchStats();
+    }, []);
+
+    const fetchStats = async () => {
+        const { count } = await supabase
+            .from('profiles')
+            .select('*', { count: 'exact', head: true });
+
+        setStats(prev => ({ ...prev, members: count || 0 }));
+    };
+
+    return (
+        <div className="space-y-8">
+            <div className="flex flex-col gap-2">
+                <h1 className="text-4xl font-black italic tracking-tighter uppercase text-primary">Command Center</h1>
+                <p className="text-muted-foreground flex items-center gap-2">
+                    <Activity className="h-4 w-4 text-emerald-500" /> System live status: All modules operational
+                </p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <Card className="bg-zinc-950 border-primary/20 text-white overflow-hidden shadow-2xl relative">
+                    <div className="absolute top-0 right-0 p-4 opacity-10">
+                        <Users className="h-24 w-24" />
+                    </div>
+                    <CardHeader>
+                        <CardTitle className="text-sm font-black uppercase tracking-widest text-primary italic">Community</CardTitle>
+                        <CardDescription className="text-zinc-400">Total registered athletes</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-5xl font-black italic tracking-tighter mb-4">{stats.members}</div>
+                        <Progress value={78} className="h-1 bg-zinc-800" />
+                        <p className="mt-2 text-xs text-zinc-500">+12% growth this cycle</p>
+                    </CardContent>
+                </Card>
+
+                <Card className="border shadow-lg">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                        <div className="space-y-1">
+                            <CardTitle className="text-sm font-black uppercase tracking-widest italic">Daily WOD</CardTitle>
+                            <CardDescription>Main Floor Programming</CardDescription>
+                        </div>
+                        <Badge variant="outline" className="bg-primary/10 text-primary border-none text-[10px]">LIVE NOW</Badge>
+                    </CardHeader>
+                    <CardContent className="pt-4">
+                        <div className="text-xl font-black italic uppercase mb-2 tracking-tight">The Chief</div>
+                        <div className="flex gap-4 text-xs font-mono text-muted-foreground mb-4">
+                            <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> 15 MIN AMRAP</span>
+                            <span className="flex items-center gap-1"><Flame className="h-3 w-3" /> INTENSE</span>
+                        </div>
+                        <Button variant="outline" className="w-full text-xs font-bold uppercase tracking-wider h-8">View Details</Button>
+                    </CardContent>
+                </Card>
+
+                <Card className="border shadow-lg">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                        <div className="space-y-1">
+                            <CardTitle className="text-sm font-black uppercase tracking-widest italic">Box Status</CardTitle>
+                            <CardDescription>Attendance & Retention</CardDescription>
+                        </div>
+                        <TrendingUp className="h-5 w-5 text-emerald-500" />
+                    </CardHeader>
+                    <CardContent className="pt-4">
+                        <div className="text-3xl font-black italic mb-2">92%</div>
+                        <p className="text-xs text-muted-foreground leading-snug">Average athlete attendance for the 6:00 PM session.</p>
+                        <div className="mt-4 flex gap-1">
+                            {[1, 1, 1, 1, 0, 1, 1].map((v, i) => (
+                                <div key={i} className={`h-1 flex-1 rounded-full ${v ? 'bg-emerald-500' : 'bg-muted'}`} />
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <Card className="lg:col-span-2">
+                    <CardHeader>
+                        <CardTitle className="text-lg font-black uppercase italic tracking-tight">Recent Benchmarks</CardTitle>
+                        <CardDescription>Community records broken this week.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="flex items-center justify-between group">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center font-black italic group-hover:bg-primary/10 transition-colors">
+                                        <Trophy className="h-5 w-5 group-hover:text-primary" />
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-sm">Fran (2:45)</p>
+                                        <p className="text-xs text-muted-foreground">Athlete John Doe • RX</p>
+                                    </div>
+                                </div>
+                                <Badge variant="secondary" className="text-[10px]">NEW PB</Badge>
+                            </div>
+                        ))}
+                        <Button variant="ghost" className="w-full text-xs text-muted-foreground hover:text-foreground">See all recent results</Button>
+                    </CardContent>
+                </Card>
+
+                <Card className="flex flex-col bg-zinc-900 border-zinc-800 text-white shadow-2xl">
+                    <CardHeader>
+                        <CardTitle className="text-lg font-black uppercase italic tracking-tight text-primary">System Pulse</CardTitle>
+                        <CardDescription className="text-zinc-500">Upcoming tasks and alerts.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex-1 space-y-4">
+                        <div className="flex gap-4 p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
+                            <Zap className="h-5 w-5 text-primary mt-1" />
+                            <div className="space-y-1">
+                                <p className="text-sm font-bold tracking-tight">3 Leads Waiting</p>
+                                <p className="text-xs text-zinc-500">Contact new prospects from the growth pipeline.</p>
+                            </div>
+                        </div>
+                        <div className="flex gap-4 p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
+                            <Calendar className="h-5 w-5 text-indigo-400 mt-1" />
+                            <div className="space-y-1">
+                                <p className="text-sm font-bold tracking-tight">Next WOD: Hero Sunday</p>
+                                <p className="text-xs text-zinc-500">Ensure the stimulus and scaling notes are ready.</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                    <CardFooter className="pt-0 pb-6 px-6">
+                        <Button className="w-full bg-zinc-100 text-zinc-950 font-black uppercase italic tracking-widest hover:bg-zinc-200">
+                            Box Management Hub
+                        </Button>
+                    </CardFooter>
+                </Card>
+            </div>
+        </div>
+    );
+};

@@ -11,6 +11,8 @@ import { Dashboard } from './pages/Dashboard';
 import { Schedule } from './pages/Schedule';
 import { Billing } from './pages/Billing';
 import { Benchmarks } from './pages/Benchmarks';
+import { BoxDisplay } from './pages/BoxDisplay';
+import { Competitions } from './pages/Competitions';
 import { ThemeProvider } from './components/theme-provider';
 import './index.css';
 
@@ -56,6 +58,14 @@ function App() {
     );
   }
 
+  if (activePage === 'box-display') {
+    return (
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <BoxDisplay />
+      </ThemeProvider>
+    );
+  }
+
   const renderPage = () => {
     switch (activePage) {
       case 'members':
@@ -74,6 +84,8 @@ function App() {
         return <Billing />;
       case 'benchmarks':
         return <Benchmarks />;
+      case 'competitions':
+        return <Competitions />;
       case 'dashboard':
       default:
         return <Dashboard userProfile={userProfile} />;

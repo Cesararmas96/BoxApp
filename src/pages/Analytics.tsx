@@ -16,8 +16,8 @@ import {
     CardHeader,
     CardTitle
 } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 
 export const Analytics: React.FC = () => {
     const [stats, setStats] = useState({
@@ -30,29 +30,33 @@ export const Analytics: React.FC = () => {
         churnRiskCount: 0
     });
 
+    const [atRiskAthletes, setAtRiskAthletes] = useState<any[]>([]);
+
     useEffect(() => {
         fetchStats();
     }, []);
 
     const fetchStats = async () => {
         const [members, leads, invoices, bookings] = await Promise.all([
-            supabase.from('profiles').select('*', { count: 'exact', head: true }),
+            supabase.from('profiles').select('*'),
             supabase.from('leads').select('*', { count: 'exact', head: true }),
             supabase.from('invoices').select('amount'),
             supabase.from('bookings').select('athlete_id, created_at')
         ]);
 
         const totalRevenue = invoices.data?.reduce((acc, inv) => acc + Number(inv.amount), 0) || 0;
-        const totalUsers = members.count || 1;
+        const totalUsers = members.data?.length || 1;
 
-        // Churn Risk: No activity in last 7 days
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        // Churn Risk Detection (No attendance in 10 days)
+        const tenDaysAgo = new Date();
+        tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
 
-        const activeAthletes = new Set(
-            bookings.data?.filter(b => new Date(b.created_at) > sevenDaysAgo).map(b => b.athlete_id)
+        const activeIds = new Set(
+            bookings.data?.filter(b => new Date(b.created_at) > tenDaysAgo).map(b => b.athlete_id)
         );
-        const churnRiskCount = totalUsers - activeAthletes.size;
+
+        const riskAthletes = members.data?.filter(m => m.role_id === 'athlete' && !activeIds.has(m.id)) || [];
+        setAtRiskAthletes(riskAthletes);
 
         setStats({
             totalMembers: totalUsers,
@@ -61,7 +65,7 @@ export const Analytics: React.FC = () => {
             attendanceRate: '85%',
             ltv: totalRevenue / totalUsers,
             avgTicket: totalRevenue / (invoices.data?.length || 1),
-            churnRiskCount
+            churnRiskCount: riskAthletes.length
         });
     };
 
@@ -167,24 +171,42 @@ export const Analytics: React.FC = () => {
                 </Card>
 
                 <Card className="lg:col-span-4">
-                    <CardHeader>
-                        <CardTitle>Recent Activity</CardTitle>
-                        <CardDescription>Latest community updates.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="space-y-4">
-                            {[1, 2, 3].map((i) => (
-                                <div key={i} className="flex items-start gap-4">
-                                    <div className="h-2 w-2 rounded-full bg-primary mt-2" />
-                                    <div className="space-y-1">
-                                        <p className="text-sm font-medium leading-none">New result posted by athlete</p>
-                                        <p className="text-xs text-muted-foreground">2 hours ago in Morning WOD</p>
-                                    </div>
-                                </div>
-                            ))}
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <div>
+                            <CardTitle className="text-rose-600 flex items-center gap-2">
+                                <AlertTriangle className="h-5 w-5" /> Inactivity Alert
+                            </CardTitle>
+                            <CardDescription>Athletes with no attendance in +10 days.</CardDescription>
                         </div>
-                        <Separator />
-                        <Button variant="outline" className="w-full text-xs">View Full Audit Log</Button>
+                        <Badge variant="destructive">{atRiskAthletes.length} At Risk</Badge>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="divide-y divide-border">
+                            {atRiskAthletes.length === 0 ? (
+                                <p className="py-8 text-center text-muted-foreground italic text-sm">Perfect! All athletes are active.</p>
+                            ) : (
+                                atRiskAthletes.slice(0, 5).map((athlete) => (
+                                    <div key={athlete.id} className="py-3 flex items-center justify-between group">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-8 w-8 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center text-xs font-bold uppercase transition-all group-hover:bg-rose-600 group-hover:text-white">
+                                                {athlete.first_name?.[0]}{athlete.last_name?.[0]}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold leading-none">{athlete.first_name} {athlete.last_name}</p>
+                                                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">12 Days Inactive</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Button size="sm" variant="outline" className="h-8 text-[10px] font-black uppercase">Message</Button>
+                                            <Button size="sm" className="h-8 text-[10px] font-black uppercase bg-rose-600 hover:bg-rose-700">Alert Coach</Button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                        {atRiskAthletes.length > 5 && (
+                            <Button variant="ghost" className="w-full text-[10px] uppercase font-bold tracking-[0.2em]">View All {atRiskAthletes.length} Athletes</Button>
+                        )}
                     </CardContent>
                 </Card>
             </div>

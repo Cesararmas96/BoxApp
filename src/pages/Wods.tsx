@@ -32,6 +32,14 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow
+} from "@/components/ui/table";
 
 interface WOD {
     id: string;
@@ -49,10 +57,17 @@ export const Wods: React.FC = () => {
     const [showResultModal, setShowResultModal] = useState<string | null>(null);
     const [newWOD, setNewWOD] = useState({ title: '', metcon: '', stimulus: '', scaling_options: '' });
     const [resultData, setResultData] = useState({ score: '', notes: '', rx: true });
+    const [results, setResults] = useState<any[]>([]);
 
     useEffect(() => {
         fetchWods();
     }, []);
+
+    useEffect(() => {
+        if (!showResultModal) {
+            fetchResults();
+        }
+    }, [wods, showResultModal]);
 
     const fetchWods = async () => {
         setLoading(true);
@@ -63,6 +78,17 @@ export const Wods: React.FC = () => {
 
         if (!error && data) setWods(data);
         setLoading(false);
+    };
+
+    const fetchResults = async () => {
+        const { data, error } = await supabase
+            .from('results')
+            .select(`
+                *,
+                profiles(first_name, last_name)
+            `)
+            .order('created_at', { ascending: false });
+        if (!error && data) setResults(data);
     };
 
     const handlePublishWOD = async (e: React.FormEvent) => {
@@ -105,7 +131,7 @@ export const Wods: React.FC = () => {
             .from('results')
             .insert([{
                 wod_id: showResultModal,
-                user_id: user.id, // Fixed column name from previous version
+                user_id: user.id, // Reverted to user_id based on schema check
                 result: resultData.score,
                 notes: resultData.notes,
                 rx: resultData.rx
@@ -116,6 +142,7 @@ export const Wods: React.FC = () => {
         } else {
             setShowResultModal(null);
             setResultData({ score: '', notes: '', rx: true });
+            fetchResults();
             alert('Result logged successfully!');
         }
         setLoading(false);
@@ -195,13 +222,13 @@ export const Wods: React.FC = () => {
             <Tabs defaultValue="all" className="w-full">
                 <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
                     <TabsTrigger value="all">Daily Board</TabsTrigger>
-                    <TabsTrigger value="history">History</TabsTrigger>
+                    <TabsTrigger value="history">History / Leaders</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="all" className="mt-6">
                     <div className="grid gap-6">
                         {loading && wods.length === 0 ? (
-                            <div className="py-12 text-center text-muted-foreground">Loading workout board...</div>
+                            <div className="py-12 text-center text-muted-foreground animate-pulse">Loading workout board...</div>
                         ) : wods.length === 0 ? (
                             <Card className="border-dashed">
                                 <CardContent className="py-12 text-center text-muted-foreground">
@@ -307,7 +334,7 @@ export const Wods: React.FC = () => {
                                     </CardContent>
                                     <CardFooter className="bg-muted/50 py-3 flex items-center justify-between text-[11px] text-muted-foreground">
                                         <div className="flex items-center gap-4">
-                                            <span className="flex items-center gap-1"><Check className="h-3 w-3" /> 12 Logged Today</span>
+                                            <span className="flex items-center gap-1"><Check className="h-3 w-3" /> {results.filter(r => r.wod_id === wod.id).length} Logged</span>
                                             <span className="flex items-center gap-1"><Flame className="h-3 w-3" /> High Intensity</span>
                                         </div>
                                         <div className="flex items-center gap-1 font-bold">
@@ -323,11 +350,48 @@ export const Wods: React.FC = () => {
                 <TabsContent value="history">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Workout History</CardTitle>
-                            <CardDescription>Archive of past WODs and programming cycles.</CardDescription>
+                            <CardTitle>Community Leaderboard</CardTitle>
+                            <CardDescription>Recent performance results from all athletes.</CardDescription>
                         </CardHeader>
-                        <CardContent className="text-center py-12 text-muted-foreground">
-                            Coming soon: Full history view and search.
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Athlete</TableHead>
+                                        <TableHead>Workout</TableHead>
+                                        <TableHead>Score</TableHead>
+                                        <TableHead>Type</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {results.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                                                No results logged yet.
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        results.map((res) => (
+                                            <TableRow key={res.id}>
+                                                <TableCell className="font-bold">
+                                                    {res.profiles?.first_name} {res.profiles?.last_name}
+                                                </TableCell>
+                                                <TableCell className="text-xs">
+                                                    {wods.find(w => w.id === res.wod_id)?.title || "Unknown"}
+                                                </TableCell>
+                                                <TableCell className="font-mono font-bold text-primary italic">
+                                                    {res.result}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge variant={res.rx ? "default" : "secondary"} className="text-[10px] uppercase font-black">
+                                                        {res.rx ? "RX" : "Scaled"}
+                                                    </Badge>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
                         </CardContent>
                     </Card>
                 </TabsContent>

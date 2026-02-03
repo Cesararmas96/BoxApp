@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import {
-    Users,
     TrendingUp,
-    Zap,
     ArrowUpRight,
     ArrowDownRight,
-    Activity
+    AlertTriangle,
+    DollarSign,
+    HeartPulse,
+    Trophy
 } from 'lucide-react';
 import {
     Card,
@@ -23,7 +24,10 @@ export const Analytics: React.FC = () => {
         totalMembers: 0,
         activeLeads: 0,
         completedWods: 124,
-        attendanceRate: '85%'
+        attendanceRate: '85%',
+        ltv: 0,
+        avgTicket: 0,
+        churnRiskCount: 0
     });
 
     useEffect(() => {
@@ -31,19 +35,34 @@ export const Analytics: React.FC = () => {
     }, []);
 
     const fetchStats = async () => {
-        const { count: memberCount } = await supabase
-            .from('profiles')
-            .select('*', { count: 'exact', head: true });
+        const [members, leads, invoices, bookings] = await Promise.all([
+            supabase.from('profiles').select('*', { count: 'exact', head: true }),
+            supabase.from('leads').select('*', { count: 'exact', head: true }),
+            supabase.from('invoices').select('amount'),
+            supabase.from('bookings').select('athlete_id, created_at')
+        ]);
 
-        const { count: leadCount } = await supabase
-            .from('leads')
-            .select('*', { count: 'exact', head: true });
+        const totalRevenue = invoices.data?.reduce((acc, inv) => acc + Number(inv.amount), 0) || 0;
+        const totalUsers = members.count || 1;
 
-        setStats(prev => ({
-            ...prev,
-            totalMembers: memberCount || 0,
-            activeLeads: leadCount || 0
-        }));
+        // Churn Risk: No activity in last 7 days
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        const activeAthletes = new Set(
+            bookings.data?.filter(b => new Date(b.created_at) > sevenDaysAgo).map(b => b.athlete_id)
+        );
+        const churnRiskCount = totalUsers - activeAthletes.size;
+
+        setStats({
+            totalMembers: totalUsers,
+            activeLeads: leads.count || 0,
+            completedWods: 124,
+            attendanceRate: '85%',
+            ltv: totalRevenue / totalUsers,
+            avgTicket: totalRevenue / (invoices.data?.length || 1),
+            churnRiskCount
+        });
     };
 
     const PerformanceCard = ({ title, value, label, trend, icon: Icon, color }: any) => (
@@ -80,36 +99,36 @@ export const Analytics: React.FC = () => {
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <PerformanceCard
-                    title="Total Members"
-                    value={stats.totalMembers}
-                    label="+12%"
+                    title="Average LTV"
+                    value={`$${stats.ltv.toFixed(2)}`}
+                    label="+8%"
                     trend="up"
-                    icon={Users}
-                    color="primary"
+                    icon={DollarSign}
+                    color="emerald-600"
                 />
                 <PerformanceCard
-                    title="Growth Leads"
-                    value={stats.activeLeads}
-                    label="+5.2%"
-                    trend="up"
-                    icon={Zap}
-                    color="orange-500"
-                />
-                <PerformanceCard
-                    title="Training Volume"
-                    value={stats.completedWods}
-                    label="-2.1%"
-                    trend="down"
-                    icon={Activity}
-                    color="indigo-500"
-                />
-                <PerformanceCard
-                    title="Retention Rate"
-                    value={stats.attendanceRate}
-                    label="+0.4%"
+                    title="Average Ticket"
+                    value={`$${stats.avgTicket.toFixed(2)}`}
+                    label="+4.1%"
                     trend="up"
                     icon={TrendingUp}
-                    color="emerald-500"
+                    color="indigo-600"
+                />
+                <PerformanceCard
+                    title="Churn Risk"
+                    value={stats.churnRiskCount}
+                    label="-10%"
+                    trend="down"
+                    icon={AlertTriangle}
+                    color="rose-600"
+                />
+                <PerformanceCard
+                    title="Community Pulse"
+                    value="Stable"
+                    label="+0.4%"
+                    trend="up"
+                    icon={HeartPulse}
+                    color="orange-600"
                 />
             </div>
 
@@ -128,6 +147,26 @@ export const Analytics: React.FC = () => {
                 </Card>
 
                 <Card className="lg:col-span-3">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Trophy className="h-5 w-5 text-yellow-500" /> Internal Competitions
+                        </CardTitle>
+                        <CardDescription>Upcoming and active box events.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="rounded-lg border bg-primary/5 p-4 border-primary/20">
+                            <p className="text-xs font-black uppercase tracking-widest text-primary mb-1">Upcoming</p>
+                            <h4 className="font-bold text-sm">Winter Open 2026</h4>
+                            <p className="text-[10px] text-muted-foreground">Starts in 12 days • 45 athletes registered</p>
+                            <Button size="sm" variant="ghost" className="w-full mt-2 h-7 text-[10px] uppercase font-bold">Register Athletes</Button>
+                        </div>
+                        <p className="text-[10px] text-center text-muted-foreground italic">
+                            Create new internal rankings and customized WOD competitions.
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card className="lg:col-span-4">
                     <CardHeader>
                         <CardTitle>Recent Activity</CardTitle>
                         <CardDescription>Latest community updates.</CardDescription>

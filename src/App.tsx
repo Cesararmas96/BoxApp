@@ -8,26 +8,45 @@ import { Wods } from './pages/Wods';
 import { Analytics } from './pages/Analytics';
 import { Settings } from './pages/Settings';
 import { Dashboard } from './pages/Dashboard';
+import { Schedule } from './pages/Schedule';
+import { Billing } from './pages/Billing';
+import { Benchmarks } from './pages/Benchmarks';
 import { ThemeProvider } from './components/theme-provider';
 import './index.css';
 
 function App() {
   const [session, setSession] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [activePage, setActivePage] = useState('dashboard');
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      if (session) fetchProfile(session.user.id);
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session) fetchProfile(session.user.id);
+      else setUserProfile(null);
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const fetchProfile = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*, role_id')
+      .eq('id', userId)
+      .single();
+
+    if (!error && data) {
+      setUserProfile(data);
+    }
+  };
 
   if (!session) {
     return (
@@ -49,6 +68,12 @@ function App() {
         return <Analytics />;
       case 'settings':
         return <Settings />;
+      case 'schedule':
+        return <Schedule />;
+      case 'billing':
+        return <Billing />;
+      case 'benchmarks':
+        return <Benchmarks />;
       case 'dashboard':
       default:
         return <Dashboard />;
@@ -57,7 +82,11 @@ function App() {
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <MainLayout activePage={activePage} onNavigate={setActivePage}>
+      <MainLayout
+        activePage={activePage}
+        onNavigate={setActivePage}
+        userProfile={userProfile}
+      >
         {renderPage()}
       </MainLayout>
     </ThemeProvider>

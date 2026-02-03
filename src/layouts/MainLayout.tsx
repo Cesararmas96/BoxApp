@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Users, Trophy, BarChart3, Settings as SettingsIcon, LogOut, Inbox, Menu } from 'lucide-react';
+import { LayoutDashboard, Users, Trophy, BarChart3, Settings as SettingsIcon, Calendar as CalendarIcon, Receipt, LogOut, Inbox, Menu } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Separator } from "@/components/ui/separator"
@@ -10,20 +10,28 @@ interface LayoutProps {
     children: React.ReactNode;
     activePage: string;
     onNavigate: (page: string) => void;
+    userProfile?: any;
 }
 
 const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'members', label: 'Members', icon: Users },
-    { id: 'leads', label: 'Leads', icon: Inbox },
+    { id: 'schedule', label: 'Schedule', icon: CalendarIcon },
+    { id: 'members', label: 'Members', icon: Users, roles: ['admin', 'receptionist', 'coach'] },
+    { id: 'leads', label: 'Leads', icon: Inbox, roles: ['admin', 'receptionist'] },
+    { id: 'billing', label: 'Facturación', icon: Receipt, roles: ['admin', 'receptionist'] },
     { id: 'wods', label: 'WODs', icon: Trophy },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'benchmarks', label: 'Benchmarks', icon: Trophy },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3, roles: ['admin'] },
 ];
 
-export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavigate }) => {
+export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, userProfile }) => {
     const handleLogout = async () => {
         await supabase.auth.signOut();
     };
+
+    const filteredNavItems = navItems.filter(item =>
+        !item.roles || (userProfile?.role_id && item.roles.includes(userProfile.role_id))
+    );
 
     return (
         <div className="flex min-h-screen bg-background text-foreground">
@@ -38,7 +46,7 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
 
                 <div className="flex-1 px-4 py-4">
                     <nav className="space-y-1">
-                        {navItems.map((item) => (
+                        {filteredNavItems.map((item) => (
                             <Button
                                 key={item.id}
                                 variant={activePage === item.id ? "default" : "ghost"}

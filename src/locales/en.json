@@ -54,7 +54,19 @@
         "latest_results": "Latest Results",
         "personal_records": "Personal RMs",
         "calculated_loading": "Calculated Loading",
-        "bias_checker": "CrossFit Bias Checker"
+        "bias_checker": "CrossFit Bias Checker",
+        "block_warmup": "Warm-up / Mobility",
+        "block_strength": "Strength / Skill",
+        "block_conditioning": "Conditioning / Power",
+        "block_wod": "Main WOD",
+        "block_accessory": "Accessory / Core",
+        "block_cooldown": "Final WOD / Cooldown",
+        "block_warmup_short": "Warm-up",
+        "block_strength_short": "Strength",
+        "block_conditioning_short": "Power",
+        "block_wod_short": "WOD",
+        "block_accessory_short": "Extra",
+        "block_cooldown_short": "Recovery"
     },
     "roles": {
         "title": "Authority Control",

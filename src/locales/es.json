@@ -54,7 +54,19 @@
         "latest_results": "Últimos Resultados",
         "personal_records": "Récords Personales",
         "calculated_loading": "Carga Calculada",
-        "bias_checker": "Analizador de Bias CrossFit"
+        "bias_checker": "Analizador de Bias CrossFit",
+        "block_warmup": "Calentamiento / Movilidad",
+        "block_strength": "Fuerza / Técnica",
+        "block_conditioning": "Condicionamiento / Potencia",
+        "block_wod": "WOD Principal",
+        "block_accessory": "Accesorio / Core",
+        "block_cooldown": "WOD Final / Vuelta a la Calma",
+        "block_warmup_short": "Calent.",
+        "block_strength_short": "Fuerza",
+        "block_conditioning_short": "Condic.",
+        "block_wod_short": "WOD",
+        "block_accessory_short": "Extra",
+        "block_cooldown_short": "Final"
     },
     "roles": {
         "title": "Control de Autoridad",

@@ -9,7 +9,15 @@ import {
     Loader2,
     History,
     Calendar,
-    Search
+    Search,
+    GripVertical,
+    Trash2,
+    Settings2,
+    Dumbbell,
+    Zap as ZapIcon,
+    Shield,
+    RotateCcw,
+    Flame
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,6 +50,14 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useTranslation } from 'react-i18next';
+
+interface SessionBlock {
+    id: string;
+    type: 'warmup' | 'strength' | 'conditioning' | 'wod' | 'accessory' | 'cooldown';
+    title: string;
+    content: string;
+    duration?: string;
+}
 
 interface LessonBlock {
     time: string;
@@ -91,6 +107,8 @@ export const Wods: React.FC = () => {
         track: 'CrossFit' as any
     });
 
+    const [sessionBlocks, setSessionBlocks] = useState<SessionBlock[]>([]);
+
     const [userPRs, setUserPRs] = useState<any[]>([]);
     const [results, setResults] = useState<any[]>([]);
     const [resultData, setResultData] = useState({ score: '', notes: '', rx: true });
@@ -110,6 +128,33 @@ export const Wods: React.FC = () => {
             fetchResults();
         }
     }, [wods, showResultModal]);
+
+    const addBlock = (type: SessionBlock['type']) => {
+        const titles = {
+            warmup: t('wods.block_warmup', { defaultValue: 'Warm-up / Movilidad' }),
+            strength: t('wods.block_strength', { defaultValue: 'Strength / Skill' }),
+            conditioning: t('wods.block_conditioning', { defaultValue: 'Conditioning / Power' }),
+            wod: t('wods.block_wod', { defaultValue: 'Metcon / WOD' }),
+            accessory: t('wods.block_accessory', { defaultValue: 'Accessory / Core' }),
+            cooldown: t('wods.block_cooldown', { defaultValue: 'Cooldown / Recovery' })
+        };
+
+        const newBlock: SessionBlock = {
+            id: Math.random().toString(36).substr(2, 9),
+            type,
+            title: titles[type],
+            content: ''
+        };
+        setSessionBlocks([...sessionBlocks, newBlock]);
+    };
+
+    const removeBlock = (id: string) => {
+        setSessionBlocks(sessionBlocks.filter(b => b.id !== id));
+    };
+
+    const updateBlock = (id: string, updates: Partial<SessionBlock>) => {
+        setSessionBlocks(sessionBlocks.map(b => b.id === id ? { ...b, ...updates } : b));
+    };
 
     const fetchWods = async () => {
         setLoading(true);
@@ -194,10 +239,19 @@ export const Wods: React.FC = () => {
     const handlePublishManual = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+
+        // Construct metcon from blocks if they exist
+        let finalMetcon = newWOD.metcon;
+        if (sessionBlocks.length > 0) {
+            finalMetcon = sessionBlocks.map(b => `### ${b.title.toUpperCase()}\n${b.content}`).join('\n\n');
+        }
+
         const { error } = await supabase.from('wods').insert([{
             ...newWOD,
+            metcon: finalMetcon,
             date: new Date().toISOString()
         }]);
+
         if (!error) {
             setShowEditor(false);
             setNewWOD({
@@ -205,6 +259,7 @@ export const Wods: React.FC = () => {
                 scaling_beginner: '', scaling_intermediate: '', scaling_advanced: '',
                 scaling_injured: '', modalities: [], lesson_plan: [], track: 'CrossFit'
             });
+            setSessionBlocks([]);
             fetchWods();
         }
         setLoading(false);
@@ -328,27 +383,84 @@ export const Wods: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    <div className="space-y-3">
-                                        <div className="flex items-center justify-between">
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between border-b pb-2">
                                             <Label className="uppercase text-[10px] font-black">{t('wods.routine_structure')}</Label>
-                                            <div className="flex gap-1.5">
-                                                <Button type="button" variant="outline" size="sm" onClick={() => setNewWOD(prev => ({ ...prev, metcon: prev.metcon + (prev.metcon ? "\n\n" : "") + "### WARM UP\n- " }))} className="h-7 text-[8px] font-black uppercase text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/10">
-                                                    {t('wods.add_warmup')}
-                                                </Button>
-                                                <Button type="button" variant="outline" size="sm" onClick={() => setNewWOD(prev => ({ ...prev, metcon: prev.metcon + (prev.metcon ? "\n\n" : "") + "### STRENGTH\n- " }))} className="h-7 text-[8px] font-black uppercase text-blue-500 border-blue-500/20 hover:bg-blue-500/10">
-                                                    {t('wods.add_strength')}
-                                                </Button>
-                                                <Button type="button" variant="outline" size="sm" onClick={() => setNewWOD(prev => ({ ...prev, metcon: prev.metcon + (prev.metcon ? "\n\n" : "") + "### METCON\n- " }))} className="h-7 text-[8px] font-black uppercase text-primary border-primary/20 hover:bg-primary/10">
-                                                    {t('wods.add_metcon')}
-                                                </Button>
-                                            </div>
+                                            <span className="text-[10px] text-muted-foreground font-bold italic uppercase">Build your session block by block</span>
                                         </div>
-                                        <Textarea
-                                            placeholder={t('wods.placeholder_movements')}
-                                            className="min-h-[250px] font-mono text-sm border-2"
-                                            value={newWOD.metcon}
-                                            onChange={(e) => setNewWOD({ ...newWOD, metcon: e.target.value })}
-                                        />
+
+                                        <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                                            {[
+                                                { type: 'warmup', icon: <Flame className="h-3.5 w-3.5" />, label: t('wods.block_warmup_short', { defaultValue: 'Warm-up' }), color: 'text-orange-500 bg-orange-500/10 border-orange-500/20' },
+                                                { type: 'strength', icon: <Dumbbell className="h-3.5 w-3.5" />, label: t('wods.block_strength_short', { defaultValue: 'Strength' }), color: 'text-blue-500 bg-blue-500/10 border-blue-500/20' },
+                                                { type: 'conditioning', icon: <ZapIcon className="h-3.5 w-3.5" />, label: t('wods.block_conditioning_short', { defaultValue: 'Power' }), color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' },
+                                                { type: 'wod', icon: <Trophy className="h-3.5 w-3.5" />, label: t('wods.block_wod_short', { defaultValue: 'WOD' }), color: 'text-primary bg-primary/10 border-primary/20' },
+                                                { type: 'accessory', icon: <Shield className="h-3.5 w-3.5" />, label: t('wods.block_accessory_short', { defaultValue: 'Extra' }), color: 'text-indigo-500 bg-indigo-500/10 border-indigo-500/20' },
+                                                { type: 'cooldown', icon: <RotateCcw className="h-3.5 w-3.5" />, label: t('wods.block_cooldown_short', { defaultValue: 'Recovery' }), color: 'text-zinc-500 bg-zinc-500/10 border-zinc-500/20' }
+                                            ].map((btn) => (
+                                                <Button
+                                                    key={btn.type}
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={() => addBlock(btn.type as any)}
+                                                    className={cn("flex-col h-16 gap-1 p-2 border-2", btn.color)}
+                                                >
+                                                    {btn.icon}
+                                                    <span className="text-[8px] font-black uppercase tracking-tight">{btn.label}</span>
+                                                </Button>
+                                            ))}
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            {sessionBlocks.length === 0 ? (
+                                                <div className="border-2 border-dashed rounded-xl p-12 text-center opacity-30">
+                                                    <Plus className="h-8 w-8 mx-auto mb-2" />
+                                                    <p className="text-[10px] font-black uppercase tracking-widest italic">Add your first block to start programming</p>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-3">
+                                                    {sessionBlocks.map((block, index) => (
+                                                        <Card key={block.id} className="border shadow-sm overflow-hidden group">
+                                                            <div className="flex items-center gap-3 px-3 py-2 bg-muted/30 border-b">
+                                                                <GripVertical className="h-4 w-4 text-muted-foreground opacity-50" />
+                                                                <div className="flex-1 flex items-center gap-2">
+                                                                    <div className={cn(
+                                                                        "h-2 w-2 rounded-full",
+                                                                        block.type === 'warmup' && "bg-orange-500",
+                                                                        block.type === 'strength' && "bg-blue-500",
+                                                                        block.type === 'conditioning' && "bg-emerald-500",
+                                                                        block.type === 'wod' && "bg-primary",
+                                                                        block.type === 'accessory' && "bg-indigo-500",
+                                                                        block.type === 'cooldown' && "bg-zinc-500"
+                                                                    )} />
+                                                                    <Input
+                                                                        className="h-6 bg-transparent border-none font-black uppercase italic text-[10px] tracking-tight p-0 focus-visible:ring-0"
+                                                                        value={block.title}
+                                                                        onChange={(e) => updateBlock(block.id, { title: e.target.value })}
+                                                                    />
+                                                                </div>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-6 w-6 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                    onClick={() => removeBlock(block.id)}
+                                                                >
+                                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                                </Button>
+                                                            </div>
+                                                            <div className="p-0">
+                                                                <Textarea
+                                                                    className="border-none focus-visible:ring-0 min-h-[100px] text-xs font-mono p-3 leading-relaxed"
+                                                                    placeholder="Describe the activities..."
+                                                                    value={block.content}
+                                                                    onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+                                                                />
+                                                            </div>
+                                                        </Card>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">

@@ -66,6 +66,7 @@ interface SessionBlock {
     type: 'warmup' | 'strength' | 'conditioning' | 'wod' | 'accessory' | 'cooldown';
     title: string;
     items: BlockItem[];
+    sets?: string;
     duration?: string;
 }
 
@@ -145,21 +146,63 @@ const BLOCK_TEMPLATES: Record<string, { label: string, items: Omit<BlockItem, 'i
     ]
 };
 
-const COMMON_MOVEMENTS = [
-    { name: 'Air Squat', category: 'Gymnastics', icon: <Activity className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=50&h=50&fit=crop' },
-    { name: 'Back Squat', category: 'Weightlifting', icon: <Dumbbell className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=50&h=50&fit=crop' },
-    { name: 'Deadlift', category: 'Weightlifting', icon: <Dumbbell className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=50&h=50&fit=crop' },
-    { name: 'Power Clean', category: 'Weightlifting', icon: <ZapIcon className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=50&h=50&fit=crop' },
-    { name: 'Snatch', category: 'Weightlifting', icon: <ZapIcon className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1541534741688-6078c64b547d?w=50&h=50&fit=crop' },
-    { name: 'Burpee', category: 'Gymnastics', icon: <FlameIcon className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1599058917233-35835270c14c?w=50&h=50&fit=crop' },
-    { name: 'Box Jump', category: 'Gymnastics', icon: <Trophy className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=50&h=50&fit=crop' },
-    { name: 'Wall Ball', category: 'Weightlifting', icon: <Target className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=50&h=50&fit=crop' },
-    { name: 'Pull-up', category: 'Gymnastics', icon: <Activity className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1598971639058-fab3c023bf30?w=50&h=50&fit=crop' },
-    { name: 'Double Under', category: 'Mono', icon: <Timer className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=50&h=50&fit=crop' },
-    { name: 'Row', category: 'Mono', icon: <Activity className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=50&h=50&fit=crop' },
-    { name: 'Run', category: 'Mono', icon: <Timer className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=50&h=50&fit=crop' },
-    { name: 'Thruster', category: 'Weightlifting', icon: <FlameIcon className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=50&h=50&fit=crop' }
-];
+const MovementSearch: React.FC<{
+    movements: any[];
+    onSelect: (name: string) => void;
+    onCreate: (name: string) => void;
+}> = ({ movements, onSelect, onCreate }) => {
+    const [search, setSearch] = useState('');
+    const filtered = useMemo(() =>
+        movements.filter(m => m.name.toLowerCase().includes(search.toLowerCase())).slice(0, 10),
+        [movements, search]
+    );
+
+    return (
+        <div className="relative">
+            <Search className="absolute left-2 top-2 h-3 w-3 text-muted-foreground" />
+            <Input
+                placeholder="Search movement..."
+                className="h-7 pl-7 text-[10px] uppercase font-bold italic"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+            />
+            {search && (
+                <Card className="absolute z-[100] left-0 right-0 top-8 max-h-[200px] overflow-y-auto shadow-2xl p-2 flex flex-col gap-1">
+                    {filtered.map(m => (
+                        <button
+                            key={m.id}
+                            onClick={() => {
+                                onSelect(m.name);
+                                setSearch('');
+                            }}
+                            className="flex items-center gap-2 p-1.5 hover:bg-muted rounded-lg text-left transition-colors border border-transparent hover:border-primary/20"
+                        >
+                            <div className="h-6 w-6 rounded bg-primary/10 flex items-center justify-center">
+                                <Dumbbell className="h-3 w-3 text-primary" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black uppercase italic leading-none">{m.name}</p>
+                                <p className="text-[8px] text-muted-foreground uppercase font-bold">{m.category}</p>
+                            </div>
+                        </button>
+                    ))}
+                    {filtered.length === 0 && (
+                        <Button
+                            variant="ghost"
+                            className="h-8 justify-start gap-2 text-[10px] font-black uppercase italic text-primary"
+                            onClick={() => {
+                                onCreate(search);
+                                setSearch('');
+                            }}
+                        >
+                            <Plus className="h-3 w-3" /> Create "{search}"
+                        </Button>
+                    )}
+                </Card>
+            )}
+        </div>
+    );
+};
 
 export const Wods: React.FC = () => {
     const { t } = useTranslation();
@@ -171,7 +214,6 @@ export const Wods: React.FC = () => {
     const [activeTrack, setActiveTrack] = useState<string>('all');
 
     // UI State for Editor
-    const [, setEditorMode] = useState<'manual' | 'bulk'>('manual');
     const [newWOD, setNewWOD] = useState({
         title: '',
         metcon: '',
@@ -187,24 +229,25 @@ export const Wods: React.FC = () => {
     });
 
     const [sessionBlocks, setSessionBlocks] = useState<SessionBlock[]>([]);
-    const [movementSearch, setMovementSearch] = useState('');
+    const [movements, setMovements] = useState<any[]>([]);
+    const [userPRs, setUserPRs] = useState<any[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
     const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
         setIsMounted(true);
     }, []);
 
-    const [userPRs, setUserPRs] = useState<any[]>([]);
-    const [searchQuery, setSearchQuery] = useState('');
-
-    // Bulk Import Logic
-    const [bulkRawText, setBulkRawText] = useState('');
-    const [stagedWods, setStagedWods] = useState<any[]>([]);
-
     useEffect(() => {
         fetchWods();
         fetchUserPRs();
+        fetchMovements();
     }, []);
+
+    const fetchMovements = async () => {
+        const { data } = await supabase.from('movements').select('*').order('name');
+        if (data) setMovements(data);
+    };
 
     const addBlock = (type: SessionBlock['type']) => {
         const titles = {
@@ -278,14 +321,18 @@ export const Wods: React.FC = () => {
     };
 
     const generateBlockContent = (block: SessionBlock) => {
-        return block.items.map(item => {
+        let header = '';
+        if (block.sets) header = `**[${block.sets} SETS]**\n`;
+
+        const items = block.items.map(item => {
             let line = `- **${item.movementName}**:`;
-            if (item.sets) line += ` ${item.sets} x`;
             if (item.reps) line += ` ${item.reps}`;
             if (item.weight) line += ` (${item.weight})`;
             if (item.notes) line += ` // ${item.notes}`;
             return line;
         }).join('\n');
+
+        return header + items;
     };
 
     const removeBlock = (id: string) => {
@@ -391,49 +438,6 @@ export const Wods: React.FC = () => {
         if (data) setUserPRs(data);
     };
 
-    // --- SMART PARSER LOGIC ---
-    const parseProgramming = (text: string) => {
-        const sections = text.split(/[-_=]{3,}/).filter(s => s.trim().length > 10);
-
-        const parsed = sections.map((section, idx) => {
-            const lines = section.trim().split('\n');
-            const title = lines[0].trim().toUpperCase() || `SESSION ${idx + 1}`;
-            const metcon = lines.slice(1).join('\n').trim();
-
-            let track = 'CrossFit';
-            if (metcon.toLowerCase().includes('musculación') || metcon.toLowerCase().includes('hipertrofia')) track = 'Bodybuilding';
-            if (metcon.toLowerCase().includes('novato')) track = 'Novice';
-
-            const stimulusMatch = metcon.match(/(Stimulus|Target|Objetivo):?\s*([^\n]+)/i);
-            const stimulus = stimulusMatch ? stimulusMatch[2] : '';
-
-            return {
-                title,
-                metcon,
-                track,
-                stimulus,
-                date: new Date().toISOString(),
-                modalities: [],
-                lesson_plan: []
-            };
-        });
-
-        setStagedWods(parsed);
-    };
-
-    const importStagedWods = async () => {
-        setLoading(true);
-        const { error } = await supabase.from('wods').insert(stagedWods);
-        if (!error) {
-            setStagedWods([]);
-            setBulkRawText('');
-            setShowEditor(false);
-            fetchWods();
-        } else {
-            alert('Error: ' + error.message);
-        }
-        setLoading(false);
-    };
 
     const handlePublishManual = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -560,286 +564,242 @@ export const Wods: React.FC = () => {
                                 </DialogDescription>
                             </DialogHeader>
 
-                            <Tabs defaultValue="manual" className="mt-4" onValueChange={(v) => setEditorMode(v as any)}>
-                                <TabsList className="grid w-full grid-cols-2 mb-6">
-                                    <TabsTrigger value="manual" className="font-black text-[10px] uppercase">{t('wods.manual_draft')}</TabsTrigger>
-                                    <TabsTrigger value="bulk" className="font-black text-[10px] uppercase">{t('wods.smart_import')}</TabsTrigger>
-                                </TabsList>
+                            <div className="space-y-6 mt-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label className="uppercase text-[10px] font-black">{t('wods.track')}</Label>
+                                        <Select value={newWOD.track} onValueChange={(v) => setNewWOD({ ...newWOD, track: v as any })}>
+                                            <SelectTrigger className="font-bold italic uppercase h-10">
+                                                <SelectValue placeholder="Select track" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {TRACKS.map(t => <SelectItem key={t} value={t} className="font-bold uppercase italic">{t}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="uppercase text-[10px] font-black">{t('wods.wod_title')}</Label>
+                                        <Input
+                                            placeholder="e.g. MORNING GRIND"
+                                            className="uppercase italic font-bold h-10"
+                                            value={newWOD.title}
+                                            onChange={(e) => setNewWOD({ ...newWOD, title: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
 
-                                <TabsContent value="manual" className="space-y-6">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label className="uppercase text-[10px] font-black">{t('wods.track')}</Label>
-                                            <Select value={newWOD.track} onValueChange={(v) => setNewWOD({ ...newWOD, track: v as any })}>
-                                                <SelectTrigger className="font-bold italic uppercase h-10">
-                                                    <SelectValue placeholder="Select track" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {TRACKS.map(t => <SelectItem key={t} value={t} className="font-bold uppercase italic">{t}</SelectItem>)}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label className="uppercase text-[10px] font-black">{t('wods.wod_title')}</Label>
-                                            <Input
-                                                placeholder="e.g. MORNING GRIND"
-                                                className="uppercase italic font-bold h-10"
-                                                value={newWOD.title}
-                                                onChange={(e) => setNewWOD({ ...newWOD, title: e.target.value })}
-                                            />
-                                        </div>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between border-b pb-2">
+                                        <Label className="uppercase text-[10px] font-black">{t('wods.routine_structure')}</Label>
+                                        <span className="text-[10px] text-muted-foreground font-bold italic uppercase">Build your session block by block</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                                        {[
+                                            { type: 'warmup', icon: <FlameIcon className="h-3.5 w-3.5" />, label: t('wods.block_warmup_short', { defaultValue: 'Warm-up' }), color: 'text-orange-500 bg-orange-500/10 border-orange-500/20' },
+                                            { type: 'strength', icon: <Dumbbell className="h-3.5 w-3.5" />, label: t('wods.block_strength_short', { defaultValue: 'Strength' }), color: 'text-blue-500 bg-blue-500/10 border-blue-500/20' },
+                                            { type: 'conditioning', icon: <ZapIcon className="h-3.5 w-3.5" />, label: t('wods.block_conditioning_short', { defaultValue: 'Power' }), color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' },
+                                            { type: 'wod', icon: <Trophy className="h-3.5 w-3.5" />, label: t('wods.block_wod_short', { defaultValue: 'WOD' }), color: 'text-primary bg-primary/10 border-primary/20' },
+                                            { type: 'accessory', icon: <Shield className="h-3.5 w-3.5" />, label: t('wods.block_accessory_short', { defaultValue: 'Extra' }), color: 'text-indigo-500 bg-indigo-500/10 border-indigo-500/20' },
+                                            { type: 'cooldown', icon: <RotateCcw className="h-3.5 w-3.5" />, label: t('wods.block_cooldown_short', { defaultValue: 'Recovery' }), color: 'text-zinc-500 bg-zinc-500/10 border-zinc-500/20' }
+                                        ].map((btn) => (
+                                            <Button
+                                                key={btn.type}
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() => addBlock(btn.type as any)}
+                                                className={cn("flex-col h-16 gap-1 p-2 border-2", btn.color)}
+                                            >
+                                                {btn.icon}
+                                                <span className="text-[8px] font-black uppercase tracking-tight">{btn.label}</span>
+                                            </Button>
+                                        ))}
                                     </div>
 
                                     <div className="space-y-4">
-                                        <div className="flex items-center justify-between border-b pb-2">
-                                            <Label className="uppercase text-[10px] font-black">{t('wods.routine_structure')}</Label>
-                                            <span className="text-[10px] text-muted-foreground font-bold italic uppercase">Build your session block by block</span>
-                                        </div>
+                                        {sessionBlocks.length === 0 ? (
+                                            <div className="border-2 border-dashed rounded-xl p-12 text-center opacity-30">
+                                                <Plus className="h-8 w-8 mx-auto mb-2" />
+                                                <p className="text-[10px] font-black uppercase tracking-widest italic">Add your first block to start programming</p>
+                                            </div>
+                                        ) : isMounted && (
+                                            <DragDropContext onDragEnd={(result) => {
+                                                const { source, destination, type } = result;
+                                                if (!destination) return;
 
-                                        <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
-                                            {[
-                                                { type: 'warmup', icon: <FlameIcon className="h-3.5 w-3.5" />, label: t('wods.block_warmup_short', { defaultValue: 'Warm-up' }), color: 'text-orange-500 bg-orange-500/10 border-orange-500/20' },
-                                                { type: 'strength', icon: <Dumbbell className="h-3.5 w-3.5" />, label: t('wods.block_strength_short', { defaultValue: 'Strength' }), color: 'text-blue-500 bg-blue-500/10 border-blue-500/20' },
-                                                { type: 'conditioning', icon: <ZapIcon className="h-3.5 w-3.5" />, label: t('wods.block_conditioning_short', { defaultValue: 'Power' }), color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' },
-                                                { type: 'wod', icon: <Trophy className="h-3.5 w-3.5" />, label: t('wods.block_wod_short', { defaultValue: 'WOD' }), color: 'text-primary bg-primary/10 border-primary/20' },
-                                                { type: 'accessory', icon: <Shield className="h-3.5 w-3.5" />, label: t('wods.block_accessory_short', { defaultValue: 'Extra' }), color: 'text-indigo-500 bg-indigo-500/10 border-indigo-500/20' },
-                                                { type: 'cooldown', icon: <RotateCcw className="h-3.5 w-3.5" />, label: t('wods.block_cooldown_short', { defaultValue: 'Recovery' }), color: 'text-zinc-500 bg-zinc-500/10 border-zinc-500/20' }
-                                            ].map((btn) => (
-                                                <Button
-                                                    key={btn.type}
-                                                    type="button"
-                                                    variant="outline"
-                                                    onClick={() => addBlock(btn.type as any)}
-                                                    className={cn("flex-col h-16 gap-1 p-2 border-2", btn.color)}
-                                                >
-                                                    {btn.icon}
-                                                    <span className="text-[8px] font-black uppercase tracking-tight">{btn.label}</span>
-                                                </Button>
-                                            ))}
-                                        </div>
+                                                if (type === 'block') {
+                                                    const newBlocks = Array.from(sessionBlocks);
+                                                    const [reorderedBlock] = newBlocks.splice(source.index, 1);
+                                                    newBlocks.splice(destination.index, 0, reorderedBlock);
+                                                    setSessionBlocks(newBlocks);
+                                                    return;
+                                                }
 
-                                        <div className="space-y-4">
-                                            {sessionBlocks.length === 0 ? (
-                                                <div className="border-2 border-dashed rounded-xl p-12 text-center opacity-30">
-                                                    <Plus className="h-8 w-8 mx-auto mb-2" />
-                                                    <p className="text-[10px] font-black uppercase tracking-widest italic">Add your first block to start programming</p>
-                                                </div>
-                                            ) : isMounted && (
-                                                <DragDropContext onDragEnd={(result) => {
-                                                    const { source, destination, type } = result;
-                                                    if (!destination) return;
-
-                                                    if (type === 'block') {
-                                                        const newBlocks = Array.from(sessionBlocks);
-                                                        const [reorderedBlock] = newBlocks.splice(source.index, 1);
-                                                        newBlocks.splice(destination.index, 0, reorderedBlock);
-                                                        setSessionBlocks(newBlocks);
-                                                        return;
+                                                const blockId = source.droppableId.replace('items-', '');
+                                                setSessionBlocks(sessionBlocks.map(b => {
+                                                    if (b.id === blockId) {
+                                                        const newItems = Array.from(b.items);
+                                                        const [reorderedItem] = newItems.splice(source.index, 1);
+                                                        newItems.splice(destination.index, 0, reorderedItem);
+                                                        return { ...b, items: newItems };
                                                     }
-
-                                                    const blockId = source.droppableId.replace('items-', '');
-                                                    setSessionBlocks(sessionBlocks.map(b => {
-                                                        if (b.id === blockId) {
-                                                            const newItems = Array.from(b.items);
-                                                            const [reorderedItem] = newItems.splice(source.index, 1);
-                                                            newItems.splice(destination.index, 0, reorderedItem);
-                                                            return { ...b, items: newItems };
-                                                        }
-                                                        return b;
-                                                    }));
-                                                }}>
-                                                    <Droppable droppableId="session-blocks" type="block">
-                                                        {(provided) => (
-                                                            <div
-                                                                {...provided.droppableProps}
-                                                                ref={provided.innerRef}
-                                                                className="space-y-3"
-                                                            >
-                                                                {sessionBlocks.map((block, index) => (
-                                                                    <Draggable key={block.id} draggableId={block.id} index={index}>
-                                                                        {(provided, snapshot) => (
-                                                                            <Card
-                                                                                ref={provided.innerRef}
-                                                                                {...provided.draggableProps}
-                                                                                className={cn(
-                                                                                    "border shadow-sm group transition-shadow bg-background",
-                                                                                    snapshot.isDragging && "shadow-2xl border-primary/50 relative z-50"
-                                                                                )}
-                                                                            >
-                                                                                <div className="flex items-center gap-3 px-3 py-2 bg-muted/30 border-b">
-                                                                                    <div
-                                                                                        {...provided.dragHandleProps}
-                                                                                        className="cursor-grab active:cursor-grabbing"
-                                                                                    >
-                                                                                        <GripVertical className="h-4 w-4 text-muted-foreground opacity-50 hover:opacity-100 transition-opacity" />
-                                                                                    </div>
-                                                                                    <div className="flex-1 flex items-center gap-2">
-                                                                                        <div className={cn(
-                                                                                            "h-2 w-2 rounded-full",
-                                                                                            block.type === 'warmup' && "bg-orange-500",
-                                                                                            block.type === 'strength' && "bg-blue-500",
-                                                                                            block.type === 'conditioning' && "bg-emerald-500",
-                                                                                            block.type === 'wod' && "bg-primary",
-                                                                                            block.type === 'accessory' && "bg-indigo-500",
-                                                                                            block.type === 'cooldown' && "bg-zinc-500"
-                                                                                        )} />
+                                                    return b;
+                                                }));
+                                            }}>
+                                                <Droppable droppableId="session-blocks" type="block">
+                                                    {(provided) => (
+                                                        <div
+                                                            {...provided.droppableProps}
+                                                            ref={provided.innerRef}
+                                                            className="space-y-3"
+                                                        >
+                                                            {sessionBlocks.map((block, index) => (
+                                                                <Draggable key={block.id} draggableId={block.id} index={index}>
+                                                                    {(provided, snapshot) => (
+                                                                        <Card
+                                                                            ref={provided.innerRef}
+                                                                            {...provided.draggableProps}
+                                                                            className={cn(
+                                                                                "border shadow-sm group transition-shadow bg-background",
+                                                                                snapshot.isDragging && "shadow-2xl border-primary/50 relative z-50"
+                                                                            )}
+                                                                        >
+                                                                            <div className="flex items-center gap-3 px-3 py-2 bg-muted/30 border-b">
+                                                                                <div
+                                                                                    {...provided.dragHandleProps}
+                                                                                    className="cursor-grab active:cursor-grabbing"
+                                                                                >
+                                                                                    <GripVertical className="h-4 w-4 text-muted-foreground opacity-50 hover:opacity-100 transition-opacity" />
+                                                                                </div>
+                                                                                <div className="flex-1 flex items-center gap-2">
+                                                                                    <div className={cn(
+                                                                                        "h-2 w-2 rounded-full",
+                                                                                        block.type === 'warmup' && "bg-orange-500",
+                                                                                        block.type === 'strength' && "bg-blue-500",
+                                                                                        block.type === 'conditioning' && "bg-emerald-500",
+                                                                                        block.type === 'wod' && "bg-primary",
+                                                                                        block.type === 'accessory' && "bg-indigo-500",
+                                                                                        block.type === 'cooldown' && "bg-zinc-500"
+                                                                                    )} />
+                                                                                    <Input
+                                                                                        className="h-6 bg-transparent border-none font-black uppercase italic text-[10px] tracking-tight p-0 focus-visible:ring-0"
+                                                                                        value={block.title}
+                                                                                        onChange={(e) => updateBlock(block.id, { title: e.target.value })}
+                                                                                    />
+                                                                                    <div className="flex items-center gap-1 bg-background/50 rounded-md border px-1.5 h-6">
+                                                                                        <span className="text-[8px] font-black uppercase opacity-50">SETS:</span>
                                                                                         <Input
-                                                                                            className="h-6 bg-transparent border-none font-black uppercase italic text-[10px] tracking-tight p-0 focus-visible:ring-0"
-                                                                                            value={block.title}
-                                                                                            onChange={(e) => updateBlock(block.id, { title: e.target.value })}
+                                                                                            className="h-4 w-12 bg-transparent border-none font-black uppercase italic text-[10px] p-0 focus-visible:ring-0 text-center"
+                                                                                            placeholder="1"
+                                                                                            value={block.sets || ''}
+                                                                                            onChange={(e) => updateBlock(block.id, { sets: e.target.value })}
                                                                                         />
                                                                                     </div>
-                                                                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => removeBlock(block.id)}>
-                                                                                        <Trash2 className="h-3.5 w-3.5" />
-                                                                                    </Button>
                                                                                 </div>
-                                                                                <div className="p-0">
-                                                                                    <div className="px-3 pt-3 space-y-3">
-                                                                                        <div className="flex flex-wrap gap-1">
-                                                                                            {BLOCK_TEMPLATES[block.type]?.map((template) => (
-                                                                                                <Button
-                                                                                                    key={template.label}
-                                                                                                    variant="secondary"
-                                                                                                    size="sm"
-                                                                                                    className="h-5 px-2 text-[8px] font-bold uppercase tracking-wider bg-primary/5 hover:bg-primary/20 text-primary border border-primary/10"
-                                                                                                    onClick={() => addTemplateToBlock(block.id, template)}
-                                                                                                >
-                                                                                                    {template.label}
-                                                                                                </Button>
-                                                                                            ))}
-                                                                                        </div>
-                                                                                        <div className="relative">
-                                                                                            <Search className="absolute left-2 top-2 h-3 w-3 text-muted-foreground" />
-                                                                                            <Input
-                                                                                                placeholder="Search movement..."
-                                                                                                className="h-7 pl-7 text-[10px] uppercase font-bold italic"
-                                                                                                value={movementSearch}
-                                                                                                onChange={(e) => setMovementSearch(e.target.value)}
-                                                                                            />
-                                                                                            {movementSearch && (
-                                                                                                <Card className="absolute z-[100] left-0 right-0 top-8 max-h-[200px] overflow-y-auto shadow-2xl p-2 grid grid-cols-2 gap-2">
-                                                                                                    {COMMON_MOVEMENTS
-                                                                                                        .filter(m => m.name.toLowerCase().includes(movementSearch.toLowerCase()))
-                                                                                                        .map(m => (
-                                                                                                            <button
-                                                                                                                key={m.name}
-                                                                                                                onClick={() => {
-                                                                                                                    addItemToBlock(block.id, m.name);
-                                                                                                                    setMovementSearch('');
-                                                                                                                }}
-                                                                                                                className="flex items-center gap-2 p-1.5 hover:bg-muted rounded-lg text-left transition-colors border border-transparent hover:border-primary/20"
+                                                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => removeBlock(block.id)}>
+                                                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                                                </Button>
+                                                                            </div>
+                                                                            <div className="p-0">
+                                                                                <div className="px-3 pt-3 space-y-3">
+                                                                                    <div className="flex flex-wrap gap-1">
+                                                                                        {BLOCK_TEMPLATES[block.type]?.map((template) => (
+                                                                                            <Button
+                                                                                                key={template.label}
+                                                                                                variant="secondary"
+                                                                                                size="sm"
+                                                                                                className="h-5 px-2 text-[8px] font-bold uppercase tracking-wider bg-primary/5 hover:bg-primary/20 text-primary border border-primary/10"
+                                                                                                onClick={() => addTemplateToBlock(block.id, template)}
+                                                                                            >
+                                                                                                {template.label}
+                                                                                            </Button>
+                                                                                        ))}
+                                                                                    </div>
+                                                                                    <MovementSearch
+                                                                                        movements={movements}
+                                                                                        onSelect={(name) => addItemToBlock(block.id, name)}
+                                                                                        onCreate={async (name) => {
+                                                                                            const { data, error } = await supabase
+                                                                                                .from('movements')
+                                                                                                .insert([{ name, category: 'Other' }])
+                                                                                                .select()
+                                                                                                .single();
+                                                                                            if (!error && data) {
+                                                                                                fetchMovements();
+                                                                                                addItemToBlock(block.id, data.name);
+                                                                                            }
+                                                                                        }}
+                                                                                    />
+                                                                                </div>
+                                                                                <div className="p-3">
+                                                                                    <Droppable droppableId={`items-${block.id}`} type="item">
+                                                                                        {(provided) => (
+                                                                                            <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2 min-h-[50px]">
+                                                                                                {block.items.map((item, itemIdx) => (
+                                                                                                    <Draggable key={item.id} draggableId={item.id} index={itemIdx}>
+                                                                                                        {(provided, snapshot) => (
+                                                                                                            <div
+                                                                                                                ref={provided.innerRef}
+                                                                                                                {...provided.draggableProps}
+                                                                                                                className={cn(
+                                                                                                                    "flex flex-col gap-1.5 p-2 rounded-lg border bg-muted/5 group/item",
+                                                                                                                    snapshot.isDragging && "shadow-lg border-primary/40 bg-background z-50"
+                                                                                                                )}
                                                                                                             >
-                                                                                                                <img src={m.image} alt={m.name} className="h-8 w-8 rounded object-cover" />
-                                                                                                                <div>
-                                                                                                                    <p className="text-[10px] font-black uppercase italic leading-none">{m.name}</p>
-                                                                                                                    <p className="text-[8px] text-muted-foreground uppercase font-bold">{m.category}</p>
-                                                                                                                </div>
-                                                                                                            </button>
-                                                                                                        ))}
-                                                                                                </Card>
-                                                                                            )}
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    <div className="p-3">
-                                                                                        <Droppable droppableId={`items-${block.id}`} type="item">
-                                                                                            {(provided) => (
-                                                                                                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2 min-h-[50px]">
-                                                                                                    {block.items.map((item, itemIdx) => (
-                                                                                                        <Draggable key={item.id} draggableId={item.id} index={itemIdx}>
-                                                                                                            {(provided, snapshot) => (
-                                                                                                                <div
-                                                                                                                    ref={provided.innerRef}
-                                                                                                                    {...provided.draggableProps}
-                                                                                                                    className={cn(
-                                                                                                                        "flex flex-col gap-1.5 p-2 rounded-lg border bg-muted/5 group/item",
-                                                                                                                        snapshot.isDragging && "shadow-lg border-primary/40 bg-background z-50"
-                                                                                                                    )}
-                                                                                                                >
-                                                                                                                    <div className="flex items-center justify-between">
-                                                                                                                        <div className="flex items-center gap-2">
-                                                                                                                            <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing p-1">
-                                                                                                                                <GripVertical className="h-3 w-3 opacity-50" />
-                                                                                                                            </div>
-                                                                                                                            <p className="text-[10px] font-black uppercase italic text-primary">{item.movementName}</p>
+                                                                                                                <div className="flex items-center justify-between">
+                                                                                                                    <div className="flex items-center gap-2">
+                                                                                                                        <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing p-1">
+                                                                                                                            <GripVertical className="h-3 w-3 opacity-50" />
                                                                                                                         </div>
-                                                                                                                        <Button variant="ghost" size="icon" className="h-4 w-4 text-destructive" onClick={() => removeItem(block.id, item.id)}>
-                                                                                                                            <Trash2 className="h-3 w-3" />
-                                                                                                                        </Button>
+                                                                                                                        <p className="text-[10px] font-black uppercase italic text-primary">{item.movementName}</p>
                                                                                                                     </div>
-                                                                                                                    <div className="grid grid-cols-4 gap-2">
-                                                                                                                        <Input className="h-6 text-[9px] font-bold" placeholder="SETS" value={item.sets} onChange={e => updateItem(block.id, item.id, { sets: e.target.value })} />
-                                                                                                                        <Input className="h-6 text-[9px] font-bold" placeholder="REPS" value={item.reps} onChange={e => updateItem(block.id, item.id, { reps: e.target.value })} />
-                                                                                                                        <Input className="h-6 text-[9px] font-bold" placeholder="WEIGHT" value={item.weight} onChange={e => updateItem(block.id, item.id, { weight: e.target.value })} />
-                                                                                                                        <Input className="h-6 text-[9px] font-bold" placeholder="NOTES" value={item.notes} onChange={e => updateItem(block.id, item.id, { notes: e.target.value })} />
-                                                                                                                    </div>
+                                                                                                                    <Button variant="ghost" size="icon" className="h-4 w-4 text-destructive" onClick={() => removeItem(block.id, item.id)}>
+                                                                                                                        <Trash2 className="h-3 w-3" />
+                                                                                                                    </Button>
                                                                                                                 </div>
-                                                                                                            )}
-                                                                                                        </Draggable>
-                                                                                                    ))}
-                                                                                                    {provided.placeholder}
-                                                                                                </div>
-                                                                                            )}
-                                                                                        </Droppable>
-                                                                                    </div>
+                                                                                                                <div className="grid grid-cols-3 gap-2">
+                                                                                                                    <Input className="h-6 text-[9px] font-bold" placeholder="REPS" value={item.reps} onChange={e => updateItem(block.id, item.id, { reps: e.target.value })} />
+                                                                                                                    <Input className="h-6 text-[9px] font-bold" placeholder="WEIGHT" value={item.weight} onChange={e => updateItem(block.id, item.id, { weight: e.target.value })} />
+                                                                                                                    <Input className="h-6 text-[9px] font-bold" placeholder="NOTES" value={item.notes} onChange={e => updateItem(block.id, item.id, { notes: e.target.value })} />
+                                                                                                                </div>
+                                                                                                            </div>
+                                                                                                        )}
+                                                                                                    </Draggable>
+                                                                                                ))}
+                                                                                                {provided.placeholder}
+                                                                                            </div>
+                                                                                        )}
+                                                                                    </Droppable>
                                                                                 </div>
-                                                                            </Card>
-                                                                        )}
-                                                                    </Draggable>
-                                                                ))}
-                                                                {provided.placeholder}
-                                                            </div>
-                                                        )}
-                                                    </Droppable>
-                                                </DragDropContext>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label className="uppercase text-[10px] font-black text-orange-500">{t('wods.stimulus')}</Label>
-                                            <Textarea className="h-20 text-xs italic" value={newWOD.stimulus} onChange={e => setNewWOD({ ...newWOD, stimulus: e.target.value })} />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label className="uppercase text-[10px] font-black text-blue-500">{t('wods.scaling')}</Label>
-                                            <Textarea className="h-20 text-xs italic" value={newWOD.scaling_options} onChange={e => setNewWOD({ ...newWOD, scaling_options: e.target.value })} />
-                                        </div>
-                                    </div>
-
-                                    <Button onClick={handlePublishManual} className="w-full font-black uppercase italic" disabled={loading}>
-                                        {loading ? <Loader2 className="animate-spin" /> : t('wods.publish')}
-                                    </Button>
-                                </TabsContent>
-
-                                <TabsContent value="bulk" className="space-y-6">
-                                    <div className="space-y-4">
-                                        <Label className="uppercase text-[10px] font-black">{t('wods.bulk_placeholder')}</Label>
-                                        <Textarea
-                                            className="min-h-[300px] font-mono text-xs border-2"
-                                            placeholder="WOD 1...&#10;---&#10;WOD 2..."
-                                            value={bulkRawText}
-                                            onChange={(e) => {
-                                                setBulkRawText(e.target.value);
-                                                parseProgramming(e.target.value);
-                                            }}
-                                        />
-                                        {stagedWods.length > 0 && (
-                                            <div className="grid gap-2 border p-4 rounded-xl bg-muted/20">
-                                                <p className="text-[10px] font-black uppercase italic mb-2">{t('wods.detected_sessions')} ({stagedWods.length})</p>
-                                                {stagedWods.map((w, i) => (
-                                                    <div key={i} className="text-[10px] font-bold uppercase flex items-center justify-between border-b pb-1">
-                                                        <span>{i + 1}. {w.title}</span>
-                                                        <Badge variant="outline" className="text-[8px]">{w.track}</Badge>
-                                                    </div>
-                                                ))}
-                                                <Button onClick={importStagedWods} className="mt-4 font-black uppercase italic" disabled={loading}>
-                                                    {loading ? <Loader2 className="animate-spin" /> : t('wods.import_days', { count: stagedWods.length })}
-                                                </Button>
-                                            </div>
+                                                                            </div>
+                                                                        </Card>
+                                                                    )}
+                                                                </Draggable>
+                                                            ))}
+                                                            {provided.placeholder}
+                                                        </div>
+                                                    )}
+                                                </Droppable>
+                                            </DragDropContext>
                                         )}
                                     </div>
-                                </TabsContent>
-                            </Tabs>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label className="uppercase text-[10px] font-black text-orange-500">{t('wods.stimulus')}</Label>
+                                        <Textarea className="h-20 text-xs italic" value={newWOD.stimulus} onChange={e => setNewWOD({ ...newWOD, stimulus: e.target.value })} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="uppercase text-[10px] font-black text-blue-500">{t('wods.scaling')}</Label>
+                                        <Textarea className="h-20 text-xs italic" value={newWOD.scaling_options} onChange={e => setNewWOD({ ...newWOD, scaling_options: e.target.value })} />
+                                    </div>
+                                </div>
+
+                                <Button onClick={handlePublishManual} className="w-full font-black uppercase italic" disabled={loading}>
+                                    {loading ? <Loader2 className="animate-spin" /> : t('wods.publish')}
+                                </Button>
+                            </div>
                         </DialogContent>
                     </Dialog>
                 </div>
@@ -979,7 +939,14 @@ export const Wods: React.FC = () => {
                                                 {wod.structure.map((block) => (
                                                     <div key={block.id} className="relative pl-6 border-l-2 border-muted hover:border-primary/30 transition-colors group/timeline">
                                                         <div className="absolute -left-[5px] top-0 h-2 w-2 rounded-full bg-muted group-hover/timeline:bg-primary transition-colors" />
-                                                        <p className="text-[10px] font-black uppercase italic text-primary/70 mb-2 tracking-tighter">{block.title}</p>
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <p className="text-[10px] font-black uppercase italic text-primary/70 tracking-tighter">{block.title}</p>
+                                                            {block.sets && (
+                                                                <Badge variant="outline" className="text-[8px] font-black py-0 h-4 bg-primary/5 text-primary border-primary/20">
+                                                                    {block.sets} SETS
+                                                                </Badge>
+                                                            )}
+                                                        </div>
                                                         <div className="grid gap-1.5">
                                                             {block.items.map((item) => (
                                                                 <div key={item.id} className="flex items-start gap-4 p-3 rounded-xl bg-muted/20 border border-transparent hover:border-primary/10 hover:bg-muted/30 transition-all">

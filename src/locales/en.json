@@ -22,8 +22,18 @@
         "competitions": "Competitions",
         "tv_view": "TV View",
         "analytics": "Analytics",
+        "movements": "Movements",
         "settings": "Settings",
         "logout": "Logout"
+    },
+    "movements": {
+        "title": "Movements Library",
+        "subtitle": "Manage all exercises and movements",
+        "new": "NEW MOVEMENT",
+        "save": "SAVE MOVEMENT",
+        "updated_success": "MOVEMENT UPDATED SUCCESSFULLY",
+        "created_success": "NEW MOVEMENT CREATED",
+        "deleted_success": "MOVEMENT DELETED CORRECTLY"
     },
     "wods": {
         "title": "Programming",

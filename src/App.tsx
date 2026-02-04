@@ -15,6 +15,7 @@ import { Benchmarks } from './pages/Benchmarks';
 import { BoxDisplay } from './pages/BoxDisplay';
 import { Competitions } from './pages/Competitions';
 import { AuditLogs } from './pages/AuditLogs';
+import { Movements } from './pages/Movements';
 import { ThemeProvider } from './components/theme-provider';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import './index.css';
@@ -119,6 +120,12 @@ function App() {
         return (
           <ProtectedRoute userProfile={userProfile} allowedRoles={['admin', 'coach']}>
             <Competitions />
+          </ProtectedRoute>
+        );
+      case 'movements':
+        return (
+          <ProtectedRoute userProfile={userProfile} allowedRoles={['admin', 'coach']}>
+            <Movements />
           </ProtectedRoute>
         );
       case 'dashboard':

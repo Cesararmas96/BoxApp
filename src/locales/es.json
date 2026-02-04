@@ -22,8 +22,18 @@
         "competitions": "Competencias",
         "tv_view": "Vista TV",
         "analytics": "Analíticas",
+        "movements": "Movimientos",
         "settings": "Ajustes",
         "logout": "Cerrar Sesión"
+    },
+    "movements": {
+        "title": "Librería de Movimientos",
+        "subtitle": "Gestiona todos los ejercicios y movimientos",
+        "new": "NUEVO MOVIMIENTO",
+        "save": "GUARDAR MOVIMIENTO",
+        "updated_success": "MOVIMIENTO ACTUALIZADO CON ÉXITO",
+        "created_success": "NUEVO MOVIMIENTO CREADO",
+        "deleted_success": "MOVIMIENTO ELIMINADO CORRECTAMENTE"
     },
     "wods": {
         "title": "Programación",

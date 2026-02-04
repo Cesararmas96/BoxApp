@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LayoutDashboard, Users, Trophy, BarChart3, Settings as SettingsIcon, Calendar as CalendarIcon, Receipt, LogOut, Inbox, Menu, X, Monitor, Medal, Shield, History } from 'lucide-react';
+import { LayoutDashboard, Users, Trophy, BarChart3, Settings as SettingsIcon, Calendar as CalendarIcon, Receipt, LogOut, Inbox, Menu, X, Monitor, Medal, Shield, History, Dumbbell } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Separator } from "@/components/ui/separator"
@@ -30,6 +30,7 @@ const getNavItems = (t: any) => [
     { id: 'leads', label: t('nav.leads'), icon: Inbox, roles: ['admin', 'receptionist'] },
     { id: 'billing', label: t('nav.billing'), icon: Receipt, roles: ['admin', 'receptionist'] },
     { id: 'wods', label: t('nav.programming'), icon: Trophy },
+    { id: 'movements', label: t('nav.movements', { defaultValue: 'MOVEMENTS' }), icon: Dumbbell, roles: ['admin', 'coach'] },
     { id: 'benchmarks', label: t('nav.benchmarks'), icon: Trophy },
     { id: 'competitions', label: t('nav.competitions'), icon: Medal, roles: ['admin', 'coach'] },
     { id: 'box-display', label: t('nav.tv_view'), icon: Monitor, roles: ['admin', 'receptionist', 'coach'] },

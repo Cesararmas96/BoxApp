@@ -30,6 +30,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import {
     Dialog,
     DialogContent,
@@ -286,6 +287,20 @@ export const Wods: React.FC = () => {
                 if (itemIndex >= b.items.length - 1) return b;
                 const newItems = [...b.items];
                 [newItems[itemIndex + 1], newItems[itemIndex]] = [newItems[itemIndex], newItems[itemIndex + 1]];
+                return { ...b, items: newItems };
+            }
+            return b;
+        }));
+    };
+
+    const onDragEndItems = (result: DropResult, blockId: string) => {
+        if (!result.destination) return;
+
+        setSessionBlocks(sessionBlocks.map(b => {
+            if (b.id === blockId) {
+                const newItems = Array.from(b.items);
+                const [reorderedItem] = newItems.splice(result.source.index, 1);
+                newItems.splice(result.destination!.index, 0, reorderedItem);
                 return { ...b, items: newItems };
             }
             return b;
@@ -670,65 +685,93 @@ export const Wods: React.FC = () => {
                                                                                 <p className="text-[9px] text-muted-foreground font-black uppercase italic text-center">Use search above to add movements</p>
                                                                             </div>
                                                                         ) : (
-                                                                            <div className="space-y-2">
-                                                                                {block.items.map((item, itemIndex) => (
-                                                                                    <div key={item.id} className="flex flex-col gap-1.5 p-2 rounded-lg border bg-muted/5 group/item">
-                                                                                        <div className="flex items-center justify-between">
-                                                                                            <div className="flex items-center gap-2">
-                                                                                                <div className="flex flex-col">
-                                                                                                    <Button
-                                                                                                        variant="ghost"
-                                                                                                        size="icon"
-                                                                                                        className="h-3 w-3 p-0 hover:text-primary disabled:opacity-30"
-                                                                                                        disabled={itemIndex === 0}
-                                                                                                        onClick={() => moveUpItem(block.id, itemIndex)}
-                                                                                                    >
-                                                                                                        <ChevronUp className="h-2.5 w-2.5" />
-                                                                                                    </Button>
-                                                                                                    <Button
-                                                                                                        variant="ghost"
-                                                                                                        size="icon"
-                                                                                                        className="h-3 w-3 p-0 hover:text-primary disabled:opacity-30"
-                                                                                                        disabled={itemIndex === block.items.length - 1}
-                                                                                                        onClick={() => moveDownItem(block.id, itemIndex)}
-                                                                                                    >
-                                                                                                        <ChevronDown className="h-2.5 w-2.5" />
-                                                                                                    </Button>
-                                                                                                </div>
-                                                                                                <p className="text-[10px] font-black uppercase italic text-primary leading-none">{item.movementName}</p>
-                                                                                            </div>
-                                                                                            <Button
-                                                                                                variant="ghost"
-                                                                                                size="icon"
-                                                                                                className="h-4 w-4 text-destructive opacity-0 group-hover/item:opacity-100"
-                                                                                                onClick={() => removeItem(block.id, item.id)}
-                                                                                            >
-                                                                                                <Trash2 className="h-3 w-3" />
-                                                                                            </Button>
+                                                                            <DragDropContext onDragEnd={(result) => onDragEndItems(result, block.id)}>
+                                                                                <Droppable droppableId={`items-${block.id}`}>
+                                                                                    {(provided) => (
+                                                                                        <div
+                                                                                            {...provided.droppableProps}
+                                                                                            ref={provided.innerRef}
+                                                                                            className="space-y-2"
+                                                                                        >
+                                                                                            {block.items.map((item, itemIndex) => (
+                                                                                                <Draggable key={item.id} draggableId={item.id} index={itemIndex}>
+                                                                                                    {(provided, snapshot) => (
+                                                                                                        <div
+                                                                                                            ref={provided.innerRef}
+                                                                                                            {...provided.draggableProps}
+                                                                                                            className={cn(
+                                                                                                                "flex flex-col gap-1.5 p-2 rounded-lg border bg-muted/5 group/item transition-shadow",
+                                                                                                                snapshot.isDragging && "shadow-lg border-primary/40 bg-background z-50"
+                                                                                                            )}
+                                                                                                        >
+                                                                                                            <div className="flex items-center justify-between">
+                                                                                                                <div className="flex items-center gap-2">
+                                                                                                                    <div
+                                                                                                                        {...provided.dragHandleProps}
+                                                                                                                        className="cursor-grab active:cursor-grabbing p-1 opacity-50 hover:opacity-100 transition-opacity"
+                                                                                                                    >
+                                                                                                                        <GripVertical className="h-3 w-3" />
+                                                                                                                    </div>
+                                                                                                                    <div className="flex flex-col">
+                                                                                                                        <Button
+                                                                                                                            variant="ghost"
+                                                                                                                            size="icon"
+                                                                                                                            className="h-3 w-3 p-0 hover:text-primary disabled:opacity-30"
+                                                                                                                            disabled={itemIndex === 0}
+                                                                                                                            onClick={() => moveUpItem(block.id, itemIndex)}
+                                                                                                                        >
+                                                                                                                            <ChevronUp className="h-2.5 w-2.5" />
+                                                                                                                        </Button>
+                                                                                                                        <Button
+                                                                                                                            variant="ghost"
+                                                                                                                            size="icon"
+                                                                                                                            className="h-3 w-3 p-0 hover:text-primary disabled:opacity-30"
+                                                                                                                            disabled={itemIndex === block.items.length - 1}
+                                                                                                                            onClick={() => moveDownItem(block.id, itemIndex)}
+                                                                                                                        >
+                                                                                                                            <ChevronDown className="h-2.5 w-2.5" />
+                                                                                                                        </Button>
+                                                                                                                    </div>
+                                                                                                                    <p className="text-[10px] font-black uppercase italic text-primary leading-none">{item.movementName}</p>
+                                                                                                                </div>
+                                                                                                                <Button
+                                                                                                                    variant="ghost"
+                                                                                                                    size="icon"
+                                                                                                                    className="h-4 w-4 text-destructive opacity-0 group-hover/item:opacity-100"
+                                                                                                                    onClick={() => removeItem(block.id, item.id)}
+                                                                                                                >
+                                                                                                                    <Trash2 className="h-3 w-3" />
+                                                                                                                </Button>
+                                                                                                            </div>
+                                                                                                            <div className="grid grid-cols-3 gap-2">
+                                                                                                                <Input
+                                                                                                                    className="h-6 text-[9px] font-bold uppercase italic"
+                                                                                                                    placeholder="REPS/TIME"
+                                                                                                                    value={item.reps}
+                                                                                                                    onChange={(e) => updateItem(block.id, item.id, { reps: e.target.value })}
+                                                                                                                />
+                                                                                                                <Input
+                                                                                                                    className="h-6 text-[9px] font-bold uppercase italic"
+                                                                                                                    placeholder="WEIGHT"
+                                                                                                                    value={item.weight}
+                                                                                                                    onChange={(e) => updateItem(block.id, item.id, { weight: e.target.value })}
+                                                                                                                />
+                                                                                                                <Input
+                                                                                                                    className="h-6 text-[9px] font-bold uppercase italic"
+                                                                                                                    placeholder="NOTES"
+                                                                                                                    value={item.notes}
+                                                                                                                    onChange={(e) => updateItem(block.id, item.id, { notes: e.target.value })}
+                                                                                                                />
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                    )}
+                                                                                                </Draggable>
+                                                                                            ))}
+                                                                                            {provided.placeholder}
                                                                                         </div>
-                                                                                        <div className="grid grid-cols-3 gap-2">
-                                                                                            <Input
-                                                                                                className="h-6 text-[9px] font-bold uppercase italic"
-                                                                                                placeholder="REPS/TIME"
-                                                                                                value={item.reps}
-                                                                                                onChange={(e) => updateItem(block.id, item.id, { reps: e.target.value })}
-                                                                                            />
-                                                                                            <Input
-                                                                                                className="h-6 text-[9px] font-bold uppercase italic"
-                                                                                                placeholder="WEIGHT"
-                                                                                                value={item.weight}
-                                                                                                onChange={(e) => updateItem(block.id, item.id, { weight: e.target.value })}
-                                                                                            />
-                                                                                            <Input
-                                                                                                className="h-6 text-[9px] font-bold uppercase italic"
-                                                                                                placeholder="NOTES"
-                                                                                                value={item.notes}
-                                                                                                onChange={(e) => updateItem(block.id, item.id, { notes: e.target.value })}
-                                                                                            />
-                                                                                        </div>
-                                                                                    </div>
-                                                                                ))}
-                                                                            </div>
+                                                                                    )}
+                                                                                </Droppable>
+                                                                            </DragDropContext>
                                                                         )}
                                                                     </div>
                                                                 </div>

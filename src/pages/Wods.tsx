@@ -24,12 +24,12 @@ import {
     Users,
     Sparkles,
     FileUp,
-    Zap as Flash,
     History,
     Save,
     Wand2,
     Calendar,
-    ArrowRight
+    ArrowRight,
+    Search
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -125,6 +125,7 @@ export const Wods: React.FC = () => {
     const [userPRs, setUserPRs] = useState<any[]>([]);
     const [results, setResults] = useState<any[]>([]);
     const [resultData, setResultData] = useState({ score: '', notes: '', rx: true });
+    const [searchQuery, setSearchQuery] = useState('');
 
     // Bulk Import Logic
     const [bulkRawText, setBulkRawText] = useState('');
@@ -179,7 +180,6 @@ export const Wods: React.FC = () => {
 
     // --- SMART PARSER LOGIC ---
     const parseProgramming = (text: string) => {
-        // Detect sections separated by common md dividers
         const sections = text.split(/[-_=]{3,}/).filter(s => s.trim().length > 10);
 
         const parsed = sections.map((section, idx) => {
@@ -187,12 +187,10 @@ export const Wods: React.FC = () => {
             const title = lines[0].trim().toUpperCase() || `SESSION ${idx + 1}`;
             const metcon = lines.slice(1).join('\n').trim();
 
-            // Intelligent Category Detection
             let track = 'CrossFit';
             if (metcon.toLowerCase().includes('musculación') || metcon.toLowerCase().includes('hipertrofia')) track = 'Bodybuilding';
             if (metcon.toLowerCase().includes('novato')) track = 'Novice';
 
-            // Detect Intended Stimulus (often includes "Stimulus", "Target", or "%")
             const stimulusMatch = metcon.match(/(Stimulus|Target|Objetivo):?\s*([^\n]+)/i);
             const stimulus = stimulusMatch ? stimulusMatch[2] : '';
 
@@ -278,9 +276,18 @@ export const Wods: React.FC = () => {
     };
 
     const filteredWods = useMemo(() => {
-        if (activeTrack === 'all') return wods;
-        return wods.filter(w => w.track === activeTrack);
-    }, [wods, activeTrack]);
+        let items = wods;
+        if (activeTrack !== 'all') {
+            items = items.filter(w => w.track === activeTrack);
+        }
+        if (searchQuery) {
+            items = items.filter(w =>
+                w.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                w.metcon.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }
+        return items;
+    }, [wods, activeTrack, searchQuery]);
 
     const last7DaysBias = useMemo(() => {
         const counts = { weightlifting: 0, gymnastics: 0, mono: 0, metcon: 0 };
@@ -300,410 +307,320 @@ export const Wods: React.FC = () => {
     return (
         <div className="space-y-6 text-left">
             <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <h1 className="text-4xl font-black italic tracking-tighter uppercase text-primary flex items-center gap-3">
-                        <Activity className="h-10 w-10 text-primary animate-pulse" /> Core Programming
+                <div className="space-y-1">
+                    <h1 className="text-3xl font-bold italic tracking-tighter uppercase text-primary flex items-center gap-2">
+                        <Activity className="h-8 w-8 text-primary" /> Programming
                     </h1>
-                    <p className="text-muted-foreground text-xs font-black uppercase italic tracking-widest opacity-60">Box Management & Athlete Performance Insight</p>
+                    <p className="text-muted-foreground text-sm font-bold uppercase italic opacity-70">Design and track daily box performance.</p>
                 </div>
 
                 <div className="flex gap-2">
                     <Dialog open={showEditor} onOpenChange={setShowEditor}>
                         <DialogTrigger asChild>
-                            <Button className="h-12 px-8 gap-2 font-black uppercase italic tracking-widest shadow-[0_10px_20px_rgba(255,22,22,0.2)] hover:scale-105 transition-all">
-                                <Plus className="h-5 w-5" /> Start New Session
+                            <Button className="gap-2 font-black uppercase italic shadow-lg shadow-primary/20">
+                                <Plus className="h-4 w-4" /> Program Session
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[1000px] h-[95vh] p-0 overflow-hidden bg-black text-white border-zinc-800">
-                            <div className="flex h-full">
-                                {/* Sidebar - Mode Switch */}
-                                <div className="w-1/4 border-r border-zinc-800 p-6 space-y-8 bg-zinc-950/50">
-                                    <div className="space-y-2">
-                                        <h2 className="text-2xl font-black uppercase italic tracking-tighter text-primary">Designer</h2>
-                                        <p className="text-[10px] font-bold uppercase opacity-50">Select your preferred tool</p>
-                                    </div>
-                                    <div className="flex flex-col gap-3">
-                                        <Button
-                                            variant={editorMode === 'bulk' ? 'default' : 'ghost'}
-                                            className={cn("justify-start gap-4 h-14 font-black uppercase italic relative overflow-hidden", editorMode === 'bulk' ? 'bg-primary' : 'text-zinc-400')}
-                                            onClick={() => setEditorMode('bulk')}
-                                        >
-                                            <Wand2 className="h-5 w-5" /> .MD Bulk Smart Import
-                                            {editorMode === 'bulk' && <div className="absolute right-[-10px] top-0 bottom-0 w-4 bg-white/20 skew-x-12" />}
-                                        </Button>
-                                        <Button
-                                            variant={editorMode === 'manual' ? 'default' : 'ghost'}
-                                            className={cn("justify-start gap-4 h-14 font-black uppercase italic relative overflow-hidden", editorMode === 'manual' ? 'bg-primary' : 'text-zinc-400')}
-                                            onClick={() => setEditorMode('manual')}
-                                        >
-                                            <Save className="h-5 w-5" /> Manual Entry
-                                            {editorMode === 'manual' && <div className="absolute right-[-10px] top-0 bottom-0 w-4 bg-white/20 skew-x-12" />}
-                                        </Button>
-                                    </div>
-                                    <div className="pt-20">
-                                        <div className="p-4 rounded-xl bg-zinc-900/50 border border-zinc-800 space-y-3">
-                                            <p className="text-[9px] font-black uppercase text-primary">Coach Tip</p>
-                                            <p className="text-xs italic text-zinc-400 font-medium">Use separators like "---" in bulk mode to automatically split sessions by day.</p>
+                        <DialogContent className="sm:max-w-[800px] h-[90vh] overflow-y-auto">
+                            <DialogHeader>
+                                <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">Session Designer</DialogTitle>
+                                <DialogDescription className="font-bold uppercase text-[10px] opacity-70">
+                                    Create a multi-dimensional training session or smart-import from .md
+                                </DialogDescription>
+                            </DialogHeader>
+
+                            <Tabs defaultValue="manual" className="mt-4" onValueChange={(v) => setEditorMode(v as any)}>
+                                <TabsList className="grid w-full grid-cols-2 mb-6">
+                                    <TabsTrigger value="manual" className="font-black text-[10px] uppercase">Manual Draft</TabsTrigger>
+                                    <TabsTrigger value="bulk" className="font-black text-[10px] uppercase">Smart Import (.md)</TabsTrigger>
+                                </TabsList>
+
+                                <TabsContent value="manual" className="space-y-6">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label className="uppercase text-[10px] font-black">Programming Track</Label>
+                                            <Select value={newWOD.track} onValueChange={(v) => setNewWOD({ ...newWOD, track: v as any })}>
+                                                <SelectTrigger className="font-bold italic uppercase h-10">
+                                                    <SelectValue placeholder="Select track" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {TRACKS.map(t => <SelectItem key={t} value={t} className="font-bold uppercase italic">{t}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="uppercase text-[10px] font-black">WOD Title</Label>
+                                            <Input
+                                                placeholder="e.g. MORNING GRIND"
+                                                className="uppercase italic font-bold h-10"
+                                                value={newWOD.title}
+                                                onChange={(e) => setNewWOD({ ...newWOD, title: e.target.value })}
+                                            />
                                         </div>
                                     </div>
-                                </div>
 
-                                {/* Main Editor Area */}
-                                <div className="flex-1 overflow-y-auto p-10 bg-zinc-900/30">
-                                    {editorMode === 'bulk' ? (
-                                        <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
-                                            <div className="space-y-4">
-                                                <div className="flex items-center justify-between">
-                                                    <Label className="text-sm font-black uppercase italic tracking-widest text-primary">Raw Programming Feed</Label>
-                                                    <Badge variant="outline" className="text-[10px] font-black uppercase border-primary/40 text-primary">Smart detection Active</Badge>
-                                                </div>
-                                                <Textarea
-                                                    className="min-h-[300px] bg-black border-zinc-800 text-zinc-100 font-mono text-sm leading-relaxed p-6 focus:border-primary transition-all rounded-2xl"
-                                                    placeholder="Lunes: Clean Complex&#10;5 Rounds...&#10;---&#10;Martes: Conditioning..."
-                                                    value={bulkRawText}
-                                                    onChange={(e) => {
-                                                        setBulkRawText(e.target.value);
-                                                        parseProgramming(e.target.value);
-                                                    }}
-                                                />
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <Label className="uppercase text-[10px] font-black">Routine Structure</Label>
+                                            <div className="flex gap-1.5">
+                                                <Button type="button" variant="outline" size="sm" onClick={() => setNewWOD(prev => ({ ...prev, metcon: prev.metcon + (prev.metcon ? "\n\n" : "") + "### WARM UP\n- " }))} className="h-7 text-[8px] font-black uppercase text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/10">
+                                                    + Warm-up
+                                                </Button>
+                                                <Button type="button" variant="outline" size="sm" onClick={() => setNewWOD(prev => ({ ...prev, metcon: prev.metcon + (prev.metcon ? "\n\n" : "") + "### STRENGTH\n- " }))} className="h-7 text-[8px] font-black uppercase text-blue-500 border-blue-500/20 hover:bg-blue-500/10">
+                                                    + Strength
+                                                </Button>
+                                                <Button type="button" variant="outline" size="sm" onClick={() => setNewWOD(prev => ({ ...prev, metcon: prev.metcon + (prev.metcon ? "\n\n" : "") + "### METCON\n- " }))} className="h-7 text-[8px] font-black uppercase text-primary border-primary/20 hover:bg-primary/10">
+                                                    + Metcon
+                                                </Button>
                                             </div>
-
-                                            {stagedWods.length > 0 && (
-                                                <div className="space-y-4">
-                                                    <Label className="text-sm font-black uppercase italic tracking-widest">Live Preview ({stagedWods.length} Sessions)</Label>
-                                                    <div className="grid grid-cols-1 gap-4">
-                                                        {stagedWods.map((w, i) => (
-                                                            <div key={i} className="group border border-zinc-800 rounded-2xl p-6 bg-zinc-950 hover:border-primary/50 transition-all flex items-start justify-between">
-                                                                <div className="space-y-2">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <Badge className="bg-primary/20 text-primary text-[9px] font-black uppercase italic">{w.track}</Badge>
-                                                                        <span className="text-xs font-black uppercase tracking-tighter italic text-zinc-500">Preview {i + 1}</span>
-                                                                    </div>
-                                                                    <h3 className="text-2xl font-black uppercase italic text-white group-hover:text-primary transition-colors">{w.title}</h3>
-                                                                    <p className="text-xs text-zinc-400 line-clamp-2 italic font-medium">{w.metcon}</p>
-                                                                </div>
-                                                                <Flash className="h-5 w-5 text-zinc-700 group-hover:text-primary animate-pulse" />
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                    <Button
-                                                        onClick={importStagedWods}
-                                                        className="w-full h-16 font-black uppercase italic tracking-widest text-lg shadow-2xl"
-                                                        disabled={loading}
-                                                    >
-                                                        {loading ? <Loader2 className="animate-spin h-6 w-6" /> : `Commit ${stagedWods.length} Days to Programming`}
-                                                    </Button>
-                                                </div>
-                                            )}
                                         </div>
-                                    ) : (
-                                        <form onSubmit={handlePublishManual} className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-300">
-                                            <div className="grid grid-cols-2 gap-8">
-                                                <div className="space-y-3">
-                                                    <Label className="text-[10px] font-black uppercase italic tracking-widest text-primary">Track</Label>
-                                                    <Select value={newWOD.track} onValueChange={(v) => setNewWOD({ ...newWOD, track: v as any })}>
-                                                        <SelectTrigger className="h-14 bg-black border-zinc-800 font-black uppercase italic tracking-wider">
-                                                            <SelectValue />
-                                                        </SelectTrigger>
-                                                        <SelectContent className="bg-black border-zinc-800">
-                                                            {TRACKS.map(t => <SelectItem key={t} value={t} className="font-black uppercase italic text-xs">{t}</SelectItem>)}
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-                                                <div className="space-y-3">
-                                                    <Label className="text-[10px] font-black uppercase italic tracking-widest text-primary">Title</Label>
-                                                    <Input
-                                                        className="h-14 bg-black border-zinc-800 font-black uppercase italic text-xl tracking-tighter"
-                                                        placeholder="SESSION NAME"
-                                                        value={newWOD.title}
-                                                        onChange={(e) => setNewWOD({ ...newWOD, title: e.target.value })}
-                                                    />
-                                                </div>
-                                            </div>
+                                        <Textarea
+                                            placeholder="Define movements..."
+                                            className="min-h-[250px] font-mono text-sm border-2"
+                                            value={newWOD.metcon}
+                                            onChange={(e) => setNewWOD({ ...newWOD, metcon: e.target.value })}
+                                        />
+                                    </div>
 
-                                            <div className="space-y-6">
-                                                <div className="flex items-center justify-between">
-                                                    <Label className="text-[10px] font-black uppercase italic tracking-widest text-primary">Session Structure (Forms & Blocks)</Label>
-                                                    <div className="flex gap-2">
-                                                        <Button type="button" variant="outline" size="sm" onClick={() => setNewWOD(prev => ({ ...prev, metcon: prev.metcon + (prev.metcon ? "\n\n" : "") + "### WARM UP\n- " }))} className="h-7 text-[8px] font-black uppercase border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10">
-                                                            + Add Warm-up
-                                                        </Button>
-                                                        <Button type="button" variant="outline" size="sm" onClick={() => setNewWOD(prev => ({ ...prev, metcon: prev.metcon + (prev.metcon ? "\n\n" : "") + "### STRENGTH / SKILL\n- " }))} className="h-7 text-[8px] font-black uppercase border-blue-500/30 text-blue-500 hover:bg-blue-500/10">
-                                                            + Add Strength
-                                                        </Button>
-                                                        <Button type="button" variant="outline" size="sm" onClick={() => setNewWOD(prev => ({ ...prev, metcon: prev.metcon + (prev.metcon ? "\n\n" : "") + "### METCON\n- " }))} className="h-7 text-[8px] font-black uppercase border-primary/30 text-primary hover:bg-primary/10">
-                                                            + Add Metcon
-                                                        </Button>
-                                                        <Button type="button" variant="outline" size="sm" onClick={() => setNewWOD(prev => ({ ...prev, metcon: prev.metcon + (prev.metcon ? "\n\n" : "") + "### ACCESSORY\n- " }))} className="h-7 text-[8px] font-black uppercase border-orange-500/30 text-orange-500 hover:bg-orange-500/10">
-                                                            + Add Accessory
-                                                        </Button>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label className="uppercase text-[10px] font-black text-orange-500">Stimulus</Label>
+                                            <Textarea className="h-20 text-xs italic" value={newWOD.stimulus} onChange={e => setNewWOD({ ...newWOD, stimulus: e.target.value })} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="uppercase text-[10px] font-black text-blue-500">Scaling</Label>
+                                            <Textarea className="h-20 text-xs italic" value={newWOD.scaling_options} onChange={e => setNewWOD({ ...newWOD, scaling_options: e.target.value })} />
+                                        </div>
+                                    </div>
+
+                                    <Button onClick={handlePublishManual} className="w-full font-black uppercase italic" disabled={loading}>
+                                        {loading ? <Loader2 className="animate-spin" /> : "Publish Session"}
+                                    </Button>
+                                </TabsContent>
+
+                                <TabsContent value="bulk" className="space-y-6">
+                                    <div className="space-y-4">
+                                        <Label className="uppercase text-[10px] font-black">Paste .md Content</Label>
+                                        <Textarea
+                                            className="min-h-[300px] font-mono text-xs border-2"
+                                            placeholder="WOD 1...&#10;---&#10;WOD 2..."
+                                            value={bulkRawText}
+                                            onChange={(e) => {
+                                                setBulkRawText(e.target.value);
+                                                parseProgramming(e.target.value);
+                                            }}
+                                        />
+                                        {stagedWods.length > 0 && (
+                                            <div className="grid gap-2 border p-4 rounded-xl bg-muted/20">
+                                                <p className="text-[10px] font-black uppercase italic mb-2">Detected Sessions ({stagedWods.length})</p>
+                                                {stagedWods.map((w, i) => (
+                                                    <div key={i} className="text-[10px] font-bold uppercase flex items-center justify-between border-b pb-1">
+                                                        <span>{i + 1}. {w.title}</span>
+                                                        <Badge variant="outline" className="text-[8px]">{w.track}</Badge>
                                                     </div>
-                                                </div>
-                                                <Textarea
-                                                    className="min-h-[300px] bg-black border-zinc-800 font-mono text-zinc-200 leading-relaxed text-base p-8 focus:border-primary transition-all rounded-[30px] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"
-                                                    placeholder="Use the buttons above to build your daily plan section by section, just like in wods.md..."
-                                                    value={newWOD.metcon}
-                                                    onChange={(e) => setNewWOD({ ...newWOD, metcon: e.target.value })}
-                                                />
+                                                ))}
+                                                <Button onClick={importStagedWods} className="mt-4 font-black uppercase italic" disabled={loading}>
+                                                    {loading ? <Loader2 className="animate-spin" /> : `Import ${stagedWods.length} Days`}
+                                                </Button>
                                             </div>
-
-                                            <div className="grid grid-cols-2 gap-8">
-                                                <div className="space-y-3">
-                                                    <Label className="text-[10px] font-black uppercase italic tracking-widest text-orange-500">Stimulus / Goals</Label>
-                                                    <Textarea
-                                                        className="h-32 bg-black border-zinc-800 text-xs italic font-semibold"
-                                                        placeholder="Target intensity..."
-                                                        value={newWOD.stimulus}
-                                                        onChange={(e) => setNewWOD({ ...newWOD, stimulus: e.target.value })}
-                                                    />
-                                                </div>
-                                                <div className="space-y-3">
-                                                    <Label className="text-[10px] font-black uppercase italic tracking-widest text-blue-500">Scaling Strategy</Label>
-                                                    <Textarea
-                                                        className="h-32 bg-black border-zinc-800 text-xs italic font-semibold"
-                                                        placeholder="How to adapt..."
-                                                        value={newWOD.scaling_options}
-                                                        onChange={(e) => setNewWOD({ ...newWOD, scaling_options: e.target.value })}
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <Button type="submit" className="w-full h-20 font-black uppercase italic tracking-widest text-xl rounded-2xl shadow-2xl" disabled={loading}>
-                                                {loading ? <Loader2 className="animate-spin" /> : "Publish Daily Board"}
-                                            </Button>
-                                        </form>
-                                    )}
-                                </div>
-                            </div>
+                                        )}
+                                    </div>
+                                </TabsContent>
+                            </Tabs>
                         </DialogContent>
                     </Dialog>
                 </div>
             </header>
 
-            {/* Quick Track Filter */}
-            <div className="flex flex-wrap gap-3 pb-2 overflow-x-auto">
-                <Button
-                    variant={activeTrack === 'all' ? "default" : "outline"}
-                    onClick={() => setActiveTrack('all')}
-                    className="h-10 px-6 font-black uppercase italic text-[11px] tracking-widest rounded-full"
-                >
-                    <LayoutGrid className="h-4 w-4 mr-2" /> Global Feed
-                </Button>
-                {TRACKS.map(t => (
-                    <Button
-                        key={t}
-                        variant={activeTrack === t ? "default" : "outline"}
-                        onClick={() => setActiveTrack(t)}
-                        className={cn(
-                            "h-10 px-6 font-black uppercase italic text-[11px] tracking-widest rounded-full",
-                            t === 'CrossFit' && "border-primary/40 text-primary",
-                            t === 'Novice' && "border-emerald-500/40 text-emerald-500",
-                            t === 'Bodybuilding' && "border-blue-500/40 text-blue-500",
-                            t === 'Engine' && "border-orange-500/40 text-orange-500"
-                        )}
-                    >
-                        {t === 'CrossFit' && <Activity className="h-4 w-4 mr-2" />}
-                        {t === 'Novice' && <Users className="h-4 w-4 mr-2" />}
-                        {t === 'Bodybuilding' && <MuscleIcon className="h-4 w-4 mr-2" />}
-                        {t === 'Engine' && <Sparkles className="h-4 w-4 mr-2" />}
-                        {t}
+            {/* Quick Actions & Filters Bar */}
+            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                <div className="flex flex-wrap gap-2">
+                    <Button variant={activeTrack === 'all' ? "default" : "outline"} onClick={() => setActiveTrack('all')} className="h-9 px-4 font-black uppercase italic text-[10px] tracking-widest">
+                        All Tracks
                     </Button>
-                ))}
-
-                <Separator orientation="vertical" className="h-10 bg-zinc-800 mx-2" />
-
-                <Dialog>
-                    <DialogTrigger asChild>
-                        <Button variant="outline" className="h-10 px-6 font-black uppercase italic text-[11px] tracking-widest rounded-full border-zinc-700">
-                            <History className="h-4 w-4 mr-2 text-zinc-400" /> Personal RMs
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[450px]">
-                        <DialogHeader>
-                            <DialogTitle className="text-2xl font-black italic uppercase italic tracking-tighter">Personal Records</DialogTitle>
-                            <DialogDescription className="font-bold uppercase text-[10px] opacity-60">Your unique power markers for automatic bar loading.</DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto overflow-x-hidden pr-2">
-                            {userPRs.length === 0 ? (
-                                <div className="py-10 text-center opacity-30 italic font-black uppercase">No records found. Visit Benchmarks to sync.</div>
-                            ) : (
-                                <div className="grid grid-cols-1 gap-3">
-                                    {userPRs.map((pr) => (
-                                        <div key={pr.id} className="p-4 bg-zinc-100 rounded-2xl flex items-center justify-between group hover:bg-zinc-200 transition-all border-b-4 border-zinc-300">
-                                            <div>
-                                                <p className="text-[10px] font-black uppercase text-primary mb-1">{pr.movements?.name}</p>
-                                                <div className="flex items-end gap-1">
-                                                    <span className="text-3xl font-black italic tracking-tighter">{pr.weight_kg}</span>
-                                                    <span className="text-[10px] font-black uppercase opacity-60 mb-1">KG</span>
-                                                </div>
-                                            </div>
-                                            <Badge className="bg-black text-white text-[9px] font-black uppercase">Verified</Badge>
-                                        </div>
-                                    ))}
-                                </div>
+                    {TRACKS.map(t => (
+                        <Button
+                            key={t}
+                            variant={activeTrack === t ? "default" : "outline"}
+                            onClick={() => setActiveTrack(t)}
+                            className={cn(
+                                "h-9 px-4 font-black uppercase italic text-[10px] tracking-widest",
+                                t === 'CrossFit' && "border-primary/40 text-primary",
+                                t === 'Novice' && "border-emerald-500/40 text-emerald-500",
+                                t === 'Bodybuilding' && "border-blue-500/40 text-blue-500",
+                                t === 'Engine' && "border-orange-500/40 text-orange-500"
                             )}
-                        </div>
-                    </DialogContent>
-                </Dialog>
-            </div>
-
-            {/* Bias Dashboard (Condensed) */}
-            {(activeTrack === 'all' || activeTrack === 'CrossFit') && (
-                <div className="grid md:grid-cols-4 gap-4">
-                    {Object.entries(last7DaysBias).map(([key, count]) => (
-                        <Card key={key} className="bg-zinc-950 border-zinc-900 border-2 overflow-hidden relative group">
-                            <div className="absolute top-0 left-0 w-1 h-full bg-primary/40 group-hover:bg-primary transition-all" />
-                            <CardContent className="p-4 flex items-center justify-between">
-                                <div className="space-y-1">
-                                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 italic">{key}</p>
-                                    <p className="text-2xl font-black italic tracking-tighter text-white">{count} <span className="text-[10px] opacity-40">Sets</span></p>
-                                </div>
-                                <Activity className="h-6 w-6 text-zinc-800 group-hover:text-primary/20 transition-colors" />
-                            </CardContent>
-                        </Card>
+                        >
+                            {t}
+                        </Button>
                     ))}
                 </div>
+
+                <div className="relative w-full max-w-sm">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search sessions..."
+                        className="pl-8 h-9 text-xs focus-visible:ring-primary"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
+            </div>
+
+            {/* Bias Dashboard (Condensed to match UI style) */}
+            {(activeTrack === 'all' || activeTrack === 'CrossFit') && (
+                <Card className="border shadow-xl overflow-hidden">
+                    <CardHeader className="py-4 border-b bg-muted/20">
+                        <div className="flex items-center gap-2">
+                            <Target className="h-4 w-4 text-primary" />
+                            <CardTitle className="text-sm font-bold uppercase italic tracking-tight">CrossFit Bias Checker</CardTitle>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="py-6">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                            {Object.entries(last7DaysBias).map(([key, count]) => (
+                                <div key={key} className="space-y-2">
+                                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest opacity-60">
+                                        <span>{key}</span>
+                                        <span>{count} / 7</span>
+                                    </div>
+                                    <Progress value={(count / 7) * 100} className="h-1.5" />
+                                </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
             )}
 
-            {/* Main Board Feed */}
-            <div className="grid gap-10 pt-4">
-                {loading && wods.length === 0 ? (
-                    <div className="py-40 text-center space-y-4">
-                        <Loader2 className="h-14 w-14 animate-spin text-primary mx-auto mb-4" />
-                        <p className="text-xl font-black uppercase italic tracking-widest text-zinc-800">Booting Programming Engine...</p>
-                    </div>
-                ) : filteredWods.length === 0 ? (
-                    <div className="py-40 text-center rounded-[40px] border-4 border-dashed border-zinc-100 bg-zinc-50">
-                        <Calendar className="h-16 w-16 text-zinc-200 mx-auto mb-6" />
-                        <p className="text-2xl font-black uppercase italic tracking-widest text-zinc-300">Zero Sessions Detected for this Track.</p>
-                    </div>
+            {/* Board Feed */}
+            <div className="grid gap-6">
+                {wods.length === 0 && !loading ? (
+                    <Card className="border-dashed border-2 py-20 text-center bg-muted/10">
+                        <div className="space-y-4">
+                            <Calendar className="h-12 w-12 text-muted-foreground/30 mx-auto" />
+                            <p className="text-muted-foreground font-bold uppercase italic">No sessions found.</p>
+                        </div>
+                    </Card>
                 ) : (
                     filteredWods.map(wod => (
-                        <Card key={wod.id} className="relative overflow-hidden border-4 border-zinc-950 shadow-[20px_20px_0px_#000] bg-white transition-all transform hover:-translate-x-1 hover:-translate-y-1">
-                            {/* Track Tag Stencil */}
-                            <div className={cn(
-                                "absolute top-0 right-0 px-8 py-2 font-black uppercase italic text-xs tracking-tighter text-white skew-x-[-15deg] mr-[-10px] shadow-lg",
-                                wod.track === 'CrossFit' && "bg-primary",
-                                wod.track === 'Novice' && "bg-emerald-600",
-                                wod.track === 'Bodybuilding' && "bg-blue-600",
-                                wod.track === 'Engine' && "bg-orange-600"
-                            )}>
-                                {wod.track} DIVISION
-                            </div>
-
-                            <CardHeader className="p-10 border-b-4 border-zinc-950 space-y-4">
-                                <div className="flex items-center gap-3">
-                                    <Badge variant="outline" className="h-7 px-4 border-2 border-zinc-950 text-xs font-black uppercase italic rounded-none tracking-widest">
-                                        {new Date(wod.date).toLocaleDateString()}
-                                    </Badge>
-                                    {calculateWeight(wod.metcon) && (
-                                        <Badge className="h-7 px-4 bg-zinc-950 text-white border-2 border-zinc-950 text-[10px] font-black uppercase italic rounded-none tracking-widest flex items-center gap-2">
-                                            <Target className="h-3 w-3 text-primary" /> Load calc: {calculateWeight(wod.metcon)?.weight}kg
+                        <Card key={wod.id} className="border shadow-xl overflow-hidden group hover:border-primary/40 transition-all">
+                            <CardHeader className="flex flex-col md:flex-row md:items-start justify-between gap-4 pb-4 border-b bg-muted/10">
+                                <div className="space-y-2">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <Badge className={cn(
+                                            "text-[9px] h-5 font-black uppercase italic",
+                                            wod.track === 'CrossFit' && "bg-primary text-white",
+                                            wod.track === 'Novice' && "bg-emerald-500 text-white",
+                                            wod.track === 'Bodybuilding' && "bg-blue-500 text-white",
+                                            wod.track === 'Engine' && "bg-orange-500 text-white"
+                                        )}>
+                                            {wod.track} Track
                                         </Badge>
-                                    )}
+                                        <Badge variant="outline" className="text-[10px] h-5 bg-background font-black border-primary/30 text-primary uppercase">
+                                            {new Date(wod.date).toLocaleDateString()}
+                                        </Badge>
+                                    </div>
+                                    <CardTitle className="text-3xl font-bold uppercase tracking-tight italic text-foreground group-hover:text-primary transition-colors">
+                                        {wod.title}
+                                    </CardTitle>
                                 </div>
-                                <CardTitle className="text-6xl font-black uppercase italic tracking-tighter leading-none text-zinc-950 break-words">
-                                    {wod.title}
-                                </CardTitle>
-                            </CardHeader>
-
-                            <div className="grid md:grid-cols-12 min-h-[400px]">
-                                <CardContent className="md:col-span-8 p-12 space-y-12">
-                                    <div className="space-y-6">
-                                        <div className="flex items-center gap-3 text-sm font-black uppercase italic tracking-widest text-primary">
-                                            <Timer className="h-5 w-5" /> The Routine
-                                        </div>
-                                        <div className="p-10 bg-zinc-100 rounded-[30px] border-4 border-zinc-950 text-xl font-mono leading-relaxed text-zinc-950 whitespace-pre-wrap shadow-inner">
-                                            {wod.metcon}
-                                        </div>
-                                    </div>
-
-                                    <div className="grid sm:grid-cols-2 gap-10">
-                                        <div className="space-y-4">
-                                            <p className="text-[10px] font-black uppercase italic tracking-widest text-orange-600 flex items-center gap-2">
-                                                <Flame className="h-4 w-4" /> Focus & Stimulus
-                                            </p>
-                                            <p className="text-sm font-bold italic text-zinc-700 bg-orange-50 p-6 rounded-2xl border-2 border-orange-100 min-h-[100px]">
-                                                {wod.stimulus || "Max effort within capacity."}
-                                            </p>
-                                        </div>
-                                        <div className="space-y-4">
-                                            <p className="text-[10px] font-black uppercase italic tracking-widest text-blue-600 flex items-center gap-2">
-                                                <Scale className="h-4 w-4" /> Scaling Logic
-                                            </p>
-                                            <p className="text-sm font-bold italic text-zinc-700 bg-blue-50 p-6 rounded-2xl border-2 border-blue-100 min-h-[100px]">
-                                                {wod.scaling_options || "Move at a steady, conversational pace."}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </CardContent>
-
-                                <div className="md:col-span-4 bg-zinc-950 p-12 space-y-10">
-                                    <div className="space-y-6">
-                                        <div className="flex items-center gap-3 text-xs font-black uppercase italic tracking-widest text-primary">
-                                            <History className="h-5 w-5" /> Athlete Hall
-                                        </div>
-                                        <ScrollArea className="h-[250px] pr-4">
-                                            <div className="space-y-3">
-                                                {results.filter(r => r.wod_id === wod.id).length === 0 ? (
-                                                    <div className="py-10 text-center opacity-20 font-black uppercase text-xs italic text-white border-2 border-dashed border-zinc-800 rounded-2xl">Board Empty</div>
-                                                ) : (
-                                                    results.filter(r => r.wod_id === wod.id).map(r => (
-                                                        <div key={r.id} className="flex items-center justify-between p-4 bg-zinc-900 rounded-xl hover:bg-zinc-800 transition-colors border-l-4 border-primary/40">
-                                                            <div className="space-y-0.5">
-                                                                <p className="text-[10px] font-black uppercase text-white italic tracking-tighter truncate w-32">{r.profiles?.first_name} {r.profiles?.last_name}</p>
-                                                                <p className="text-[8px] font-black text-primary uppercase italic">{r.rx ? 'As Prescribed' : 'Modified'}</p>
-                                                            </div>
-                                                            <span className="text-xl font-black italic tracking-tighter text-white">{r.result}</span>
-                                                        </div>
-                                                    ))
-                                                )}
-                                            </div>
-                                        </ScrollArea>
-                                    </div>
-
+                                <div className="flex gap-2">
                                     <Dialog open={showResultModal === wod.id} onOpenChange={(open) => setShowResultModal(open ? wod.id : null)}>
                                         <DialogTrigger asChild>
-                                            <Button className="w-full h-16 rounded-[20px] bg-white text-black font-black uppercase italic tracking-widest text-lg hover:bg-primary hover:text-white transition-all transform hover:scale-105 active:scale-95 group shadow-2xl">
-                                                <Trophy className="h-6 w-6 mr-3 group-hover:animate-bounce" /> Log Result
+                                            <Button size="sm" className="font-black uppercase italic text-[10px] tracking-tight h-8">
+                                                <Trophy className="h-3.5 w-3.5 mr-2" /> Log Result
                                             </Button>
                                         </DialogTrigger>
                                         <DialogContent className="sm:max-w-[400px]">
                                             <DialogHeader>
-                                                <DialogTitle className="text-2xl font-black uppercase italic italic tracking-tighter">Enter Your Mark</DialogTitle>
+                                                <DialogTitle className="text-xl font-bold uppercase italic">Log Performance</DialogTitle>
                                             </DialogHeader>
-                                            <form onSubmit={handleLogResult} className="space-y-6 py-4">
+                                            <form onSubmit={handleLogResult} className="space-y-4 py-4">
                                                 <div className="space-y-2">
-                                                    <Label className="text-[10px] font-black uppercase italic tracking-widest">Score / Result</Label>
-                                                    <Input className="h-14 text-2xl font-black uppercase italic tracking-tighter" required value={resultData.score} onChange={e => setResultData({ ...resultData, score: e.target.value })} />
+                                                    <Label className="text-[10px] font-black uppercase tracking-widest">Mark / Score</Label>
+                                                    <Input className="h-12 font-black italic text-lg" placeholder="e.g. 15:30" required value={resultData.score} onChange={e => setResultData({ ...resultData, score: e.target.value })} />
                                                 </div>
-                                                <div className="flex items-center space-x-3 rounded-2xl border-4 p-5 bg-primary/5 border-zinc-950">
-                                                    <input type="checkbox" id="rx" className="h-6 w-6 rounded border-zinc-950 bg-white text-primary" checked={resultData.rx} onChange={e => setResultData({ ...resultData, rx: e.target.checked })} />
-                                                    <label htmlFor="rx" className="text-sm font-black uppercase italic text-zinc-950">RX Standard</label>
+                                                <div className="flex items-center space-x-2 border p-3 rounded-lg bg-muted/30">
+                                                    <input type="checkbox" id="rx_log" className="h-4 w-4" checked={resultData.rx} onChange={e => setResultData({ ...resultData, rx: e.target.checked })} />
+                                                    <label htmlFor="rx_log" className="text-xs font-bold uppercase italic">RX Standard</label>
                                                 </div>
-                                                <Button type="submit" className="w-full h-16 font-black uppercase italic tracking-widest">Post to Board</Button>
+                                                <Button type="submit" className="w-full font-black uppercase italic">Save Result</Button>
                                             </form>
                                         </DialogContent>
                                     </Dialog>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="p-8 grid md:grid-cols-12 gap-10">
+                                <div className="md:col-span-8 space-y-8">
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary italic">
+                                            <Timer className="h-4 w-4" /> Routine Description
+                                        </div>
+                                        <div className="p-6 rounded-2xl bg-muted/40 font-mono text-base border leading-relaxed whitespace-pre-wrap">
+                                            {wod.metcon}
+                                        </div>
+                                    </div>
 
-                                    <div className="pt-8 border-t border-zinc-800">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-1">
-                                                <p className="text-[8px] font-black uppercase text-zinc-500 tracking-widest">Athletes</p>
-                                                <p className="text-2xl font-black italic text-white tracking-tighter">{results.filter(r => r.wod_id === wod.id).length}</p>
+                                    <div className="grid sm:grid-cols-2 gap-6">
+                                        <div className="p-4 rounded-xl border bg-orange-500/5 space-y-2">
+                                            <p className="text-[10px] font-black uppercase text-orange-600 italic">Stimulus</p>
+                                            <p className="text-xs font-semibold italic text-muted-foreground leading-relaxed">{wod.stimulus || "Max effort within capacity."}</p>
+                                        </div>
+                                        <div className="p-4 rounded-xl border bg-blue-500/5 space-y-2">
+                                            <p className="text-[10px] font-black uppercase text-blue-600 italic">Scaling</p>
+                                            <p className="text-xs font-semibold italic text-muted-foreground leading-relaxed">{wod.scaling_options || "Scale weight to maintain intensity."}</p>
+                                        </div>
+                                    </div>
+
+                                    {calculateWeight(wod.metcon) && (
+                                        <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 flex items-center justify-between">
+                                            <div>
+                                                <p className="text-[10px] font-black uppercase text-primary mb-1">Calculated Loading</p>
+                                                <p className="text-sm font-bold italic">{calculateWeight(wod.metcon)?.name} @ {calculateWeight(wod.metcon)?.percent}%</p>
                                             </div>
-                                            <div className="space-y-1">
-                                                <p className="text-[8px] font-black uppercase text-zinc-500 tracking-widest">RX Rate</p>
-                                                <p className="text-2xl font-black italic text-primary tracking-tighter">
-                                                    {results.filter(r => r.wod_id === wod.id && r.rx).length > 0
-                                                        ? Math.round((results.filter(r => r.wod_id === wod.id && r.rx).length / results.filter(r => r.wod_id === wod.id).length) * 100)
-                                                        : 0}%
-                                                </p>
+                                            <div className="text-3xl font-black italic tracking-tighter text-primary">
+                                                {calculateWeight(wod.metcon)?.weight}<span className="text-xs ml-1">KG</span>
                                             </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="md:col-span-4 border-l pl-10 space-y-6">
+                                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest opacity-60 italic">
+                                        <History className="h-4 w-4" /> Latest Results
+                                    </div>
+                                    <div className="space-y-3">
+                                        {results.filter(r => r.wod_id === wod.id).length === 0 ? (
+                                            <div className="py-10 text-center border-2 border-dashed rounded-xl opacity-30 text-[10px] font-black uppercase italic">No logs yet</div>
+                                        ) : (
+                                            results.filter(r => r.wod_id === wod.id).slice(0, 5).map(r => (
+                                                <div key={r.id} className="flex items-center justify-between p-3 bg-muted/40 rounded-lg border border-transparent hover:border-primary/20 transition-all">
+                                                    <div>
+                                                        <p className="text-[10px] font-bold uppercase truncate w-24">{r.profiles?.first_name} {r.profiles?.last_name}</p>
+                                                        <p className="text-[8px] font-black text-primary uppercase italic">{r.rx ? 'RX' : 'SCL'}</p>
+                                                    </div>
+                                                    <span className="font-black italic text-sm">{r.result}</span>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                    <Separator />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="text-center">
+                                            <p className="text-xl font-black italic">{results.filter(r => r.wod_id === wod.id).length}</p>
+                                            <p className="text-[8px] font-black uppercase opacity-60">Logs</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-xl font-black italic text-primary">
+                                                {results.filter(r => r.wod_id === wod.id).length > 0
+                                                    ? Math.round((results.filter(r => r.wod_id === wod.id && r.rx).length / results.filter(r => r.wod_id === wod.id).length) * 100)
+                                                    : 0}%
+                                            </p>
+                                            <p className="text-[8px] font-black uppercase opacity-60">RX Rate</p>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </CardContent>
                         </Card>
                     ))
                 )}

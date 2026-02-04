@@ -111,7 +111,11 @@ export const Movements: React.FC = () => {
         }
 
         if (result.error) {
-            showNotification('error', `ERROR: ${result.error.message.toUpperCase()}`);
+            if (result.error.code === '23505') {
+                showNotification('error', 'THAT MOVEMENT ALREADY EXISTS IN THE LIBRARY');
+            } else {
+                showNotification('error', `ERROR: ${result.error.message.toUpperCase()}`);
+            }
         } else {
             showNotification('success', editingMovement ? 'MOVEMENT UPDATED SUCCESSFULY' : 'NEW MOVEMENT CREATED');
             setShowEditor(false);

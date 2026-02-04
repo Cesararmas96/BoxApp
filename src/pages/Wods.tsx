@@ -17,7 +17,9 @@ import {
     Zap as ZapIcon,
     Shield,
     RotateCcw,
-    Flame as FlameIcon
+    Flame as FlameIcon,
+    ChevronUp,
+    ChevronDown
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -51,11 +53,19 @@ import {
 } from "@/components/ui/select";
 import { useTranslation } from 'react-i18next';
 
+interface BlockItem {
+    id: string;
+    movementName: string;
+    reps?: string;
+    weight?: string;
+    notes?: string;
+}
+
 interface SessionBlock {
     id: string;
     type: 'warmup' | 'strength' | 'conditioning' | 'wod' | 'accessory' | 'cooldown';
     title: string;
-    content: string;
+    items: BlockItem[];
     duration?: string;
 }
 
@@ -83,27 +93,54 @@ interface WOD {
 
 const TRACKS = ['CrossFit', 'Novice', 'Bodybuilding', 'Engine'];
 
-const BLOCK_TEMPLATES: Record<string, { label: string, content: string }[]> = {
+const BLOCK_TEMPLATES: Record<string, { label: string, items: Omit<BlockItem, 'id'>[] }[]> = {
     warmup: [
-        { label: 'General', content: '3 Rounds:\n- 200m Run\n- 10 Air Squats\n- 10 Push-ups\n- 10 Sit-ups' },
-        { label: 'Barbell', content: 'Con barra vacía:\n- 5 Good Mornings\n- 5 Back Squats\n- 5 Shoulder Press\n- 5 Stiff Leg Deadlifts' },
-        { label: 'Mobility', content: 'Focus on:\n- 1 min Pigeon Stretch / side\n- 1 min Couch Stretch / side\n- 10 Scapular Pull-ups' }
+        {
+            label: 'General',
+            items: [
+                { movementName: 'Run', reps: '200m' },
+                { movementName: 'Air Squat', reps: '10' },
+                { movementName: 'Push-up', reps: '10' },
+                { movementName: 'Sit-up', reps: '10' }
+            ]
+        },
+        {
+            label: 'Barbell',
+            items: [
+                { movementName: 'Good Morning', reps: '5', notes: 'Empty Bar' },
+                { movementName: 'Back Squat', reps: '5' },
+                { movementName: 'Shoulder Press', reps: '5' },
+                { movementName: 'Stiff Leg Deadlift', reps: '5' }
+            ]
+        }
     ],
     strength: [
-        { label: '5x5', content: '5 Sets of 5 Reps @ 75-80%\nRest 2-3 mins between sets.\nMovement: ' },
-        { label: '3x10', content: '3 Sets of 10 Reps\nFocus on quality of movement.\nMovement: ' },
-        { label: 'EMOM Str', content: 'EMOM 10 mins:\n- 3 Reps @ 80%\nMovement: ' },
-        { label: 'Max Effort', content: 'Build to a Heavy Single for the day.\nMovement: ' }
+        {
+            label: '5x5 Str',
+            items: [{ movementName: 'Back Squat', reps: '5x5', weight: '75-80%', notes: 'Rest 2-3m' }]
+        },
+        {
+            label: 'Max Effort',
+            items: [{ movementName: 'Snatch', reps: 'Build to Heavy', weight: 'MAX', notes: 'Quality over weight' }]
+        }
     ],
     wod: [
-        { label: 'AMRAP', content: 'AMRAP in 12 minutes:\n- 10 Burpees\n- 15 Kettlebell Swings\n- 20 Double Unders' },
-        { label: 'For Time', content: '3 Rounds for Time:\n- 400m Run\n- 21 Thrusters\n- 12 Pull-ups' },
-        { label: 'EMOM WOD', content: 'EMOM 20 minutes:\n- Min 1: 15 Wall Balls\n- Min 2: 12 Cal Row\n- Min 3: 15 Box Jumps\n- Min 4: Rest' },
-        { label: 'Tabata', content: '8 Rounds (20s On / 10s Off):\n- Movement 1\n- Movement 2' }
-    ],
-    accessory: [
-        { label: 'Core', content: '3 Rounds:\n- 20 Hollow Rocks\n- 20 Superman\n- 1 min Plank' },
-        { label: 'Bodybuilding', content: '3-4 Sets:\n- 12-15 Bicep Curls\n- 12-15 Tricep Extensions' }
+        {
+            label: 'AMRAP 12',
+            items: [
+                { movementName: 'Burpee', reps: '10' },
+                { movementName: 'Kettlebell Swing', reps: '15' },
+                { movementName: 'Double Under', reps: '20' }
+            ]
+        },
+        {
+            label: '3 RFT',
+            items: [
+                { movementName: 'Run', reps: '400m' },
+                { movementName: 'Thruster', reps: '21', weight: '95/65' },
+                { movementName: 'Pull-up', reps: '12' }
+            ]
+        }
     ]
 };
 
@@ -185,9 +222,93 @@ export const Wods: React.FC = () => {
             id: Math.random().toString(36).substr(2, 9),
             type,
             title: titles[type],
-            content: ''
+            items: []
         };
         setSessionBlocks([...sessionBlocks, newBlock]);
+    };
+
+    const addTemplateToBlock = (blockId: string, template: any) => {
+        setSessionBlocks(sessionBlocks.map(b => {
+            if (b.id === blockId) {
+                const newItems = template.items.map((item: any) => ({
+                    ...item,
+                    id: Math.random().toString(36).substr(2, 9)
+                }));
+                return { ...b, items: [...b.items, ...newItems] };
+            }
+            return b;
+        }));
+    };
+
+    const addItemToBlock = (blockId: string, movementName: string) => {
+        setSessionBlocks(sessionBlocks.map(b => {
+            if (b.id === blockId) {
+                const newItem: BlockItem = {
+                    id: Math.random().toString(36).substr(2, 9),
+                    movementName,
+                    reps: '',
+                    weight: '',
+                    notes: ''
+                };
+                return { ...b, items: [...b.items, newItem] };
+            }
+            return b;
+        }));
+    };
+
+    const updateItem = (blockId: string, itemId: string, updates: Partial<BlockItem>) => {
+        setSessionBlocks(sessionBlocks.map(b => {
+            if (b.id === blockId) {
+                return {
+                    ...b,
+                    items: b.items.map(item => item.id === itemId ? { ...item, ...updates } : item)
+                };
+            }
+            return b;
+        }));
+    };
+
+    const moveUpItem = (blockId: string, itemIndex: number) => {
+        if (itemIndex === 0) return;
+        setSessionBlocks(sessionBlocks.map(b => {
+            if (b.id === blockId) {
+                const newItems = [...b.items];
+                [newItems[itemIndex - 1], newItems[itemIndex]] = [newItems[itemIndex], newItems[itemIndex - 1]];
+                return { ...b, items: newItems };
+            }
+            return b;
+        }));
+    };
+
+    const moveDownItem = (blockId: string, itemIndex: number) => {
+        setSessionBlocks(sessionBlocks.map(b => {
+            if (b.id === blockId) {
+                if (itemIndex >= b.items.length - 1) return b;
+                const newItems = [...b.items];
+                [newItems[itemIndex + 1], newItems[itemIndex]] = [newItems[itemIndex], newItems[itemIndex + 1]];
+                return { ...b, items: newItems };
+            }
+            return b;
+        }));
+    };
+
+    const removeItem = (blockId: string, itemId: string) => {
+        setSessionBlocks(sessionBlocks.map(b => {
+            if (b.id === blockId) {
+                return { ...b, items: b.items.filter(i => i.id !== itemId) };
+            }
+            return b;
+        }));
+    };
+
+    const generateBlockContent = (block: SessionBlock) => {
+        return block.items.map(item => {
+            let line = `- **${item.movementName}**:`;
+            if (item.reps) line += ` ${item.reps}`;
+            if (item.weight) line += ` (${item.weight})`;
+            if (item.notes) line += ` // ${item.notes}`;
+            return line;
+        }).join('\n');
     };
 
     const removeBlock = (id: string) => {
@@ -285,7 +406,7 @@ export const Wods: React.FC = () => {
         // Construct metcon from blocks if they exist
         let finalMetcon = newWOD.metcon;
         if (sessionBlocks.length > 0) {
-            finalMetcon = sessionBlocks.map(b => `### ${b.title.toUpperCase()}\n${b.content}`).join('\n\n');
+            finalMetcon = sessionBlocks.map(b => `### ${b.title.toUpperCase()}\n${generateBlockContent(b)}`).join('\n\n');
         }
 
         const { error } = await supabase.from('wods').insert([{
@@ -485,15 +606,7 @@ export const Wods: React.FC = () => {
                                                                     <Button
                                                                         variant="ghost"
                                                                         size="icon"
-                                                                        className={cn("h-6 w-6", manualEntryStatus[block.id] ? "text-primary" : "text-muted-foreground")}
-                                                                        onClick={() => setManualEntryStatus({ ...manualEntryStatus, [block.id]: !manualEntryStatus[block.id] })}
-                                                                    >
-                                                                        <Settings2 className="h-3.5 w-3.5" />
-                                                                    </Button>
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        className="h-6 w-6 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                        className="h-6 w-6 text-destructive"
                                                                         onClick={() => removeBlock(block.id)}
                                                                     >
                                                                         <Trash2 className="h-3.5 w-3.5" />
@@ -503,26 +616,24 @@ export const Wods: React.FC = () => {
                                                             <div className="p-0 space-y-3">
                                                                 {/* Visual Tools Bar */}
                                                                 <div className="px-3 pt-3 space-y-3">
-                                                                    <div className="flex items-center justify-between">
-                                                                        <div className="flex flex-wrap gap-1">
-                                                                            {BLOCK_TEMPLATES[block.type]?.map((template) => (
-                                                                                <Button
-                                                                                    key={template.label}
-                                                                                    variant="secondary"
-                                                                                    size="sm"
-                                                                                    className="h-5 px-2 text-[8px] font-bold uppercase tracking-wider bg-primary/5 hover:bg-primary/20 text-primary border border-primary/10"
-                                                                                    onClick={() => updateBlock(block.id, { content: template.content })}
-                                                                                >
-                                                                                    {template.label}
-                                                                                </Button>
-                                                                            ))}
-                                                                        </div>
+                                                                    <div className="flex flex-wrap gap-1">
+                                                                        {BLOCK_TEMPLATES[block.type]?.map((template) => (
+                                                                            <Button
+                                                                                key={template.label}
+                                                                                variant="secondary"
+                                                                                size="sm"
+                                                                                className="h-5 px-2 text-[8px] font-bold uppercase tracking-wider bg-primary/5 hover:bg-primary/20 text-primary border border-primary/10"
+                                                                                onClick={() => addTemplateToBlock(block.id, template)}
+                                                                            >
+                                                                                {template.label}
+                                                                            </Button>
+                                                                        ))}
                                                                     </div>
 
                                                                     <div className="relative">
                                                                         <Search className="absolute left-2 top-2 h-3 w-3 text-muted-foreground" />
                                                                         <Input
-                                                                            placeholder="Search movement..."
+                                                                            placeholder="Search movement to add..."
                                                                             className="h-7 pl-7 text-[10px] uppercase font-bold italic"
                                                                             onChange={(e) => setMovementSearch(e.target.value)}
                                                                         />
@@ -534,7 +645,7 @@ export const Wods: React.FC = () => {
                                                                                         <button
                                                                                             key={m.name}
                                                                                             onClick={() => {
-                                                                                                updateBlock(block.id, { content: block.content + (block.content ? '\n- ' : '- ') + m.name });
+                                                                                                addItemToBlock(block.id, m.name);
                                                                                                 setMovementSearch('');
                                                                                             }}
                                                                                             className="flex items-center gap-2 p-1.5 hover:bg-muted rounded-lg text-left transition-colors border border-transparent hover:border-primary/20"
@@ -551,27 +662,75 @@ export const Wods: React.FC = () => {
                                                                     </div>
                                                                 </div>
 
-                                                                {/* Content View / Manual Edit Toggle */}
+                                                                {/* Content View */}
                                                                 <div className="px-3 pb-3">
-                                                                    {manualEntryStatus[block.id] ? (
-                                                                        <Textarea
-                                                                            className="border focus-visible:ring-primary min-h-[120px] text-xs font-mono p-3 leading-relaxed bg-muted/10"
-                                                                            placeholder="Describe the activities..."
-                                                                            value={block.content}
-                                                                            onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-                                                                        />
-                                                                    ) : (
-                                                                        <div
-                                                                            className="min-h-[60px] p-3 rounded-lg border border-dashed border-primary/20 bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors"
-                                                                            onClick={() => setManualEntryStatus({ ...manualEntryStatus, [block.id]: true })}
-                                                                        >
-                                                                            {block.content ? (
-                                                                                <pre className="text-xs font-mono whitespace-pre-wrap">{block.content}</pre>
-                                                                            ) : (
-                                                                                <p className="text-[10px] text-muted-foreground font-bold uppercase italic text-center py-2">No content. Click to type or use the tools above.</p>
-                                                                            )}
-                                                                        </div>
-                                                                    )}
+                                                                    <div className="space-y-2">
+                                                                        {block.items.length === 0 ? (
+                                                                            <div className="min-h-[40px] p-2 rounded-lg border border-dashed border-primary/20 bg-primary/5 flex items-center justify-center">
+                                                                                <p className="text-[9px] text-muted-foreground font-black uppercase italic text-center">Use search above to add movements</p>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <div className="space-y-2">
+                                                                                {block.items.map((item, itemIndex) => (
+                                                                                    <div key={item.id} className="flex flex-col gap-1.5 p-2 rounded-lg border bg-muted/5 group/item">
+                                                                                        <div className="flex items-center justify-between">
+                                                                                            <div className="flex items-center gap-2">
+                                                                                                <div className="flex flex-col">
+                                                                                                    <Button
+                                                                                                        variant="ghost"
+                                                                                                        size="icon"
+                                                                                                        className="h-3 w-3 p-0 hover:text-primary disabled:opacity-30"
+                                                                                                        disabled={itemIndex === 0}
+                                                                                                        onClick={() => moveUpItem(block.id, itemIndex)}
+                                                                                                    >
+                                                                                                        <ChevronUp className="h-2.5 w-2.5" />
+                                                                                                    </Button>
+                                                                                                    <Button
+                                                                                                        variant="ghost"
+                                                                                                        size="icon"
+                                                                                                        className="h-3 w-3 p-0 hover:text-primary disabled:opacity-30"
+                                                                                                        disabled={itemIndex === block.items.length - 1}
+                                                                                                        onClick={() => moveDownItem(block.id, itemIndex)}
+                                                                                                    >
+                                                                                                        <ChevronDown className="h-2.5 w-2.5" />
+                                                                                                    </Button>
+                                                                                                </div>
+                                                                                                <p className="text-[10px] font-black uppercase italic text-primary leading-none">{item.movementName}</p>
+                                                                                            </div>
+                                                                                            <Button
+                                                                                                variant="ghost"
+                                                                                                size="icon"
+                                                                                                className="h-4 w-4 text-destructive opacity-0 group-hover/item:opacity-100"
+                                                                                                onClick={() => removeItem(block.id, item.id)}
+                                                                                            >
+                                                                                                <Trash2 className="h-3 w-3" />
+                                                                                            </Button>
+                                                                                        </div>
+                                                                                        <div className="grid grid-cols-3 gap-2">
+                                                                                            <Input
+                                                                                                className="h-6 text-[9px] font-bold uppercase italic"
+                                                                                                placeholder="REPS/TIME"
+                                                                                                value={item.reps}
+                                                                                                onChange={(e) => updateItem(block.id, item.id, { reps: e.target.value })}
+                                                                                            />
+                                                                                            <Input
+                                                                                                className="h-6 text-[9px] font-bold uppercase italic"
+                                                                                                placeholder="WEIGHT"
+                                                                                                value={item.weight}
+                                                                                                onChange={(e) => updateItem(block.id, item.id, { weight: e.target.value })}
+                                                                                            />
+                                                                                            <Input
+                                                                                                className="h-6 text-[9px] font-bold uppercase italic"
+                                                                                                placeholder="NOTES"
+                                                                                                value={item.notes}
+                                                                                                onChange={(e) => updateItem(block.id, item.id, { notes: e.target.value })}
+                                                                                            />
+                                                                                        </div>
+                                                                                    </div>
+                                                                                ))}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </Card>

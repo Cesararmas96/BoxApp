@@ -3,10 +3,8 @@ import { supabase } from '@/lib/supabaseClient';
 import {
     History,
     Search,
-    Filter,
     ChevronDown,
     ChevronUp,
-    Clock,
     User,
     Database,
     AlertCircle,
@@ -25,7 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useTranslation } from 'react-i18next';
 
 const formatDate = (dateString: string) => {
     return new Intl.DateTimeFormat('en-US', {
@@ -56,6 +54,7 @@ interface AuditLog {
 }
 
 export const AuditLogs: React.FC = () => {
+    const { t } = useTranslation();
     const [logs, setLogs] = useState<AuditLog[]>([]);
     const [loading, setLoading] = useState(true);
     const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -103,24 +102,24 @@ export const AuditLogs: React.FC = () => {
         <div className="space-y-6">
             <div className="flex flex-col gap-2">
                 <h1 className="text-3xl font-black italic tracking-tighter uppercase text-primary flex items-center gap-3">
-                    <History className="h-8 w-8 text-primary" /> Security Audit Trace
+                    <History className="h-8 w-8 text-primary" /> {t('audit.title')}
                 </h1>
-                <p className="text-muted-foreground">immutable record of all critical database operations and system modifications.</p>
+                <p className="text-muted-foreground">{t('audit.subtitle')}</p>
             </div>
 
             <Card className="border shadow-xl">
                 <CardHeader className="pb-3 border-b bg-muted/20">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                         <div className="space-y-1 w-full">
-                            <CardTitle className="text-lg font-bold uppercase tracking-tight italic">Audit Pipeline</CardTitle>
-                            <CardDescription>Real-time tracking of administrative actions.</CardDescription>
+                            <CardTitle className="text-lg font-bold uppercase tracking-tight italic">{t('audit.pipeline')}</CardTitle>
+                            <CardDescription>{t('audit.realtime')}</CardDescription>
                         </div>
                         <div className="flex items-center gap-2 w-full md:max-w-md">
                             <div className="relative flex-1">
                                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     type="search"
-                                    placeholder="Filter by table, action, or user..."
+                                    placeholder={t('audit.filter_placeholder')}
                                     className="pl-8 focus-visible:ring-primary"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -137,10 +136,10 @@ export const AuditLogs: React.FC = () => {
                         <TableHeader>
                             <TableRow className="bg-muted/50">
                                 <TableHead className="w-[50px]"></TableHead>
-                                <TableHead className="font-black uppercase text-[10px] tracking-widest pl-6">Timestamp</TableHead>
-                                <TableHead className="font-black uppercase text-[10px] tracking-widest">Operator</TableHead>
-                                <TableHead className="font-black uppercase text-[10px] tracking-widest">Entity</TableHead>
-                                <TableHead className="font-black uppercase text-[10px] tracking-widest text-center">Operation</TableHead>
+                                <TableHead className="font-black uppercase text-[10px] tracking-widest pl-6">{t('audit.timestamp')}</TableHead>
+                                <TableHead className="font-black uppercase text-[10px] tracking-widest">{t('audit.operator')}</TableHead>
+                                <TableHead className="font-black uppercase text-[10px] tracking-widest">{t('audit.entity')}</TableHead>
+                                <TableHead className="font-black uppercase text-[10px] tracking-widest text-center">{t('audit.operation')}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -148,13 +147,13 @@ export const AuditLogs: React.FC = () => {
                                 <TableRow>
                                     <TableCell colSpan={5} className="text-center py-20">
                                         <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto mb-4" />
-                                        <p className="text-sm font-black uppercase italic tracking-widest text-muted-foreground">Decrypting Audit Trails...</p>
+                                        <p className="text-sm font-black uppercase italic tracking-widest text-muted-foreground">{t('audit.decrypting')}</p>
                                     </TableCell>
                                 </TableRow>
                             ) : filteredLogs.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={5} className="text-center py-20 text-muted-foreground italic">
-                                        No security events recorded matching the current filter.
+                                        {t('audit.no_events')}
                                     </TableCell>
                                 </TableRow>
                             ) : (
@@ -177,7 +176,7 @@ export const AuditLogs: React.FC = () => {
                                                     </div>
                                                     <div className="flex flex-col">
                                                         <span className="text-xs font-bold uppercase tracking-tight italic">
-                                                            {log.profiles ? `${log.profiles.first_name} ${log.profiles.last_name}` : 'SYSTEM'}
+                                                            {log.profiles ? `${log.profiles.first_name} ${log.profiles.last_name}` : t('audit.system')}
                                                         </span>
                                                         <span className="text-[10px] text-muted-foreground">{log.profiles?.email || 'pgrst_request'}</span>
                                                     </div>
@@ -198,18 +197,18 @@ export const AuditLogs: React.FC = () => {
                                                 <TableCell colSpan={5} className="p-4">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         <div className="space-y-2">
-                                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-2">State: Previous</h4>
+                                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-2">{t('audit.state_previous')}</h4>
                                                             <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800 border-dashed">
                                                                 <pre className="text-[10px] text-emerald-500/80 font-mono overflow-auto max-h-[200px]">
-                                                                    {log.old_data ? JSON.stringify(log.old_data, null, 2) : '// No previous state'}
+                                                                    {log.old_data ? JSON.stringify(log.old_data, null, 2) : t('audit.no_previous')}
                                                                 </pre>
                                                             </div>
                                                         </div>
                                                         <div className="space-y-2">
-                                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-2">State: Result</h4>
+                                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-2">{t('audit.state_result')}</h4>
                                                             <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800">
                                                                 <pre className="text-[10px] text-primary/90 font-mono overflow-auto max-h-[200px]">
-                                                                    {log.new_data ? JSON.stringify(log.new_data, null, 2) : '// Terminal destruction'}
+                                                                    {log.new_data ? JSON.stringify(log.new_data, null, 2) : t('audit.terminal_destruction')}
                                                                 </pre>
                                                             </div>
                                                         </div>

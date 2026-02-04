@@ -2,33 +2,13 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import {
     Plus,
-    Flame,
     Trophy,
-    Shield,
-    Check,
-    Info,
-    Clock,
     Activity,
-    Dumbbell,
     Timer,
-    AlertTriangle,
-    Minus,
-    ChevronRight,
     Target,
-    Zap,
-    Scale,
-    Trash2,
     Loader2,
-    LayoutGrid,
-    Dumbbell as MuscleIcon,
-    Users,
-    Sparkles,
-    FileUp,
     History,
-    Save,
-    Wand2,
     Calendar,
-    ArrowRight,
     Search
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -37,8 +17,6 @@ import { Textarea } from '@/components/ui/textarea';
 import {
     Card,
     CardContent,
-    CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
@@ -46,24 +24,14 @@ import {
     Dialog,
     DialogContent,
     DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow
-} from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import {
@@ -73,7 +41,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTranslation } from 'react-i18next';
 
 interface LessonBlock {
@@ -109,7 +76,7 @@ export const Wods: React.FC = () => {
     const [activeTrack, setActiveTrack] = useState<string>('all');
 
     // UI State for Editor
-    const [editorMode, setEditorMode] = useState<'manual' | 'bulk'>('manual');
+    const [, setEditorMode] = useState<'manual' | 'bulk'>('manual');
     const [newWOD, setNewWOD] = useState({
         title: '',
         metcon: '',

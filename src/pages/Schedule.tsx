@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface Session {
     id: string;
@@ -43,6 +44,7 @@ interface Session {
 }
 
 export const Schedule: React.FC = () => {
+    const { t } = useTranslation();
     const [sessions, setSessions] = useState<Session[]>([]);
     const [loading, setLoading] = useState(true);
     const [viewDate, setViewDate] = useState(new Date());
@@ -92,8 +94,8 @@ export const Schedule: React.FC = () => {
         <div className="space-y-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Schedule</h1>
-                    <p className="text-muted-foreground text-sm">Dynamic class programming and athlete bookings.</p>
+                    <h1 className="text-3xl font-bold tracking-tight">{t('schedule.title')}</h1>
+                    <p className="text-muted-foreground text-sm">{t('schedule.subtitle')}</p>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -121,21 +123,21 @@ export const Schedule: React.FC = () => {
                     <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                         <DialogTrigger asChild>
                             <Button className="gap-2">
-                                <Plus className="h-4 w-4" /> Program Session
+                                <Plus className="h-4 w-4" /> {t('schedule.program_btn')}
                             </Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
-                                <DialogTitle>Program New Session</DialogTitle>
+                                <DialogTitle>{t('schedule.new_title')}</DialogTitle>
                             </DialogHeader>
                             <div className="py-4 space-y-4">
                                 <p className="text-sm text-muted-foreground italic flex items-center gap-2">
-                                    <Info className="h-4 w-4" /> Interface for creating recurring classes coming soon.
+                                    <Info className="h-4 w-4" /> {t('schedule.coming_soon')}
                                 </p>
                             </div>
                             <DialogFooter>
-                                <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-                                <Button disabled>Create Session</Button>
+                                <Button variant="outline" onClick={() => setIsCreateOpen(false)}>{t('common.cancel')}</Button>
+                                <Button disabled>{t('schedule.create_btn')}</Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
@@ -203,7 +205,7 @@ export const Schedule: React.FC = () => {
                                         {daySessions.length === 0 && (
                                             <div className="h-full flex flex-col items-center justify-center opacity-20 py-8">
                                                 <CalendarIcon className="h-8 w-8 mb-2" />
-                                                <p className="text-[10px] font-bold uppercase tracking-widest text-center">Empty Day</p>
+                                                <p className="text-[10px] font-bold uppercase tracking-widest text-center">{t('schedule.empty_day')}</p>
                                             </div>
                                         )}
                                     </>
@@ -217,11 +219,11 @@ export const Schedule: React.FC = () => {
             <Dialog open={!!isFeedbackOpen} onOpenChange={(open) => !open && setIsFeedbackOpen(null)}>
                 <DialogContent className="sm:max-w-[400px]">
                     <DialogHeader>
-                        <DialogTitle>Session Feedback</DialogTitle>
+                        <DialogTitle>{t('schedule.feedback_title')}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-6 py-4">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium">How hard was the effort? (1-10)</label>
+                            <label className="text-sm font-medium">{t('schedule.effort_label')}</label>
                             <input
                                 type="range" min="1" max="10"
                                 className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
@@ -229,14 +231,14 @@ export const Schedule: React.FC = () => {
                                 onChange={(e) => setFeedback({ ...feedback, effort: Number(e.target.value) })}
                             />
                             <div className="flex justify-between text-[10px] text-muted-foreground uppercase font-bold">
-                                <span>Easy</span>
-                                <span>Scale of RPE: {feedback.effort}</span>
-                                <span>Max</span>
+                                <span>{t('schedule.effort_easy')}</span>
+                                <span>{t('schedule.rpe_scale', { value: feedback.effort })}</span>
+                                <span>{t('schedule.effort_max')}</span>
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium">Satisfaction</label>
+                            <label className="text-sm font-medium">{t('schedule.satisfaction')}</label>
                             <div className="flex justify-around bg-muted/30 p-2 rounded-md">
                                 {['😀', '😐', '😔'].map(emo => (
                                     <button
@@ -251,9 +253,9 @@ export const Schedule: React.FC = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium">Note to Coach (Private)</label>
+                            <label className="text-sm font-medium">{t('schedule.note_to_coach')}</label>
                             <Input
-                                placeholder="Any pain or special feeling?"
+                                placeholder={t('schedule.note_placeholder')}
                                 className="text-xs"
                                 value={feedback.note}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFeedback({ ...feedback, note: e.target.value })}
@@ -280,11 +282,11 @@ export const Schedule: React.FC = () => {
 
                                 if (!error) {
                                     setIsFeedbackOpen(null);
-                                    alert("Success! Your feedback helps us improve.");
+                                    alert(t('schedule.feedback_success'));
                                 }
                             }}
                         >
-                            Save Wellness Data
+                            {t('schedule.save_wellness')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

@@ -1,15 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import {
     Timer,
     Trophy,
     Flame,
-    ChevronRight,
-    ChevronLeft,
     Play,
     Pause,
     RotateCcw,
-    Maximize2,
     Monitor
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -41,7 +38,7 @@ export const BoxDisplay: React.FC = () => {
     const [time, setTime] = useState(0);
     const [isRunning, setIsRunning] = useState(false);
     const [timerType, setTimerType] = useState<'stopwatch' | 'countdown'>('stopwatch');
-    const [initialTime, setInitialTime] = useState(600); // 10 mins default for countdown
+    const [initialTime] = useState(600); // 10 mins default for countdown
 
     useEffect(() => {
         fetchTodayWod();
@@ -76,7 +73,6 @@ export const BoxDisplay: React.FC = () => {
     }, [isRunning, timerType]);
 
     const fetchTodayWod = async () => {
-        const today = new Date().toISOString().split('T')[0];
         const { data, error } = await supabase
             .from('wods')
             .select('*')

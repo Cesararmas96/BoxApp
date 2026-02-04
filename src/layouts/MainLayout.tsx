@@ -23,17 +23,17 @@ interface LayoutProps {
 
 const getNavItems = (t: any) => [
     { id: 'dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
-    { id: 'schedule', label: 'Schedule', icon: CalendarIcon },
+    { id: 'schedule', label: t('nav.schedule'), icon: CalendarIcon },
     { id: 'members', label: t('nav.members'), icon: Users, roles: ['admin', 'receptionist', 'coach'] },
     { id: 'roles', label: t('nav.roles'), icon: Shield, roles: ['admin'] },
-    { id: 'audit-logs', label: 'Audit Logs', icon: History, roles: ['admin'] },
-    { id: 'leads', label: 'Leads', icon: Inbox, roles: ['admin', 'receptionist'] },
-    { id: 'billing', label: 'Facturación', icon: Receipt, roles: ['admin', 'receptionist'] },
+    { id: 'audit-logs', label: t('nav.audit_logs'), icon: History, roles: ['admin'] },
+    { id: 'leads', label: t('nav.leads'), icon: Inbox, roles: ['admin', 'receptionist'] },
+    { id: 'billing', label: t('nav.billing'), icon: Receipt, roles: ['admin', 'receptionist'] },
     { id: 'wods', label: t('nav.programming'), icon: Trophy },
     { id: 'benchmarks', label: t('nav.benchmarks'), icon: Trophy },
-    { id: 'competitions', label: 'Competitions', icon: Medal, roles: ['admin', 'coach'] },
-    { id: 'box-display', label: 'TV View', icon: Monitor, roles: ['admin', 'receptionist', 'coach'] },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3, roles: ['admin'] },
+    { id: 'competitions', label: t('nav.competitions'), icon: Medal, roles: ['admin', 'coach'] },
+    { id: 'box-display', label: t('nav.tv_view'), icon: Monitor, roles: ['admin', 'receptionist', 'coach'] },
+    { id: 'analytics', label: t('nav.analytics'), icon: BarChart3, roles: ['admin'] },
 ];
 
 export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, userProfile }) => {
@@ -124,7 +124,7 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
                         onClick={() => navigateTo('settings')}
                     >
                         <SettingsIcon className="h-4 w-4" />
-                        Settings
+                        {t('nav.settings')}
                     </Button>
                     <Button
                         variant="ghost"
@@ -132,16 +132,16 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
                         onClick={handleLogout}
                     >
                         <LogOut className="h-4 w-4 text-destructive/70" />
-                        Logout
+                        {t('nav.logout')}
                     </Button>
                 </div>
             </aside>
 
             {/* Content Wrapper */}
             <div className="flex-1 flex flex-col min-w-0">
-                {/* Mobile Header */}
-                <header className="lg:hidden flex h-16 items-center justify-between px-4 border-b bg-card sticky top-0 z-50">
-                    <div className="flex items-center gap-3">
+                {/* Header */}
+                <header className="flex h-16 items-center justify-between px-4 md:px-8 border-b bg-card sticky top-0 z-30">
+                    <div className="flex items-center gap-3 lg:hidden">
                         <Button
                             variant="ghost"
                             size="icon"
@@ -152,16 +152,23 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
                         </Button>
                         <span className="text-lg font-black italic tracking-tighter text-primary uppercase">Box Manager</span>
                     </div>
+                    <div className="hidden lg:block">
+                        {/* Desktop breadcrumbs or page title could go here */}
+                    </div>
                     <div className="flex items-center gap-2">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
+                                <Button variant="ghost" size="icon" className="hover:bg-primary/10 text-primary">
                                     <Languages className="h-5 w-5" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => changeLanguage('es')}>Español</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => changeLanguage('en')}>English</DropdownMenuItem>
+                            <DropdownMenuContent align="end" className="w-40">
+                                <DropdownMenuItem onClick={() => changeLanguage('es')} className="cursor-pointer font-bold uppercase text-[10px] tracking-widest">
+                                    Español
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => changeLanguage('en')} className="cursor-pointer font-bold uppercase text-[10px] tracking-widest">
+                                    English
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                         <ModeToggle />

@@ -31,6 +31,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslation } from 'react-i18next';
 
 interface Profile {
     id: string;
@@ -52,6 +53,7 @@ interface MembersProps {
 }
 
 export const Members: React.FC<MembersProps> = ({ userProfile }) => {
+    const { t } = useTranslation();
     const [members, setMembers] = useState<Profile[]>([]);
     const [loading, setLoading] = useState(true);
     const [open, setOpen] = useState(false);
@@ -134,28 +136,28 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
         <div className="space-y-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Members</h1>
-                    <p className="text-muted-foreground text-sm">Manage your box community and roles.</p>
+                    <h1 className="text-3xl font-bold tracking-tight">{t('members.title')}</h1>
+                    <p className="text-muted-foreground text-sm">{t('members.subtitle')}</p>
                 </div>
 
                 {userProfile?.role_id === 'admin' && (
                     <Dialog open={open} onOpenChange={setOpen}>
                         <DialogTrigger asChild>
                             <Button className="gap-2">
-                                <UserPlus className="h-4 w-4" /> Add Member
+                                <UserPlus className="h-4 w-4" /> {t('members.add_btn')}
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[425px]">
                             <DialogHeader>
-                                <DialogTitle>Add New Member</DialogTitle>
+                                <DialogTitle>{t('members.new_title')}</DialogTitle>
                                 <DialogDescription>
-                                    Create a new athlete profile. You can link their account later.
+                                    {t('members.new_desc')}
                                 </DialogDescription>
                             </DialogHeader>
                             <form onSubmit={handleAddMember} className="space-y-4 py-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">First Name</label>
+                                        <label className="text-sm font-medium">{t('members.first_name')}</label>
                                         <Input
                                             placeholder="John"
                                             value={newMember.firstName}
@@ -164,7 +166,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Last Name</label>
+                                        <label className="text-sm font-medium">{t('members.last_name')}</label>
                                         <Input
                                             placeholder="Doe"
                                             value={newMember.lastName}
@@ -174,7 +176,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium">Email Address</label>
+                                    <label className="text-sm font-medium">{t('members.email')}</label>
                                     <Input
                                         type="email"
                                         placeholder="john@example.com"
@@ -183,25 +185,25 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium">Role</label>
+                                    <label className="text-sm font-medium">{t('members.role')}</label>
                                     <select
                                         className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                                         value={newMember.roleId}
                                         onChange={(e) => setNewMember({ ...newMember, roleId: e.target.value })}
                                     >
-                                        <option value="athlete">Athlete</option>
-                                        <option value="coach">Coach</option>
-                                        <option value="receptionist">Receptionist</option>
-                                        <option value="admin">Admin</option>
+                                        <option value="athlete">{t('roles.role_athlete')}</option>
+                                        <option value="coach">{t('roles.role_coach')}</option>
+                                        <option value="receptionist">{t('roles.role_receptionist')}</option>
+                                        <option value="admin">{t('roles.role_admin')}</option>
                                     </select>
                                 </div>
 
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium italic text-muted-foreground flex items-center gap-2">
-                                        <Stethoscope className="h-3 w-3" /> Medical History (Optional)
+                                        <Stethoscope className="h-3 w-3" /> {t('members.medical_history')}
                                     </label>
                                     <Input
-                                        placeholder="Injuries, conditions..."
+                                        placeholder={t('members.medical_placeholder')}
                                         value={newMember.medicalHistory}
                                         onChange={(e) => setNewMember({ ...newMember, medicalHistory: e.target.value })}
                                     />
@@ -210,7 +212,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <label className="text-sm font-medium flex items-center gap-2">
-                                            <Phone className="h-3 w-3" /> Emergency Contact
+                                            <Phone className="h-3 w-3" /> {t('members.emergency_contact')}
                                         </label>
                                         <Input
                                             placeholder="Name"
@@ -219,7 +221,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Phone</label>
+                                        <label className="text-sm font-medium">{t('members.phone')}</label>
                                         <Input
                                             placeholder="+123..."
                                             value={newMember.emergencyPhone}
@@ -229,7 +231,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                 </div>
                                 <DialogFooter>
                                     <Button type="submit" disabled={loading}>
-                                        {loading ? "Adding..." : "Confirm Member"}
+                                        {loading ? t('common.loading') : t('members.confirm_btn')}
                                     </Button>
                                 </DialogFooter>
                             </form>
@@ -241,13 +243,13 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
             <Card>
                 <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg">Community List</CardTitle>
+                        <CardTitle className="text-lg">{t('members.list_title')}</CardTitle>
                         <div className="flex items-center gap-2">
                             <div className="relative w-full max-w-sm">
                                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     type="search"
-                                    placeholder="Search members..."
+                                    placeholder={t('members.search_placeholder')}
                                     className="pl-8 w-[250px]"
                                 />
                             </div>
@@ -261,25 +263,25 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="w-[300px]">Member</TableHead>
-                                <TableHead>Role</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Waiver</TableHead>
-                                <TableHead>Joined</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
+                                <TableHead className="w-[300px]">{t('members.table_member')}</TableHead>
+                                <TableHead>{t('members.table_role')}</TableHead>
+                                <TableHead>{t('members.table_status')}</TableHead>
+                                <TableHead>{t('members.table_waiver')}</TableHead>
+                                <TableHead>{t('members.table_joined')}</TableHead>
+                                <TableHead className="text-right">{t('common.actions')}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {loading ? (
                                 <TableRow>
                                     <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                                        Loading community data...
+                                        {t('common.loading')}
                                     </TableCell>
                                 </TableRow>
                             ) : members.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                                        No members found. Time to grow your box!
+                                        {t('common.no_data')}
                                     </TableCell>
                                 </TableRow>
                             ) : (
@@ -294,28 +296,28 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                                 </Avatar>
                                                 <div className="flex flex-col">
                                                     <span className="font-medium text-sm">{member.first_name} {member.last_name}</span>
-                                                    <span className="text-xs text-muted-foreground">{member.email || "No email"}</span>
+                                                    <span className="text-xs text-muted-foreground">{member.email || t('members.no_email')}</span>
                                                 </div>
                                             </div>
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant="secondary" className="capitalize text-[10px] py-0">
-                                                {member.role_id}
+                                                {t(`roles.role_${member.role_id}`)}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant={getStatusVariant(member.status)} className="capitalize text-[10px] py-0">
-                                                {member.status}
+                                                {t(`members.status_${member.status}`)}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
                                             {member.waiver_signed ? (
                                                 <div className="flex items-center text-green-500 gap-1 text-[10px] font-bold">
-                                                    <ShieldCheck className="h-3 w-3" /> Signed
+                                                    <ShieldCheck className="h-3 w-3" /> {t('members.waiver_signed')}
                                                 </div>
                                             ) : (
                                                 <div className="flex items-center text-destructive gap-1 text-[10px] font-bold">
-                                                    <ShieldAlert className="h-3 w-3" /> Pending
+                                                    <ShieldAlert className="h-3 w-3" /> {t('members.waiver_pending')}
                                                 </div>
                                             )}
                                         </TableCell>
@@ -331,7 +333,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                                     setDetailsOpen(true);
                                                 }}
                                             >
-                                                Details
+                                                {t('members.details_btn')}
                                             </Button>
                                         </TableCell>
                                     </TableRow>
@@ -359,50 +361,50 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                     <div className="grid gap-6 py-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1">
-                                <p className="text-xs font-medium text-muted-foreground uppercase">Role</p>
-                                <p className="text-sm font-semibold capitalize">{selectedMember?.role_id}</p>
+                                <p className="text-xs font-medium text-muted-foreground uppercase">{t('members.table_role')}</p>
+                                <p className="text-sm font-semibold capitalize">{selectedMember?.role_id ? t(`roles.role_${selectedMember.role_id}`) : '...'}</p>
                             </div>
                             <div className="space-y-1">
-                                <p className="text-xs font-medium text-muted-foreground uppercase">Status</p>
+                                <p className="text-xs font-medium text-muted-foreground uppercase">{t('members.table_status')}</p>
                                 <Badge variant={getStatusVariant(selectedMember?.status || 'active')} className="capitalize">
-                                    {selectedMember?.status}
+                                    {selectedMember?.status ? t(`members.status_${selectedMember.status}`) : '...'}
                                 </Badge>
                             </div>
                         </div>
 
                         <div className="space-y-2 border-t pt-4">
                             <h3 className="text-sm font-bold flex items-center gap-2">
-                                <Stethoscope className="h-4 w-4 text-primary" /> Medical Background
+                                <Stethoscope className="h-4 w-4 text-primary" /> {t('members.medical_background')}
                             </h3>
                             <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md min-h-[60px]">
-                                {selectedMember?.medical_history || "No medical history recorded."}
+                                {selectedMember?.medical_history || t('members.no_medical')}
                             </p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4 border-t pt-4">
                             <div className="space-y-1">
                                 <h3 className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2">
-                                    <Phone className="h-3 w-3" /> Emergency
+                                    <Phone className="h-3 w-3" /> {t('members.emergency')}
                                 </h3>
                                 <p className="text-sm font-semibold">{selectedMember?.emergency_contact_name || "N/A"}</p>
-                                <p className="text-xs text-muted-foreground">{selectedMember?.emergency_contact_phone || "No phone"}</p>
+                                <p className="text-xs text-muted-foreground">{selectedMember?.emergency_contact_phone || t('members.no_email')}</p>
                             </div>
                             <div className="space-y-1">
                                 <h3 className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2">
-                                    <ShieldCheck className="h-3 w-3" /> Waiver Status
+                                    <ShieldCheck className="h-3 w-3" /> {t('members.waiver_status')}
                                 </h3>
                                 {selectedMember?.waiver_signed ? (
-                                    <Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/10 border-green-200">Legal Waiver Signed</Badge>
+                                    <Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/10 border-green-200">{t('members.waiver_legal')}</Badge>
                                 ) : (
-                                    <Badge variant="destructive">Pending Signature</Badge>
+                                    <Badge variant="destructive">{t('members.waiver_pending')}</Badge>
                                 )}
                             </div>
                         </div>
                     </div>
 
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setDetailsOpen(false)}>Close</Button>
-                        <Button variant="default">Edit Profile</Button>
+                        <Button variant="outline" onClick={() => setDetailsOpen(false)}>{t('common.cancel')}</Button>
+                        <Button variant="default">{t('members.edit_profile')}</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

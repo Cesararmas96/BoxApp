@@ -108,14 +108,20 @@ const BLOCK_TEMPLATES: Record<string, { label: string, content: string }[]> = {
 };
 
 const COMMON_MOVEMENTS = [
-    'Air Squat', 'Back Squat', 'Front Squat', 'Overhead Squat',
-    'Shoulder Press', 'Push Press', 'Push Jerk', 'Split Jerk',
-    'Deadlift', 'Clean', 'Power Clean', 'Hang Power Clean',
-    'Snatch', 'Power Snatch', 'Hang Power Snatch',
-    'Burpee', 'Box Jump', 'Wall Ball', 'Kettlebell Swing',
-    'Pull-up', 'Chest to Bar', 'Muscle-up', 'Toes to Bar',
-    'Double Under', 'Row', 'Run', 'Assault Bike', 'Thruster'
-].sort();
+    { name: 'Air Squat', category: 'Gymnastics', icon: <Activity className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=50&h=50&fit=crop' },
+    { name: 'Back Squat', category: 'Weightlifting', icon: <Dumbbell className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=50&h=50&fit=crop' },
+    { name: 'Deadlift', category: 'Weightlifting', icon: <Dumbbell className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=50&h=50&fit=crop' },
+    { name: 'Power Clean', category: 'Weightlifting', icon: <ZapIcon className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=50&h=50&fit=crop' },
+    { name: 'Snatch', category: 'Weightlifting', icon: <ZapIcon className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1541534741688-6078c64b547d?w=50&h=50&fit=crop' },
+    { name: 'Burpee', category: 'Gymnastics', icon: <FlameIcon className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1599058917233-35835270c14c?w=50&h=50&fit=crop' },
+    { name: 'Box Jump', category: 'Gymnastics', icon: <Trophy className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=50&h=50&fit=crop' },
+    { name: 'Wall Ball', category: 'Weightlifting', icon: <Target className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=50&h=50&fit=crop' },
+    { name: 'Pull-up', category: 'Gymnastics', icon: <Activity className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1598971639058-fab3c023bf30?w=50&h=50&fit=crop' },
+    { name: 'Double Under', category: 'Mono', icon: <Timer className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=50&h=50&fit=crop' },
+    { name: 'Row', category: 'Mono', icon: <Activity className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=50&h=50&fit=crop' },
+    { name: 'Run', category: 'Mono', icon: <Timer className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=50&h=50&fit=crop' },
+    { name: 'Thruster', category: 'Weightlifting', icon: <FlameIcon className="h-4 w-4" />, image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=50&h=50&fit=crop' }
+];
 
 export const Wods: React.FC = () => {
     const { t } = useTranslation();
@@ -142,6 +148,8 @@ export const Wods: React.FC = () => {
     });
 
     const [sessionBlocks, setSessionBlocks] = useState<SessionBlock[]>([]);
+    const [movementSearch, setMovementSearch] = useState('');
+    const [manualEntryStatus, setManualEntryStatus] = useState<Record<string, boolean>>({});
 
     const [userPRs, setUserPRs] = useState<any[]>([]);
     const [results, setResults] = useState<any[]>([]);
@@ -473,46 +481,98 @@ export const Wods: React.FC = () => {
                                                                         onChange={(e) => updateBlock(block.id, { title: e.target.value })}
                                                                     />
                                                                 </div>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    className="h-6 w-6 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                                                                    onClick={() => removeBlock(block.id)}
-                                                                >
-                                                                    <Trash2 className="h-3.5 w-3.5" />
-                                                                </Button>
-                                                            </div>
-                                                            <div className="p-0 space-y-2">
-                                                                <div className="px-3 pt-2 flex flex-wrap gap-1">
-                                                                    {BLOCK_TEMPLATES[block.type]?.map((template) => (
-                                                                        <Button
-                                                                            key={template.label}
-                                                                            variant="secondary"
-                                                                            size="sm"
-                                                                            className="h-5 px-2 text-[8px] font-bold uppercase tracking-wider bg-primary/5 hover:bg-primary/20 text-primary border border-primary/10"
-                                                                            onClick={() => updateBlock(block.id, { content: template.content })}
-                                                                        >
-                                                                            {template.label}
-                                                                        </Button>
-                                                                    ))}
-                                                                    <div className="h-4 w-px bg-border mx-1" />
-                                                                    <Select onValueChange={(val) => updateBlock(block.id, { content: block.content + (block.content ? '\n- ' : '- ') + val })}>
-                                                                        <SelectTrigger className="h-5 w-auto px-2 text-[8px] font-bold uppercase tracking-wider border-dashed">
-                                                                            <SelectValue placeholder="+ MOVEMENT" />
-                                                                        </SelectTrigger>
-                                                                        <SelectContent>
-                                                                            {COMMON_MOVEMENTS.map(m => (
-                                                                                <SelectItem key={m} value={m} className="text-[10px] font-bold uppercase italic">{m}</SelectItem>
-                                                                            ))}
-                                                                        </SelectContent>
-                                                                    </Select>
+                                                                <div className="flex items-center gap-1">
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className={cn("h-6 w-6", manualEntryStatus[block.id] ? "text-primary" : "text-muted-foreground")}
+                                                                        onClick={() => setManualEntryStatus({ ...manualEntryStatus, [block.id]: !manualEntryStatus[block.id] })}
+                                                                    >
+                                                                        <Settings2 className="h-3.5 w-3.5" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-6 w-6 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                        onClick={() => removeBlock(block.id)}
+                                                                    >
+                                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                                    </Button>
                                                                 </div>
-                                                                <Textarea
-                                                                    className="border-none focus-visible:ring-0 min-h-[100px] text-xs font-mono p-3 pt-1 leading-relaxed"
-                                                                    placeholder="Describe the activities..."
-                                                                    value={block.content}
-                                                                    onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-                                                                />
+                                                            </div>
+                                                            <div className="p-0 space-y-3">
+                                                                {/* Visual Tools Bar */}
+                                                                <div className="px-3 pt-3 space-y-3">
+                                                                    <div className="flex items-center justify-between">
+                                                                        <div className="flex flex-wrap gap-1">
+                                                                            {BLOCK_TEMPLATES[block.type]?.map((template) => (
+                                                                                <Button
+                                                                                    key={template.label}
+                                                                                    variant="secondary"
+                                                                                    size="sm"
+                                                                                    className="h-5 px-2 text-[8px] font-bold uppercase tracking-wider bg-primary/5 hover:bg-primary/20 text-primary border border-primary/10"
+                                                                                    onClick={() => updateBlock(block.id, { content: template.content })}
+                                                                                >
+                                                                                    {template.label}
+                                                                                </Button>
+                                                                            ))}
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div className="relative">
+                                                                        <Search className="absolute left-2 top-2 h-3 w-3 text-muted-foreground" />
+                                                                        <Input
+                                                                            placeholder="Search movement..."
+                                                                            className="h-7 pl-7 text-[10px] uppercase font-bold italic"
+                                                                            onChange={(e) => setMovementSearch(e.target.value)}
+                                                                        />
+                                                                        {movementSearch && (
+                                                                            <Card className="absolute z-50 left-0 right-0 top-8 max-h-[200px] overflow-y-auto shadow-2xl p-2 grid grid-cols-2 gap-2">
+                                                                                {COMMON_MOVEMENTS
+                                                                                    .filter(m => m.name.toLowerCase().includes(movementSearch.toLowerCase()))
+                                                                                    .map(m => (
+                                                                                        <button
+                                                                                            key={m.name}
+                                                                                            onClick={() => {
+                                                                                                updateBlock(block.id, { content: block.content + (block.content ? '\n- ' : '- ') + m.name });
+                                                                                                setMovementSearch('');
+                                                                                            }}
+                                                                                            className="flex items-center gap-2 p-1.5 hover:bg-muted rounded-lg text-left transition-colors border border-transparent hover:border-primary/20"
+                                                                                        >
+                                                                                            <img src={m.image} alt={m.name} className="h-8 w-8 rounded object-cover shadow-sm" />
+                                                                                            <div>
+                                                                                                <p className="text-[10px] font-black uppercase italic leading-none">{m.name}</p>
+                                                                                                <p className="text-[8px] text-muted-foreground uppercase font-bold">{m.category}</p>
+                                                                                            </div>
+                                                                                        </button>
+                                                                                    ))}
+                                                                            </Card>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Content View / Manual Edit Toggle */}
+                                                                <div className="px-3 pb-3">
+                                                                    {manualEntryStatus[block.id] ? (
+                                                                        <Textarea
+                                                                            className="border focus-visible:ring-primary min-h-[120px] text-xs font-mono p-3 leading-relaxed bg-muted/10"
+                                                                            placeholder="Describe the activities..."
+                                                                            value={block.content}
+                                                                            onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+                                                                        />
+                                                                    ) : (
+                                                                        <div
+                                                                            className="min-h-[60px] p-3 rounded-lg border border-dashed border-primary/20 bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors"
+                                                                            onClick={() => setManualEntryStatus({ ...manualEntryStatus, [block.id]: true })}
+                                                                        >
+                                                                            {block.content ? (
+                                                                                <pre className="text-xs font-mono whitespace-pre-wrap">{block.content}</pre>
+                                                                            ) : (
+                                                                                <p className="text-[10px] text-muted-foreground font-bold uppercase italic text-center py-2">No content. Click to type or use the tools above.</p>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                         </Card>
                                                     ))}

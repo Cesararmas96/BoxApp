@@ -17,7 +17,7 @@ import {
     Zap as ZapIcon,
     Shield,
     RotateCcw,
-    Flame
+    Flame as FlameIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -391,7 +391,7 @@ export const Wods: React.FC = () => {
 
                                         <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
                                             {[
-                                                { type: 'warmup', icon: <Flame className="h-3.5 w-3.5" />, label: t('wods.block_warmup_short', { defaultValue: 'Warm-up' }), color: 'text-orange-500 bg-orange-500/10 border-orange-500/20' },
+                                                { type: 'warmup', icon: <FlameIcon className="h-3.5 w-3.5" />, label: t('wods.block_warmup_short', { defaultValue: 'Warm-up' }), color: 'text-orange-500 bg-orange-500/10 border-orange-500/20' },
                                                 { type: 'strength', icon: <Dumbbell className="h-3.5 w-3.5" />, label: t('wods.block_strength_short', { defaultValue: 'Strength' }), color: 'text-blue-500 bg-blue-500/10 border-blue-500/20' },
                                                 { type: 'conditioning', icon: <ZapIcon className="h-3.5 w-3.5" />, label: t('wods.block_conditioning_short', { defaultValue: 'Power' }), color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' },
                                                 { type: 'wod', icon: <Trophy className="h-3.5 w-3.5" />, label: t('wods.block_wod_short', { defaultValue: 'WOD' }), color: 'text-primary bg-primary/10 border-primary/20' },

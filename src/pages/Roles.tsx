@@ -3,12 +3,14 @@ import { supabase } from '@/lib/supabaseClient';
 import {
     Shield,
     Search,
-    UserCheck,
-    UserCog,
-    UserPlus,
     Loader2,
     CheckCircle2,
-    AlertCircle
+    AlertCircle,
+    Key,
+    Lock,
+    Check,
+    X as CloseIcon,
+    Terminal
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,6 +33,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "../lib/utils";
 
 interface Profile {
     id: string;
@@ -41,16 +45,50 @@ interface Profile {
     created_at: string;
 }
 
+const PERMISSIONS_MATRIX = [
+    { page: 'Dashboard', roles: ['admin', 'coach', 'athlete', 'receptionist'] },
+    { page: 'Schedule', roles: ['admin', 'coach', 'athlete', 'receptionist'] },
+    { page: 'Members', roles: ['admin', 'coach', 'receptionist'] },
+    { page: 'Internal Roles', roles: ['admin'] },
+    { page: 'Audit Logs', roles: ['admin'] },
+    { page: 'Leads / CRM', roles: ['admin', 'receptionist'] },
+    { page: 'Billing & Finance', roles: ['admin', 'receptionist'] },
+    { page: 'WOD Programming', roles: ['admin', 'coach', 'athlete', 'receptionist'] },
+    { page: 'Benchmarks', roles: ['admin', 'coach', 'athlete', 'receptionist'] },
+    { page: 'Competitions', roles: ['admin', 'coach'] },
+    { page: 'TV Display', roles: ['admin', 'coach', 'receptionist'] },
+    { page: 'Analytics', roles: ['admin'] },
+];
+
+const TEST_USERS = [
+    { email: 'root@test.com', label: 'Root (Superuser)', role: 'admin' },
+    { email: 'admin@test.com', label: 'Admin (Full)', role: 'admin' },
+    { email: 'coach@test.com', label: 'Coach (Training)', role: 'coach' },
+    { email: 'reception@test.com', label: 'Reception (Sales)', role: 'receptionist' },
+    { email: 'athlete@test.com', label: 'Athlete (Basic)', role: 'athlete' },
+];
+
 export const Roles: React.FC = () => {
     const [users, setUsers] = useState<Profile[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [updatingId, setUpdatingId] = useState<string | null>(null);
+    const [testLoginLoading, setTestLoginLoading] = useState<string | null>(null);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
 
     useEffect(() => {
         fetchUsers();
+        getCurrentUser();
     }, []);
+
+    const getCurrentUser = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+            const { data } = await supabase.from('profiles').select('role_id').eq('id', session.user.id).single();
+            if (data) setCurrentUserRole(data.role_id);
+        }
+    };
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -79,11 +117,24 @@ export const Roles: React.FC = () => {
         } else {
             setMessage({ type: 'success', text: 'Role updated successfully!' });
             setUsers(users.map(u => u.id === userId ? { ...u, role_id: newRole } : u));
-
-            // Auto-hide success message
             setTimeout(() => setMessage(null), 3000);
         }
         setUpdatingId(null);
+    };
+
+    const handleTestLogin = async (email: string) => {
+        setTestLoginLoading(email);
+        const { error } = await supabase.auth.signInWithPassword({
+            email,
+            password: 'password123',
+        });
+
+        if (error) {
+            setMessage({ type: 'error', text: 'Failed to login: ' + error.message });
+        } else {
+            window.location.href = '/';
+        }
+        setTestLoginLoading(null);
     };
 
     const filteredUsers = users.filter(user =>
@@ -95,18 +146,21 @@ export const Roles: React.FC = () => {
         switch (role) {
             case 'admin': return <Badge variant="default" className="bg-primary/20 text-primary border-primary/30 uppercase text-[10px]">Administrator</Badge>;
             case 'coach': return <Badge variant="secondary" className="bg-indigo-500/20 text-indigo-400 border-indigo-500/30 uppercase text-[10px]">Coach</Badge>;
+            case 'receptionist': return <Badge variant="secondary" className="bg-amber-500/20 text-amber-500 border-amber-500/30 uppercase text-[10px]">Receptionist</Badge>;
             case 'athlete': return <Badge variant="outline" className="text-muted-foreground uppercase text-[10px]">Athlete</Badge>;
             default: return <Badge variant="outline" className="uppercase text-[10px]">{role}</Badge>;
         }
     };
 
+    const isAdmin = currentUserRole === 'admin';
+
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 text-left">
             <div className="flex flex-col gap-2">
                 <h1 className="text-3xl font-black italic tracking-tighter uppercase text-primary flex items-center gap-3">
                     <Shield className="h-8 w-8 text-primary" /> Authority Control
                 </h1>
-                <p className="text-muted-foreground">Manage system permissions and user access levels.</p>
+                <p className="text-muted-foreground">Manage system permissions and verify user access levels.</p>
             </div>
 
             {message && (
@@ -117,100 +171,218 @@ export const Roles: React.FC = () => {
                 </Alert>
             )}
 
-            <Card className="border shadow-xl">
-                <CardHeader className="pb-3 border-b bg-muted/20">
-                    <div className="flex items-center justify-between">
-                        <div className="space-y-1">
-                            <CardTitle className="text-lg font-bold uppercase tracking-tight italic">User Privilege Matrix</CardTitle>
-                            <CardDescription>Assign roles to control feature availability.</CardDescription>
+            <Tabs defaultValue="users" className="w-full">
+                <TabsList className={cn("grid w-full mb-6", isAdmin ? "grid-cols-3" : "grid-cols-2")}>
+                    <TabsTrigger value="users" className="font-bold uppercase text-[10px]">User List</TabsTrigger>
+                    <TabsTrigger value="matrix" className="font-bold uppercase text-[10px]">Access Matrix</TabsTrigger>
+                    {isAdmin && <TabsTrigger value="testing" className="font-bold uppercase text-[10px] text-primary">Testing Lab</TabsTrigger>}
+                </TabsList>
+
+                <TabsContent value="users">
+                    <Card className="border shadow-xl overflow-hidden">
+                        <CardHeader className="pb-3 border-b bg-muted/20">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div className="space-y-1">
+                                    <CardTitle className="text-lg font-bold uppercase tracking-tight italic">User Privilege Matrix</CardTitle>
+                                    <CardDescription>Assign roles to control feature availability.</CardDescription>
+                                </div>
+                                <div className="relative w-full max-w-sm">
+                                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        type="search"
+                                        placeholder="Search by name or email..."
+                                        className="pl-8 focus-visible:ring-primary h-9 text-xs"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="bg-muted/50 border-none hover:bg-muted/50">
+                                            <TableHead className="w-[300px] font-black uppercase text-[10px] tracking-widest pl-6">Identity</TableHead>
+                                            <TableHead className="font-black uppercase text-[10px] tracking-widest text-center">Security Status</TableHead>
+                                            <TableHead className="font-black uppercase text-[10px] tracking-widest">Active Role</TableHead>
+                                            <TableHead className="text-right font-black uppercase text-[10px] tracking-widest pr-6">Management</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {loading ? (
+                                            <TableRow>
+                                                <TableCell colSpan={4} className="text-center py-20">
+                                                    <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto mb-4" />
+                                                    <p className="text-sm font-black uppercase italic tracking-widest text-muted-foreground">Accessing Database...</p>
+                                                </TableCell>
+                                            </TableRow>
+                                        ) : filteredUsers.length === 0 ? (
+                                            <TableRow>
+                                                <TableCell colSpan={4} className="text-center py-20 text-muted-foreground italic">
+                                                    No users found matching the security parameters.
+                                                </TableCell>
+                                            </TableRow>
+                                        ) : (
+                                            filteredUsers.map((user) => (
+                                                <TableRow key={user.id} className="hover:bg-muted/30 transition-colors border-muted/20">
+                                                    <TableCell className="pl-6 py-4">
+                                                        <div className="flex items-center gap-3">
+                                                            <Avatar className="h-9 w-9 border-2 border-primary/20">
+                                                                <AvatarFallback className="bg-primary/10 text-primary text-xs font-black italic">
+                                                                    {user.first_name?.[0]}{user.last_name?.[0]}
+                                                                </AvatarFallback>
+                                                            </Avatar>
+                                                            <div className="flex flex-col">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="font-bold text-sm tracking-tight">{user.first_name} {user.last_name}</span>
+                                                                    {user.email === 'root@test.com' && <Terminal className="h-3 w-3 text-primary animate-pulse" />}
+                                                                </div>
+                                                                <span className="text-[10px] text-muted-foreground font-mono">{user.email}</span>
+                                                            </div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
+                                                        <div className="flex items-center justify-center gap-2">
+                                                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                                            <span className="text-[10px] font-black uppercase tracking-widest italic">Encrypted</span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {getRoleBadge(user.role_id)}
+                                                    </TableCell>
+                                                    <TableCell className="text-right pr-6">
+                                                        <div className="flex justify-end items-center gap-2">
+                                                            {updatingId === user.id && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
+                                                            <Select
+                                                                disabled={updatingId === user.id || user.email === 'root@test.com'}
+                                                                value={user.role_id}
+                                                                onValueChange={(value) => handleRoleChange(user.id, value)}
+                                                            >
+                                                                <SelectTrigger className="w-[140px] h-8 text-[10px] font-black uppercase tracking-wider">
+                                                                    <SelectValue />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    <SelectItem value="athlete" className="text-[10px] font-black uppercase tracking-wider">Athlete</SelectItem>
+                                                                    <SelectItem value="coach" className="text-[10px] font-black uppercase tracking-wider">Coach</SelectItem>
+                                                                    <SelectItem value="receptionist" className="text-[10px] font-black uppercase tracking-wider">Receptionist</SelectItem>
+                                                                    <SelectItem value="admin" className="text-[10px] font-black uppercase tracking-wider">Admin</SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="matrix">
+                    <Card className="border shadow-xl">
+                        <CardHeader className="bg-muted/20 border-b">
+                            <CardTitle className="text-lg font-bold uppercase tracking-tight italic">Module Access Matrix</CardTitle>
+                            <CardDescription>Visual representation of page-level access control.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="bg-muted/50 border-none hover:bg-muted/50">
+                                            <TableHead className="font-black uppercase text-[10px] tracking-widest pl-6">Module / Feature</TableHead>
+                                            <TableHead className="text-center font-black uppercase text-[10px] tracking-widest">Admin</TableHead>
+                                            <TableHead className="text-center font-black uppercase text-[10px] tracking-widest">Coach</TableHead>
+                                            <TableHead className="text-center font-black uppercase text-[10px] tracking-widest">Reception</TableHead>
+                                            <TableHead className="text-center font-black uppercase text-[10px] tracking-widest">Athlete</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {PERMISSIONS_MATRIX.map((item, idx) => (
+                                            <TableRow key={idx} className="hover:bg-muted/10 border-muted/10">
+                                                <TableCell className="font-bold py-3 pl-6 text-sm italic">{item.page}</TableCell>
+                                                <TableCell className="text-center">
+                                                    {item.roles.includes('admin') ? <Check className="h-4 w-4 text-emerald-500 mx-auto" /> : <CloseIcon className="h-4 w-4 text-muted-foreground/30 mx-auto" />}
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    {item.roles.includes('coach') ? <Check className="h-4 w-4 text-emerald-500 mx-auto" /> : <CloseIcon className="h-4 w-4 text-muted-foreground/30 mx-auto" />}
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    {item.roles.includes('receptionist') ? <Check className="h-4 w-4 text-emerald-500 mx-auto" /> : <CloseIcon className="h-4 w-4 text-muted-foreground/30 mx-auto" />}
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    {item.roles.includes('athlete') ? <Check className="h-4 w-4 text-emerald-500 mx-auto" /> : <CloseIcon className="h-4 w-4 text-muted-foreground/30 mx-auto" />}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                {isAdmin && (
+                    <TabsContent value="testing">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {TEST_USERS.map((user) => (
+                                <Card key={user.email} className={cn(
+                                    "border-2 hover:border-primary/40 transition-all group overflow-hidden",
+                                    user.email === 'root@test.com' ? "border-primary/40 bg-primary/5 shadow-lg shadow-primary/10" : "border-primary/10"
+                                )}>
+                                    <CardHeader className="text-center space-y-0 pb-2">
+                                        <div className={cn(
+                                            "mx-auto p-3 rounded-full mb-3 group-hover:scale-110 transition-transform",
+                                            user.email === 'root@test.com' ? "bg-primary text-white shadow-[0_0_15px_rgba(var(--primary),0.5)]" : "bg-primary/5 text-primary"
+                                        )}>
+                                            {user.email === 'root@test.com' ? <Terminal className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
+                                        </div>
+                                        <CardTitle className="text-sm font-black uppercase italic tracking-tighter text-primary">
+                                            {user.label}
+                                        </CardTitle>
+                                        <CardDescription className="text-[10px] font-mono select-all">
+                                            {user.email}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="text-center pb-4">
+                                        <Badge variant="outline" className="text-[9px] uppercase font-black px-2 mb-4 border-primary/20 bg-primary/5 text-primary">
+                                            Pass: password123
+                                        </Badge>
+                                        <Button
+                                            className={cn(
+                                                "w-full font-black uppercase text-[10px] italic h-9 shadow-lg active:scale-95 transition-all",
+                                                user.email === 'root@test.com' ? "bg-primary hover:bg-primary/90" : "bg-muted hover:bg-muted/80 text-foreground"
+                                            )}
+                                            disabled={testLoginLoading === user.email}
+                                            onClick={() => handleTestLogin(user.email)}
+                                        >
+                                            {testLoginLoading === user.email ? (
+                                                <Loader2 className="h-3 w-3 animate-spin mr-2" />
+                                            ) : (
+                                                <Key className="h-3 w-3 mr-2" />
+                                            )}
+                                            Switch Account
+                                        </Button>
+                                    </CardContent>
+                                    <div className="h-1 bg-primary/40 w-0 group-hover:w-full transition-all duration-500" />
+                                </Card>
+                            ))}
                         </div>
-                        <div className="relative w-full max-w-sm">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                type="search"
-                                placeholder="Search by name or email..."
-                                className="pl-8 focus-visible:ring-primary"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent className="p-0">
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="bg-muted/50">
-                                <TableHead className="w-[300px] font-black uppercase text-[10px] tracking-widest pl-6">Identity</TableHead>
-                                <TableHead className="font-black uppercase text-[10px] tracking-widest">Active Status</TableHead>
-                                <TableHead className="font-black uppercase text-[10px] tracking-widest">Current Role</TableHead>
-                                <TableHead className="text-right font-black uppercase text-[10px] tracking-widest pr-6">Modify Access</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {loading ? (
-                                <TableRow>
-                                    <TableCell colSpan={4} className="text-center py-20">
-                                        <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto mb-4" />
-                                        <p className="text-sm font-black uppercase italic tracking-widest text-muted-foreground">Accessing Database...</p>
-                                    </TableCell>
-                                </TableRow>
-                            ) : filteredUsers.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={4} className="text-center py-20 text-muted-foreground italic">
-                                        No users found matching the security parameters.
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                filteredUsers.map((user) => (
-                                    <TableRow key={user.id} className="hover:bg-muted/30 transition-colors">
-                                        <TableCell className="pl-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <Avatar className="h-9 w-9 border-2 border-primary/20">
-                                                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-black italic">
-                                                        {user.first_name?.[0]}{user.last_name?.[0]}
-                                                    </AvatarFallback>
-                                                </Avatar>
-                                                <div className="flex flex-col">
-                                                    <span className="font-bold text-sm tracking-tight">{user.first_name} {user.last_name}</span>
-                                                    <span className="text-xs text-muted-foreground font-mono">{user.email}</span>
-                                                </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-2">
-                                                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                                                <span className="text-[10px] font-black uppercase tracking-widest italic">Encrypted</span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            {getRoleBadge(user.role_id)}
-                                        </TableCell>
-                                        <TableCell className="text-right pr-6">
-                                            <div className="flex justify-end items-center gap-2">
-                                                {updatingId === user.id && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
-                                                <Select
-                                                    disabled={updatingId === user.id}
-                                                    value={user.role_id}
-                                                    onValueChange={(value) => handleRoleChange(user.id, value)}
-                                                >
-                                                    <SelectTrigger className="w-[140px] h-9 text-xs font-bold uppercase tracking-wider">
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="athlete" className="text-xs font-bold uppercase tracking-wider">Athlete</SelectItem>
-                                                        <SelectItem value="coach" className="text-xs font-bold uppercase tracking-wider">Coach</SelectItem>
-                                                        <SelectItem value="admin" className="text-xs font-bold uppercase tracking-wider">Admin</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+
+                        <Alert className="mt-8 border-primary/30 bg-primary/5">
+                            <Lock className="h-4 w-4 text-primary" />
+                            <AlertTitle className="text-xs uppercase font-black text-primary italic">Developer Security Note</AlertTitle>
+                            <AlertDescription className="text-[10px] text-muted-foreground uppercase leading-relaxed font-bold">
+                                This testing lab uses the hardcoded demo password <b className="text-primary italic">password123</b>.
+                                This tool is intended for rapid permission auditing and UI verification.
+                                Access to this tab is restricted to <b className="text-primary italic">Administrators</b> only.
+                            </AlertDescription>
+                        </Alert>
+                    </TabsContent>
+                )}
+            </Tabs>
         </div>
     );
 };

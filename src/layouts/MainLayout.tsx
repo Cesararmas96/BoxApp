@@ -44,103 +44,112 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
         setIsSidebarOpen(false);
     };
 
+    const toggleSidebar = () => {
+        setIsSidebarOpen(!isSidebarOpen);
+    };
+
     return (
-        <div className="flex min-h-screen bg-background text-foreground">
+        <div className="flex min-h-screen bg-background text-foreground overflow-x-hidden">
             {/* Mobile Backdrop */}
-            {isSidebarOpen && (
-                <div
-                    className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden transition-opacity"
-                    onClick={() => setIsSidebarOpen(false)}
-                />
-            )}
+            <div
+                className={cn(
+                    "fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm lg:hidden transition-all duration-300",
+                    isSidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                )}
+                onClick={() => setIsSidebarOpen(false)}
+            />
 
             {/* Sidebar */}
             <aside className={cn(
-                "fixed left-0 top-0 z-50 h-full w-64 flex-col border-r bg-card transition-transform duration-300 ease-in-out lg:translate-x-0",
-                isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+                "fixed inset-y-0 left-0 z-[110] w-64 flex flex-col border-r bg-card transition-all duration-300 ease-in-out lg:translate-x-0 lg:z-40",
+                isSidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
             )}>
-                <div className="flex h-16 items-center justify-between px-6">
-                    <span className="text-xl font-bold tracking-tight text-primary">BOX MANAGER</span>
-                    <div className="flex items-center gap-2">
-                        <ModeToggle />
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="lg:hidden"
-                            onClick={() => setIsSidebarOpen(false)}
-                        >
-                            <X className="h-5 w-5" />
-                        </Button>
-                    </div>
+                <div className="flex h-16 items-center justify-between px-6 shrink-0">
+                    <span className="text-xl font-bold tracking-tight text-primary uppercase italic">Box Manager</span>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="lg:hidden hover:bg-destructive/10 hover:text-destructive transition-colors"
+                        onClick={() => setIsSidebarOpen(false)}
+                    >
+                        <X className="h-5 w-5" />
+                    </Button>
                 </div>
 
                 <Separator />
 
-                <div className="flex-1 px-4 py-4">
-                    <nav className="space-y-1">
+                <div className="flex-1 px-4 py-6 overflow-y-auto">
+                    <nav className="space-y-1.5">
                         {filteredNavItems.map((item) => (
                             <Button
                                 key={item.id}
                                 variant={activePage === item.id ? "default" : "ghost"}
                                 className={cn(
-                                    "w-full justify-start gap-3",
-                                    activePage === item.id ? "bg-primary text-white" : "text-muted-foreground"
+                                    "w-full justify-start gap-3 h-11 px-4 font-bold uppercase text-xs tracking-wider transition-all",
+                                    activePage === item.id
+                                        ? "bg-primary text-white shadow-lg shadow-primary/20 scale-[1.02]"
+                                        : "text-muted-foreground hover:bg-muted/50"
                                 )}
                                 onClick={() => navigateTo(item.id)}
                             >
-                                <item.icon className="h-5 w-5" />
+                                <item.icon className={cn("h-4 w-4", activePage === item.id ? "text-white" : "text-primary/70")} />
                                 {item.label}
                             </Button>
                         ))}
                     </nav>
                 </div>
 
-                <div className="mt-auto p-4 space-y-1">
-                    <Separator className="mb-4" />
+                <div className="p-4 space-y-2 mt-auto border-t bg-muted/10">
                     <Button
                         variant={activePage === 'settings' ? "default" : "ghost"}
                         className={cn(
-                            "w-full justify-start gap-3",
+                            "w-full justify-start gap-3 h-11 px-4 font-bold uppercase text-xs tracking-wider",
                             activePage === 'settings' ? "bg-primary text-white" : "text-muted-foreground"
                         )}
                         onClick={() => navigateTo('settings')}
                     >
-                        <SettingsIcon className="h-5 w-5" />
+                        <SettingsIcon className="h-4 w-4" />
                         Settings
                     </Button>
                     <Button
                         variant="ghost"
-                        className="w-full justify-start gap-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        className="w-full justify-start gap-3 h-11 px-4 text-muted-foreground font-bold uppercase text-xs tracking-wider hover:text-destructive hover:bg-destructive/10 transition-colors"
                         onClick={handleLogout}
                     >
-                        <LogOut className="h-5 w-5" />
+                        <LogOut className="h-4 w-4 text-destructive/70" />
                         Logout
                     </Button>
                 </div>
             </aside>
 
-            {/* Mobile Header (Hidden on Desktop) */}
-            <div className="lg:hidden flex fixed top-0 w-full h-16 items-center justify-between px-4 border-b bg-card z-30">
-                <div className="flex items-center">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="mr-2"
-                        onClick={() => setIsSidebarOpen(true)}
-                    >
-                        <Menu className="h-6 w-6" />
-                    </Button>
-                    <span className="text-lg font-bold text-primary">BOX MANAGER</span>
-                </div>
-                <ModeToggle />
-            </div>
+            {/* Content Wrapper */}
+            <div className="flex-1 flex flex-col min-w-0">
+                {/* Mobile Header */}
+                <header className="lg:hidden flex h-16 items-center justify-between px-4 border-b bg-card sticky top-0 z-50">
+                    <div className="flex items-center gap-3">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-primary hover:bg-primary/10"
+                            onClick={toggleSidebar}
+                        >
+                            <Menu className="h-6 w-6" />
+                        </Button>
+                        <span className="text-lg font-black italic tracking-tighter text-primary uppercase">Box Manager</span>
+                    </div>
+                    <ModeToggle />
+                </header>
 
-            {/* Main Content */}
-            <main className="flex-1 lg:ml-64 pt-16 lg:pt-0">
-                <div className="container mx-auto p-4 md:p-8 max-w-7xl">
-                    {children}
-                </div>
-            </main>
+                {/* Main Content Area */}
+                <main className={cn(
+                    "flex-1 transition-all duration-300",
+                    "lg:ml-64"
+                )}>
+                    <div className="container mx-auto p-4 md:p-8 max-w-7xl">
+                        {children}
+                    </div>
+                </main>
+            </div>
         </div>
     );
 };

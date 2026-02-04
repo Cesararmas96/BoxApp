@@ -90,7 +90,7 @@ export const Login: React.FC = () => {
                                     <Input
                                         id="email"
                                         type="email"
-                                        placeholder="coach@example.com"
+                                        placeholder="root@test.com"
                                         className="pl-10 focus-visible:ring-primary h-10"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}

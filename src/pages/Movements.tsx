@@ -34,7 +34,6 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useTranslation } from 'react-i18next';
-import { cn } from "@/lib/utils";
 import { useNotification } from '@/hooks/useNotification';
 import { Toast } from '@/components/ui/toast-custom';
 
@@ -93,18 +92,10 @@ export const Movements: React.FC = () => {
         e.preventDefault();
         setLoading(true);
 
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-            showNotification('error', 'SESSION EXPIRED. PLEASE RE-LOGIN.');
-            setLoading(false);
-            return;
-        }
-
         const movementData = {
             name: formData.name,
             category: formData.category,
-            demo_url: formData.demo_url || null,
-            created_by: user.id
+            demo_url: formData.demo_url || null
         };
 
         let result;

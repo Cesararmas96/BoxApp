@@ -35,6 +35,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { useNotification } from '@/hooks/useNotification';
+import { Toast } from '@/components/ui/toast-custom';
 
 interface Lead {
     id: string;
@@ -50,6 +52,7 @@ export const Leads: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [open, setOpen] = useState(false);
     const [newLead, setNewLead] = useState({ firstName: '', lastName: '', email: '' });
+    const { notification, showNotification, hideNotification } = useNotification();
 
     useEffect(() => {
         fetchLeads();
@@ -79,8 +82,9 @@ export const Leads: React.FC = () => {
             }]);
 
         if (error) {
-            alert('Error adding lead: ' + error.message);
+            showNotification('error', 'ERROR ADDING LEAD: ' + error.message.toUpperCase());
         } else {
+            showNotification('success', 'NEW LEAD ADDED SUCCESSFULLY');
             setOpen(false);
             setNewLead({ firstName: '', lastName: '', email: '' });
             fetchLeads();
@@ -96,7 +100,7 @@ export const Leads: React.FC = () => {
             .eq('id', lead.id);
 
         if (error) {
-            alert('Error updating status: ' + error.message);
+            showNotification('error', 'ERROR UPDATING STATUS: ' + error.message.toUpperCase());
         } else {
             if (newStatus === 'converted') {
                 await supabase
@@ -108,7 +112,9 @@ export const Leads: React.FC = () => {
                         role: 'athlete',
                         status: 'active'
                     }]);
-                alert('Lead converted and added to Members!');
+                showNotification('success', 'LEAD CONVERTED TO MEMBER!');
+            } else {
+                showNotification('success', 'STATUS UPDATED');
             }
             fetchLeads();
         }
@@ -271,6 +277,14 @@ export const Leads: React.FC = () => {
                     </Table>
                 </CardContent>
             </Card>
+
+            {notification && (
+                <Toast
+                    type={notification.type}
+                    message={notification.message}
+                    onClose={hideNotification}
+                />
+            )}
         </div>
     );
 };

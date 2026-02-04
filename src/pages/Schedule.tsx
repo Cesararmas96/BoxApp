@@ -23,6 +23,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
+import { useNotification } from '@/hooks/useNotification';
+import { Toast } from '@/components/ui/toast-custom';
 
 interface Session {
     id: string;
@@ -51,6 +53,7 @@ export const Schedule: React.FC = () => {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isFeedbackOpen, setIsFeedbackOpen] = useState<string | null>(null);
     const [feedback, setFeedback] = useState({ effort: 5, fatigue: 3, satisfaction: '😀', note: '' });
+    const { notification, showNotification, hideNotification } = useNotification();
 
     useEffect(() => {
         fetchSessions();
@@ -282,7 +285,9 @@ export const Schedule: React.FC = () => {
 
                                 if (!error) {
                                     setIsFeedbackOpen(null);
-                                    alert(t('schedule.feedback_success'));
+                                    showNotification('success', t('schedule.feedback_success').toUpperCase());
+                                } else {
+                                    showNotification('error', 'ERROR SAVING FEEDBACK: ' + error.message.toUpperCase());
                                 }
                             }}
                         >
@@ -291,6 +296,14 @@ export const Schedule: React.FC = () => {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {notification && (
+                <Toast
+                    type={notification.type}
+                    message={notification.message}
+                    onClose={hideNotification}
+                />
+            )}
         </div>
     );
 };

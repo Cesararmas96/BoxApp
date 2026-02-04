@@ -32,6 +32,8 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from 'react-i18next';
+import { useNotification } from '@/hooks/useNotification';
+import { Toast } from '@/components/ui/toast-custom';
 
 interface Profile {
     id: string;
@@ -69,6 +71,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
     });
     const [selectedMember, setSelectedMember] = useState<Profile | null>(null);
     const [detailsOpen, setDetailsOpen] = useState(false);
+    const { notification, showNotification, hideNotification } = useNotification();
 
     useEffect(() => {
         fetchMembers();
@@ -105,8 +108,9 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
             ]);
 
         if (error) {
-            alert('Error adding member: ' + error.message);
+            showNotification('error', 'ERROR ADDING MEMBER: ' + error.message.toUpperCase());
         } else {
+            showNotification('success', 'MEMBER ADDED SUCCESSFULLY');
             setOpen(false);
             setNewMember({
                 firstName: '',
@@ -408,6 +412,14 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {notification && (
+                <Toast
+                    type={notification.type}
+                    message={notification.message}
+                    onClose={hideNotification}
+                />
+            )}
         </div>
     );
 };

@@ -51,6 +51,8 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useTranslation } from 'react-i18next';
+import { useNotification } from '@/hooks/useNotification';
+import { Toast } from '@/components/ui/toast-custom';
 
 interface BlockItem {
     id: string;
@@ -232,6 +234,9 @@ export const Wods: React.FC = () => {
     const [movements, setMovements] = useState<any[]>([]);
     const [userPRs, setUserPRs] = useState<any[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [idToDelete, setIdToDelete] = useState<string | null>(null);
+    const { notification, showNotification, hideNotification } = useNotification();
     const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
@@ -387,14 +392,16 @@ export const Wods: React.FC = () => {
         setShowEditor(true);
     };
 
-    const handleDeleteWod = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this WOD?')) return;
+    const handleDeleteWod = async () => {
+        if (!idToDelete) return;
 
         setLoading(true);
-        const { error } = await supabase.from('wods').delete().eq('id', id);
+        const { error } = await supabase.from('wods').delete().eq('id', idToDelete);
         if (!error) {
             fetchWods();
         }
+        setDeleteConfirmOpen(false);
+        setIdToDelete(null);
         setLoading(false);
     };
 
@@ -424,6 +431,7 @@ export const Wods: React.FC = () => {
         const finalShareText = `${wod.title.toUpperCase()}\n\n${cleanText}\n\nSTIMULUS: ${wod.stimulus}\nSCALING: ${wod.scaling_options}`;
 
         navigator.clipboard.writeText(finalShareText);
+        showNotification('success', 'WOD COPIED TO CLIPBOARD');
         setIsCopying(wod.id);
         setTimeout(() => setIsCopying(null), 2000);
     };
@@ -471,6 +479,7 @@ export const Wods: React.FC = () => {
         }
 
         if (!error) {
+            showNotification('success', editingWodId ? 'SESSION UPDATED SUCCESSFULLY' : 'WOD PUBLISHED TO TRACKS');
             setShowEditor(false);
             setEditingWodId(null);
             setNewWOD({
@@ -480,6 +489,8 @@ export const Wods: React.FC = () => {
             });
             setSessionBlocks([]);
             fetchWods();
+        } else {
+            showNotification('error', `PUBLISH ERROR: ${error.message.toUpperCase()}`);
         }
         setLoading(false);
     };
@@ -917,8 +928,11 @@ export const Wods: React.FC = () => {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                        onClick={() => handleDeleteWod(wod.id)}
+                                        className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                        onClick={() => {
+                                            setIdToDelete(wod.id);
+                                            setDeleteConfirmOpen(true);
+                                        }}
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
@@ -1027,6 +1041,54 @@ export const Wods: React.FC = () => {
                     ))
                 )}
             </div>
+
+            {/* Premium Toast Notification System */}
+            {notification && (
+                <Toast
+                    type={notification.type}
+                    message={notification.message}
+                    onClose={hideNotification}
+                />
+            )}
+
+            {/* Premium Confirmation Dialog */}
+            <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+                <DialogContent shadow-none className="sm:max-w-[400px] border-destructive/20 bg-background/95 backdrop-blur-xl">
+                    <DialogHeader className="space-y-4">
+                        <div className="mx-auto h-20 w-20 rounded-full bg-destructive/10 flex items-center justify-center border-2 border-destructive/20 shadow-[0_0_30px_rgba(239,68,68,0.1)]">
+                            <Trash2 className="h-10 w-10 text-destructive animate-pulse" />
+                        </div>
+                        <div className="space-y-2 text-center">
+                            <DialogTitle className="text-3xl font-black italic uppercase tracking-tighter text-destructive">
+                                {t('common.confirm_delete', { defaultValue: 'CONFIRMAR ELIMINACIÓN' })}
+                            </DialogTitle>
+                            <p className="text-sm font-bold uppercase italic tracking-tight text-muted-foreground opacity-70 px-4 leading-relaxed">
+                                {t('wods.delete_warning', { defaultValue: '¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR ESTE WOD? ESTA ACCIÓN NO SE PUEDE DESHACER.' })}
+                            </p>
+                        </div>
+                    </DialogHeader>
+                    <div className="grid grid-cols-2 gap-3 mt-6">
+                        <Button
+                            variant="outline"
+                            className="font-black uppercase italic h-14 border-muted-foreground/20 hover:bg-muted/50 text-base"
+                            onClick={() => {
+                                setDeleteConfirmOpen(false);
+                                setIdToDelete(null);
+                            }}
+                        >
+                            {t('common.cancel', { defaultValue: 'CANCELAR' })}
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            className="font-black uppercase italic h-14 shadow-xl shadow-destructive/20 text-base"
+                            onClick={handleDeleteWod}
+                            disabled={loading}
+                        >
+                            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : t('common.delete', { defaultValue: 'ELIMINAR' })}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

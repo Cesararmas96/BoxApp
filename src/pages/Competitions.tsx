@@ -26,6 +26,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTranslation } from 'react-i18next';
+import { useNotification } from '@/hooks/useNotification';
+import { Toast } from '@/components/ui/toast-custom';
 
 
 interface Competition {
@@ -48,6 +50,7 @@ export const Competitions: React.FC = () => {
         start_date: '',
         end_date: ''
     });
+    const { notification, showNotification, hideNotification } = useNotification();
 
     useEffect(() => {
         fetchCompetitions();
@@ -72,8 +75,9 @@ export const Competitions: React.FC = () => {
             .insert([newComp]);
 
         if (error) {
-            alert('Error creating competition: ' + error.message);
+            showNotification('error', 'ERROR CREATING COMPETITION: ' + error.message.toUpperCase());
         } else {
+            showNotification('success', 'COMPETITION CREATED SUCCESSFULLY');
             setIsCreateOpen(false);
             setNewComp({ title: '', description: '', start_date: '', end_date: '' });
             fetchCompetitions();
@@ -253,6 +257,14 @@ export const Competitions: React.FC = () => {
                     </CardContent>
                 </Card>
             </div>
+
+            {notification && (
+                <Toast
+                    type={notification.type}
+                    message={notification.message}
+                    onClose={hideNotification}
+                />
+            )}
         </div>
     );
 };

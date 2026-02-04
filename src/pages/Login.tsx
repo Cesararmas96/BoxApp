@@ -13,6 +13,8 @@ import {
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useNotification } from '@/hooks/useNotification';
+import { Toast } from '@/components/ui/toast-custom';
 
 export const Login: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -21,6 +23,7 @@ export const Login: React.FC = () => {
     const [isSignUp, setIsSignUp] = useState(false);
     const [isResetting, setIsResetting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const { notification, showNotification, hideNotification } = useNotification();
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -32,7 +35,7 @@ export const Login: React.FC = () => {
                 redirectTo: `${window.location.origin}/reset-password`,
             });
             if (error) setError(error.message);
-            else alert('Check your email for the password reset link!');
+            else showNotification('success', 'PASSWORD RESET LINK SENT TO YOUR EMAIL');
             setIsResetting(false);
         } else {
             const { error } = isSignUp
@@ -42,7 +45,7 @@ export const Login: React.FC = () => {
             if (error) {
                 setError(error.message);
             } else if (isSignUp) {
-                alert('Verification email sent!');
+                showNotification('success', 'VERIFICATION EMAIL SENT');
             }
         }
         setLoading(false);
@@ -163,6 +166,14 @@ export const Login: React.FC = () => {
                     Powered by BoxManager OS 2026
                 </p>
             </div>
+
+            {notification && (
+                <Toast
+                    type={notification.type}
+                    message={notification.message}
+                    onClose={hideNotification}
+                />
+            )}
         </div>
     );
 };

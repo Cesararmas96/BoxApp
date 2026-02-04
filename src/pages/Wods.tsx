@@ -55,6 +55,7 @@ import { useTranslation } from 'react-i18next';
 interface BlockItem {
     id: string;
     movementName: string;
+    sets?: string;
     reps?: string;
     weight?: string;
     notes?: string;
@@ -88,6 +89,7 @@ interface WOD {
     scaling_injured: string;
     modalities: string[];
     track: 'CrossFit' | 'Novice' | 'Bodybuilding' | 'Engine';
+    structure?: SessionBlock[];
 }
 
 const TRACKS = ['CrossFit', 'Novice', 'Bodybuilding', 'Engine'];
@@ -98,29 +100,29 @@ const BLOCK_TEMPLATES: Record<string, { label: string, items: Omit<BlockItem, 'i
             label: 'General',
             items: [
                 { movementName: 'Run', reps: '200m' },
-                { movementName: 'Air Squat', reps: '10' },
-                { movementName: 'Push-up', reps: '10' },
-                { movementName: 'Sit-up', reps: '10' }
+                { movementName: 'Air Squat', sets: '1', reps: '10' },
+                { movementName: 'Push-up', sets: '1', reps: '10' },
+                { movementName: 'Sit-up', sets: '1', reps: '10' }
             ]
         },
         {
             label: 'Barbell',
             items: [
-                { movementName: 'Good Morning', reps: '5', notes: 'Empty Bar' },
-                { movementName: 'Back Squat', reps: '5' },
-                { movementName: 'Shoulder Press', reps: '5' },
-                { movementName: 'Stiff Leg Deadlift', reps: '5' }
+                { movementName: 'Good Morning', sets: '1', reps: '5', notes: 'Empty Bar' },
+                { movementName: 'Back Squat', sets: '1', reps: '5' },
+                { movementName: 'Shoulder Press', sets: '1', reps: '5' },
+                { movementName: 'Stiff Leg Deadlift', sets: '1', reps: '5' }
             ]
         }
     ],
     strength: [
         {
             label: '5x5 Str',
-            items: [{ movementName: 'Back Squat', reps: '5x5', weight: '75-80%', notes: 'Rest 2-3m' }]
+            items: [{ movementName: 'Back Squat', sets: '5', reps: '5', weight: '75-80%', notes: 'Rest 2-3m' }]
         },
         {
             label: 'Max Effort',
-            items: [{ movementName: 'Snatch', reps: 'Build to Heavy', weight: 'MAX', notes: 'Quality over weight' }]
+            items: [{ movementName: 'Snatch', sets: 'Build to', reps: '1', weight: 'MAX', notes: 'Quality over weight' }]
         }
     ],
     wod: [
@@ -136,8 +138,8 @@ const BLOCK_TEMPLATES: Record<string, { label: string, items: Omit<BlockItem, 'i
             label: '3 RFT',
             items: [
                 { movementName: 'Run', reps: '400m' },
-                { movementName: 'Thruster', reps: '21', weight: '95/65' },
-                { movementName: 'Pull-up', reps: '12' }
+                { movementName: 'Thruster', sets: '3', reps: '21', weight: '95/65' },
+                { movementName: 'Pull-up', sets: '3', reps: '12' }
             ]
         }
     ]
@@ -242,6 +244,7 @@ export const Wods: React.FC = () => {
                 const newItem: BlockItem = {
                     id: Math.random().toString(36).substr(2, 9),
                     movementName,
+                    sets: '',
                     reps: '',
                     weight: '',
                     notes: ''
@@ -277,6 +280,7 @@ export const Wods: React.FC = () => {
     const generateBlockContent = (block: SessionBlock) => {
         return block.items.map(item => {
             let line = `- **${item.movementName}**:`;
+            if (item.sets) line += ` ${item.sets} x`;
             if (item.reps) line += ` ${item.reps}`;
             if (item.weight) line += ` (${item.weight})`;
             if (item.notes) line += ` // ${item.notes}`;
@@ -325,6 +329,14 @@ export const Wods: React.FC = () => {
             lesson_plan: wod.lesson_plan,
             track: wod.track
         });
+
+        if (wod.structure) {
+            setSessionBlocks(wod.structure);
+        } else {
+            // Fallback for old records without structure
+            setSessionBlocks([]);
+        }
+
         setShowEditor(true);
     };
 
@@ -340,12 +352,27 @@ export const Wods: React.FC = () => {
     };
 
     const handleCopyWod = (wod: WOD) => {
-        // Clean markdown for copy
-        const cleanText = wod.metcon
-            .replace(/###\s+/g, '')
-            .replace(/\*\*/g, '')
-            .replace(/•/g, '-')
-            .trim();
+        let cleanText = '';
+
+        if (wod.structure && wod.structure.length > 0) {
+            cleanText = wod.structure.map(block => {
+                const items = block.items.map(item => {
+                    let line = `- ${item.movementName}`;
+                    if (item.sets) line += `: ${item.sets} x`;
+                    if (item.reps) line += ` ${item.reps}`;
+                    if (item.weight) line += ` (${item.weight})`;
+                    return line;
+                }).join('\n');
+                return `[${block.title.toUpperCase()}]\n${items}`;
+            }).join('\n\n');
+        } else {
+            // Clean markdown fallback
+            cleanText = wod.metcon
+                .replace(/###\s+/g, '')
+                .replace(/\*\*/g, '')
+                .replace(/•/g, '-')
+                .trim();
+        }
 
         const finalShareText = `${wod.title.toUpperCase()}\n\n${cleanText}\n\nSTIMULUS: ${wod.stimulus}\nSCALING: ${wod.scaling_options}`;
 
@@ -421,6 +448,7 @@ export const Wods: React.FC = () => {
         const wodData = {
             ...newWOD,
             metcon: finalMetcon,
+            structure: sessionBlocks,
             date: new Date().toISOString()
         };
 
@@ -738,7 +766,8 @@ export const Wods: React.FC = () => {
                                                                                                                             <Trash2 className="h-3 w-3" />
                                                                                                                         </Button>
                                                                                                                     </div>
-                                                                                                                    <div className="grid grid-cols-3 gap-2">
+                                                                                                                    <div className="grid grid-cols-4 gap-2">
+                                                                                                                        <Input className="h-6 text-[9px] font-bold" placeholder="SETS" value={item.sets} onChange={e => updateItem(block.id, item.id, { sets: e.target.value })} />
                                                                                                                         <Input className="h-6 text-[9px] font-bold" placeholder="REPS" value={item.reps} onChange={e => updateItem(block.id, item.id, { reps: e.target.value })} />
                                                                                                                         <Input className="h-6 text-[9px] font-bold" placeholder="WEIGHT" value={item.weight} onChange={e => updateItem(block.id, item.id, { weight: e.target.value })} />
                                                                                                                         <Input className="h-6 text-[9px] font-bold" placeholder="NOTES" value={item.notes} onChange={e => updateItem(block.id, item.id, { notes: e.target.value })} />
@@ -942,12 +971,54 @@ export const Wods: React.FC = () => {
                                             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary italic">
                                                 <Timer className="h-4 w-4" /> {t('wods.routine_description')}
                                             </div>
-                                            <Badge variant="secondary" className="text-[8px] font-black uppercase tracking-tighter opacity-50">STATIONARY BOARD VIEW</Badge>
+                                            <Badge variant="secondary" className="text-[8px] font-black uppercase tracking-tighter opacity-50">STRUCTURED VIEW</Badge>
                                         </div>
-                                        <div className="p-8 rounded-2xl bg-muted/40 font-mono text-lg border-2 border-muted leading-relaxed whitespace-pre-wrap shadow-inner relative overflow-hidden group/board">
-                                            <div className="absolute top-0 left-0 w-1 h-full bg-primary/20" />
-                                            {wod.metcon}
-                                        </div>
+
+                                        {wod.structure && wod.structure.length > 0 ? (
+                                            <div className="grid gap-4">
+                                                {wod.structure.map((block) => (
+                                                    <div key={block.id} className="relative pl-6 border-l-2 border-muted hover:border-primary/30 transition-colors group/timeline">
+                                                        <div className="absolute -left-[5px] top-0 h-2 w-2 rounded-full bg-muted group-hover/timeline:bg-primary transition-colors" />
+                                                        <p className="text-[10px] font-black uppercase italic text-primary/70 mb-2 tracking-tighter">{block.title}</p>
+                                                        <div className="grid gap-1.5">
+                                                            {block.items.map((item) => (
+                                                                <div key={item.id} className="flex items-start gap-4 p-3 rounded-xl bg-muted/20 border border-transparent hover:border-primary/10 hover:bg-muted/30 transition-all">
+                                                                    <div className="flex-1">
+                                                                        <p className="text-xs font-black uppercase italic leading-none">{item.movementName}</p>
+                                                                        {item.notes && <p className="text-[8px] text-muted-foreground uppercase font-bold mt-1 opacity-70">{item.notes}</p>}
+                                                                    </div>
+                                                                    <div className="flex gap-3">
+                                                                        {item.sets && (
+                                                                            <div className="text-right">
+                                                                                <p className="text-[8px] font-black uppercase opacity-40 leading-none mb-1">Sets</p>
+                                                                                <p className="text-[10px] font-bold italic">{item.sets}</p>
+                                                                            </div>
+                                                                        )}
+                                                                        {item.reps && (
+                                                                            <div className="text-right">
+                                                                                <p className="text-[8px] font-black uppercase opacity-40 leading-none mb-1">Reps</p>
+                                                                                <p className="text-[10px] font-bold italic">{item.reps}</p>
+                                                                            </div>
+                                                                        )}
+                                                                        {item.weight && (
+                                                                            <div className="text-right">
+                                                                                <p className="text-[8px] font-black uppercase opacity-40 leading-none mb-1">Load</p>
+                                                                                <p className="text-[10px] font-bold italic text-primary">{item.weight}</p>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="p-8 rounded-2xl bg-muted/40 font-mono text-lg border-2 border-muted leading-relaxed whitespace-pre-wrap shadow-inner relative overflow-hidden">
+                                                <div className="absolute top-0 left-0 w-1 h-full bg-primary/20" />
+                                                {wod.metcon}
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="grid sm:grid-cols-2 gap-6">

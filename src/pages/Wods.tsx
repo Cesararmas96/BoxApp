@@ -83,6 +83,40 @@ interface WOD {
 
 const TRACKS = ['CrossFit', 'Novice', 'Bodybuilding', 'Engine'];
 
+const BLOCK_TEMPLATES: Record<string, { label: string, content: string }[]> = {
+    warmup: [
+        { label: 'General', content: '3 Rounds:\n- 200m Run\n- 10 Air Squats\n- 10 Push-ups\n- 10 Sit-ups' },
+        { label: 'Barbell', content: 'Con barra vacía:\n- 5 Good Mornings\n- 5 Back Squats\n- 5 Shoulder Press\n- 5 Stiff Leg Deadlifts' },
+        { label: 'Mobility', content: 'Focus on:\n- 1 min Pigeon Stretch / side\n- 1 min Couch Stretch / side\n- 10 Scapular Pull-ups' }
+    ],
+    strength: [
+        { label: '5x5', content: '5 Sets of 5 Reps @ 75-80%\nRest 2-3 mins between sets.\nMovement: ' },
+        { label: '3x10', content: '3 Sets of 10 Reps\nFocus on quality of movement.\nMovement: ' },
+        { label: 'EMOM Str', content: 'EMOM 10 mins:\n- 3 Reps @ 80%\nMovement: ' },
+        { label: 'Max Effort', content: 'Build to a Heavy Single for the day.\nMovement: ' }
+    ],
+    wod: [
+        { label: 'AMRAP', content: 'AMRAP in 12 minutes:\n- 10 Burpees\n- 15 Kettlebell Swings\n- 20 Double Unders' },
+        { label: 'For Time', content: '3 Rounds for Time:\n- 400m Run\n- 21 Thrusters\n- 12 Pull-ups' },
+        { label: 'EMOM WOD', content: 'EMOM 20 minutes:\n- Min 1: 15 Wall Balls\n- Min 2: 12 Cal Row\n- Min 3: 15 Box Jumps\n- Min 4: Rest' },
+        { label: 'Tabata', content: '8 Rounds (20s On / 10s Off):\n- Movement 1\n- Movement 2' }
+    ],
+    accessory: [
+        { label: 'Core', content: '3 Rounds:\n- 20 Hollow Rocks\n- 20 Superman\n- 1 min Plank' },
+        { label: 'Bodybuilding', content: '3-4 Sets:\n- 12-15 Bicep Curls\n- 12-15 Tricep Extensions' }
+    ]
+};
+
+const COMMON_MOVEMENTS = [
+    'Air Squat', 'Back Squat', 'Front Squat', 'Overhead Squat',
+    'Shoulder Press', 'Push Press', 'Push Jerk', 'Split Jerk',
+    'Deadlift', 'Clean', 'Power Clean', 'Hang Power Clean',
+    'Snatch', 'Power Snatch', 'Hang Power Snatch',
+    'Burpee', 'Box Jump', 'Wall Ball', 'Kettlebell Swing',
+    'Pull-up', 'Chest to Bar', 'Muscle-up', 'Toes to Bar',
+    'Double Under', 'Row', 'Run', 'Assault Bike', 'Thruster'
+].sort();
+
 export const Wods: React.FC = () => {
     const { t } = useTranslation();
     const [wods, setWods] = useState<WOD[]>([]);
@@ -448,9 +482,33 @@ export const Wods: React.FC = () => {
                                                                     <Trash2 className="h-3.5 w-3.5" />
                                                                 </Button>
                                                             </div>
-                                                            <div className="p-0">
+                                                            <div className="p-0 space-y-2">
+                                                                <div className="px-3 pt-2 flex flex-wrap gap-1">
+                                                                    {BLOCK_TEMPLATES[block.type]?.map((template) => (
+                                                                        <Button
+                                                                            key={template.label}
+                                                                            variant="secondary"
+                                                                            size="sm"
+                                                                            className="h-5 px-2 text-[8px] font-bold uppercase tracking-wider bg-primary/5 hover:bg-primary/20 text-primary border border-primary/10"
+                                                                            onClick={() => updateBlock(block.id, { content: template.content })}
+                                                                        >
+                                                                            {template.label}
+                                                                        </Button>
+                                                                    ))}
+                                                                    <div className="h-4 w-px bg-border mx-1" />
+                                                                    <Select onValueChange={(val) => updateBlock(block.id, { content: block.content + (block.content ? '\n- ' : '- ') + val })}>
+                                                                        <SelectTrigger className="h-5 w-auto px-2 text-[8px] font-bold uppercase tracking-wider border-dashed">
+                                                                            <SelectValue placeholder="+ MOVEMENT" />
+                                                                        </SelectTrigger>
+                                                                        <SelectContent>
+                                                                            {COMMON_MOVEMENTS.map(m => (
+                                                                                <SelectItem key={m} value={m} className="text-[10px] font-bold uppercase italic">{m}</SelectItem>
+                                                                            ))}
+                                                                        </SelectContent>
+                                                                    </Select>
+                                                                </div>
                                                                 <Textarea
-                                                                    className="border-none focus-visible:ring-0 min-h-[100px] text-xs font-mono p-3 leading-relaxed"
+                                                                    className="border-none focus-visible:ring-0 min-h-[100px] text-xs font-mono p-3 pt-1 leading-relaxed"
                                                                     placeholder="Describe the activities..."
                                                                     value={block.content}
                                                                     onChange={(e) => updateBlock(block.id, { content: e.target.value })}

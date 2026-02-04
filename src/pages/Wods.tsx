@@ -74,6 +74,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useTranslation } from 'react-i18next';
 
 interface LessonBlock {
     time: string;
@@ -100,6 +101,7 @@ interface WOD {
 const TRACKS = ['CrossFit', 'Novice', 'Bodybuilding', 'Engine'];
 
 export const Wods: React.FC = () => {
+    const { t } = useTranslation();
     const [wods, setWods] = useState<WOD[]>([]);
     const [loading, setLoading] = useState(true);
     const [showEditor, setShowEditor] = useState(false);
@@ -309,36 +311,36 @@ export const Wods: React.FC = () => {
             <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div className="space-y-1">
                     <h1 className="text-3xl font-bold italic tracking-tighter uppercase text-primary flex items-center gap-2">
-                        <Activity className="h-8 w-8 text-primary" /> Programming
+                        <Activity className="h-8 w-8 text-primary" /> {t('wods.title')}
                     </h1>
-                    <p className="text-muted-foreground text-sm font-bold uppercase italic opacity-70">Design and track daily box performance.</p>
+                    <p className="text-muted-foreground text-sm font-bold uppercase italic opacity-70">{t('wods.subtitle')}</p>
                 </div>
 
                 <div className="flex gap-2">
                     <Dialog open={showEditor} onOpenChange={setShowEditor}>
                         <DialogTrigger asChild>
                             <Button className="gap-2 font-black uppercase italic shadow-lg shadow-primary/20">
-                                <Plus className="h-4 w-4" /> Program Session
+                                <Plus className="h-4 w-4" /> {t('wods.new_session')}
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[800px] h-[90vh] overflow-y-auto">
                             <DialogHeader>
-                                <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">Session Designer</DialogTitle>
+                                <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">{t('wods.designer_title')}</DialogTitle>
                                 <DialogDescription className="font-bold uppercase text-[10px] opacity-70">
-                                    Create a multi-dimensional training session or smart-import from .md
+                                    {t('wods.designer_subtitle')}
                                 </DialogDescription>
                             </DialogHeader>
 
                             <Tabs defaultValue="manual" className="mt-4" onValueChange={(v) => setEditorMode(v as any)}>
                                 <TabsList className="grid w-full grid-cols-2 mb-6">
-                                    <TabsTrigger value="manual" className="font-black text-[10px] uppercase">Manual Draft</TabsTrigger>
-                                    <TabsTrigger value="bulk" className="font-black text-[10px] uppercase">Smart Import (.md)</TabsTrigger>
+                                    <TabsTrigger value="manual" className="font-black text-[10px] uppercase">{t('wods.manual_draft')}</TabsTrigger>
+                                    <TabsTrigger value="bulk" className="font-black text-[10px] uppercase">{t('wods.smart_import')}</TabsTrigger>
                                 </TabsList>
 
                                 <TabsContent value="manual" className="space-y-6">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label className="uppercase text-[10px] font-black">Programming Track</Label>
+                                            <Label className="uppercase text-[10px] font-black">{t('wods.track')}</Label>
                                             <Select value={newWOD.track} onValueChange={(v) => setNewWOD({ ...newWOD, track: v as any })}>
                                                 <SelectTrigger className="font-bold italic uppercase h-10">
                                                     <SelectValue placeholder="Select track" />
@@ -349,7 +351,7 @@ export const Wods: React.FC = () => {
                                             </Select>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="uppercase text-[10px] font-black">WOD Title</Label>
+                                            <Label className="uppercase text-[10px] font-black">{t('wods.wod_title')}</Label>
                                             <Input
                                                 placeholder="e.g. MORNING GRIND"
                                                 className="uppercase italic font-bold h-10"
@@ -361,21 +363,21 @@ export const Wods: React.FC = () => {
 
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
-                                            <Label className="uppercase text-[10px] font-black">Routine Structure</Label>
+                                            <Label className="uppercase text-[10px] font-black">{t('wods.routine_structure')}</Label>
                                             <div className="flex gap-1.5">
                                                 <Button type="button" variant="outline" size="sm" onClick={() => setNewWOD(prev => ({ ...prev, metcon: prev.metcon + (prev.metcon ? "\n\n" : "") + "### WARM UP\n- " }))} className="h-7 text-[8px] font-black uppercase text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/10">
-                                                    + Warm-up
+                                                    {t('wods.add_warmup')}
                                                 </Button>
                                                 <Button type="button" variant="outline" size="sm" onClick={() => setNewWOD(prev => ({ ...prev, metcon: prev.metcon + (prev.metcon ? "\n\n" : "") + "### STRENGTH\n- " }))} className="h-7 text-[8px] font-black uppercase text-blue-500 border-blue-500/20 hover:bg-blue-500/10">
-                                                    + Strength
+                                                    {t('wods.add_strength')}
                                                 </Button>
                                                 <Button type="button" variant="outline" size="sm" onClick={() => setNewWOD(prev => ({ ...prev, metcon: prev.metcon + (prev.metcon ? "\n\n" : "") + "### METCON\n- " }))} className="h-7 text-[8px] font-black uppercase text-primary border-primary/20 hover:bg-primary/10">
-                                                    + Metcon
+                                                    {t('wods.add_metcon')}
                                                 </Button>
                                             </div>
                                         </div>
                                         <Textarea
-                                            placeholder="Define movements..."
+                                            placeholder={t('wods.placeholder_movements')}
                                             className="min-h-[250px] font-mono text-sm border-2"
                                             value={newWOD.metcon}
                                             onChange={(e) => setNewWOD({ ...newWOD, metcon: e.target.value })}
@@ -384,23 +386,23 @@ export const Wods: React.FC = () => {
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label className="uppercase text-[10px] font-black text-orange-500">Stimulus</Label>
+                                            <Label className="uppercase text-[10px] font-black text-orange-500">{t('wods.stimulus')}</Label>
                                             <Textarea className="h-20 text-xs italic" value={newWOD.stimulus} onChange={e => setNewWOD({ ...newWOD, stimulus: e.target.value })} />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="uppercase text-[10px] font-black text-blue-500">Scaling</Label>
+                                            <Label className="uppercase text-[10px] font-black text-blue-500">{t('wods.scaling')}</Label>
                                             <Textarea className="h-20 text-xs italic" value={newWOD.scaling_options} onChange={e => setNewWOD({ ...newWOD, scaling_options: e.target.value })} />
                                         </div>
                                     </div>
 
                                     <Button onClick={handlePublishManual} className="w-full font-black uppercase italic" disabled={loading}>
-                                        {loading ? <Loader2 className="animate-spin" /> : "Publish Session"}
+                                        {loading ? <Loader2 className="animate-spin" /> : t('wods.publish')}
                                     </Button>
                                 </TabsContent>
 
                                 <TabsContent value="bulk" className="space-y-6">
                                     <div className="space-y-4">
-                                        <Label className="uppercase text-[10px] font-black">Paste .md Content</Label>
+                                        <Label className="uppercase text-[10px] font-black">{t('wods.bulk_placeholder')}</Label>
                                         <Textarea
                                             className="min-h-[300px] font-mono text-xs border-2"
                                             placeholder="WOD 1...&#10;---&#10;WOD 2..."
@@ -412,7 +414,7 @@ export const Wods: React.FC = () => {
                                         />
                                         {stagedWods.length > 0 && (
                                             <div className="grid gap-2 border p-4 rounded-xl bg-muted/20">
-                                                <p className="text-[10px] font-black uppercase italic mb-2">Detected Sessions ({stagedWods.length})</p>
+                                                <p className="text-[10px] font-black uppercase italic mb-2">{t('wods.detected_sessions')} ({stagedWods.length})</p>
                                                 {stagedWods.map((w, i) => (
                                                     <div key={i} className="text-[10px] font-bold uppercase flex items-center justify-between border-b pb-1">
                                                         <span>{i + 1}. {w.title}</span>
@@ -420,7 +422,7 @@ export const Wods: React.FC = () => {
                                                     </div>
                                                 ))}
                                                 <Button onClick={importStagedWods} className="mt-4 font-black uppercase italic" disabled={loading}>
-                                                    {loading ? <Loader2 className="animate-spin" /> : `Import ${stagedWods.length} Days`}
+                                                    {loading ? <Loader2 className="animate-spin" /> : t('wods.import_days', { count: stagedWods.length })}
                                                 </Button>
                                             </div>
                                         )}
@@ -436,7 +438,7 @@ export const Wods: React.FC = () => {
             <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
                 <div className="flex flex-wrap gap-2">
                     <Button variant={activeTrack === 'all' ? "default" : "outline"} onClick={() => setActiveTrack('all')} className="h-9 px-4 font-black uppercase italic text-[10px] tracking-widest">
-                        All Tracks
+                        {t('wods.all_tracks')}
                     </Button>
                     {TRACKS.map(t => (
                         <Button
@@ -459,7 +461,7 @@ export const Wods: React.FC = () => {
                 <div className="relative w-full max-w-sm">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="Search sessions..."
+                        placeholder={t('common.search')}
                         className="pl-8 h-9 text-xs focus-visible:ring-primary"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -473,7 +475,7 @@ export const Wods: React.FC = () => {
                     <CardHeader className="py-4 border-b bg-muted/20">
                         <div className="flex items-center gap-2">
                             <Target className="h-4 w-4 text-primary" />
-                            <CardTitle className="text-sm font-bold uppercase italic tracking-tight">CrossFit Bias Checker</CardTitle>
+                            <CardTitle className="text-sm font-bold uppercase italic tracking-tight">{t('wods.bias_checker')}</CardTitle>
                         </div>
                     </CardHeader>
                     <CardContent className="py-6">
@@ -498,7 +500,7 @@ export const Wods: React.FC = () => {
                     <Card className="border-dashed border-2 py-20 text-center bg-muted/10">
                         <div className="space-y-4">
                             <Calendar className="h-12 w-12 text-muted-foreground/30 mx-auto" />
-                            <p className="text-muted-foreground font-bold uppercase italic">No sessions found.</p>
+                            <p className="text-muted-foreground font-bold uppercase italic">{t('common.no_data')}</p>
                         </div>
                     </Card>
                 ) : (
@@ -528,12 +530,12 @@ export const Wods: React.FC = () => {
                                     <Dialog open={showResultModal === wod.id} onOpenChange={(open) => setShowResultModal(open ? wod.id : null)}>
                                         <DialogTrigger asChild>
                                             <Button size="sm" className="font-black uppercase italic text-[10px] tracking-tight h-8">
-                                                <Trophy className="h-3.5 w-3.5 mr-2" /> Log Result
+                                                <Trophy className="h-3.5 w-3.5 mr-2" /> {t('wods.log_result')}
                                             </Button>
                                         </DialogTrigger>
                                         <DialogContent className="sm:max-w-[400px]">
                                             <DialogHeader>
-                                                <DialogTitle className="text-xl font-bold uppercase italic">Log Performance</DialogTitle>
+                                                <DialogTitle className="text-xl font-bold uppercase italic">{t('wods.log_result')}</DialogTitle>
                                             </DialogHeader>
                                             <form onSubmit={handleLogResult} className="space-y-4 py-4">
                                                 <div className="space-y-2">
@@ -544,7 +546,7 @@ export const Wods: React.FC = () => {
                                                     <input type="checkbox" id="rx_log" className="h-4 w-4" checked={resultData.rx} onChange={e => setResultData({ ...resultData, rx: e.target.checked })} />
                                                     <label htmlFor="rx_log" className="text-xs font-bold uppercase italic">RX Standard</label>
                                                 </div>
-                                                <Button type="submit" className="w-full font-black uppercase italic">Save Result</Button>
+                                                <Button type="submit" className="w-full font-black uppercase italic">{t('common.save')}</Button>
                                             </form>
                                         </DialogContent>
                                     </Dialog>
@@ -554,7 +556,7 @@ export const Wods: React.FC = () => {
                                 <div className="md:col-span-8 space-y-8">
                                     <div className="space-y-3">
                                         <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary italic">
-                                            <Timer className="h-4 w-4" /> Routine Description
+                                            <Timer className="h-4 w-4" /> {t('wods.routine_description')}
                                         </div>
                                         <div className="p-6 rounded-2xl bg-muted/40 font-mono text-base border leading-relaxed whitespace-pre-wrap">
                                             {wod.metcon}
@@ -563,11 +565,11 @@ export const Wods: React.FC = () => {
 
                                     <div className="grid sm:grid-cols-2 gap-6">
                                         <div className="p-4 rounded-xl border bg-orange-500/5 space-y-2">
-                                            <p className="text-[10px] font-black uppercase text-orange-600 italic">Stimulus</p>
+                                            <p className="text-[10px] font-black uppercase text-orange-600 italic">{t('wods.stimulus')}</p>
                                             <p className="text-xs font-semibold italic text-muted-foreground leading-relaxed">{wod.stimulus || "Max effort within capacity."}</p>
                                         </div>
                                         <div className="p-4 rounded-xl border bg-blue-500/5 space-y-2">
-                                            <p className="text-[10px] font-black uppercase text-blue-600 italic">Scaling</p>
+                                            <p className="text-[10px] font-black uppercase text-blue-600 italic">{t('wods.scaling')}</p>
                                             <p className="text-xs font-semibold italic text-muted-foreground leading-relaxed">{wod.scaling_options || "Scale weight to maintain intensity."}</p>
                                         </div>
                                     </div>
@@ -575,7 +577,7 @@ export const Wods: React.FC = () => {
                                     {calculateWeight(wod.metcon) && (
                                         <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 flex items-center justify-between">
                                             <div>
-                                                <p className="text-[10px] font-black uppercase text-primary mb-1">Calculated Loading</p>
+                                                <p className="text-[10px] font-black uppercase text-primary mb-1">{t('wods.calculated_loading')}</p>
                                                 <p className="text-sm font-bold italic">{calculateWeight(wod.metcon)?.name} @ {calculateWeight(wod.metcon)?.percent}%</p>
                                             </div>
                                             <div className="text-3xl font-black italic tracking-tighter text-primary">
@@ -587,11 +589,11 @@ export const Wods: React.FC = () => {
 
                                 <div className="md:col-span-4 border-l pl-10 space-y-6">
                                     <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest opacity-60 italic">
-                                        <History className="h-4 w-4" /> Latest Results
+                                        <History className="h-4 w-4" /> {t('wods.latest_results')}
                                     </div>
                                     <div className="space-y-3">
                                         {results.filter(r => r.wod_id === wod.id).length === 0 ? (
-                                            <div className="py-10 text-center border-2 border-dashed rounded-xl opacity-30 text-[10px] font-black uppercase italic">No logs yet</div>
+                                            <div className="py-10 text-center border-2 border-dashed rounded-xl opacity-30 text-[10px] font-black uppercase italic">{t('common.no_data')}</div>
                                         ) : (
                                             results.filter(r => r.wod_id === wod.id).slice(0, 5).map(r => (
                                                 <div key={r.id} className="flex items-center justify-between p-3 bg-muted/40 rounded-lg border border-transparent hover:border-primary/20 transition-all">
@@ -608,7 +610,7 @@ export const Wods: React.FC = () => {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="text-center">
                                             <p className="text-xl font-black italic">{results.filter(r => r.wod_id === wod.id).length}</p>
-                                            <p className="text-[8px] font-black uppercase opacity-60">Logs</p>
+                                            <p className="text-[8px] font-black uppercase opacity-60">{t('wods.results_logged')}</p>
                                         </div>
                                         <div className="text-center">
                                             <p className="text-xl font-black italic text-primary">
@@ -616,7 +618,7 @@ export const Wods: React.FC = () => {
                                                     ? Math.round((results.filter(r => r.wod_id === wod.id && r.rx).length / results.filter(r => r.wod_id === wod.id).length) * 100)
                                                     : 0}%
                                             </p>
-                                            <p className="text-[8px] font-black uppercase opacity-60">RX Rate</p>
+                                            <p className="text-[8px] font-black uppercase opacity-60">{t('wods.rx_rate')}</p>
                                         </div>
                                     </div>
                                 </div>

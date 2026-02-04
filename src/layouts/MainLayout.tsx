@@ -5,6 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import { ModeToggle } from '@/components/mode-toggle';
+import { useTranslation } from 'react-i18next';
+import { Languages } from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -13,16 +21,16 @@ interface LayoutProps {
     userProfile?: any;
 }
 
-const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+const getNavItems = (t: any) => [
+    { id: 'dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
     { id: 'schedule', label: 'Schedule', icon: CalendarIcon },
-    { id: 'members', label: 'Members', icon: Users, roles: ['admin', 'receptionist', 'coach'] },
-    { id: 'roles', label: 'Roles', icon: Shield, roles: ['admin'] },
+    { id: 'members', label: t('nav.members'), icon: Users, roles: ['admin', 'receptionist', 'coach'] },
+    { id: 'roles', label: t('nav.roles'), icon: Shield, roles: ['admin'] },
     { id: 'audit-logs', label: 'Audit Logs', icon: History, roles: ['admin'] },
     { id: 'leads', label: 'Leads', icon: Inbox, roles: ['admin', 'receptionist'] },
     { id: 'billing', label: 'Facturación', icon: Receipt, roles: ['admin', 'receptionist'] },
-    { id: 'wods', label: 'WODs', icon: Trophy },
-    { id: 'benchmarks', label: 'Benchmarks', icon: Trophy },
+    { id: 'wods', label: t('nav.programming'), icon: Trophy },
+    { id: 'benchmarks', label: t('nav.benchmarks'), icon: Trophy },
     { id: 'competitions', label: 'Competitions', icon: Medal, roles: ['admin', 'coach'] },
     { id: 'box-display', label: 'TV View', icon: Monitor, roles: ['admin', 'receptionist', 'coach'] },
     { id: 'analytics', label: 'Analytics', icon: BarChart3, roles: ['admin'] },
@@ -30,6 +38,13 @@ const navItems = [
 
 export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, userProfile }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const { t, i18n } = useTranslation();
+
+    const changeLanguage = (lng: string) => {
+        i18n.changeLanguage(lng);
+    };
+
+    const navItems = getNavItems(t);
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -137,7 +152,20 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
                         </Button>
                         <span className="text-lg font-black italic tracking-tighter text-primary uppercase">Box Manager</span>
                     </div>
-                    <ModeToggle />
+                    <div className="flex items-center gap-2">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <Languages className="h-5 w-5" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => changeLanguage('es')}>Español</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => changeLanguage('en')}>English</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <ModeToggle />
+                    </div>
                 </header>
 
                 {/* Main Content Area */}

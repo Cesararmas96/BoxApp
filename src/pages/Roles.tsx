@@ -35,6 +35,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "../lib/utils";
+import { useTranslation } from 'react-i18next';
 
 interface Profile {
     id: string;
@@ -69,6 +70,7 @@ const TEST_USERS = [
 ];
 
 export const Roles: React.FC = () => {
+    const { t } = useTranslation();
     const [users, setUsers] = useState<Profile[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -144,10 +146,10 @@ export const Roles: React.FC = () => {
 
     const getRoleBadge = (role: string) => {
         switch (role) {
-            case 'admin': return <Badge variant="default" className="bg-primary/20 text-primary border-primary/30 uppercase text-[10px]">Administrator</Badge>;
-            case 'coach': return <Badge variant="secondary" className="bg-indigo-500/20 text-indigo-400 border-indigo-500/30 uppercase text-[10px]">Coach</Badge>;
-            case 'receptionist': return <Badge variant="secondary" className="bg-amber-500/20 text-amber-500 border-amber-500/30 uppercase text-[10px]">Receptionist</Badge>;
-            case 'athlete': return <Badge variant="outline" className="text-muted-foreground uppercase text-[10px]">Athlete</Badge>;
+            case 'admin': return <Badge variant="default" className="bg-primary/20 text-primary border-primary/30 uppercase text-[10px]">{t('roles.role_admin')}</Badge>;
+            case 'coach': return <Badge variant="secondary" className="bg-indigo-500/20 text-indigo-400 border-indigo-500/30 uppercase text-[10px]">{t('roles.role_coach')}</Badge>;
+            case 'receptionist': return <Badge variant="secondary" className="bg-amber-500/20 text-amber-500 border-amber-500/30 uppercase text-[10px]">{t('roles.role_receptionist')}</Badge>;
+            case 'athlete': return <Badge variant="outline" className="text-muted-foreground uppercase text-[10px]">{t('roles.role_athlete')}</Badge>;
             default: return <Badge variant="outline" className="uppercase text-[10px]">{role}</Badge>;
         }
     };
@@ -158,9 +160,9 @@ export const Roles: React.FC = () => {
         <div className="space-y-6 text-left">
             <div className="flex flex-col gap-2">
                 <h1 className="text-3xl font-black italic tracking-tighter uppercase text-primary flex items-center gap-3">
-                    <Shield className="h-8 w-8 text-primary" /> Authority Control
+                    <Shield className="h-8 w-8 text-primary" /> {t('roles.title')}
                 </h1>
-                <p className="text-muted-foreground">Manage system permissions and verify user access levels.</p>
+                <p className="text-muted-foreground">{t('roles.subtitle')}</p>
             </div>
 
             {message && (
@@ -173,9 +175,9 @@ export const Roles: React.FC = () => {
 
             <Tabs defaultValue="users" className="w-full">
                 <TabsList className={cn("grid w-full mb-6", isAdmin ? "grid-cols-3" : "grid-cols-2")}>
-                    <TabsTrigger value="users" className="font-bold uppercase text-[10px]">User List</TabsTrigger>
-                    <TabsTrigger value="matrix" className="font-bold uppercase text-[10px]">Access Matrix</TabsTrigger>
-                    {isAdmin && <TabsTrigger value="testing" className="font-bold uppercase text-[10px] text-primary">Testing Lab</TabsTrigger>}
+                    <TabsTrigger value="users" className="font-bold uppercase text-[10px]">{t('roles.user_list')}</TabsTrigger>
+                    <TabsTrigger value="matrix" className="font-bold uppercase text-[10px]">{t('roles.access_matrix')}</TabsTrigger>
+                    {isAdmin && <TabsTrigger value="testing" className="font-bold uppercase text-[10px] text-primary">{t('roles.testing_lab')}</TabsTrigger>}
                 </TabsList>
 
                 <TabsContent value="users">
@@ -183,14 +185,14 @@ export const Roles: React.FC = () => {
                         <CardHeader className="pb-3 border-b bg-muted/20">
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                 <div className="space-y-1">
-                                    <CardTitle className="text-lg font-bold uppercase tracking-tight italic">User Privilege Matrix</CardTitle>
-                                    <CardDescription>Assign roles to control feature availability.</CardDescription>
+                                    <CardTitle className="text-lg font-bold uppercase tracking-tight italic">{t('roles.access_matrix')}</CardTitle>
+                                    <CardDescription>{t('roles.subtitle')}</CardDescription>
                                 </div>
                                 <div className="relative w-full max-w-sm">
                                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         type="search"
-                                        placeholder="Search by name or email..."
+                                        placeholder={t('common.search')}
                                         className="pl-8 focus-visible:ring-primary h-9 text-xs"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -203,10 +205,10 @@ export const Roles: React.FC = () => {
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="bg-muted/50 border-none hover:bg-muted/50">
-                                            <TableHead className="w-[300px] font-black uppercase text-[10px] tracking-widest pl-6">Identity</TableHead>
-                                            <TableHead className="font-black uppercase text-[10px] tracking-widest text-center">Security Status</TableHead>
-                                            <TableHead className="font-black uppercase text-[10px] tracking-widest">Active Role</TableHead>
-                                            <TableHead className="text-right font-black uppercase text-[10px] tracking-widest pr-6">Management</TableHead>
+                                            <TableHead className="w-[300px] font-black uppercase text-[10px] tracking-widest pl-6">{t('roles.identity')}</TableHead>
+                                            <TableHead className="font-black uppercase text-[10px] tracking-widest text-center">{t('roles.security_status')}</TableHead>
+                                            <TableHead className="font-black uppercase text-[10px] tracking-widest">{t('roles.active_role')}</TableHead>
+                                            <TableHead className="text-right font-black uppercase text-[10px] tracking-widest pr-6">{t('roles.management')}</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -214,13 +216,13 @@ export const Roles: React.FC = () => {
                                             <TableRow>
                                                 <TableCell colSpan={4} className="text-center py-20">
                                                     <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto mb-4" />
-                                                    <p className="text-sm font-black uppercase italic tracking-widest text-muted-foreground">Accessing Database...</p>
+                                                    <p className="text-sm font-black uppercase italic tracking-widest text-muted-foreground">{t('common.loading')}</p>
                                                 </TableCell>
                                             </TableRow>
                                         ) : filteredUsers.length === 0 ? (
                                             <TableRow>
                                                 <TableCell colSpan={4} className="text-center py-20 text-muted-foreground italic">
-                                                    No users found matching the security parameters.
+                                                    {t('common.no_data')}
                                                 </TableCell>
                                             </TableRow>
                                         ) : (
@@ -245,7 +247,7 @@ export const Roles: React.FC = () => {
                                                     <TableCell className="text-center">
                                                         <div className="flex items-center justify-center gap-2">
                                                             <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                                                            <span className="text-[10px] font-black uppercase tracking-widest italic">Encrypted</span>
+                                                            <span className="text-[10px] font-black uppercase tracking-widest italic">{t('roles.encrypted')}</span>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
@@ -263,10 +265,10 @@ export const Roles: React.FC = () => {
                                                                     <SelectValue />
                                                                 </SelectTrigger>
                                                                 <SelectContent>
-                                                                    <SelectItem value="athlete" className="text-[10px] font-black uppercase tracking-wider">Athlete</SelectItem>
-                                                                    <SelectItem value="coach" className="text-[10px] font-black uppercase tracking-wider">Coach</SelectItem>
-                                                                    <SelectItem value="receptionist" className="text-[10px] font-black uppercase tracking-wider">Receptionist</SelectItem>
-                                                                    <SelectItem value="admin" className="text-[10px] font-black uppercase tracking-wider">Admin</SelectItem>
+                                                                    <SelectItem value="athlete" className="text-[10px] font-black uppercase tracking-wider">{t('roles.role_athlete')}</SelectItem>
+                                                                    <SelectItem value="coach" className="text-[10px] font-black uppercase tracking-wider">{t('roles.role_coach')}</SelectItem>
+                                                                    <SelectItem value="receptionist" className="text-[10px] font-black uppercase tracking-wider">{t('roles.role_receptionist')}</SelectItem>
+                                                                    <SelectItem value="admin" className="text-[10px] font-black uppercase tracking-wider">{t('roles.role_admin')}</SelectItem>
                                                                 </SelectContent>
                                                             </Select>
                                                         </div>
@@ -284,19 +286,19 @@ export const Roles: React.FC = () => {
                 <TabsContent value="matrix">
                     <Card className="border shadow-xl">
                         <CardHeader className="bg-muted/20 border-b">
-                            <CardTitle className="text-lg font-bold uppercase tracking-tight italic">Module Access Matrix</CardTitle>
-                            <CardDescription>Visual representation of page-level access control.</CardDescription>
+                            <CardTitle className="text-lg font-bold uppercase tracking-tight italic">{t('roles.access_matrix')}</CardTitle>
+                            <CardDescription>{t('roles.subtitle')}</CardDescription>
                         </CardHeader>
                         <CardContent className="p-0">
                             <div className="overflow-x-auto">
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="bg-muted/50 border-none hover:bg-muted/50">
-                                            <TableHead className="font-black uppercase text-[10px] tracking-widest pl-6">Module / Feature</TableHead>
-                                            <TableHead className="text-center font-black uppercase text-[10px] tracking-widest">Admin</TableHead>
-                                            <TableHead className="text-center font-black uppercase text-[10px] tracking-widest">Coach</TableHead>
-                                            <TableHead className="text-center font-black uppercase text-[10px] tracking-widest">Reception</TableHead>
-                                            <TableHead className="text-center font-black uppercase text-[10px] tracking-widest">Athlete</TableHead>
+                                            <TableHead className="font-black uppercase text-[10px] tracking-widest pl-6">{t('roles.identity')}</TableHead>
+                                            <TableHead className="text-center font-black uppercase text-[10px] tracking-widest">{t('roles.role_admin')}</TableHead>
+                                            <TableHead className="text-center font-black uppercase text-[10px] tracking-widest">{t('roles.role_coach')}</TableHead>
+                                            <TableHead className="text-center font-black uppercase text-[10px] tracking-widest">{t('roles.role_receptionist')}</TableHead>
+                                            <TableHead className="text-center font-black uppercase text-[10px] tracking-widest">{t('roles.role_athlete')}</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -363,7 +365,7 @@ export const Roles: React.FC = () => {
                                             ) : (
                                                 <Key className="h-3 w-3 mr-2" />
                                             )}
-                                            Switch Account
+                                            {t('roles.switch_account')}
                                         </Button>
                                     </CardContent>
                                     <div className="h-1 bg-primary/40 w-0 group-hover:w-full transition-all duration-500" />

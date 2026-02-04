@@ -8,9 +8,7 @@ import {
     Zap,
     Clock,
     Flame,
-    Calendar,
-    ChevronRight,
-    AlertCircle
+    Calendar
 } from 'lucide-react';
 import {
     Card,

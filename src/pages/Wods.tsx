@@ -12,14 +12,11 @@ import {
     Search,
     GripVertical,
     Trash2,
-    Settings2,
     Dumbbell,
     Zap as ZapIcon,
     Shield,
     RotateCcw,
-    Flame as FlameIcon,
-    ChevronUp,
-    ChevronDown
+    Flame as FlameIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,7 +27,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import {
     Dialog,
     DialogContent,
@@ -187,7 +184,11 @@ export const Wods: React.FC = () => {
 
     const [sessionBlocks, setSessionBlocks] = useState<SessionBlock[]>([]);
     const [movementSearch, setMovementSearch] = useState('');
-    const [manualEntryStatus, setManualEntryStatus] = useState<Record<string, boolean>>({});
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const [userPRs, setUserPRs] = useState<any[]>([]);
     const [results, setResults] = useState<any[]>([]);
@@ -269,43 +270,6 @@ export const Wods: React.FC = () => {
         }));
     };
 
-    const moveUpItem = (blockId: string, itemIndex: number) => {
-        if (itemIndex === 0) return;
-        setSessionBlocks(sessionBlocks.map(b => {
-            if (b.id === blockId) {
-                const newItems = [...b.items];
-                [newItems[itemIndex - 1], newItems[itemIndex]] = [newItems[itemIndex], newItems[itemIndex - 1]];
-                return { ...b, items: newItems };
-            }
-            return b;
-        }));
-    };
-
-    const moveDownItem = (blockId: string, itemIndex: number) => {
-        setSessionBlocks(sessionBlocks.map(b => {
-            if (b.id === blockId) {
-                if (itemIndex >= b.items.length - 1) return b;
-                const newItems = [...b.items];
-                [newItems[itemIndex + 1], newItems[itemIndex]] = [newItems[itemIndex], newItems[itemIndex + 1]];
-                return { ...b, items: newItems };
-            }
-            return b;
-        }));
-    };
-
-    const onDragEndItems = (result: DropResult, blockId: string) => {
-        if (!result.destination) return;
-
-        setSessionBlocks(sessionBlocks.map(b => {
-            if (b.id === blockId) {
-                const newItems = Array.from(b.items);
-                const [reorderedItem] = newItems.splice(result.source.index, 1);
-                newItems.splice(result.destination!.index, 0, reorderedItem);
-                return { ...b, items: newItems };
-            }
-            return b;
-        }));
-    };
 
     const removeItem = (blockId: string, itemId: string) => {
         setSessionBlocks(sessionBlocks.map(b => {
@@ -595,190 +559,172 @@ export const Wods: React.FC = () => {
                                                     <Plus className="h-8 w-8 mx-auto mb-2" />
                                                     <p className="text-[10px] font-black uppercase tracking-widest italic">Add your first block to start programming</p>
                                                 </div>
-                                            ) : (
-                                                <div className="space-y-3">
-                                                    {sessionBlocks.map((block, index) => (
-                                                        <Card key={block.id} className="border shadow-sm overflow-hidden group">
-                                                            <div className="flex items-center gap-3 px-3 py-2 bg-muted/30 border-b">
-                                                                <GripVertical className="h-4 w-4 text-muted-foreground opacity-50" />
-                                                                <div className="flex-1 flex items-center gap-2">
-                                                                    <div className={cn(
-                                                                        "h-2 w-2 rounded-full",
-                                                                        block.type === 'warmup' && "bg-orange-500",
-                                                                        block.type === 'strength' && "bg-blue-500",
-                                                                        block.type === 'conditioning' && "bg-emerald-500",
-                                                                        block.type === 'wod' && "bg-primary",
-                                                                        block.type === 'accessory' && "bg-indigo-500",
-                                                                        block.type === 'cooldown' && "bg-zinc-500"
-                                                                    )} />
-                                                                    <Input
-                                                                        className="h-6 bg-transparent border-none font-black uppercase italic text-[10px] tracking-tight p-0 focus-visible:ring-0"
-                                                                        value={block.title}
-                                                                        onChange={(e) => updateBlock(block.id, { title: e.target.value })}
-                                                                    />
-                                                                </div>
-                                                                <div className="flex items-center gap-1">
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        className="h-6 w-6 text-destructive"
-                                                                        onClick={() => removeBlock(block.id)}
-                                                                    >
-                                                                        <Trash2 className="h-3.5 w-3.5" />
-                                                                    </Button>
-                                                                </div>
-                                                            </div>
-                                                            <div className="p-0 space-y-3">
-                                                                {/* Visual Tools Bar */}
-                                                                <div className="px-3 pt-3 space-y-3">
-                                                                    <div className="flex flex-wrap gap-1">
-                                                                        {BLOCK_TEMPLATES[block.type]?.map((template) => (
-                                                                            <Button
-                                                                                key={template.label}
-                                                                                variant="secondary"
-                                                                                size="sm"
-                                                                                className="h-5 px-2 text-[8px] font-bold uppercase tracking-wider bg-primary/5 hover:bg-primary/20 text-primary border border-primary/10"
-                                                                                onClick={() => addTemplateToBlock(block.id, template)}
-                                                                            >
-                                                                                {template.label}
-                                                                            </Button>
-                                                                        ))}
-                                                                    </div>
+                                            ) : isMounted && (
+                                                <DragDropContext onDragEnd={(result) => {
+                                                    const { source, destination, type } = result;
+                                                    if (!destination) return;
 
-                                                                    <div className="relative">
-                                                                        <Search className="absolute left-2 top-2 h-3 w-3 text-muted-foreground" />
-                                                                        <Input
-                                                                            placeholder="Search movement to add..."
-                                                                            className="h-7 pl-7 text-[10px] uppercase font-bold italic"
-                                                                            onChange={(e) => setMovementSearch(e.target.value)}
-                                                                        />
-                                                                        {movementSearch && (
-                                                                            <Card className="absolute z-50 left-0 right-0 top-8 max-h-[200px] overflow-y-auto shadow-2xl p-2 grid grid-cols-2 gap-2">
-                                                                                {COMMON_MOVEMENTS
-                                                                                    .filter(m => m.name.toLowerCase().includes(movementSearch.toLowerCase()))
-                                                                                    .map(m => (
-                                                                                        <button
-                                                                                            key={m.name}
-                                                                                            onClick={() => {
-                                                                                                addItemToBlock(block.id, m.name);
-                                                                                                setMovementSearch('');
-                                                                                            }}
-                                                                                            className="flex items-center gap-2 p-1.5 hover:bg-muted rounded-lg text-left transition-colors border border-transparent hover:border-primary/20"
-                                                                                        >
-                                                                                            <img src={m.image} alt={m.name} className="h-8 w-8 rounded object-cover shadow-sm" />
-                                                                                            <div>
-                                                                                                <p className="text-[10px] font-black uppercase italic leading-none">{m.name}</p>
-                                                                                                <p className="text-[8px] text-muted-foreground uppercase font-bold">{m.category}</p>
-                                                                                            </div>
-                                                                                        </button>
-                                                                                    ))}
+                                                    if (type === 'block') {
+                                                        const newBlocks = Array.from(sessionBlocks);
+                                                        const [reorderedBlock] = newBlocks.splice(source.index, 1);
+                                                        newBlocks.splice(destination.index, 0, reorderedBlock);
+                                                        setSessionBlocks(newBlocks);
+                                                        return;
+                                                    }
+
+                                                    const blockId = source.droppableId.replace('items-', '');
+                                                    setSessionBlocks(sessionBlocks.map(b => {
+                                                        if (b.id === blockId) {
+                                                            const newItems = Array.from(b.items);
+                                                            const [reorderedItem] = newItems.splice(source.index, 1);
+                                                            newItems.splice(destination.index, 0, reorderedItem);
+                                                            return { ...b, items: newItems };
+                                                        }
+                                                        return b;
+                                                    }));
+                                                }}>
+                                                    <Droppable droppableId="session-blocks" type="block">
+                                                        {(provided) => (
+                                                            <div
+                                                                {...provided.droppableProps}
+                                                                ref={provided.innerRef}
+                                                                className="space-y-3"
+                                                            >
+                                                                {sessionBlocks.map((block, index) => (
+                                                                    <Draggable key={block.id} draggableId={block.id} index={index}>
+                                                                        {(provided, snapshot) => (
+                                                                            <Card
+                                                                                ref={provided.innerRef}
+                                                                                {...provided.draggableProps}
+                                                                                className={cn(
+                                                                                    "border shadow-sm group transition-shadow bg-background",
+                                                                                    snapshot.isDragging && "shadow-2xl border-primary/50 relative z-50"
+                                                                                )}
+                                                                            >
+                                                                                <div className="flex items-center gap-3 px-3 py-2 bg-muted/30 border-b">
+                                                                                    <div
+                                                                                        {...provided.dragHandleProps}
+                                                                                        className="cursor-grab active:cursor-grabbing"
+                                                                                    >
+                                                                                        <GripVertical className="h-4 w-4 text-muted-foreground opacity-50 hover:opacity-100 transition-opacity" />
+                                                                                    </div>
+                                                                                    <div className="flex-1 flex items-center gap-2">
+                                                                                        <div className={cn(
+                                                                                            "h-2 w-2 rounded-full",
+                                                                                            block.type === 'warmup' && "bg-orange-500",
+                                                                                            block.type === 'strength' && "bg-blue-500",
+                                                                                            block.type === 'conditioning' && "bg-emerald-500",
+                                                                                            block.type === 'wod' && "bg-primary",
+                                                                                            block.type === 'accessory' && "bg-indigo-500",
+                                                                                            block.type === 'cooldown' && "bg-zinc-500"
+                                                                                        )} />
+                                                                                        <Input
+                                                                                            className="h-6 bg-transparent border-none font-black uppercase italic text-[10px] tracking-tight p-0 focus-visible:ring-0"
+                                                                                            value={block.title}
+                                                                                            onChange={(e) => updateBlock(block.id, { title: e.target.value })}
+                                                                                        />
+                                                                                    </div>
+                                                                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => removeBlock(block.id)}>
+                                                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                                                    </Button>
+                                                                                </div>
+                                                                                <div className="p-0">
+                                                                                    <div className="px-3 pt-3 space-y-3">
+                                                                                        <div className="flex flex-wrap gap-1">
+                                                                                            {BLOCK_TEMPLATES[block.type]?.map((template) => (
+                                                                                                <Button
+                                                                                                    key={template.label}
+                                                                                                    variant="secondary"
+                                                                                                    size="sm"
+                                                                                                    className="h-5 px-2 text-[8px] font-bold uppercase tracking-wider bg-primary/5 hover:bg-primary/20 text-primary border border-primary/10"
+                                                                                                    onClick={() => addTemplateToBlock(block.id, template)}
+                                                                                                >
+                                                                                                    {template.label}
+                                                                                                </Button>
+                                                                                            ))}
+                                                                                        </div>
+                                                                                        <div className="relative">
+                                                                                            <Search className="absolute left-2 top-2 h-3 w-3 text-muted-foreground" />
+                                                                                            <Input
+                                                                                                placeholder="Search movement..."
+                                                                                                className="h-7 pl-7 text-[10px] uppercase font-bold italic"
+                                                                                                value={movementSearch}
+                                                                                                onChange={(e) => setMovementSearch(e.target.value)}
+                                                                                            />
+                                                                                            {movementSearch && (
+                                                                                                <Card className="absolute z-[100] left-0 right-0 top-8 max-h-[200px] overflow-y-auto shadow-2xl p-2 grid grid-cols-2 gap-2">
+                                                                                                    {COMMON_MOVEMENTS
+                                                                                                        .filter(m => m.name.toLowerCase().includes(movementSearch.toLowerCase()))
+                                                                                                        .map(m => (
+                                                                                                            <button
+                                                                                                                key={m.name}
+                                                                                                                onClick={() => {
+                                                                                                                    addItemToBlock(block.id, m.name);
+                                                                                                                    setMovementSearch('');
+                                                                                                                }}
+                                                                                                                className="flex items-center gap-2 p-1.5 hover:bg-muted rounded-lg text-left transition-colors border border-transparent hover:border-primary/20"
+                                                                                                            >
+                                                                                                                <img src={m.image} alt={m.name} className="h-8 w-8 rounded object-cover" />
+                                                                                                                <div>
+                                                                                                                    <p className="text-[10px] font-black uppercase italic leading-none">{m.name}</p>
+                                                                                                                    <p className="text-[8px] text-muted-foreground uppercase font-bold">{m.category}</p>
+                                                                                                                </div>
+                                                                                                            </button>
+                                                                                                        ))}
+                                                                                                </Card>
+                                                                                            )}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div className="p-3">
+                                                                                        <Droppable droppableId={`items-${block.id}`} type="item">
+                                                                                            {(provided) => (
+                                                                                                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2 min-h-[50px]">
+                                                                                                    {block.items.map((item, itemIdx) => (
+                                                                                                        <Draggable key={item.id} draggableId={item.id} index={itemIdx}>
+                                                                                                            {(provided, snapshot) => (
+                                                                                                                <div
+                                                                                                                    ref={provided.innerRef}
+                                                                                                                    {...provided.draggableProps}
+                                                                                                                    className={cn(
+                                                                                                                        "flex flex-col gap-1.5 p-2 rounded-lg border bg-muted/5 group/item",
+                                                                                                                        snapshot.isDragging && "shadow-lg border-primary/40 bg-background z-50"
+                                                                                                                    )}
+                                                                                                                >
+                                                                                                                    <div className="flex items-center justify-between">
+                                                                                                                        <div className="flex items-center gap-2">
+                                                                                                                            <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing p-1">
+                                                                                                                                <GripVertical className="h-3 w-3 opacity-50" />
+                                                                                                                            </div>
+                                                                                                                            <p className="text-[10px] font-black uppercase italic text-primary">{item.movementName}</p>
+                                                                                                                        </div>
+                                                                                                                        <Button variant="ghost" size="icon" className="h-4 w-4 text-destructive" onClick={() => removeItem(block.id, item.id)}>
+                                                                                                                            <Trash2 className="h-3 w-3" />
+                                                                                                                        </Button>
+                                                                                                                    </div>
+                                                                                                                    <div className="grid grid-cols-3 gap-2">
+                                                                                                                        <Input className="h-6 text-[9px] font-bold" placeholder="REPS" value={item.reps} onChange={e => updateItem(block.id, item.id, { reps: e.target.value })} />
+                                                                                                                        <Input className="h-6 text-[9px] font-bold" placeholder="WEIGHT" value={item.weight} onChange={e => updateItem(block.id, item.id, { weight: e.target.value })} />
+                                                                                                                        <Input className="h-6 text-[9px] font-bold" placeholder="NOTES" value={item.notes} onChange={e => updateItem(block.id, item.id, { notes: e.target.value })} />
+                                                                                                                    </div>
+                                                                                                                </div>
+                                                                                                            )}
+                                                                                                        </Draggable>
+                                                                                                    ))}
+                                                                                                    {provided.placeholder}
+                                                                                                </div>
+                                                                                            )}
+                                                                                        </Droppable>
+                                                                                    </div>
+                                                                                </div>
                                                                             </Card>
                                                                         )}
-                                                                    </div>
-                                                                </div>
-
-                                                                {/* Content View */}
-                                                                <div className="px-3 pb-3">
-                                                                    <div className="space-y-2">
-                                                                        {block.items.length === 0 ? (
-                                                                            <div className="min-h-[40px] p-2 rounded-lg border border-dashed border-primary/20 bg-primary/5 flex items-center justify-center">
-                                                                                <p className="text-[9px] text-muted-foreground font-black uppercase italic text-center">Use search above to add movements</p>
-                                                                            </div>
-                                                                        ) : (
-                                                                            <DragDropContext onDragEnd={(result) => onDragEndItems(result, block.id)}>
-                                                                                <Droppable droppableId={`items-${block.id}`}>
-                                                                                    {(provided) => (
-                                                                                        <div
-                                                                                            {...provided.droppableProps}
-                                                                                            ref={provided.innerRef}
-                                                                                            className="space-y-2"
-                                                                                        >
-                                                                                            {block.items.map((item, itemIndex) => (
-                                                                                                <Draggable key={item.id} draggableId={item.id} index={itemIndex}>
-                                                                                                    {(provided, snapshot) => (
-                                                                                                        <div
-                                                                                                            ref={provided.innerRef}
-                                                                                                            {...provided.draggableProps}
-                                                                                                            className={cn(
-                                                                                                                "flex flex-col gap-1.5 p-2 rounded-lg border bg-muted/5 group/item transition-shadow",
-                                                                                                                snapshot.isDragging && "shadow-lg border-primary/40 bg-background z-50"
-                                                                                                            )}
-                                                                                                        >
-                                                                                                            <div className="flex items-center justify-between">
-                                                                                                                <div className="flex items-center gap-2">
-                                                                                                                    <div
-                                                                                                                        {...provided.dragHandleProps}
-                                                                                                                        className="cursor-grab active:cursor-grabbing p-1 opacity-50 hover:opacity-100 transition-opacity"
-                                                                                                                    >
-                                                                                                                        <GripVertical className="h-3 w-3" />
-                                                                                                                    </div>
-                                                                                                                    <div className="flex flex-col">
-                                                                                                                        <Button
-                                                                                                                            variant="ghost"
-                                                                                                                            size="icon"
-                                                                                                                            className="h-3 w-3 p-0 hover:text-primary disabled:opacity-30"
-                                                                                                                            disabled={itemIndex === 0}
-                                                                                                                            onClick={() => moveUpItem(block.id, itemIndex)}
-                                                                                                                        >
-                                                                                                                            <ChevronUp className="h-2.5 w-2.5" />
-                                                                                                                        </Button>
-                                                                                                                        <Button
-                                                                                                                            variant="ghost"
-                                                                                                                            size="icon"
-                                                                                                                            className="h-3 w-3 p-0 hover:text-primary disabled:opacity-30"
-                                                                                                                            disabled={itemIndex === block.items.length - 1}
-                                                                                                                            onClick={() => moveDownItem(block.id, itemIndex)}
-                                                                                                                        >
-                                                                                                                            <ChevronDown className="h-2.5 w-2.5" />
-                                                                                                                        </Button>
-                                                                                                                    </div>
-                                                                                                                    <p className="text-[10px] font-black uppercase italic text-primary leading-none">{item.movementName}</p>
-                                                                                                                </div>
-                                                                                                                <Button
-                                                                                                                    variant="ghost"
-                                                                                                                    size="icon"
-                                                                                                                    className="h-4 w-4 text-destructive opacity-0 group-hover/item:opacity-100"
-                                                                                                                    onClick={() => removeItem(block.id, item.id)}
-                                                                                                                >
-                                                                                                                    <Trash2 className="h-3 w-3" />
-                                                                                                                </Button>
-                                                                                                            </div>
-                                                                                                            <div className="grid grid-cols-3 gap-2">
-                                                                                                                <Input
-                                                                                                                    className="h-6 text-[9px] font-bold uppercase italic"
-                                                                                                                    placeholder="REPS/TIME"
-                                                                                                                    value={item.reps}
-                                                                                                                    onChange={(e) => updateItem(block.id, item.id, { reps: e.target.value })}
-                                                                                                                />
-                                                                                                                <Input
-                                                                                                                    className="h-6 text-[9px] font-bold uppercase italic"
-                                                                                                                    placeholder="WEIGHT"
-                                                                                                                    value={item.weight}
-                                                                                                                    onChange={(e) => updateItem(block.id, item.id, { weight: e.target.value })}
-                                                                                                                />
-                                                                                                                <Input
-                                                                                                                    className="h-6 text-[9px] font-bold uppercase italic"
-                                                                                                                    placeholder="NOTES"
-                                                                                                                    value={item.notes}
-                                                                                                                    onChange={(e) => updateItem(block.id, item.id, { notes: e.target.value })}
-                                                                                                                />
-                                                                                                            </div>
-                                                                                                        </div>
-                                                                                                    )}
-                                                                                                </Draggable>
-                                                                                            ))}
-                                                                                            {provided.placeholder}
-                                                                                        </div>
-                                                                                    )}
-                                                                                </Droppable>
-                                                                            </DragDropContext>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
+                                                                    </Draggable>
+                                                                ))}
+                                                                {provided.placeholder}
                                                             </div>
-                                                        </Card>
-                                                    ))}
-                                                </div>
+                                                        )}
+                                                    </Droppable>
+                                                </DragDropContext>
                                             )}
                                         </div>
                                     </div>

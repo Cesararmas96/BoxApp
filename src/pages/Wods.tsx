@@ -40,9 +40,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import {
     Select,
@@ -58,7 +56,6 @@ import { Toast } from '@/components/ui/toast-custom';
 interface BlockItem {
     id: string;
     movementName: string;
-    sets?: string;
     reps?: string;
     weight?: string;
     notes?: string;
@@ -98,35 +95,39 @@ interface WOD {
 
 const TRACKS = ['CrossFit', 'Novice', 'Bodybuilding', 'Engine'];
 
-const BLOCK_TEMPLATES: Record<string, { label: string, items: Omit<BlockItem, 'id'>[] }[]> = {
+const BLOCK_TEMPLATES: Record<string, { label: string, sets?: string, items: Omit<BlockItem, 'id'>[] }[]> = {
     warmup: [
         {
             label: 'General',
+            sets: '1',
             items: [
                 { movementName: 'Run', reps: '200m' },
-                { movementName: 'Air Squat', sets: '1', reps: '10' },
-                { movementName: 'Push-up', sets: '1', reps: '10' },
-                { movementName: 'Sit-up', sets: '1', reps: '10' }
+                { movementName: 'Air Squat', reps: '10' },
+                { movementName: 'Push-up', reps: '10' },
+                { movementName: 'Sit-up', reps: '10' }
             ]
         },
         {
             label: 'Barbell',
+            sets: '1',
             items: [
-                { movementName: 'Good Morning', sets: '1', reps: '5', notes: 'Empty Bar' },
-                { movementName: 'Back Squat', sets: '1', reps: '5' },
-                { movementName: 'Shoulder Press', sets: '1', reps: '5' },
-                { movementName: 'Stiff Leg Deadlift', sets: '1', reps: '5' }
+                { movementName: 'Good Morning', reps: '5', notes: 'Empty Bar' },
+                { movementName: 'Back Squat', reps: '5' },
+                { movementName: 'Shoulder Press', reps: '5' },
+                { movementName: 'Stiff Leg Deadlift', reps: '5' }
             ]
         }
     ],
     strength: [
         {
             label: '5x5 Str',
-            items: [{ movementName: 'Back Squat', sets: '5', reps: '5', weight: '75-80%', notes: 'Rest 2-3m' }]
+            sets: '5',
+            items: [{ movementName: 'Back Squat', reps: '5', weight: '75-80%', notes: 'Rest 2-3m' }]
         },
         {
             label: 'Max Effort',
-            items: [{ movementName: 'Snatch', sets: 'Build to', reps: '1', weight: 'MAX', notes: 'Quality over weight' }]
+            sets: 'Build to',
+            items: [{ movementName: 'Snatch', reps: '1', weight: 'MAX', notes: 'Quality over weight' }]
         }
     ],
     wod: [
@@ -140,10 +141,11 @@ const BLOCK_TEMPLATES: Record<string, { label: string, items: Omit<BlockItem, 'i
         },
         {
             label: '3 RFT',
+            sets: '3',
             items: [
                 { movementName: 'Run', reps: '400m' },
-                { movementName: 'Thruster', sets: '3', reps: '21', weight: '95/65' },
-                { movementName: 'Pull-up', sets: '3', reps: '12' }
+                { movementName: 'Thruster', reps: '21', weight: '95/65' },
+                { movementName: 'Pull-up', reps: '12' }
             ]
         }
     ]
@@ -161,16 +163,16 @@ const MovementSearch: React.FC<{
     );
 
     return (
-        <div className="relative">
-            <Search className="absolute left-2 top-2 h-3 w-3 text-muted-foreground" />
+        <div className="relative group/search">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within/search:text-primary transition-all duration-300" />
             <Input
-                placeholder="Search movement..."
-                className="h-7 pl-7 text-[10px] uppercase font-bold italic"
+                placeholder="Find or define movement..."
+                className="h-12 pl-12 bg-white/5 border-white/5 rounded-2xl font-black uppercase italic text-[10px] tracking-widest focus:ring-primary/20 transition-all"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
             />
             {search && (
-                <Card className="absolute z-[100] left-0 right-0 top-8 max-h-[200px] overflow-y-auto shadow-2xl p-2 flex flex-col gap-1">
+                <div className="absolute z-[100] left-0 right-0 top-14 glass border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl p-3 flex flex-col gap-2 scale-in-center">
                     {filtered.map(m => (
                         <button
                             key={m.id}
@@ -178,30 +180,31 @@ const MovementSearch: React.FC<{
                                 onSelect(m.name);
                                 setSearch('');
                             }}
-                            className="flex items-center gap-2 p-1.5 hover:bg-muted rounded-lg text-left transition-colors border border-transparent hover:border-primary/20"
+                            className="flex items-center gap-4 p-3 hover:bg-primary/10 rounded-2xl text-left transition-all duration-300 border border-transparent hover:border-primary/20 group/suggest"
                         >
-                            <div className="h-6 w-6 rounded bg-primary/10 flex items-center justify-center">
-                                <Dumbbell className="h-3 w-3 text-primary" />
+                            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center transition-transform group-hover/suggest:scale-110">
+                                <Dumbbell className="h-5 w-5 text-primary" />
                             </div>
                             <div>
-                                <p className="text-[10px] font-black uppercase italic leading-none">{m.name}</p>
-                                <p className="text-[8px] text-muted-foreground uppercase font-bold">{m.category}</p>
+                                <p className="text-xs font-black uppercase italic leading-none tracking-tight">{m.name}</p>
+                                <p className="text-[9px] text-muted-foreground uppercase font-black opacity-50 mt-1">{m.category}</p>
                             </div>
+                            <Plus className="h-4 w-4 text-primary ml-auto opacity-0 group-hover/suggest:opacity-100 transition-opacity" />
                         </button>
                     ))}
                     {filtered.length === 0 && (
                         <Button
                             variant="ghost"
-                            className="h-8 justify-start gap-2 text-[10px] font-black uppercase italic text-primary"
+                            className="h-14 justify-start gap-3 rounded-2xl text-xs font-black uppercase italic text-primary hover:bg-primary/10"
                             onClick={() => {
                                 onCreate(search);
                                 setSearch('');
                             }}
                         >
-                            <Plus className="h-3 w-3" /> Create "{search}"
+                            <Plus className="h-5 w-5" /> Define "{search.toUpperCase()}"
                         </Button>
                     )}
-                </Card>
+                </div>
             )}
         </div>
     );
@@ -283,7 +286,11 @@ export const Wods: React.FC = () => {
                     ...item,
                     id: Math.random().toString(36).substr(2, 9)
                 }));
-                return { ...b, items: [...b.items, ...newItems] };
+                return {
+                    ...b,
+                    items: [...b.items, ...newItems],
+                    sets: template.sets || b.sets
+                };
             }
             return b;
         }));
@@ -295,7 +302,6 @@ export const Wods: React.FC = () => {
                 const newItem: BlockItem = {
                     id: Math.random().toString(36).substr(2, 9),
                     movementName,
-                    sets: '',
                     reps: '',
                     weight: '',
                     notes: ''
@@ -359,11 +365,18 @@ export const Wods: React.FC = () => {
             .order('date', { ascending: false });
 
         if (!error && data) {
-            setWods(data.map(w => ({
+            setWods(data.map((w: any) => ({
                 ...w,
                 modalities: w.modalities || [],
                 lesson_plan: w.lesson_plan || [],
-                track: w.track || 'CrossFit'
+                track: w.track || 'CrossFit',
+                metcon: w.metcon || '',
+                stimulus: w.stimulus || '',
+                scaling_options: w.scaling_options || '',
+                scaling_beginner: w.scaling_beginner || '',
+                scaling_intermediate: w.scaling_intermediate || '',
+                scaling_advanced: w.scaling_advanced || '',
+                scaling_injured: w.scaling_injured || ''
             })));
         }
         setLoading(false);
@@ -416,12 +429,15 @@ export const Wods: React.FC = () => {
             cleanText = wod.structure.map(block => {
                 const items = block.items.map(item => {
                     let line = `- ${item.movementName}`;
-                    if (item.sets) line += `: ${item.sets} x`;
-                    if (item.reps) line += ` ${item.reps}`;
+                    if (item.reps) line += `: ${item.reps}`;
                     if (item.weight) line += ` (${item.weight})`;
                     return line;
                 }).join('\n');
-                return `[${block.title.toUpperCase()}]\n${items}`;
+
+                let blockTitle = block.title.toUpperCase();
+                if (block.sets) blockTitle += ` [${block.sets} SETS]`;
+
+                return `[${blockTitle}]\n${items}`;
             }).join('\n\n');
         } else {
             // Clean markdown fallback
@@ -561,7 +577,8 @@ export const Wods: React.FC = () => {
                             setNewWOD({
                                 title: '', metcon: '', stimulus: '', scaling_options: '',
                                 scaling_beginner: '', scaling_intermediate: '', scaling_advanced: '',
-                                scaling_injured: '', modalities: [], lesson_plan: [], track: 'CrossFit'
+                                scaling_injured: '', modalities: [], lesson_plan: [], track: 'CrossFit',
+                                date: new Date().toISOString().split('T')[0]
                             });
                             setSessionBlocks([]);
                         }
@@ -696,123 +713,124 @@ export const Wods: React.FC = () => {
                                                             {sessionBlocks.map((block, index) => (
                                                                 <Draggable key={block.id} draggableId={block.id} index={index}>
                                                                     {(provided, snapshot) => (
-                                                                        <Card
+                                                                        <div
                                                                             ref={provided.innerRef}
                                                                             {...provided.draggableProps}
                                                                             className={cn(
-                                                                                "border shadow-sm group transition-shadow bg-background",
-                                                                                snapshot.isDragging && "shadow-2xl border-primary/50 relative z-50"
+                                                                                "glass border-white/5 rounded-[2.5rem] overflow-hidden group/block transition-all duration-300 mb-6",
+                                                                                snapshot.isDragging && "shadow-2xl border-primary/30 scale-[1.02] z-50 ring-4 ring-primary/10"
                                                                             )}
                                                                         >
-                                                                            <div className="flex items-center gap-3 px-3 py-2 bg-muted/30 border-b">
+                                                                            <div className="flex items-center gap-6 px-10 py-6 bg-white/5 border-b border-white/5">
                                                                                 <div
                                                                                     {...provided.dragHandleProps}
-                                                                                    className="cursor-grab active:cursor-grabbing"
+                                                                                    className="cursor-grab active:cursor-grabbing p-2 text-muted-foreground/30 hover:text-primary transition-colors"
                                                                                 >
-                                                                                    <GripVertical className="h-4 w-4 text-muted-foreground opacity-50 hover:opacity-100 transition-opacity" />
+                                                                                    <GripVertical className="h-6 w-6" />
                                                                                 </div>
-                                                                                <div className="flex-1 flex items-center gap-2">
+                                                                                <div className="flex-1 flex items-center gap-4">
                                                                                     <div className={cn(
-                                                                                        "h-2 w-2 rounded-full",
-                                                                                        block.type === 'warmup' && "bg-orange-500",
-                                                                                        block.type === 'strength' && "bg-blue-500",
-                                                                                        block.type === 'conditioning' && "bg-emerald-500",
-                                                                                        block.type === 'wod' && "bg-primary",
-                                                                                        block.type === 'accessory' && "bg-indigo-500",
-                                                                                        block.type === 'cooldown' && "bg-zinc-500"
+                                                                                        "h-3 w-3 rounded-full shadow-[0_0_10px_currentColor]",
+                                                                                        block.type === 'warmup' && "text-orange-500 bg-orange-500",
+                                                                                        block.type === 'strength' && "text-blue-500 bg-blue-500",
+                                                                                        block.type === 'conditioning' && "text-emerald-500 bg-emerald-500",
+                                                                                        block.type === 'wod' && "text-primary bg-primary",
+                                                                                        block.type === 'accessory' && "text-indigo-500 bg-indigo-500",
+                                                                                        block.type === 'cooldown' && "text-zinc-500 bg-zinc-500"
                                                                                     )} />
                                                                                     <Input
-                                                                                        className="h-6 bg-transparent border-none font-black uppercase italic text-[10px] tracking-tight p-0 focus-visible:ring-0"
+                                                                                        className="h-10 bg-transparent border-none font-black uppercase italic text-2xl tracking-tighter p-0 focus-visible:ring-0 w-full"
                                                                                         value={block.title}
                                                                                         onChange={(e) => updateBlock(block.id, { title: e.target.value })}
                                                                                     />
-                                                                                    <div className="flex items-center gap-1 bg-background/50 rounded-md border px-1.5 h-6">
-                                                                                        <span className="text-[8px] font-black uppercase opacity-50">SETS:</span>
+                                                                                    <div className="flex items-center gap-3 bg-white/5 rounded-2xl border border-white/10 px-4 h-11 shrink-0">
+                                                                                        <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">SETS</span>
                                                                                         <Input
-                                                                                            className="h-4 w-12 bg-transparent border-none font-black uppercase italic text-[10px] p-0 focus-visible:ring-0 text-center"
+                                                                                            className="h-8 w-12 bg-transparent border-none font-black uppercase italic text-lg p-0 focus-visible:ring-0 text-center"
                                                                                             placeholder="1"
                                                                                             value={block.sets || ''}
                                                                                             onChange={(e) => updateBlock(block.id, { sets: e.target.value })}
                                                                                         />
                                                                                     </div>
                                                                                 </div>
-                                                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => removeBlock(block.id)}>
-                                                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                                                <Button variant="ghost" size="icon" className="h-12 w-12 rounded-2xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all" onClick={() => removeBlock(block.id)}>
+                                                                                    <Trash2 className="h-6 w-6" />
                                                                                 </Button>
                                                                             </div>
-                                                                            <div className="p-0">
-                                                                                <div className="px-3 pt-3 space-y-3">
-                                                                                    <div className="flex flex-wrap gap-1">
-                                                                                        {BLOCK_TEMPLATES[block.type]?.map((template) => (
-                                                                                            <Button
-                                                                                                key={template.label}
-                                                                                                variant="secondary"
-                                                                                                size="sm"
-                                                                                                className="h-5 px-2 text-[8px] font-bold uppercase tracking-wider bg-primary/5 hover:bg-primary/20 text-primary border border-primary/10"
-                                                                                                onClick={() => addTemplateToBlock(block.id, template)}
-                                                                                            >
-                                                                                                {template.label}
-                                                                                            </Button>
-                                                                                        ))}
-                                                                                    </div>
-                                                                                    <MovementSearch
-                                                                                        movements={movements}
-                                                                                        onSelect={(name) => addItemToBlock(block.id, name)}
-                                                                                        onCreate={async (name) => {
-                                                                                            const { data, error } = await supabase
-                                                                                                .from('movements')
-                                                                                                .insert([{ name, category: 'Other' }])
-                                                                                                .select()
-                                                                                                .single();
-                                                                                            if (!error && data) {
-                                                                                                fetchMovements();
-                                                                                                addItemToBlock(block.id, data.name);
-                                                                                            }
-                                                                                        }}
-                                                                                    />
+
+                                                                            <div className="p-10 space-y-8">
+                                                                                <div className="flex flex-wrap gap-2">
+                                                                                    {BLOCK_TEMPLATES[block.type]?.map((template) => (
+                                                                                        <Button
+                                                                                            key={template.label}
+                                                                                            variant="outline"
+                                                                                            size="sm"
+                                                                                            className="h-9 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest bg-white/5 border-white/10 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all active:scale-95"
+                                                                                            onClick={() => addTemplateToBlock(block.id, template)}
+                                                                                        >
+                                                                                            {template.label}
+                                                                                        </Button>
+                                                                                    ))}
                                                                                 </div>
-                                                                                <div className="p-3">
-                                                                                    <Droppable droppableId={`items-${block.id}`} type="item">
-                                                                                        {(provided) => (
-                                                                                            <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2 min-h-[50px]">
-                                                                                                {block.items.map((item, itemIdx) => (
-                                                                                                    <Draggable key={item.id} draggableId={item.id} index={itemIdx}>
-                                                                                                        {(provided, snapshot) => (
-                                                                                                            <div
-                                                                                                                ref={provided.innerRef}
-                                                                                                                {...provided.draggableProps}
-                                                                                                                className={cn(
-                                                                                                                    "flex flex-col gap-1.5 p-2 rounded-lg border bg-muted/5 group/item",
-                                                                                                                    snapshot.isDragging && "shadow-lg border-primary/40 bg-background z-50"
-                                                                                                                )}
-                                                                                                            >
-                                                                                                                <div className="flex items-center justify-between">
-                                                                                                                    <div className="flex items-center gap-2">
-                                                                                                                        <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing p-1">
-                                                                                                                            <GripVertical className="h-3 w-3 opacity-50" />
-                                                                                                                        </div>
-                                                                                                                        <p className="text-[10px] font-black uppercase italic text-primary">{item.movementName}</p>
+
+                                                                                <MovementSearch
+                                                                                    movements={movements}
+                                                                                    onSelect={(name) => addItemToBlock(block.id, name)}
+                                                                                    onCreate={(name) => {
+                                                                                        // Call create here
+                                                                                        addItemToBlock(block.id, name);
+                                                                                    }}
+                                                                                />
+
+                                                                                <Droppable droppableId={`items-${block.id}`} type="item">
+                                                                                    {(provided) => (
+                                                                                        <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4 min-h-[50px]">
+                                                                                            {block.items.map((item, itemIdx) => (
+                                                                                                <Draggable key={item.id} draggableId={item.id} index={itemIdx}>
+                                                                                                    {(provided, snapshot) => (
+                                                                                                        <div
+                                                                                                            ref={provided.innerRef}
+                                                                                                            {...provided.draggableProps}
+                                                                                                            className={cn(
+                                                                                                                "flex flex-col gap-4 p-6 rounded-[2rem] border border-white/10 bg-white/5 group/item transition-all duration-300",
+                                                                                                                snapshot.isDragging && "shadow-2xl border-primary/40 bg-white/10 z-50 scale-[1.03]"
+                                                                                                            )}
+                                                                                                        >
+                                                                                                            <div className="flex items-center justify-between">
+                                                                                                                <div className="flex items-center gap-4">
+                                                                                                                    <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing p-1 text-muted-foreground/30 hover:text-primary transition-colors">
+                                                                                                                        <GripVertical className="h-4 w-4" />
                                                                                                                     </div>
-                                                                                                                    <Button variant="ghost" size="icon" className="h-4 w-4 text-destructive" onClick={() => removeItem(block.id, item.id)}>
-                                                                                                                        <Trash2 className="h-3 w-3" />
-                                                                                                                    </Button>
+                                                                                                                    <p className="text-sm font-black uppercase italic tracking-tight text-foreground">{item.movementName}</p>
                                                                                                                 </div>
-                                                                                                                <div className="grid grid-cols-3 gap-2">
-                                                                                                                    <Input className="h-6 text-[9px] font-bold" placeholder="REPS" value={item.reps} onChange={e => updateItem(block.id, item.id, { reps: e.target.value })} />
-                                                                                                                    <Input className="h-6 text-[9px] font-bold" placeholder="WEIGHT" value={item.weight} onChange={e => updateItem(block.id, item.id, { weight: e.target.value })} />
-                                                                                                                    <Input className="h-6 text-[9px] font-bold" placeholder="NOTES" value={item.notes} onChange={e => updateItem(block.id, item.id, { notes: e.target.value })} />
+                                                                                                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => removeItem(block.id, item.id)}>
+                                                                                                                    <Trash2 className="h-4 w-4" />
+                                                                                                                </Button>
+                                                                                                            </div>
+                                                                                                            <div className="grid grid-cols-3 gap-4">
+                                                                                                                <div className="space-y-1">
+                                                                                                                    <p className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">REPS</p>
+                                                                                                                    <Input className="h-10 bg-white/5 border-white/10 rounded-xl text-xs font-bold uppercase italic focus:ring-primary/20" placeholder="e.g. 10" value={item.reps} onChange={e => updateItem(block.id, item.id, { reps: e.target.value })} />
+                                                                                                                </div>
+                                                                                                                <div className="space-y-1">
+                                                                                                                    <p className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">WEIGHT</p>
+                                                                                                                    <Input className="h-10 bg-white/5 border-white/10 rounded-xl text-xs font-bold uppercase italic focus:ring-primary/20" placeholder="e.g. 100kg" value={item.weight} onChange={e => updateItem(block.id, item.id, { weight: e.target.value })} />
+                                                                                                                </div>
+                                                                                                                <div className="space-y-1">
+                                                                                                                    <p className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">NOTES</p>
+                                                                                                                    <Input className="h-10 bg-white/5 border-white/10 rounded-xl text-xs font-bold uppercase italic focus:ring-primary/20" placeholder="..." value={item.notes} onChange={e => updateItem(block.id, item.id, { notes: e.target.value })} />
                                                                                                                 </div>
                                                                                                             </div>
-                                                                                                        )}
-                                                                                                    </Draggable>
-                                                                                                ))}
-                                                                                                {provided.placeholder}
-                                                                                            </div>
-                                                                                        )}
-                                                                                    </Droppable>
-                                                                                </div>
+                                                                                                        </div>
+                                                                                                    )}
+                                                                                                </Draggable>
+                                                                                            ))}
+                                                                                            {provided.placeholder}
+                                                                                        </div>
+                                                                                    )}
+                                                                                </Droppable>
                                                                             </div>
-                                                                        </Card>
+                                                                        </div>
                                                                     )}
                                                                 </Draggable>
                                                             ))}

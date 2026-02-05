@@ -7,6 +7,11 @@ export type Json =
     | Json[]
 
 export type Database = {
+    // Allows to automatically instantiate createClient with right options
+    // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+    __InternalSupabase: {
+        PostgrestVersion: "14.1"
+    }
     public: {
         Tables: {
             audit_logs: {
@@ -45,6 +50,7 @@ export type Database = {
             automation_logs: {
                 Row: {
                     action_type: string
+                    box_id: string | null
                     created_at: string | null
                     id: string
                     metadata: Json | null
@@ -54,6 +60,7 @@ export type Database = {
                 }
                 Insert: {
                     action_type: string
+                    box_id?: string | null
                     created_at?: string | null
                     id?: string
                     metadata?: Json | null
@@ -63,6 +70,7 @@ export type Database = {
                 }
                 Update: {
                     action_type?: string
+                    box_id?: string | null
                     created_at?: string | null
                     id?: string
                     metadata?: Json | null
@@ -71,6 +79,13 @@ export type Database = {
                     target_user_id?: string | null
                 }
                 Relationships: [
+                    {
+                        foreignKeyName: "automation_logs_box_id_fkey"
+                        columns: ["box_id"]
+                        isOneToOne: false
+                        referencedRelation: "boxes"
+                        referencedColumns: ["id"]
+                    },
                     {
                         foreignKeyName: "automation_logs_performed_by_fkey"
                         columns: ["performed_by"]
@@ -84,121 +99,154 @@ export type Database = {
                         isOneToOne: false
                         referencedRelation: "profiles"
                         referencedColumns: ["id"]
-                    }
+                    },
                 ]
             }
             bookings: {
                 Row: {
-                    athlete_id: string | null
-                    class_id: string | null
+                    box_id: string | null
                     created_at: string | null
                     id: string
+                    session_id: string | null
                     status: string | null
+                    user_id: string | null
                 }
                 Insert: {
-                    athlete_id?: string | null
-                    class_id?: string | null
+                    box_id?: string | null
                     created_at?: string | null
                     id?: string
+                    session_id?: string | null
                     status?: string | null
+                    user_id?: string | null
                 }
                 Update: {
-                    athlete_id?: string | null
-                    class_id?: string | null
+                    box_id?: string | null
                     created_at?: string | null
                     id?: string
+                    session_id?: string | null
                     status?: string | null
+                    user_id?: string | null
                 }
                 Relationships: [
                     {
-                        foreignKeyName: "bookings_athlete_id_fkey"
-                        columns: ["athlete_id"]
+                        foreignKeyName: "bookings_box_id_fkey"
+                        columns: ["box_id"]
+                        isOneToOne: false
+                        referencedRelation: "boxes"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "bookings_session_id_fkey"
+                        columns: ["session_id"]
+                        isOneToOne: false
+                        referencedRelation: "sessions"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "bookings_user_id_fkey"
+                        columns: ["user_id"]
                         isOneToOne: false
                         referencedRelation: "profiles"
                         referencedColumns: ["id"]
                     },
-                    {
-                        foreignKeyName: "bookings_class_id_fkey"
-                        columns: ["class_id"]
-                        isOneToOne: false
-                        referencedRelation: "classes"
-                        referencedColumns: ["id"]
-                    }
                 ]
             }
-            classes: {
+            box_settings: {
                 Row: {
-                    capacity: number | null
-                    coach_id: string | null
-                    created_at: string | null
-                    description: string | null
-                    end_time: string
-                    id: string
-                    name: string
-                    start_time: string
+                    box_name: string | null
+                    favicon_url: string | null
+                    id: number
+                    logo_url: string | null
+                    updated_at: string | null
                 }
                 Insert: {
-                    capacity?: number | null
-                    coach_id?: string | null
-                    created_at?: string | null
-                    description?: string | null
-                    end_time: string
-                    id?: string
-                    name: string
-                    start_time: string
+                    box_name?: string | null
+                    favicon_url?: string | null
+                    id: number
+                    logo_url?: string | null
+                    updated_at?: string | null
                 }
                 Update: {
-                    capacity?: number | null
-                    coach_id?: string | null
-                    created_at?: string | null
-                    description?: string | null
-                    end_time?: string
-                    id?: string
-                    name?: string
-                    start_time?: string
+                    box_name?: string | null
+                    favicon_url?: string | null
+                    id?: number
+                    logo_url?: string | null
+                    updated_at?: string | null
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "classes_coach_id_fkey"
-                        columns: ["coach_id"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["id"]
-                    }
-                ]
+                Relationships: []
+            }
+            boxes: {
+                Row: {
+                    created_at: string | null
+                    favicon_url: string | null
+                    id: string
+                    logo_url: string | null
+                    name: string
+                    slug: string
+                    theme_config: Json | null
+                    updated_at: string | null
+                }
+                Insert: {
+                    created_at?: string | null
+                    favicon_url?: string | null
+                    id?: string
+                    logo_url?: string | null
+                    name: string
+                    slug: string
+                    theme_config?: Json | null
+                    updated_at?: string | null
+                }
+                Update: {
+                    created_at?: string | null
+                    favicon_url?: string | null
+                    id?: string
+                    logo_url?: string | null
+                    name?: string
+                    slug?: string
+                    theme_config?: Json | null
+                    updated_at?: string | null
+                }
+                Relationships: []
             }
             competition_events: {
                 Row: {
+                    box_id: string | null
                     competition_id: string | null
                     created_at: string | null
                     description: string | null
                     id: string
                     name: string
                     order_index: number | null
-                    scoring_type: string
-                    wod_id: string | null
+                    scoring_type: string | null
                 }
                 Insert: {
+                    box_id?: string | null
                     competition_id?: string | null
                     created_at?: string | null
                     description?: string | null
                     id?: string
                     name: string
                     order_index?: number | null
-                    scoring_type?: string
-                    wod_id?: string | null
+                    scoring_type?: string | null
                 }
                 Update: {
+                    box_id?: string | null
                     competition_id?: string | null
                     created_at?: string | null
                     description?: string | null
                     id?: string
                     name?: string
                     order_index?: number | null
-                    scoring_type?: string
-                    wod_id?: string | null
+                    scoring_type?: string | null
                 }
                 Relationships: [
+                    {
+                        foreignKeyName: "competition_events_box_id_fkey"
+                        columns: ["box_id"]
+                        isOneToOne: false
+                        referencedRelation: "boxes"
+                        referencedColumns: ["id"]
+                    },
                     {
                         foreignKeyName: "competition_events_competition_id_fkey"
                         columns: ["competition_id"]
@@ -206,32 +254,38 @@ export type Database = {
                         referencedRelation: "competitions"
                         referencedColumns: ["id"]
                     },
-                    {
-                        foreignKeyName: "competition_events_wod_id_fkey"
-                        columns: ["wod_id"]
-                        isOneToOne: false
-                        referencedRelation: "wods"
-                        referencedColumns: ["id"]
-                    }
                 ]
             }
             competition_judges: {
                 Row: {
+                    box_id: string | null
                     competition_id: string | null
+                    created_at: string | null
                     id: string
                     user_id: string | null
                 }
                 Insert: {
+                    box_id?: string | null
                     competition_id?: string | null
+                    created_at?: string | null
                     id?: string
                     user_id?: string | null
                 }
                 Update: {
+                    box_id?: string | null
                     competition_id?: string | null
+                    created_at?: string | null
                     id?: string
                     user_id?: string | null
                 }
                 Relationships: [
+                    {
+                        foreignKeyName: "competition_judges_box_id_fkey"
+                        columns: ["box_id"]
+                        isOneToOne: false
+                        referencedRelation: "boxes"
+                        referencedColumns: ["id"]
+                    },
                     {
                         foreignKeyName: "competition_judges_competition_id_fkey"
                         columns: ["competition_id"]
@@ -245,40 +299,43 @@ export type Database = {
                         isOneToOne: false
                         referencedRelation: "profiles"
                         referencedColumns: ["id"]
-                    }
+                    },
                 ]
             }
             competition_participants: {
                 Row: {
-                    athlete_id: string | null
-                    category: string
+                    box_id: string | null
                     competition_id: string | null
                     created_at: string | null
+                    division: string | null
                     id: string
-                    status: string
+                    status: string | null
+                    user_id: string | null
                 }
                 Insert: {
-                    athlete_id?: string | null
-                    category?: string
+                    box_id?: string | null
                     competition_id?: string | null
                     created_at?: string | null
+                    division?: string | null
                     id?: string
-                    status?: string
+                    status?: string | null
+                    user_id?: string | null
                 }
                 Update: {
-                    athlete_id?: string | null
-                    category?: string
+                    box_id?: string | null
                     competition_id?: string | null
                     created_at?: string | null
+                    division?: string | null
                     id?: string
-                    status?: string
+                    status?: string | null
+                    user_id?: string | null
                 }
                 Relationships: [
                     {
-                        foreignKeyName: "competition_participants_athlete_id_fkey"
-                        columns: ["athlete_id"]
+                        foreignKeyName: "competition_participants_box_id_fkey"
+                        columns: ["box_id"]
                         isOneToOne: false
-                        referencedRelation: "profiles"
+                        referencedRelation: "boxes"
                         referencedColumns: ["id"]
                     },
                     {
@@ -287,44 +344,55 @@ export type Database = {
                         isOneToOne: false
                         referencedRelation: "competitions"
                         referencedColumns: ["id"]
-                    }
+                    },
+                    {
+                        foreignKeyName: "competition_participants_user_id_fkey"
+                        columns: ["user_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    },
                 ]
             }
             competition_scores: {
                 Row: {
+                    box_id: string | null
                     created_at: string | null
                     event_id: string | null
                     id: string
                     is_validated: boolean | null
-                    notes: string | null
                     participant_id: string | null
-                    result_value: string
-                    score_numerical: number | null
+                    score_value: number | null
                     validated_by: string | null
                 }
                 Insert: {
+                    box_id?: string | null
                     created_at?: string | null
                     event_id?: string | null
                     id?: string
                     is_validated?: boolean | null
-                    notes?: string | null
                     participant_id?: string | null
-                    result_value: string
-                    score_numerical?: number | null
+                    score_value?: number | null
                     validated_by?: string | null
                 }
                 Update: {
+                    box_id?: string | null
                     created_at?: string | null
                     event_id?: string | null
                     id?: string
                     is_validated?: boolean | null
-                    notes?: string | null
                     participant_id?: string | null
-                    result_value?: string
-                    score_numerical?: number | null
+                    score_value?: number | null
                     validated_by?: string | null
                 }
                 Relationships: [
+                    {
+                        foreignKeyName: "competition_scores_box_id_fkey"
+                        columns: ["box_id"]
+                        isOneToOne: false
+                        referencedRelation: "boxes"
+                        referencedColumns: ["id"]
+                    },
                     {
                         foreignKeyName: "competition_scores_event_id_fkey"
                         columns: ["event_id"]
@@ -345,133 +413,184 @@ export type Database = {
                         isOneToOne: false
                         referencedRelation: "profiles"
                         referencedColumns: ["id"]
-                    }
+                    },
                 ]
             }
             competitions: {
                 Row: {
+                    box_id: string | null
                     created_at: string | null
                     description: string | null
-                    end_date: string
+                    end_date: string | null
                     id: string
-                    start_date: string
+                    name: string
+                    start_date: string | null
                     status: string | null
-                    title: string
+                    type: string | null
                 }
                 Insert: {
+                    box_id?: string | null
                     created_at?: string | null
                     description?: string | null
-                    end_date: string
+                    end_date?: string | null
                     id?: string
-                    start_date: string
+                    name: string
+                    start_date?: string | null
                     status?: string | null
-                    title: string
+                    type?: string | null
                 }
                 Update: {
+                    box_id?: string | null
                     created_at?: string | null
                     description?: string | null
-                    end_date?: string
+                    end_date?: string | null
                     id?: string
-                    start_date?: string
+                    name?: string
+                    start_date?: string | null
                     status?: string | null
-                    title?: string
+                    type?: string | null
                 }
-                Relationships: []
+                Relationships: [
+                    {
+                        foreignKeyName: "competitions_box_id_fkey"
+                        columns: ["box_id"]
+                        isOneToOne: false
+                        referencedRelation: "boxes"
+                        referencedColumns: ["id"]
+                    },
+                ]
             }
             invoices: {
                 Row: {
-                    amount: number
+                    amount: number | null
+                    box_id: string | null
                     created_at: string | null
+                    due_date: string | null
                     id: string
                     status: string | null
                     user_id: string | null
                 }
                 Insert: {
-                    amount: number
+                    amount?: number | null
+                    box_id?: string | null
                     created_at?: string | null
+                    due_date?: string | null
                     id?: string
                     status?: string | null
                     user_id?: string | null
                 }
                 Update: {
-                    amount?: number
+                    amount?: number | null
+                    box_id?: string | null
                     created_at?: string | null
+                    due_date?: string | null
                     id?: string
                     status?: string | null
                     user_id?: string | null
                 }
                 Relationships: [
                     {
+                        foreignKeyName: "invoices_box_id_fkey"
+                        columns: ["box_id"]
+                        isOneToOne: false
+                        referencedRelation: "boxes"
+                        referencedColumns: ["id"]
+                    },
+                    {
                         foreignKeyName: "invoices_user_id_fkey"
                         columns: ["user_id"]
                         isOneToOne: false
                         referencedRelation: "profiles"
                         referencedColumns: ["id"]
-                    }
+                    },
                 ]
             }
             leads: {
                 Row: {
+                    box_id: string | null
                     created_at: string | null
                     email: string | null
-                    first_name: string
+                    first_name: string | null
                     id: string
                     last_name: string | null
                     notes: string | null
                     phone: string | null
+                    source: string | null
                     status: string | null
                 }
                 Insert: {
+                    box_id?: string | null
                     created_at?: string | null
                     email?: string | null
-                    first_name: string
+                    first_name?: string | null
                     id?: string
                     last_name?: string | null
                     notes?: string | null
                     phone?: string | null
+                    source?: string | null
                     status?: string | null
                 }
                 Update: {
-                    first_name?: string
-                    last_name?: string | null
-                    email?: string | null
-                    phone?: string | null
-                    status?: string | null
-                    notes?: string | null
+                    box_id?: string | null
                     created_at?: string | null
+                    email?: string | null
+                    first_name?: string | null
                     id?: string
+                    last_name?: string | null
+                    notes?: string | null
+                    phone?: string | null
+                    source?: string | null
+                    status?: string | null
                 }
-                Relationships: []
+                Relationships: [
+                    {
+                        foreignKeyName: "leads_box_id_fkey"
+                        columns: ["box_id"]
+                        isOneToOne: false
+                        referencedRelation: "boxes"
+                        referencedColumns: ["id"]
+                    },
+                ]
             }
             memberships: {
                 Row: {
+                    box_id: string | null
                     created_at: string | null
                     end_date: string | null
                     id: string
                     plan_id: string | null
-                    start_date: string
+                    start_date: string | null
                     status: string | null
                     user_id: string | null
                 }
                 Insert: {
+                    box_id?: string | null
                     created_at?: string | null
                     end_date?: string | null
                     id?: string
                     plan_id?: string | null
-                    start_date: string
+                    start_date?: string | null
                     status?: string | null
                     user_id?: string | null
                 }
                 Update: {
+                    box_id?: string | null
                     created_at?: string | null
                     end_date?: string | null
                     id?: string
                     plan_id?: string | null
-                    start_date?: string
+                    start_date?: string | null
                     status?: string | null
                     user_id?: string | null
                 }
                 Relationships: [
+                    {
+                        foreignKeyName: "memberships_box_id_fkey"
+                        columns: ["box_id"]
+                        isOneToOne: false
+                        referencedRelation: "boxes"
+                        referencedColumns: ["id"]
+                    },
                     {
                         foreignKeyName: "memberships_plan_id_fkey"
                         columns: ["plan_id"]
@@ -485,116 +604,63 @@ export type Database = {
                         isOneToOne: false
                         referencedRelation: "profiles"
                         referencedColumns: ["id"]
-                    }
-                ]
-            }
-            movements: {
-                Row: {
-                    category: string | null
-                    created_at: string | null
-                    demo_url: string | null
-                    id: string
-                    name: string
-                }
-                Insert: {
-                    category?: string | null
-                    created_at?: string | null
-                    demo_url?: string | null
-                    id?: string
-                    name: string
-                }
-                Update: {
-                    category?: string | null
-                    created_at?: string | null
-                    demo_url?: string | null
-                    id?: string
-                    name?: string
-                }
-                Relationships: []
-            }
-            personal_records: {
-                Row: {
-                    created_at: string | null
-                    date: string | null
-                    id: string
-                    movement_id: string | null
-                    notes: string | null
-                    reps: number | null
-                    user_id: string | null
-                    weight_kg: number | null
-                }
-                Insert: {
-                    created_at?: string | null
-                    date?: string | null
-                    id?: string
-                    movement_id?: string | null
-                    notes?: string | null
-                    reps?: number | null
-                    user_id?: string | null
-                    weight_kg?: number | null
-                }
-                Update: {
-                    created_at?: string | null
-                    date?: string | null
-                    id?: string
-                    movement_id?: string | null
-                    notes?: string | null
-                    reps?: number | null
-                    user_id?: string | null
-                    weight_kg?: number | null
-                }
-                Relationships: [
-                    {
-                        foreignKeyName: "personal_records_movement_id_fkey"
-                        columns: ["movement_id"]
-                        isOneToOne: false
-                        referencedRelation: "movements"
-                        referencedColumns: ["id"]
-                    }
+                    },
                 ]
             }
             plans: {
                 Row: {
+                    box_id: string | null
                     button_text: string | null
                     created_at: string | null
                     features: string[] | null
                     id: string
                     interval: string | null
                     is_featured: boolean | null
-                    name: string
+                    name: string | null
                     popular_tag: string | null
-                    price: number
+                    price: number | null
                     updated_at: string | null
                 }
                 Insert: {
+                    box_id?: string | null
                     button_text?: string | null
                     created_at?: string | null
                     features?: string[] | null
                     id?: string
                     interval?: string | null
                     is_featured?: boolean | null
-                    name: string
+                    name?: string | null
                     popular_tag?: string | null
-                    price: number
+                    price?: number | null
                     updated_at?: string | null
                 }
                 Update: {
+                    box_id?: string | null
                     button_text?: string | null
                     created_at?: string | null
                     features?: string[] | null
                     id?: string
                     interval?: string | null
                     is_featured?: boolean | null
-                    name?: string
+                    name?: string | null
                     popular_tag?: string | null
-                    price?: number
+                    price?: number | null
                     updated_at?: string | null
                 }
-                Relationships: []
+                Relationships: [
+                    {
+                        foreignKeyName: "plans_box_id_fkey"
+                        columns: ["box_id"]
+                        isOneToOne: false
+                        referencedRelation: "boxes"
+                        referencedColumns: ["id"]
+                    },
+                ]
             }
             profiles: {
                 Row: {
                     avatar_url: string | null
+                    box_id: string | null
                     created_at: string | null
                     first_name: string | null
                     id: string
@@ -604,15 +670,17 @@ export type Database = {
                 }
                 Insert: {
                     avatar_url?: string | null
+                    box_id?: string | null
                     created_at?: string | null
                     first_name?: string | null
-                    id: string
+                    id?: string
                     last_name?: string | null
                     role_id?: string | null
                     status?: string | null
                 }
                 Update: {
                     avatar_url?: string | null
+                    box_id?: string | null
                     created_at?: string | null
                     first_name?: string | null
                     id?: string
@@ -622,113 +690,104 @@ export type Database = {
                 }
                 Relationships: [
                     {
-                        foreignKeyName: "profiles_role_id_fkey"
-                        columns: ["role_id"]
+                        foreignKeyName: "profiles_box_id_fkey"
+                        columns: ["box_id"]
                         isOneToOne: false
-                        referencedRelation: "roles"
+                        referencedRelation: "boxes"
                         referencedColumns: ["id"]
-                    }
+                    },
                 ]
             }
-            results: {
+            sessions: {
                 Row: {
-                    athlete_id: string | null
+                    box_id: string | null
+                    capacity: number | null
+                    coach_id: string | null
                     created_at: string | null
+                    date: string | null
+                    end_time: string | null
                     id: string
-                    notes: string | null
-                    rx_scaled: string | null
-                    score: string
-                    wod_id: string | null
+                    name: string | null
+                    start_time: string | null
+                    type: string | null
                 }
                 Insert: {
-                    athlete_id?: string | null
+                    box_id?: string | null
+                    capacity?: number | null
+                    coach_id?: string | null
                     created_at?: string | null
+                    date?: string | null
+                    end_time?: string | null
                     id?: string
-                    notes?: string | null
-                    rx_scaled?: string | null
-                    score: string
-                    wod_id?: string | null
+                    name?: string | null
+                    start_time?: string | null
+                    type?: string | null
                 }
                 Update: {
-                    athlete_id?: string | null
+                    box_id?: string | null
+                    capacity?: number | null
+                    coach_id?: string | null
                     created_at?: string | null
+                    date?: string | null
+                    end_time?: string | null
                     id?: string
-                    notes?: string | null
-                    rx_scaled?: string | null
-                    score?: string
-                    wod_id?: string | null
+                    name?: string | null
+                    start_time?: string | null
+                    type?: string | null
                 }
                 Relationships: [
                     {
-                        foreignKeyName: "results_athlete_id_fkey"
-                        columns: ["athlete_id"]
+                        foreignKeyName: "sessions_box_id_fkey"
+                        columns: ["box_id"]
                         isOneToOne: false
-                        referencedRelation: "profiles"
+                        referencedRelation: "boxes"
                         referencedColumns: ["id"]
                     },
                     {
-                        foreignKeyName: "results_wod_id_fkey"
-                        columns: ["wod_id"]
-                        isOneToOne: false
-                        referencedRelation: "wods"
-                        referencedColumns: ["id"]
-                    }
-                ]
-            }
-            roles: {
-                Row: {
-                    created_at: string | null
-                    description: string | null
-                    id: string
-                    name: string
-                }
-                Insert: {
-                    created_at?: string | null
-                    description?: string | null
-                    id: string
-                    name: string
-                }
-                Update: {
-                    created_at?: string | null
-                    description?: string | null
-                    id?: string
-                    name?: string
-                }
-                Relationships: []
-            }
-            wods: {
-                Row: {
-                    coach_id: string | null
-                    created_at: string | null
-                    date: string
-                    description: Json | null
-                    id: string
-                    title: string
-                }
-                Insert: {
-                    coach_id?: string | null
-                    created_at?: string | null
-                    date: string
-                    description?: Json | null
-                    id?: string
-                    title: string
-                }
-                Update: {
-                    coach_id?: string | null
-                    created_at?: string | null
-                    date?: string
-                    description?: Json | null
-                    id?: string
-                    title?: string
-                }
-                Relationships: [
-                    {
-                        foreignKeyName: "wods_coach_id_fkey"
+                        foreignKeyName: "sessions_coach_id_fkey"
                         columns: ["coach_id"]
                         isOneToOne: false
                         referencedRelation: "profiles"
                         referencedColumns: ["id"]
-                    }
+                    },
+                ]
+            }
+            wods: {
+                Row: {
+                    box_id: string | null
+                    created_at: string | null
+                    date: string | null
+                    description: string | null
+                    id: string
+                    name: string
+                    type: string | null
+                }
+                Insert: {
+                    box_id?: string | null
+                    created_at?: string | null
+                    date?: string | null
+                    description?: string | null
+                    id?: string
+                    name: string
+                    type?: string | null
+                }
+                Update: {
+                    box_id?: string | null
+                    created_at?: string | null
+                    date?: string | null
+                    description?: string | null
+                    id?: string
+                    name?: string
+                    type?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "wods_box_id_fkey"
+                        columns: ["box_id"]
+                        isOneToOne: false
+                        referencedRelation: "boxes"
+                        referencedColumns: ["id"]
+                    },
                 ]
             }
         }
@@ -746,3 +805,101 @@ export type Database = {
         }
     }
 }
+
+type PublicSchema = Database["public"]
+
+export type Tables<
+    PublicTableNameOrOptions extends
+    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
+    | { schema: keyof Database },
+    TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof (Database[PublicTableNameOrOptions["schema"]] extends { Tables: any }
+        ? Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+        Database[PublicTableNameOrOptions["schema"]]["Views"]
+        : never)
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+    ? (Database[PublicTableNameOrOptions["schema"]] extends { Tables: any }
+        ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+            Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+                Row: infer R
+            }
+        ? R
+        : never
+        : never)
+    : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
+        PublicSchema["Views"])
+    ? (PublicSchema["Tables"] &
+        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
+            Row: infer R
+        }
+    ? R
+    : never
+    : never
+
+export type TablesInsert<
+    PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
+    | { schema: keyof Database },
+    TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof (Database[PublicTableNameOrOptions["schema"]] extends { Tables: any }
+        ? Database[PublicTableNameOrOptions["schema"]]["Tables"]
+        : never)
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+    ? (Database[PublicTableNameOrOptions["schema"]] extends { Tables: any }
+        ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+            Insert: infer I
+        }
+        ? I
+        : never
+        : never)
+    : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+        Insert: infer I
+    }
+    ? I
+    : never
+    : never
+
+export type TablesUpdate<
+    PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
+    | { schema: keyof Database },
+    TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof (Database[PublicTableNameOrOptions["schema"]] extends { Tables: any }
+        ? Database[PublicTableNameOrOptions["schema"]]["Tables"]
+        : never)
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+    ? (Database[PublicTableNameOrOptions["schema"]] extends { Tables: any }
+        ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+            Update: infer U
+        }
+        ? U
+        : never
+        : never)
+    : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+        Update: infer U
+    }
+    ? U
+    : never
+    : never
+
+export type Enums<
+    PublicEnumNameOrOptions extends
+    | keyof PublicSchema["Enums"]
+    | { schema: keyof Database },
+    EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
+    ? keyof (Database[PublicEnumNameOrOptions["schema"]] extends { Enums: any }
+        ? Database[PublicEnumNameOrOptions["schema"]]["Enums"]
+        : never)
+    : never = never,
+> = PublicEnumNameOrOptions extends { schema: keyof Database }
+    ? (Database[PublicEnumNameOrOptions["schema"]] extends { Enums: any }
+        ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
+        : never)
+    : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
+    ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+    : never

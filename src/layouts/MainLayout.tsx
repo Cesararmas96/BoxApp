@@ -13,7 +13,6 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabaseClient';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -40,29 +39,21 @@ const getNavItems = (t: any) => [
 
 export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, userProfile }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [boxSettings, setBoxSettings] = useState<any>(null);
     const { t, i18n } = useTranslation();
-    const { signOut } = useAuth();
+    const { currentBox, signOut } = useAuth();
 
     useEffect(() => {
-        const fetchBoxSettings = async () => {
-            const { data } = await supabase.from('box_settings').select('*').eq('id', 1).single();
-            if (data) {
-                setBoxSettings(data);
-                // Update Favicon
-                if (data.favicon_url) {
-                    let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
-                    if (!link) {
-                        link = document.createElement('link');
-                        link.rel = 'icon';
-                        document.getElementsByTagName('head')[0].appendChild(link);
-                    }
-                    link.href = data.favicon_url;
-                }
+        // Update Favicon based on current box
+        if (currentBox?.favicon_url) {
+            let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+            if (!link) {
+                link = document.createElement('link');
+                link.rel = 'icon';
+                document.getElementsByTagName('head')[0].appendChild(link);
             }
-        };
-        fetchBoxSettings();
-    }, []);
+            link.href = currentBox.favicon_url;
+        }
+    }, [currentBox]);
 
     const changeLanguage = (lng: string) => {
         i18n.changeLanguage(lng);
@@ -106,8 +97,8 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
                 <div className="flex h-20 items-center justify-between px-6 shrink-0 relative overflow-hidden group">
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                     <div className="flex items-center gap-3">
-                        {boxSettings?.logo_url ? (
-                            <img src={boxSettings.logo_url} alt="Logo" className="h-10 w-10 object-contain rounded-lg" />
+                        {currentBox?.logo_url ? (
+                            <img src={currentBox.logo_url} alt="Logo" className="h-10 w-10 object-contain rounded-lg shadow-lg shadow-primary/10" />
                         ) : (
                             <div className="h-10 w-10 bg-primary/20 rounded-lg flex items-center justify-center">
                                 <span className="text-primary font-black italic">B</span>
@@ -115,7 +106,7 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
                         )}
                         <div className="flex flex-col">
                             <span className="text-xl font-black tracking-tighter text-primary uppercase italic text-glow leading-none truncate max-w-[120px]">
-                                {boxSettings?.box_name || 'Box Manager'}
+                                {currentBox?.name || 'Box Manager'}
                             </span>
                             <span className="text-[8px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 mt-1">Sport-Tech Engine</span>
                         </div>
@@ -198,8 +189,8 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
                             <Menu className="h-6 w-6" />
                         </Button>
                         <div className="flex items-center gap-2">
-                            {boxSettings?.logo_url && <img src={boxSettings.logo_url} className="h-6 w-6 object-contain" alt="Logo" />}
-                            <span className="text-lg font-black italic tracking-tighter text-primary uppercase text-glow">{boxSettings?.box_name || 'Box Manager'}</span>
+                            {currentBox?.logo_url && <img src={currentBox.logo_url} className="h-6 w-6 object-contain" alt="Logo" />}
+                            <span className="text-lg font-black italic tracking-tighter text-primary uppercase text-glow">{currentBox?.name || 'Box Manager'}</span>
                         </div>
                     </div>
                     <div className="hidden lg:flex items-center gap-4 bg-zinc-950/20 px-4 py-1.5 rounded-full border border-primary/10">

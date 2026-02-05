@@ -40,11 +40,13 @@ export const Settings: React.FC = () => {
         resetTheme
     } = useTheme();
 
+    const { currentBox } = useAuth();
+
     const logoInputRef = useRef<HTMLInputElement>(null);
     const faviconInputRef = useRef<HTMLInputElement>(null);
 
     const [boxSettings, setBoxSettings] = useState({
-        box_name: 'Box Manager',
+        name: '',
         logo_url: '',
         favicon_url: ''
     });
@@ -53,22 +55,18 @@ export const Settings: React.FC = () => {
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
     useEffect(() => {
-        const fetchSettings = async () => {
-            const { data, error } = await supabase.from('box_settings').select('*').eq('id', 1).single();
-            if (data && !error) {
-                setBoxSettings({
-                    box_name: data.box_name || '',
-                    logo_url: data.logo_url || '',
-                    favicon_url: data.favicon_url || ''
-                });
-            }
-        };
-        fetchSettings();
-    }, []);
+        if (currentBox) {
+            setBoxSettings({
+                name: currentBox.name || '',
+                logo_url: currentBox.logo_url || '',
+                favicon_url: currentBox.favicon_url || ''
+            });
+        }
+    }, [currentBox]);
 
     const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'favicon') => {
         const file = event.target.files?.[0];
-        if (!file) return;
+        if (!file || !currentBox?.id) return;
 
         setIsUploading(type);
         setMessage(null);
@@ -76,7 +74,7 @@ export const Settings: React.FC = () => {
         try {
             const fileExt = file.name.split('.').pop();
             const fileName = `${type}_${Date.now()}.${fileExt}`;
-            const filePath = `brand/${fileName}`;
+            const filePath = `brand/${currentBox.id}/${fileName}`;
 
             const { error: uploadError } = await supabase.storage
                 .from('branding')
@@ -102,22 +100,23 @@ export const Settings: React.FC = () => {
     };
 
     const handleSaveBranding = async () => {
+        if (!currentBox?.id) return;
         setIsSaving(true);
         setMessage(null);
         try {
             const { error } = await supabase
-                .from('box_settings')
+                .from('boxes')
                 .update({
-                    box_name: boxSettings.box_name,
+                    name: boxSettings.name,
                     logo_url: boxSettings.logo_url,
                     favicon_url: boxSettings.favicon_url,
                     updated_at: new Date().toISOString()
                 })
-                .eq('id', 1);
+                .eq('id', currentBox.id);
 
             if (error) throw error;
             setMessage({ type: 'success', text: 'Branding settings saved successfully!' });
-            // Reload page to apply changes (favicon, etc)
+            // Reload page or refresh context to apply changes
             setTimeout(() => window.location.reload(), 1500);
         } catch (err: any) {
             setMessage({ type: 'error', text: err.message });
@@ -163,8 +162,8 @@ export const Settings: React.FC = () => {
                                             <Label htmlFor="box-name">Box Name</Label>
                                             <Input
                                                 id="box-name"
-                                                value={boxSettings.box_name}
-                                                onChange={(e) => setBoxSettings({ ...boxSettings, box_name: e.target.value })}
+                                                value={boxSettings.name}
+                                                onChange={(e) => setBoxSettings({ ...boxSettings, name: e.target.value })}
                                                 className="rounded-xl h-11"
                                             />
                                         </div>
@@ -225,7 +224,7 @@ export const Settings: React.FC = () => {
                                                         <span className="text-[10px] text-primary font-black italic">B</span>
                                                     </div>
                                                 )}
-                                                <span className="font-black italic uppercase text-primary text-xs truncate">{boxSettings.box_name || 'Box Name'}</span>
+                                                <span className="font-black italic uppercase text-primary text-xs truncate">{boxSettings.name || 'Box Name'}</span>
                                             </div>
                                         </div>
                                         <div className="mt-4 flex gap-2">

@@ -1,11 +1,13 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import { Session, User } from '@supabase/supabase-js';
+import { Database } from '@/types/supabase';
+
+type Profile = Database['public']['Tables']['profiles']['Row'];
+type Box = Database['public']['Tables']['boxes']['Row'];
 
 interface AuthContextType {
     session: Session | null;
     user: User | null;
-    userProfile: any | null;
+    userProfile: Profile | null;
+    currentBox: Box | null;
     loading: boolean;
     isAdmin: boolean;
     isCoach: boolean;
@@ -22,7 +24,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [session, setSession] = useState<Session | null>(null);
     const [user, setUser] = useState<User | null>(null);
-    const [userProfile, setUserProfile] = useState<any | null>(null);
+    const [userProfile, setUserProfile] = useState<Profile | null>(null);
+    const [currentBox, setCurrentBox] = useState<Box | null>(null);
     const [loading, setLoading] = useState(true);
 
     const isAdmin = userProfile?.role_id === 'admin';
@@ -48,9 +51,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (error) {
                 console.warn('[AuthContext] Error fetching profile:', error.message);
                 setUserProfile(null);
-            } else {
+            } else if (data) {
                 console.log('[AuthContext] Profile loaded successfully');
-                setUserProfile(data);
+                setUserProfile(data as Profile);
+
+                // Fetch Box settings if profile has box_id
+                const boxId = (data as any).box_id;
+                if (boxId) {
+                    const { data: boxData, error: boxError } = await supabase
+                        .from('boxes' as any)
+                        .select('*')
+                        .eq('id', boxId)
+                        .single();
+
+                    if (boxData && !boxError) {
+                        setCurrentBox(boxData as Box);
+                        console.log('[AuthContext] Box settings loaded successfully');
+                    }
+                }
             }
         } catch (err) {
             console.error('[AuthContext] Unexpected error in fetchProfile:', err);
@@ -151,6 +169,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         session,
         user,
         userProfile,
+        currentBox,
         loading,
         isAdmin,
         isCoach,

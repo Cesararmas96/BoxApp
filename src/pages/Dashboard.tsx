@@ -85,57 +85,60 @@ export const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
                 <p className="text-muted-foreground font-medium uppercase text-[10px] tracking-[0.3em] opacity-60 mt-2">Operational Analytics & Global Oversight</p>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <Card className="bg-zinc-950 border-white/5 text-white overflow-hidden relative group">
-                    <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-primary/10 blur-[80px] rounded-full group-hover:bg-primary/20 transition-all duration-700" />
-                    <div className="absolute top-4 right-4 text-primary opacity-20 transition-all duration-500 group-hover:opacity-40 group-hover:scale-110">
-                        <Users className="h-16 w-16" />
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                <Card className="bg-zinc-950 border-white/5 text-white overflow-hidden relative group shadow-2xl">
+                    <div className="absolute top-[-20%] right-[-10%] w-[70%] h-[70%] bg-primary/20 blur-[100px] rounded-full group-hover:bg-primary/30 transition-all duration-1000" />
+                    <div className="absolute top-6 right-6 text-primary opacity-20 transition-all duration-700 group-hover:opacity-40 group-hover:scale-125 group-hover:rotate-12">
+                        <Users className="h-20 w-20" />
                     </div>
-                    <CardHeader className="relative z-10">
-                        <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 italic mb-2">{t('dashboard.community')}</CardTitle>
-                        <CardDescription className="text-zinc-400 font-bold italic text-base uppercase tracking-tight">{t('dashboard.registered_athletes')}</CardDescription>
+                    <CardHeader className="relative z-10 pt-8 px-8">
+                        <CardTitle className="text-[11px] font-black uppercase tracking-[0.4em] text-zinc-500 italic mb-3">{t('dashboard.community')}</CardTitle>
+                        <CardDescription className="text-zinc-200 font-bold italic text-xl uppercase tracking-tight leading-none">{t('dashboard.registered_athletes')}</CardDescription>
                     </CardHeader>
-                    <CardContent className="relative z-10">
-                        <div className="text-6xl font-black italic tracking-tighter mb-4 text-white group-hover:text-primary transition-colors duration-500">{stats.members}</div>
-                        <Progress value={78} className="h-1 bg-zinc-900 overflow-hidden" />
-                        <p className="mt-4 text-[9px] font-black uppercase tracking-widest text-zinc-600">{t('dashboard.growth_cycle')}</p>
+                    <CardContent className="relative z-10 px-8 pb-8">
+                        <div className="text-7xl font-black italic tracking-tighter mb-6 text-white group-hover:text-primary transition-colors duration-700">{stats.members}</div>
+                        <Progress value={78} className="h-1.5 bg-zinc-900 overflow-hidden rounded-full" />
+                        <p className="mt-6 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600">{t('dashboard.growth_cycle')}</p>
                     </CardContent>
                 </Card>
 
-                <Card className="glass flex flex-col group">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                <Card className="glass flex flex-col group overflow-hidden border-white/10">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 pt-8 px-8 relative z-10">
                         <div className="space-y-1">
-                            <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">{t('dashboard.daily_wod')}</CardTitle>
-                            <CardDescription className="font-bold text-lg uppercase tracking-tight">{t('dashboard.main_programming')}</CardDescription>
+                            <CardTitle className="text-[11px] font-black uppercase tracking-[0.4em] text-primary italic">{t('dashboard.daily_wod')}</CardTitle>
+                            <CardDescription className="font-extrabold text-2xl uppercase tracking-tight leading-none text-foreground">{t('dashboard.main_programming')}</CardDescription>
                         </div>
-                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-[9px] font-black animate-pulse px-2 py-0.5">{t('dashboard.live_now')}</Badge>
+                        <Badge variant="outline" className="bg-primary/20 text-primary border-primary/30 text-[10px] font-black animate-pulse px-3 py-1 rounded-full">{t('dashboard.live_now')}</Badge>
                     </CardHeader>
-                    <CardContent className="pt-6 flex-1 flex flex-col">
-                        <div className="text-2xl font-black italic uppercase mb-1 tracking-tight text-glow group-hover:scale-[1.02] transition-transform">The Chief</div>
-                        <div className="flex gap-4 text-[10px] font-black text-muted-foreground mb-6 uppercase tracking-widest">
-                            <span className="flex items-center gap-1.5 opacity-70"><Clock className="h-3 w-3 text-primary" /> {t('dashboard.amrap', { minutes: 15 })}</span>
-                            <span className="flex items-center gap-1.5 opacity-70"><Flame className="h-3 w-3 text-primary" /> {t('dashboard.intense')}</span>
+                    <CardContent className="pt-8 px-8 flex-1 flex flex-col relative z-10">
+                        <div className="text-3xl font-black italic uppercase mb-2 tracking-tight text-glow group-hover:translate-x-1 transition-transform duration-500 italic">The Chief</div>
+                        <div className="flex gap-5 text-[11px] font-black text-muted-foreground/80 mb-8 uppercase tracking-[0.15em]">
+                            <span className="flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full"><Clock className="h-3.5 w-3.5 text-primary" /> {t('dashboard.amrap', { minutes: 15 })}</span>
+                            <span className="flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full"><Flame className="h-3.5 w-3.5 text-primary" /> {t('dashboard.intense')}</span>
                         </div>
-                        <Button variant="outline" className="w-full mt-auto rounded-xl border-white/5 hover:border-primary/20 hover:bg-primary/5">{t('dashboard.view_details')}</Button>
+                        <Button variant="outline" className="w-full mt-auto rounded-2xl hover:bg-primary/10 border-primary/10 transition-all font-black tracking-widest text-[10px] h-12">{t('dashboard.view_details')}</Button>
                     </CardContent>
                 </Card>
 
-                <Card className="glass relative group overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 relative z-10">
+                <Card className="glass relative group overflow-hidden border-white/10">
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 pt-8 px-8 relative z-10">
                         <div className="space-y-1">
-                            <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500 italic">{t('dashboard.box_status')}</CardTitle>
-                            <CardDescription className="font-bold text-lg uppercase tracking-tight">{t('dashboard.attendance_retention')}</CardDescription>
+                            <CardTitle className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-500 italic">{t('dashboard.box_status')}</CardTitle>
+                            <CardDescription className="font-extrabold text-2xl uppercase tracking-tight leading-none text-foreground">{t('dashboard.attendance_retention')}</CardDescription>
                         </div>
-                        <TrendingUp className="h-5 w-5 text-emerald-500 group-hover:translate-y-[-2px] group-hover:translate-x-[2px] transition-transform" />
+                        <div className="h-10 w-10 glass rounded-full flex items-center justify-center border-emerald-500/20 group-hover:rotate-12 transition-transform duration-500">
+                            <TrendingUp className="h-5 w-5 text-emerald-500" />
+                        </div>
                     </CardHeader>
-                    <CardContent className="pt-6 relative z-10">
-                        <div className="text-4xl font-black italic mb-2 group-hover:text-glow group-hover:text-emerald-500 transition-all">92%</div>
-                        <p className="text-[11px] font-medium text-muted-foreground leading-snug uppercase tracking-wider">{t('dashboard.attendance_avg')}</p>
-                        <div className="mt-6 flex gap-1.5 h-1.5">
+                    <CardContent className="pt-8 px-8 relative z-10">
+                        <div className="text-5xl font-black italic mb-3 group-hover:text-glow group-hover:text-emerald-500 transition-all duration-700">92%</div>
+                        <p className="text-[12px] font-bold text-muted-foreground/80 leading-snug uppercase tracking-[0.1em]">{t('dashboard.attendance_avg')}</p>
+                        <div className="mt-8 flex gap-2 h-2">
                             {[1, 1, 1, 1, 0.4, 1, 0.8].map((v, i) => (
-                                <div key={i} className="flex-1 rounded-full bg-muted-foreground/10 overflow-hidden">
-                                    <div className="h-full bg-emerald-500 transition-all duration-1000 delay-300" style={{ width: `${v * 100}%` }} />
+                                <div key={i} className="flex-1 rounded-full bg-black/5 dark:bg-white/5 overflow-hidden">
+                                    <div className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] transition-all duration-1000 delay-300 transform origin-left group-hover:scale-x-110" style={{ width: `${v * 100}%` }} />
                                 </div>
                             ))}
                         </div>

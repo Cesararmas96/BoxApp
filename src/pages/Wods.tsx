@@ -542,12 +542,15 @@ export const Wods: React.FC = () => {
 
     return (
         <div className="space-y-6 text-left">
-            <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div className="space-y-1">
-                    <h1 className="text-3xl font-bold italic tracking-tighter uppercase text-primary flex items-center gap-2">
-                        <Activity className="h-8 w-8 text-primary" /> {t('wods.title')}
+            <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div className="space-y-2">
+                    <h1 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter text-foreground leading-none flex items-center gap-4">
+                        <Activity className="h-8 w-8 md:h-12 md:w-12 text-primary" />
+                        {t('wods.title')}
                     </h1>
-                    <p className="text-muted-foreground text-sm font-bold uppercase italic opacity-70">{t('wods.subtitle')}</p>
+                    <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] text-muted-foreground/60 px-1">
+                        {t('wods.subtitle')}
+                    </p>
                 </div>
 
                 <div className="flex gap-2">
@@ -564,88 +567,100 @@ export const Wods: React.FC = () => {
                         }
                     }}>
                         <DialogTrigger asChild>
-                            <Button className="gap-2 font-black uppercase italic shadow-lg shadow-primary/20">
-                                <Plus className="h-4 w-4" /> {t('wods.new_session')}
+                            <Button className="h-14 px-8 rounded-2xl gap-3 shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] font-black uppercase tracking-widest text-xs">
+                                <Plus className="h-5 w-5" />
+                                {t('wods.new_session')}
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[800px] h-[90vh] overflow-y-auto">
-                            <DialogHeader>
-                                <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">
-                                    {editingWodId ? 'Edit Session' : t('wods.designer_title')}
-                                </DialogTitle>
-                                <DialogDescription className="font-bold uppercase text-[10px] opacity-70">
-                                    {editingWodId ? 'Modify the existing workout parameters' : t('wods.designer_subtitle')}
-                                </DialogDescription>
-                            </DialogHeader>
+                        <DialogContent className="sm:max-w-[850px] h-[90vh] overflow-hidden p-0 gap-0 border-white/10 glass rounded-[3rem] shadow-2xl flex flex-col">
+                            <div className="bg-primary/10 p-10 border-b border-white/5 relative overflow-hidden flex-shrink-0">
+                                <Trophy className="absolute -right-10 -bottom-10 h-48 w-48 text-primary/5 -rotate-12" />
+                                <DialogHeader>
+                                    <DialogTitle className="text-4xl font-black italic uppercase tracking-tighter">
+                                        {editingWodId ? 'Edit Session' : t('wods.designer_title')}
+                                    </DialogTitle>
+                                    <DialogDescription className="uppercase text-[10px] font-bold tracking-[0.3em] text-primary/60 mt-4 px-1 flex items-center gap-2">
+                                        <div className="h-1 w-1 rounded-full bg-primary" />
+                                        {editingWodId ? 'Modify technical parameters' : t('wods.designer_subtitle')}
+                                    </DialogDescription>
+                                </DialogHeader>
+                            </div>
 
-                            <div className="space-y-6 mt-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label className="uppercase text-[10px] font-black">{t('wods.track')}</Label>
+                            <div className="flex-1 overflow-y-auto p-10 space-y-12">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-3">
+                                        <Label className="uppercase text-[10px] font-black tracking-widest text-primary/60 px-1">{t('wods.track')}</Label>
                                         <Select value={newWOD.track} onValueChange={(v) => setNewWOD({ ...newWOD, track: v as any })}>
-                                            <SelectTrigger className="font-bold italic uppercase h-10">
+                                            <SelectTrigger className="font-black italic uppercase h-14 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20">
                                                 <SelectValue placeholder="Select track" />
                                             </SelectTrigger>
-                                            <SelectContent>
-                                                {TRACKS.map(t => <SelectItem key={t} value={t} className="font-bold uppercase italic">{t}</SelectItem>)}
+                                            <SelectContent className="glass border-white/10 rounded-2xl">
+                                                {TRACKS.map(t => <SelectItem key={t} value={t} className="font-black uppercase italic py-3">{t}</SelectItem>)}
                                             </SelectContent>
                                         </Select>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-1.5">
-                                            <Label className="uppercase text-[10px] font-black">{t('wods.wod_title')}</Label>
+                                        <div className="space-y-3">
+                                            <Label className="uppercase text-[10px] font-black tracking-widest text-primary/60 px-1">{t('wods.wod_title')}</Label>
                                             <Input
                                                 placeholder="e.g. MORNING GRIND"
-                                                className="uppercase italic font-bold h-10"
+                                                className="uppercase italic font-black h-14 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20"
                                                 value={newWOD.title}
                                                 onChange={(e) => setNewWOD({ ...newWOD, title: e.target.value })}
                                             />
                                         </div>
-                                        <div className="space-y-1.5">
-                                            <Label className="uppercase text-[10px] font-black">{t('wods.date', { defaultValue: 'PROGRAM DATE' })}</Label>
+                                        <div className="space-y-3">
+                                            <Label className="uppercase text-[10px] font-black tracking-widest text-primary/60 px-1">{t('wods.date', { defaultValue: 'PROGRAM DATE' })}</Label>
                                             <Input
                                                 type="date"
                                                 value={newWOD.date}
                                                 onChange={(e) => setNewWOD({ ...newWOD, date: e.target.value })}
-                                                className="font-black italic h-10"
+                                                className="font-black italic h-14 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20"
                                             />
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between border-b pb-2">
-                                        <Label className="uppercase text-[10px] font-black">{t('wods.routine_structure')}</Label>
-                                        <span className="text-[10px] text-muted-foreground font-bold italic uppercase">Build your session block by block</span>
+                                <div className="space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <div className="space-y-1">
+                                            <Label className="uppercase text-xs font-black tracking-widest leading-none">{t('wods.routine_structure')}</Label>
+                                            <p className="text-[10px] text-muted-foreground font-bold italic uppercase opacity-50">Build your session block by block</p>
+                                        </div>
                                     </div>
 
-                                    <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                                    <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
                                         {[
-                                            { type: 'warmup', icon: <FlameIcon className="h-3.5 w-3.5" />, label: t('wods.block_warmup_short', { defaultValue: 'Warm-up' }), color: 'text-orange-500 bg-orange-500/10 border-orange-500/20' },
-                                            { type: 'strength', icon: <Dumbbell className="h-3.5 w-3.5" />, label: t('wods.block_strength_short', { defaultValue: 'Strength' }), color: 'text-blue-500 bg-blue-500/10 border-blue-500/20' },
-                                            { type: 'conditioning', icon: <ZapIcon className="h-3.5 w-3.5" />, label: t('wods.block_conditioning_short', { defaultValue: 'Power' }), color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' },
-                                            { type: 'wod', icon: <Trophy className="h-3.5 w-3.5" />, label: t('wods.block_wod_short', { defaultValue: 'WOD' }), color: 'text-primary bg-primary/10 border-primary/20' },
-                                            { type: 'accessory', icon: <Shield className="h-3.5 w-3.5" />, label: t('wods.block_accessory_short', { defaultValue: 'Extra' }), color: 'text-indigo-500 bg-indigo-500/10 border-indigo-500/20' },
-                                            { type: 'cooldown', icon: <RotateCcw className="h-3.5 w-3.5" />, label: t('wods.block_cooldown_short', { defaultValue: 'Recovery' }), color: 'text-zinc-500 bg-zinc-500/10 border-zinc-500/20' }
+                                            { type: 'warmup', icon: <FlameIcon className="h-5 w-5" />, label: 'Warm-up', color: 'border-orange-500/20 text-orange-500 hover:bg-orange-500/10' },
+                                            { type: 'strength', icon: <Dumbbell className="h-5 w-5" />, label: 'Strength', color: 'border-blue-500/20 text-blue-500 hover:bg-blue-500/10' },
+                                            { type: 'conditioning', icon: <ZapIcon className="h-5 w-5" />, label: 'Power', color: 'border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/10' },
+                                            { type: 'wod', icon: <Trophy className="h-5 w-5" />, label: 'WOD', color: 'border-primary/20 text-primary hover:bg-primary/10' },
+                                            { type: 'accessory', icon: <Shield className="h-5 w-5" />, label: 'Extra', color: 'border-indigo-500/20 text-indigo-500 hover:bg-indigo-500/10' },
+                                            { type: 'cooldown', icon: <RotateCcw className="h-5 w-5" />, label: 'Recovery', color: 'border-zinc-500/20 text-zinc-500 hover:bg-zinc-500/10' }
                                         ].map((btn) => (
                                             <Button
                                                 key={btn.type}
                                                 type="button"
                                                 variant="outline"
                                                 onClick={() => addBlock(btn.type as any)}
-                                                className={cn("flex-col h-16 gap-1 p-2 border-2", btn.color)}
+                                                className={cn(
+                                                    "flex-col h-20 gap-2 p-3 rounded-2xl border-2 transition-all hover:scale-105 active:scale-95 bg-white/5",
+                                                    btn.color
+                                                )}
                                             >
                                                 {btn.icon}
-                                                <span className="text-[8px] font-black uppercase tracking-tight">{btn.label}</span>
+                                                <span className="text-[9px] font-black uppercase tracking-widest">{btn.label}</span>
                                             </Button>
                                         ))}
                                     </div>
 
-                                    <div className="space-y-4">
+                                    <div className="space-y-6">
                                         {sessionBlocks.length === 0 ? (
-                                            <div className="border-2 border-dashed rounded-xl p-12 text-center opacity-30">
-                                                <Plus className="h-8 w-8 mx-auto mb-2" />
-                                                <p className="text-[10px] font-black uppercase tracking-widest italic">Add your first block to start programming</p>
+                                            <div className="border-4 border-dashed border-white/5 rounded-[2.5rem] p-20 text-center bg-white/5">
+                                                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
+                                                    <Plus className="h-8 w-8 text-primary" />
+                                                </div>
+                                                <p className="text-sm font-black uppercase tracking-[0.3em] text-muted-foreground italic">Add your first block to start programming</p>
                                             </div>
                                         ) : isMounted && (
                                             <DragDropContext onDragEnd={(result) => {
@@ -810,19 +825,25 @@ export const Wods: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label className="uppercase text-[10px] font-black text-orange-500">{t('wods.stimulus')}</Label>
-                                        <Textarea className="h-20 text-xs italic" value={newWOD.stimulus} onChange={e => setNewWOD({ ...newWOD, stimulus: e.target.value })} />
+                                <div className="grid md:grid-cols-2 gap-8">
+                                    <div className="space-y-3">
+                                        <Label className="uppercase text-[10px] font-black tracking-widest text-orange-500 px-1">{t('wods.stimulus')}</Label>
+                                        <Textarea className="h-32 text-xs italic font-bold bg-white/5 border-white/10 rounded-2xl p-4 focus:ring-orange-500/20" value={newWOD.stimulus} onChange={e => setNewWOD({ ...newWOD, stimulus: e.target.value })} />
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label className="uppercase text-[10px] font-black text-blue-500">{t('wods.scaling')}</Label>
-                                        <Textarea className="h-20 text-xs italic" value={newWOD.scaling_options} onChange={e => setNewWOD({ ...newWOD, scaling_options: e.target.value })} />
+                                    <div className="space-y-3">
+                                        <Label className="uppercase text-[10px] font-black tracking-widest text-blue-500 px-1">{t('wods.scaling')}</Label>
+                                        <Textarea className="h-32 text-xs italic font-bold bg-white/5 border-white/10 rounded-2xl p-4 focus:ring-blue-500/20" value={newWOD.scaling_options} onChange={e => setNewWOD({ ...newWOD, scaling_options: e.target.value })} />
                                     </div>
                                 </div>
+                            </div>
 
-                                <Button onClick={handlePublishManual} className="w-full font-black uppercase italic" disabled={loading}>
-                                    {loading ? <Loader2 className="animate-spin" /> : t('wods.publish')}
+                            <div className="p-10 border-t border-white/5 bg-white/5 flex-shrink-0">
+                                <Button
+                                    onClick={handlePublishManual}
+                                    className="w-full h-16 rounded-2xl font-black uppercase tracking-widest text-base shadow-2xl shadow-primary/20 transition-all hover:scale-[1.01] active:scale-[0.99]"
+                                    disabled={loading}
+                                >
+                                    {loading ? <Loader2 className="animate-spin" /> : editingWodId ? 'UPDATE SESSION' : t('wods.publish')}
                                 </Button>
                             </div>
                         </DialogContent>
@@ -831,22 +852,30 @@ export const Wods: React.FC = () => {
             </header>
 
             {/* Quick Actions & Filters Bar */}
-            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+            <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between bg-white/5 p-2 rounded-[2rem] border border-white/5">
                 <div className="flex flex-wrap gap-2">
-                    <Button variant={activeTrack === 'all' ? "default" : "outline"} onClick={() => setActiveTrack('all')} className="h-9 px-4 font-black uppercase italic text-[10px] tracking-widest">
+                    <Button
+                        variant={activeTrack === 'all' ? "default" : "ghost"}
+                        onClick={() => setActiveTrack('all')}
+                        className={cn(
+                            "h-10 px-6 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all",
+                            activeTrack === 'all' ? "shadow-lg shadow-primary/20" : "hover:bg-white/10"
+                        )}
+                    >
                         {t('wods.all_tracks')}
                     </Button>
                     {TRACKS.map(t => (
                         <Button
                             key={t}
-                            variant={activeTrack === t ? "default" : "outline"}
+                            variant={activeTrack === t ? "default" : "ghost"}
                             onClick={() => setActiveTrack(t)}
                             className={cn(
-                                "h-9 px-4 font-black uppercase italic text-[10px] tracking-widest",
-                                t === 'CrossFit' && "border-primary/40 text-primary",
-                                t === 'Novice' && "border-emerald-500/40 text-emerald-500",
-                                t === 'Bodybuilding' && "border-blue-500/40 text-blue-500",
-                                t === 'Engine' && "border-orange-500/40 text-orange-500"
+                                "h-10 px-6 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all",
+                                activeTrack === t ? "shadow-lg shadow-primary/20" : "hover:bg-white/10",
+                                t === 'CrossFit' && activeTrack !== t && "text-primary/60 hover:text-primary",
+                                t === 'Novice' && activeTrack !== t && "text-emerald-500/60 hover:text-emerald-500",
+                                t === 'Bodybuilding' && activeTrack !== t && "text-blue-500/60 hover:text-blue-500",
+                                t === 'Engine' && activeTrack !== t && "text-orange-500/60 hover:text-orange-500"
                             )}
                         >
                             {t}
@@ -854,11 +883,11 @@ export const Wods: React.FC = () => {
                     ))}
                 </div>
 
-                <div className="relative w-full max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <div className="relative group w-full md:w-80">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                     <Input
                         placeholder={t('common.search')}
-                        className="pl-8 h-9 text-xs focus-visible:ring-primary"
+                        className="pl-12 h-11 rounded-xl border-white/10 bg-white/5 focus:ring-primary/20 transition-all text-xs font-bold uppercase tracking-wider"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -867,22 +896,32 @@ export const Wods: React.FC = () => {
 
             {/* Bias Dashboard (Condensed to match UI style) */}
             {(activeTrack === 'all' || activeTrack === 'CrossFit') && (
-                <Card className="border shadow-xl overflow-hidden">
-                    <CardHeader className="py-4 border-b bg-muted/20">
-                        <div className="flex items-center gap-2">
-                            <Target className="h-4 w-4 text-primary" />
-                            <CardTitle className="text-sm font-bold uppercase italic tracking-tight">{t('wods.bias_checker')}</CardTitle>
+                <Card className="border-white/10 glass rounded-[2rem] overflow-hidden shadow-2xl">
+                    <CardHeader className="py-6 border-b border-white/5 bg-primary/10">
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                                <Target className="h-6 w-6 text-primary-foreground" />
+                            </div>
+                            <div>
+                                <CardTitle className="text-xl font-black italic uppercase tracking-tighter">{t('wods.bias_checker')}</CardTitle>
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-primary/60">{t('wods.bias_subtitle', { defaultValue: '7-DAY PROGRAMMING ANALYSIS' })}</p>
+                            </div>
                         </div>
                     </CardHeader>
-                    <CardContent className="py-6">
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                    <CardContent className="py-8">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-10">
                             {Object.entries(last7DaysBias).map(([key, count]) => (
-                                <div key={key} className="space-y-2">
-                                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest opacity-60">
-                                        <span>{key}</span>
-                                        <span>{count} / 7</span>
+                                <div key={key} className="space-y-4">
+                                    <div className="flex justify-between items-end">
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">{key}</span>
+                                        <span className="text-sm font-black italic text-primary">{count} <span className="text-[10px] opacity-40">/ 7</span></span>
                                     </div>
-                                    <Progress value={(count / 7) * 100} className="h-1.5" />
+                                    <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                                        <div
+                                            className="h-full bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)] transition-all duration-1000"
+                                            style={{ width: `${(count / 7) * 100}%` }}
+                                        />
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -893,112 +932,116 @@ export const Wods: React.FC = () => {
             {/* Board Feed */}
             <div className="grid gap-6">
                 {wods.length === 0 && !loading ? (
-                    <Card className="border-dashed border-2 py-20 text-center bg-muted/10">
-                        <div className="space-y-4">
-                            <Calendar className="h-12 w-12 text-muted-foreground/30 mx-auto" />
-                            <p className="text-muted-foreground font-bold uppercase italic">{t('common.no_data')}</p>
+                    <Card className="border-dashed border-2 border-white/10 py-24 text-center glass rounded-[3rem]">
+                        <div className="space-y-6">
+                            <div className="h-20 w-20 rounded-full bg-white/5 mx-auto flex items-center justify-center border border-white/10">
+                                <Calendar className="h-10 w-10 text-muted-foreground/40" />
+                            </div>
+                            <div className="space-y-2">
+                                <p className="text-xl font-black uppercase italic tracking-tight text-muted-foreground/60">{t('common.no_data')}</p>
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">{t('wods.empty_desc', { defaultValue: 'START PROGRAMMING YOUR FIRST SESSION' })}</p>
+                            </div>
                         </div>
                     </Card>
                 ) : (
                     filteredWods.map(wod => (
-                        <Card key={wod.id} className="border shadow-xl overflow-hidden group hover:border-primary/40 transition-all">
-                            <CardHeader className="flex flex-col md:flex-row md:items-start justify-between gap-4 pb-4 border-b bg-muted/10">
-                                <div className="space-y-2">
-                                    <div className="flex flex-wrap items-center gap-2">
+                        <Card key={wod.id} className="border-white/5 glass rounded-[2.5rem] overflow-hidden group hover:border-primary/30 transition-all duration-500 shadow-xl hover:shadow-primary/5">
+                            <CardHeader className="flex flex-col md:flex-row md:items-start justify-between gap-6 p-10 border-b border-white/5 bg-white/5">
+                                <div className="space-y-4">
+                                    <div className="flex flex-wrap items-center gap-3">
                                         <Badge className={cn(
-                                            "text-[9px] h-5 font-black uppercase italic",
-                                            wod.track === 'CrossFit' && "bg-primary text-white",
-                                            wod.track === 'Novice' && "bg-emerald-500 text-white",
-                                            wod.track === 'Bodybuilding' && "bg-blue-500 text-white",
-                                            wod.track === 'Engine' && "bg-orange-500 text-white"
+                                            "text-[10px] h-6 px-3 font-black uppercase tracking-widest border-none shadow-lg",
+                                            wod.track === 'CrossFit' && "bg-primary text-primary-foreground shadow-primary/20",
+                                            wod.track === 'Novice' && "bg-emerald-500 text-white shadow-emerald-500/20",
+                                            wod.track === 'Bodybuilding' && "bg-blue-500 text-white shadow-blue-500/20",
+                                            wod.track === 'Engine' && "bg-orange-500 text-white shadow-orange-500/20"
                                         )}>
-                                            {wod.track} Track
+                                            {wod.track} TRACK
                                         </Badge>
-                                        <Badge variant="outline" className="text-[10px] h-5 bg-background font-black border-primary/30 text-primary uppercase">
-                                            {new Date(wod.date).toLocaleDateString()}
+                                        <Badge variant="outline" className="text-[10px] h-6 px-3 bg-white/5 font-black border-white/10 text-white/60 uppercase tracking-widest">
+                                            {new Date(wod.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }).toUpperCase()}
                                         </Badge>
                                     </div>
-                                    <CardTitle className="text-3xl font-bold uppercase tracking-tight italic text-foreground group-hover:text-primary transition-colors">
+                                    <CardTitle className="text-4xl md:text-5xl font-black uppercase tracking-tighter italic text-foreground group-hover:text-primary transition-all duration-500">
                                         {wod.title}
                                     </CardTitle>
                                 </div>
-                                <div className="flex gap-1">
+                                <div className="flex items-center gap-2 bg-white/5 p-2 rounded-2xl border border-white/5">
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                        className="h-10 w-10 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
                                         onClick={() => handleCopyWod(wod)}
                                     >
-                                        {isCopying === wod.id ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                                        {isCopying === wod.id ? <Check className="h-5 w-5 text-emerald-500" /> : <Copy className="h-5 w-5" />}
                                     </Button>
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 text-muted-foreground hover:text-blue-500"
+                                        className="h-10 w-10 rounded-xl text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 transition-all"
                                         onClick={() => handleEditWod(wod)}
                                     >
-                                        <Pencil className="h-4 w-4" />
+                                        <Pencil className="h-5 w-5" />
                                     </Button>
+                                    <div className="w-px h-6 bg-white/5 mx-1" />
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                        className="h-10 w-10 rounded-xl text-destructive hover:bg-destructive/10 transition-all"
                                         onClick={() => {
                                             setIdToDelete(wod.id);
                                             setDeleteConfirmOpen(true);
                                         }}
                                     >
-                                        <Trash2 className="h-4 w-4" />
+                                        <Trash2 className="h-5 w-5" />
                                     </Button>
                                 </div>
                             </CardHeader>
-                            <CardContent className="p-8">
-                                <div className="space-y-8">
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between border-b border-primary/10 pb-2">
-                                            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary italic">
-                                                <Timer className="h-4 w-4" /> {t('wods.routine_description')}
+                            <CardContent className="p-10">
+                                <div className="space-y-10">
+                                    <div className="space-y-6">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                                                    <Timer className="h-4 w-4 text-primary" />
+                                                </div>
+                                                <p className="text-sm font-black uppercase tracking-[0.2em] text-primary italic">{t('wods.routine_description')}</p>
                                             </div>
-                                            <Badge variant="secondary" className="text-[8px] font-black uppercase tracking-tighter opacity-50">STRUCTURED VIEW</Badge>
+                                            <span className="text-[10px] font-bold uppercase tracking-widest text-white/20">STRUCTURED VIEW</span>
                                         </div>
 
                                         {wod.structure && wod.structure.length > 0 ? (
-                                            <div className="grid gap-4">
+                                            <div className="space-y-8 relative">
+                                                <div className="absolute left-6 top-0 bottom-0 w-px bg-white/5" />
                                                 {wod.structure.map((block) => (
-                                                    <div key={block.id} className="relative pl-6 border-l-2 border-muted hover:border-primary/30 transition-colors group/timeline">
-                                                        <div className="absolute -left-[5px] top-0 h-2 w-2 rounded-full bg-muted group-hover/timeline:bg-primary transition-colors" />
-                                                        <div className="flex items-center justify-between mb-2">
-                                                            <p className="text-[10px] font-black uppercase italic text-primary/70 tracking-tighter">{block.title}</p>
+                                                    <div key={block.id} className="relative pl-14 group/block">
+                                                        <div className="absolute left-4 top-2 h-4 w-4 rounded-full border-2 border-primary bg-background z-10 shadow-[0_0_10px_rgba(var(--primary),0.3)]" />
+                                                        <div className="flex items-center justify-between mb-4">
+                                                            <h4 className="text-lg font-black uppercase italic text-foreground tracking-tight">{block.title}</h4>
                                                             {block.sets && (
-                                                                <Badge variant="outline" className="text-[8px] font-black py-0 h-4 bg-primary/5 text-primary border-primary/20">
+                                                                <div className="px-3 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20">
                                                                     {block.sets} SETS
-                                                                </Badge>
+                                                                </div>
                                                             )}
                                                         </div>
-                                                        <div className="grid gap-1.5">
+                                                        <div className="grid gap-3">
                                                             {block.items.map((item) => (
-                                                                <div key={item.id} className="flex items-start gap-4 p-3 rounded-xl bg-muted/20 border border-transparent hover:border-primary/10 hover:bg-muted/30 transition-all">
-                                                                    <div className="flex-1">
-                                                                        <p className="text-xs font-black uppercase italic leading-none">{item.movementName}</p>
-                                                                        {item.notes && <p className="text-[8px] text-muted-foreground uppercase font-bold mt-1 opacity-70">{item.notes}</p>}
+                                                                <div key={item.id} className="flex items-center gap-6 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/20 hover:bg-primary/5 transition-all duration-300 group/movement">
+                                                                    <div className="flex-1 space-y-1">
+                                                                        <p className="text-sm font-black uppercase italic tracking-tight">{item.movementName}</p>
+                                                                        {item.notes && <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest opacity-60">{item.notes}</p>}
                                                                     </div>
-                                                                    <div className="flex gap-3">
-                                                                        {item.sets && (
-                                                                            <div className="text-right">
-                                                                                <p className="text-[8px] font-black uppercase opacity-40 leading-none mb-1">Sets</p>
-                                                                                <p className="text-[10px] font-bold italic">{item.sets}</p>
-                                                                            </div>
-                                                                        )}
+                                                                    <div className="flex gap-6">
                                                                         {item.reps && (
-                                                                            <div className="text-right">
-                                                                                <p className="text-[8px] font-black uppercase opacity-40 leading-none mb-1">Reps</p>
-                                                                                <p className="text-[10px] font-bold italic">{item.reps}</p>
+                                                                            <div className="text-center min-w-[50px]">
+                                                                                <p className="text-[8px] font-black uppercase text-muted-foreground/40 mb-1 tracking-widest">REPS</p>
+                                                                                <p className="text-xs font-black italic">{item.reps}</p>
                                                                             </div>
                                                                         )}
                                                                         {item.weight && (
-                                                                            <div className="text-right">
-                                                                                <p className="text-[8px] font-black uppercase opacity-40 leading-none mb-1">Load</p>
-                                                                                <p className="text-[10px] font-bold italic text-primary">{item.weight}</p>
+                                                                            <div className="text-center min-w-[50px]">
+                                                                                <p className="text-[8px] font-black uppercase text-primary/40 mb-1 tracking-widest">LOAD</p>
+                                                                                <p className="text-xs font-black italic text-primary">{item.weight}</p>
                                                                             </div>
                                                                         )}
                                                                     </div>
@@ -1009,27 +1052,23 @@ export const Wods: React.FC = () => {
                                                 ))}
                                             </div>
                                         ) : (
-                                            <div className="p-8 rounded-2xl bg-muted/40 font-mono text-lg border-2 border-muted leading-relaxed whitespace-pre-wrap shadow-inner relative overflow-hidden">
-                                                <div className="absolute top-0 left-0 w-1 h-full bg-primary/20" />
+                                            <div className="p-8 rounded-3xl bg-white/5 border border-white/10 font-mono text-lg text-foreground/80 leading-relaxed whitespace-pre-wrap shadow-inner relative overflow-hidden italic">
+                                                <div className="absolute top-0 left-0 w-1.5 h-full bg-primary" />
                                                 {wod.metcon}
                                             </div>
                                         )}
                                     </div>
 
-                                    <div className="grid sm:grid-cols-2 gap-6">
-                                        <div className="p-5 rounded-xl border-2 border-orange-500/10 bg-orange-500/[0.02] space-y-2 relative overflow-hidden">
-                                            <div className="absolute top-0 right-0 p-2 opacity-5 text-orange-500">
-                                                <ZapIcon className="h-12 w-12" />
-                                            </div>
-                                            <p className="text-[10px] font-black uppercase text-orange-600 italic tracking-widest">{t('wods.stimulus')}</p>
-                                            <p className="text-sm font-bold italic text-muted-foreground leading-relaxed relative z-10">{wod.stimulus || "Max effort within capacity."}</p>
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        <div className="p-6 rounded-[2rem] border border-orange-500/20 bg-orange-500/5 space-y-3 relative overflow-hidden group/callout">
+                                            <ZapIcon className="absolute -right-4 -top-4 h-24 w-24 text-orange-500/5 -rotate-12 group-hover:scale-110 transition-transform duration-700" />
+                                            <p className="text-[10px] font-black uppercase text-orange-500 tracking-[0.2em]">{t('wods.stimulus')}</p>
+                                            <p className="text-sm font-bold italic text-white/70 leading-relaxed relative z-10">{wod.stimulus || "Max effort within capacity."}</p>
                                         </div>
-                                        <div className="p-5 rounded-xl border-2 border-blue-500/10 bg-blue-500/[0.02] space-y-2 relative overflow-hidden">
-                                            <div className="absolute top-0 right-0 p-2 opacity-5 text-blue-500">
-                                                <Shield className="h-12 w-12" />
-                                            </div>
-                                            <p className="text-[10px] font-black uppercase text-blue-600 italic tracking-widest">{t('wods.scaling')}</p>
-                                            <p className="text-sm font-bold italic text-muted-foreground leading-relaxed relative z-10">{wod.scaling_options || "Scale weight to maintain intensity."}</p>
+                                        <div className="p-6 rounded-[2rem] border border-blue-500/20 bg-blue-500/5 space-y-3 relative overflow-hidden group/callout">
+                                            <Shield className="absolute -right-4 -top-4 h-24 w-24 text-blue-500/5 -rotate-12 group-hover:scale-110 transition-transform duration-700" />
+                                            <p className="text-[10px] font-black uppercase text-blue-500 tracking-[0.2em]">{t('wods.scaling')}</p>
+                                            <p className="text-sm font-bold italic text-white/70 leading-relaxed relative z-10">{wod.scaling_options || "Scale weight to maintain intensity."}</p>
                                         </div>
                                     </div>
 

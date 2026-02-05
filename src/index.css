@@ -32,13 +32,14 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
 
-    --radius: 0.75rem;
+    --radius: 1.25rem;
 
-    --glass-bg: rgba(255, 255, 255, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.3);
+    --glass-bg: rgba(255, 255, 255, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.4);
 
     /* Design System Defaults */
-    --shadow-premium: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+    --shadow-premium: 0 8px 32px -4px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+    --shadow-inner: inset 0 2px 4px 0 rgba(255, 255, 255, 0.3);
     --sidebar-width: 272px;
   }
 
@@ -71,9 +72,10 @@
     --input: 216 34% 17%;
     --ring: 224 76% 48%;
 
-    --glass-bg: rgba(10, 10, 15, 0.6);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --shadow-premium: 0 20px 40px -20px rgba(0, 0, 0, 0.5);
+    --glass-bg: rgba(12, 12, 18, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --shadow-premium: 0 24px 48px -12px rgba(0, 0, 0, 0.6);
+    --shadow-inner: inset 0 1px 1px 0 rgba(255, 255, 255, 0.05);
   }
 }
 
@@ -81,13 +83,14 @@
 
 /* 1. Cyber Style (Default/Premium) */
 .cyber {
-  --glass-blur: 12px;
+  --glass-blur: 24px;
 }
 
 .cyber .glass {
-  @apply backdrop-blur-[var(--glass-blur)] border shadow-xl;
+  @apply backdrop-blur-[var(--glass-blur)] border;
   background-color: var(--glass-bg);
   border-color: var(--glass-border);
+  box-shadow: var(--shadow-premium), var(--shadow-inner);
 }
 
 /* 2. Minimalist Style */
@@ -157,10 +160,24 @@
 
 @layer utilities {
   .glass {
-    @apply backdrop-blur-md bg-opacity-70 border;
+    @apply backdrop-blur-xl bg-opacity-75 border;
     background-color: var(--glass-bg);
     border-color: var(--glass-border);
-    box-shadow: var(--shadow-premium);
+    box-shadow: var(--shadow-premium), var(--shadow-inner);
+  }
+
+  .glass-dark {
+    @apply backdrop-blur-2xl bg-black/40 border-white/10 shadow-2xl;
+  }
+
+  .ios-squircle {
+    clip-path: url(#squircle-path);
+    /* If we add the SVG filter later, but for now just rounded */
+    @apply rounded-[1.25rem];
+  }
+
+  .ios-tab-bar {
+    @apply backdrop-blur-2xl bg-background/80 border-t border-white/10 sticky bottom-0 p-2 flex justify-around items-center z-50;
   }
 
   .text-glow {

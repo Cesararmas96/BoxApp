@@ -164,42 +164,58 @@ export const Schedule: React.FC = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-7 gap-6">
                 {getDatesOfWeek().map((date, i) => {
                     const isToday = date.toDateString() === new Date().toDateString();
                     const daySessions = sessions.filter(s => new Date(s.start_time).toDateString() === date.toDateString());
 
                     return (
-                        <Card key={i} className={cn("border-muted", isToday && "border-primary shadow-lg ring-1 ring-primary/20")}>
-                            <CardHeader className="p-3 text-center border-b bg-muted/30">
-                                <p className="text-[10px] uppercase font-bold text-muted-foreground">{weekDays[i]}</p>
-                                <p className={cn("text-lg font-black tracking-tighter", isToday && "text-primary")}>
+                        <Card key={i} className={cn(
+                            "glass overflow-hidden transition-all duration-500 border-white/5",
+                            isToday ? "border-primary/50 shadow-2xl shadow-primary/10 ring-1 ring-primary/20 scale-[1.02] z-10" : "opacity-90 hover:opacity-100 hover:scale-[1.01]"
+                        )}>
+                            <CardHeader className={cn(
+                                "p-4 text-center border-b border-white/5",
+                                isToday ? "bg-primary/10" : "bg-zinc-950/20"
+                            )}>
+                                <p className="text-[10px] uppercase font-black tracking-[0.3em] text-muted-foreground/60 italic">{weekDays[i]}</p>
+                                <p className={cn(
+                                    "text-2xl font-black italic tracking-tighter mt-1",
+                                    isToday ? "text-primary text-glow" : "text-white"
+                                )}>
                                     {date.getDate()}
                                 </p>
                             </CardHeader>
-                            <CardContent className="p-2 space-y-2 min-h-[300px]">
+                            <CardContent className="p-3 space-y-4 min-h-[400px]">
                                 {loading ? (
-                                    <div className="animate-pulse space-y-2">
-                                        <div className="h-10 bg-muted rounded-md" />
-                                        <div className="h-10 bg-muted rounded-md" />
+                                    <div className="animate-pulse space-y-3">
+                                        <div className="h-20 bg-white/5 rounded-2xl" />
+                                        <div className="h-20 bg-white/5 rounded-2xl" />
                                     </div>
                                 ) : (
                                     <>
                                         {daySessions.map((session) => (
                                             <div
                                                 key={session.id}
-                                                className="group p-2 rounded-lg border bg-card hover:bg-muted/50 transition-all cursor-pointer relative overflow-hidden"
-                                                style={{ borderLeftColor: session.session_types.color, borderLeftWidth: '4px' }}
+                                                className="group p-3 rounded-2xl border border-white/5 bg-zinc-950/40 hover:bg-zinc-900/60 hover:border-primary/30 transition-all cursor-pointer relative overflow-hidden active:scale-[0.98]"
+                                                onClick={() => {
+                                                    // Potential session details action
+                                                }}
                                             >
-                                                <div className="flex justify-between items-start mb-1">
-                                                    <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                                                <div className="absolute top-0 left-0 bottom-0 w-1" style={{ backgroundColor: session.session_types.color }} />
+
+                                                <div className="flex justify-between items-center mb-3">
+                                                    <span className="text-[10px] font-black italic tracking-widest text-primary/80 uppercase">
                                                         {new Date(session.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                     </span>
-                                                    <Badge variant="outline" className="text-[8px] h-4 px-1 uppercase font-bold opacity-70">
+                                                    <Badge variant="glow" className="text-[8px] h-4 px-2 tracking-widest leading-none bg-primary/20">
                                                         {session.session_types.name}
                                                     </Badge>
                                                 </div>
-                                                <p className="text-xs font-bold truncate leading-none mb-1">{session.title || session.session_types.name}</p>
+
+                                                <p className="text-sm font-black italic uppercase tracking-tight text-white/90 mb-2 leading-none group-hover:text-primary transition-colors">
+                                                    {session.title || session.session_types.name}
+                                                </p>
 
                                                 {/* WOD Integration */}
                                                 {(() => {
@@ -214,48 +230,52 @@ export const Schedule: React.FC = () => {
                                                     if (matchedWod) {
                                                         return (
                                                             <div
-                                                                className="mt-2 p-1.5 rounded bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-colors"
+                                                                className="mt-3 p-2.5 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all shadow-inner group/wod relative overflow-hidden"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     setSelectedWod(matchedWod);
                                                                 }}
                                                             >
-                                                                <div className="flex items-center gap-1 text-[8px] font-black text-primary uppercase italic mb-0.5">
-                                                                    <Trophy className="h-2 w-2" /> {t('schedule.programmed_wod')}
+                                                                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover/wod:opacity-100 transition-opacity" />
+                                                                <div className="flex items-center gap-2 text-[9px] font-black text-primary uppercase italic mb-1 tracking-tighter">
+                                                                    <div className="p-1 bg-primary rounded-md">
+                                                                        <Trophy className="h-2.5 w-2.5 text-white" />
+                                                                    </div>
+                                                                    WOD Programmed
                                                                 </div>
-                                                                <p className="text-[9px] font-bold uppercase truncate leading-tight opacity-80">{matchedWod.title}</p>
+                                                                <p className="text-[10px] font-bold uppercase truncate leading-tight text-white/70">{matchedWod.title}</p>
                                                             </div>
                                                         );
                                                     }
                                                     return null;
                                                 })()}
 
-                                                <div className="flex items-center justify-between mt-1">
-                                                    <div className="flex items-center gap-1 text-muted-foreground">
-                                                        <UsersIcon className="h-2.5 w-2.5" />
-                                                        <span className="text-[9px]">0/{session.capacity}</span>
+                                                <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
+                                                    <div className="flex items-center gap-1.5 text-muted-foreground/60">
+                                                        <UsersIcon className="h-3 w-3" />
+                                                        <span className="text-[10px] font-bold uppercase tracking-widest">0 / {session.capacity}</span>
                                                     </div>
 
                                                     {session.type_id === 'functional' && new Date(session.start_time) < new Date() && (
                                                         <Button
                                                             size="icon"
                                                             variant="ghost"
-                                                            className="h-5 w-5 rounded-full hover:text-yellow-500"
+                                                            className="h-6 w-6 rounded-full hover:bg-yellow-500/20 hover:text-yellow-500"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 setIsFeedbackOpen(session.id);
                                                             }}
                                                         >
-                                                            <Star className="h-3 w-3 fill-current" />
+                                                            <Star className="h-3.5 w-3.5 fill-current" />
                                                         </Button>
                                                     )}
                                                 </div>
                                             </div>
                                         ))}
                                         {daySessions.length === 0 && (
-                                            <div className="h-full flex flex-col items-center justify-center opacity-20 py-8">
-                                                <CalendarIcon className="h-8 w-8 mb-2" />
-                                                <p className="text-[10px] font-bold uppercase tracking-widest text-center">{t('schedule.empty_day')}</p>
+                                            <div className="flex-1 flex flex-col items-center justify-center opacity-10 py-12">
+                                                <CalendarIcon className="h-10 w-10 mb-3" />
+                                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-center">{t('schedule.empty_day')}</p>
                                             </div>
                                         )}
                                     </>

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { LayoutDashboard, Users, Trophy, BarChart3, Settings as SettingsIcon, Calendar as CalendarIcon, Receipt, LogOut, Inbox, Menu, X, Monitor, Medal, Shield, History, Dumbbell } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { LayoutDashboard, Users, Trophy, BarChart3, Settings as SettingsIcon, Calendar as CalendarIcon, Receipt, LogOut, Inbox, Menu, X, Monitor, Medal, Shield, History, Dumbbell, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
@@ -13,6 +13,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabaseClient';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -39,8 +40,29 @@ const getNavItems = (t: any) => [
 
 export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, userProfile }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [boxSettings, setBoxSettings] = useState<any>(null);
     const { t, i18n } = useTranslation();
     const { signOut } = useAuth();
+
+    useEffect(() => {
+        const fetchBoxSettings = async () => {
+            const { data } = await supabase.from('box_settings').select('*').eq('id', 1).single();
+            if (data) {
+                setBoxSettings(data);
+                // Update Favicon
+                if (data.favicon_url) {
+                    let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+                    if (!link) {
+                        link = document.createElement('link');
+                        link.rel = 'icon';
+                        document.getElementsByTagName('head')[0].appendChild(link);
+                    }
+                    link.href = data.favicon_url;
+                }
+            }
+        };
+        fetchBoxSettings();
+    }, []);
 
     const changeLanguage = (lng: string) => {
         i18n.changeLanguage(lng);
@@ -78,14 +100,25 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
 
             {/* Sidebar */}
             <aside className={cn(
-                "fixed inset-y-4 left-4 z-[110] w-64 flex flex-col glass rounded-2xl shadow-2xl transition-all duration-500 ease-in-out lg:translate-x-0 lg:z-40",
-                isSidebarOpen ? "translate-x-0" : "-translate-x-[calc(100%+16px)]"
+                "fixed inset-y-6 left-6 z-[110] w-64 flex flex-col bg-card/40 backdrop-blur-3xl border border-white/10 rounded-[2rem] shadow-premium transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] lg:translate-x-0 lg:z-40",
+                isSidebarOpen ? "translate-x-0" : "-translate-x-[calc(100%+32px)]"
             )}>
                 <div className="flex h-20 items-center justify-between px-6 shrink-0 relative overflow-hidden group">
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                    <div className="flex flex-col">
-                        <span className="text-xl font-black tracking-tighter text-primary uppercase italic text-glow leading-none">Box Manager</span>
-                        <span className="text-[8px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 mt-1">Sport-Tech Engine</span>
+                    <div className="flex items-center gap-3">
+                        {boxSettings?.logo_url ? (
+                            <img src={boxSettings.logo_url} alt="Logo" className="h-10 w-10 object-contain rounded-lg" />
+                        ) : (
+                            <div className="h-10 w-10 bg-primary/20 rounded-lg flex items-center justify-center">
+                                <span className="text-primary font-black italic">B</span>
+                            </div>
+                        )}
+                        <div className="flex flex-col">
+                            <span className="text-xl font-black tracking-tighter text-primary uppercase italic text-glow leading-none truncate max-w-[120px]">
+                                {boxSettings?.box_name || 'Box Manager'}
+                            </span>
+                            <span className="text-[8px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 mt-1">Sport-Tech Engine</span>
+                        </div>
                     </div>
                     <Button
                         variant="ghost"
@@ -108,10 +141,10 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
                                 key={item.id}
                                 variant={activePage === item.id ? "default" : "ghost"}
                                 className={cn(
-                                    "w-full justify-start gap-3 h-11 px-4 font-bold uppercase text-[10px] tracking-widest transition-all duration-300 rounded-xl relative group overflow-hidden",
+                                    "w-full justify-start gap-3 h-12 px-5 font-bold uppercase text-[10px] tracking-widest transition-all duration-500 rounded-2xl relative group overflow-hidden border-none",
                                     activePage === item.id
-                                        ? "bg-primary text-white shadow-lg shadow-primary/30 scale-[1.02] hover:bg-primary/90"
-                                        : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
+                                        ? "bg-primary text-white shadow-lg shadow-primary/20 scale-[1.02]"
+                                        : "text-muted-foreground/80 hover:bg-primary/10 hover:text-primary hover:scale-[1.02]"
                                 )}
                                 onClick={() => navigateTo(item.id)}
                             >
@@ -128,21 +161,21 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
                     </nav>
                 </div>
 
-                <div className="p-3 space-y-1 mt-auto bg-primary/5 rounded-b-2xl border-t border-primary/10">
+                <div className="p-4 space-y-2 mt-auto bg-white/5 backdrop-blur-md rounded-b-[2rem] border-t border-white/5">
                     <Button
                         variant={activePage === 'settings' ? "default" : "ghost"}
                         className={cn(
-                            "w-full justify-start gap-3 h-11 px-4 font-bold uppercase text-[10px] tracking-widest rounded-xl transition-all",
-                            activePage === 'settings' ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-muted-foreground hover:bg-primary/5"
+                            "w-full justify-start gap-3 h-11 px-4 font-bold uppercase text-[10px] tracking-widest rounded-xl transition-all border-none",
+                            activePage === 'settings' ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-muted-foreground/80 hover:bg-primary/10 hover:text-primary"
                         )}
                         onClick={() => navigateTo('settings')}
                     >
-                        <SettingsIcon className="h-4 w-4" />
+                        <SettingsIcon className="h-4 w-4 transition-transform group-hover:rotate-45" />
                         {t('nav.settings')}
                     </Button>
                     <Button
                         variant="ghost"
-                        className="w-full justify-start gap-3 h-11 px-4 text-muted-foreground font-bold uppercase text-[10px] tracking-widest rounded-xl hover:text-destructive hover:bg-destructive/10 transition-colors"
+                        className="w-full justify-start gap-3 h-11 px-4 text-muted-foreground/80 font-bold uppercase text-[10px] tracking-widest rounded-xl hover:text-destructive hover:bg-destructive/10 transition-all border-none"
                         onClick={handleLogout}
                     >
                         <LogOut className="h-4 w-4 text-destructive/70" />
@@ -152,9 +185,9 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
             </aside>
 
             {/* Content Wrapper */}
-            <div className="flex-1 flex flex-col min-w-0 lg:pl-4 transition-all duration-500">
+            <div className="flex-1 flex flex-col min-w-0 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]">
                 {/* Header */}
-                <header className="flex h-16 items-center justify-between px-6 md:px-10 glass sticky top-4 mx-4 mt-4 rounded-2xl z-30 shadow-lg border-primary/5 font-inter transition-all duration-500 lg:ml-[272px]">
+                <header className="flex h-16 items-center justify-between px-6 md:px-10 glass sticky top-6 mx-6 rounded-3xl z-30 shadow-premium border-white/10 font-inter transition-all duration-700 lg:ml-[288px]">
                     <div className="flex items-center gap-3 lg:hidden">
                         <Button
                             variant="ghost"
@@ -164,7 +197,10 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
                         >
                             <Menu className="h-6 w-6" />
                         </Button>
-                        <span className="text-lg font-black italic tracking-tighter text-primary uppercase text-glow">Box Manager</span>
+                        <div className="flex items-center gap-2">
+                            {boxSettings?.logo_url && <img src={boxSettings.logo_url} className="h-6 w-6 object-contain" alt="Logo" />}
+                            <span className="text-lg font-black italic tracking-tighter text-primary uppercase text-glow">{boxSettings?.box_name || 'Box Manager'}</span>
+                        </div>
                     </div>
                     <div className="hidden lg:flex items-center gap-4 bg-zinc-950/20 px-4 py-1.5 rounded-full border border-primary/10">
                         <div className="flex items-center gap-2">
@@ -179,27 +215,54 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
                     <div className="flex items-center gap-3">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="hover:bg-primary/10 text-primary rounded-full transition-transform hover:rotate-12">
+                                <Button variant="ghost" size="icon" className="hover:bg-primary/10 text-primary rounded-full transition-all hover:rotate-12 active:scale-90">
                                     <Languages className="h-5 w-5" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="glass border-primary/10 w-44 rounded-xl p-2">
-                                <DropdownMenuItem onClick={() => changeLanguage('es')} className="cursor-pointer font-black uppercase text-[9px] tracking-[0.15em] rounded-lg">
+                            <DropdownMenuContent align="end" className="bg-card/80 backdrop-blur-2xl border-white/10 w-44 rounded-2xl p-2 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+                                <DropdownMenuItem onClick={() => changeLanguage('es')} className="cursor-pointer font-black uppercase text-[9px] tracking-[0.15em] rounded-xl focus:bg-primary/10 focus:text-primary transition-colors">
                                     Español
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => changeLanguage('en')} className="cursor-pointer font-black uppercase text-[9px] tracking-[0.15em] rounded-lg">
+                                <DropdownMenuItem onClick={() => changeLanguage('en')} className="cursor-pointer font-black uppercase text-[9px] tracking-[0.15em] rounded-xl focus:bg-primary/10 focus:text-primary transition-colors">
                                     English
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                         <ModeToggle />
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-10 w-10 p-0 rounded-full border border-primary/20 overflow-hidden hover:scale-105 transition-transform">
+                                    {userProfile?.avatar_url ? (
+                                        <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <User className="h-5 w-5 text-primary" />
+                                    )}
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-card/80 backdrop-blur-2xl border-white/10 w-56 rounded-2xl p-2 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+                                <div className="px-3 py-2 border-b border-primary/10 mb-2">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-primary truncate">{userProfile?.first_name} {userProfile?.last_name}</p>
+                                    <p className="text-[8px] font-medium text-muted-foreground truncate italic">{userProfile?.role_id}</p>
+                                </div>
+                                <DropdownMenuItem onClick={() => navigateTo('profile')} className="cursor-pointer font-black uppercase text-[9px] tracking-[0.15em] rounded-xl focus:bg-primary/10 focus:text-primary transition-colors gap-2">
+                                    <User className="h-3 w-3" /> Profile Settings
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => navigateTo('settings')} className="cursor-pointer font-black uppercase text-[9px] tracking-[0.15em] rounded-xl focus:bg-primary/10 focus:text-primary transition-colors gap-2">
+                                    <SettingsIcon className="h-3 w-3" /> System Settings
+                                </DropdownMenuItem>
+                                <Separator className="my-2 bg-primary/10" />
+                                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer font-black uppercase text-[9px] tracking-[0.15em] rounded-xl focus:bg-destructive/10 focus:text-destructive transition-colors gap-2">
+                                    <LogOut className="h-3 w-3" /> Sign Out
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </header>
 
                 {/* Main Content Area */}
                 <main className={cn(
-                    "flex-1 transition-all duration-500",
-                    "lg:ml-[272px]"
+                    "flex-1 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]",
+                    "lg:ml-[288px]"
                 )}>
                     <div className="container mx-auto p-6 md:p-10 max-w-7xl animate-premium-in">
                         {children}

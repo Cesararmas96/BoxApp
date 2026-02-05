@@ -138,17 +138,18 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">{t('members.title')}</h1>
-                    <p className="text-muted-foreground text-sm">{t('members.subtitle')}</p>
+            <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between mb-10">
+                <div className="space-y-1">
+                    <h1 className="text-4xl font-black italic tracking-tighter uppercase text-glow">{t('members.title')}</h1>
+                    <p className="text-muted-foreground/60 text-xs font-bold uppercase tracking-[0.3em]">{t('members.subtitle')}</p>
                 </div>
 
                 {userProfile?.role_id === 'admin' && (
                     <Dialog open={open} onOpenChange={setOpen}>
                         <DialogTrigger asChild>
-                            <Button className="gap-2">
-                                <UserPlus className="h-4 w-4" /> {t('members.add_btn')}
+                            <Button className="h-14 px-8 rounded-2xl shadow-xl shadow-primary/20 group">
+                                <UserPlus className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                                <span className="ml-2 font-black italic uppercase tracking-wider">{t('members.add_btn')}</span>
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[425px]">
@@ -244,20 +245,23 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                 )}
             </div>
 
-            <Card>
-                <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg">{t('members.list_title')}</CardTitle>
-                        <div className="flex items-center gap-2">
-                            <div className="relative w-full max-w-sm">
-                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Card className="glass overflow-hidden border-white/10 shadow-premium">
+                <CardHeader className="p-8 pb-4 border-b border-white/5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                        <CardTitle className="text-xl font-black italic uppercase tracking-tight flex items-center gap-3">
+                            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                            {t('members.list_title')}
+                        </CardTitle>
+                        <div className="flex items-center gap-3">
+                            <div className="relative group flex-1 sm:flex-none">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
                                 <Input
                                     type="search"
                                     placeholder={t('members.search_placeholder')}
-                                    className="pl-8 w-[250px]"
+                                    className="pl-12 w-full sm:w-[320px] bg-zinc-950/20 border-white/5 h-12 rounded-2xl"
                                 />
                             </div>
-                            <Button variant="outline" size="icon">
+                            <Button variant="outline" size="icon" className="h-12 w-12 rounded-2xl border-white/10 bg-zinc-950/20 hover:bg-primary/10">
                                 <Filter className="h-4 w-4" />
                             </Button>
                         </div>
@@ -290,48 +294,49 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                 </TableRow>
                             ) : (
                                 members.map((member) => (
-                                    <TableRow key={member.id}>
-                                        <TableCell>
-                                            <div className="flex items-center gap-3">
-                                                <Avatar className="h-9 w-9 border">
-                                                    <AvatarFallback className="bg-primary/10 text-primary text-xs uppercase font-bold">
+                                    <TableRow key={member.id} className="group hover:bg-primary/5 border-white/5 transition-colors">
+                                        <TableCell className="py-4">
+                                            <div className="flex items-center gap-4">
+                                                <Avatar className="h-12 w-12 rounded-2xl glass border-white/10 shadow-lg">
+                                                    <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/5 text-primary text-xs uppercase font-black italic">
                                                         {member.first_name?.[0]}{member.last_name?.[0]}
                                                     </AvatarFallback>
                                                 </Avatar>
                                                 <div className="flex flex-col">
-                                                    <span className="font-medium text-sm">{member.first_name} {member.last_name}</span>
-                                                    <span className="text-xs text-muted-foreground">{member.email || t('members.no_email')}</span>
+                                                    <span className="font-black italic uppercase tracking-tight text-sm group-hover:text-primary transition-colors">{member.first_name} {member.last_name}</span>
+                                                    <span className="text-[10px] text-muted-foreground/60 font-medium uppercase tracking-widest">{member.email || t('members.no_email')}</span>
                                                 </div>
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant="secondary" className="capitalize text-[10px] py-0">
+                                            <Badge variant="outline" className="capitalize text-[9px] font-black italic tracking-widest border-primary/20 bg-primary/5 text-primary py-0.5 rounded-lg px-2">
                                                 {t(`roles.role_${member.role_id}`)}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant={getStatusVariant(member.status)} className="capitalize text-[10px] py-0">
+                                            <Badge variant={getStatusVariant(member.status)} className="capitalize text-[9px] font-black italic tracking-widest py-0.5 rounded-lg px-2">
                                                 {t(`members.status_${member.status}`)}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
                                             {member.waiver_signed ? (
-                                                <div className="flex items-center text-green-500 gap-1 text-[10px] font-bold">
-                                                    <ShieldCheck className="h-3 w-3" /> {t('members.waiver_signed')}
+                                                <div className="flex items-center text-emerald-500 gap-1.5 text-[9px] font-black uppercase tracking-widest italic opacity-80">
+                                                    <ShieldCheck className="h-3.5 w-3.5" /> {t('members.waiver_signed')}
                                                 </div>
                                             ) : (
-                                                <div className="flex items-center text-destructive gap-1 text-[10px] font-bold">
-                                                    <ShieldAlert className="h-3 w-3" /> {t('members.waiver_pending')}
+                                                <div className="flex items-center text-destructive gap-1.5 text-[9px] font-black uppercase tracking-widest italic opacity-80">
+                                                    <ShieldAlert className="h-3.5 w-3.5" /> {t('members.waiver_pending')}
                                                 </div>
                                             )}
                                         </TableCell>
-                                        <TableCell className="text-xs text-muted-foreground">
+                                        <TableCell className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
                                             {new Date(member.created_at).toLocaleDateString()}
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
+                                                className="h-10 px-4 rounded-xl border border-transparent hover:border-primary/20 hover:bg-primary/5 text-[10px] font-black uppercase italic tracking-widest"
                                                 onClick={() => {
                                                     setSelectedMember(member);
                                                     setDetailsOpen(true);

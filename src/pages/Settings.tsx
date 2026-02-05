@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Image as ImageIcon,
     Save,
@@ -8,7 +8,10 @@ import {
     RefreshCcw,
     Zap,
     Feather,
-    Square
+    Square,
+    Settings as SettingsIcon,
+    Upload,
+    Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,9 +29,9 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/components/theme-provider';
+import { supabase } from '@/lib/supabaseClient';
 
 export const Settings: React.FC = () => {
-    const { updateUser } = useAuth();
     const {
         theme, setTheme,
         primaryColor, setPrimaryColor,
@@ -37,112 +40,232 @@ export const Settings: React.FC = () => {
         resetTheme
     } = useTheme();
 
-    const [boxName, setBoxName] = useState('Box Manager');
-    const [passwords, setPasswords] = useState({ new: '', confirm: '' });
-    const [isChangingPass, setIsChangingPass] = useState(false);
-    const [passError, setPassError] = useState<string | null>(null);
-    const [passSuccess, setPassSuccess] = useState(false);
+    const logoInputRef = useRef<HTMLInputElement>(null);
+    const faviconInputRef = useRef<HTMLInputElement>(null);
 
-    const handlePasswordChange = async () => {
-        setPassError(null);
-        setPassSuccess(false);
+    const [boxSettings, setBoxSettings] = useState({
+        box_name: 'Box Manager',
+        logo_url: '',
+        favicon_url: ''
+    });
+    const [isSaving, setIsSaving] = useState(false);
+    const [isUploading, setIsUploading] = useState<'logo' | 'favicon' | null>(null);
+    const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-        if (passwords.new.length < 6) {
-            setPassError("Password must be at least 6 characters.");
-            return;
+    useEffect(() => {
+        const fetchSettings = async () => {
+            const { data, error } = await supabase.from('box_settings').select('*').eq('id', 1).single();
+            if (data && !error) {
+                setBoxSettings({
+                    box_name: data.box_name || '',
+                    logo_url: data.logo_url || '',
+                    favicon_url: data.favicon_url || ''
+                });
+            }
+        };
+        fetchSettings();
+    }, []);
+
+    const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'favicon') => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(type);
+        setMessage(null);
+
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${type}_${Date.now()}.${fileExt}`;
+            const filePath = `brand/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('branding')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('branding')
+                .getPublicUrl(filePath);
+
+            setBoxSettings(prev => ({
+                ...prev,
+                [type === 'logo' ? 'logo_url' : 'favicon_url']: publicUrl
+            }));
+
+            setMessage({ type: 'success', text: `${type === 'logo' ? 'Logo' : 'Favicon'} uploaded! Don't forget to save changes.` });
+        } catch (err: any) {
+            setMessage({ type: 'error', text: err.message });
+        } finally {
+            setIsUploading(null);
         }
+    };
 
-        if (passwords.new !== passwords.confirm) {
-            setPassError("Passwords do not match.");
-            return;
+    const handleSaveBranding = async () => {
+        setIsSaving(true);
+        setMessage(null);
+        try {
+            const { error } = await supabase
+                .from('box_settings')
+                .update({
+                    box_name: boxSettings.box_name,
+                    logo_url: boxSettings.logo_url,
+                    favicon_url: boxSettings.favicon_url,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', 1);
+
+            if (error) throw error;
+            setMessage({ type: 'success', text: 'Branding settings saved successfully!' });
+            // Reload page to apply changes (favicon, etc)
+            setTimeout(() => window.location.reload(), 1500);
+        } catch (err: any) {
+            setMessage({ type: 'error', text: err.message });
+        } finally {
+            setIsSaving(false);
         }
-
-        setIsChangingPass(true);
-        const { error } = await updateUser({
-            password: passwords.new
-        });
-
-        if (error) {
-            setPassError(error.message);
-        } else {
-            setPassSuccess(true);
-            setPasswords({ new: '', confirm: '' });
-        }
-        setIsChangingPass(false);
     };
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-                <p className="text-muted-foreground text-sm">Manage your box identity, appearance and security.</p>
+            <div className="flex items-center gap-4">
+                <div className="p-3 bg-primary/10 rounded-2xl">
+                    <SettingsIcon className="h-8 w-8 text-primary" />
+                </div>
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">System Settings</h1>
+                    <p className="text-muted-foreground text-sm">Manage box branding, appearance and global configuration.</p>
+                </div>
             </div>
 
-            <Tabs defaultValue="general" className="w-full">
+            <Tabs defaultValue="branding" className="w-full">
                 <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent space-x-6">
-                    <TabsTrigger value="general" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2">General</TabsTrigger>
+                    <TabsTrigger value="branding" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2">Branding</TabsTrigger>
                     <TabsTrigger value="appearance" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2">Appearance</TabsTrigger>
+                    <TabsTrigger value="localization" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2">Localization</TabsTrigger>
                     <TabsTrigger value="notifications" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2">Notifications</TabsTrigger>
-                    <TabsTrigger value="security" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2">Security</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="general" className="py-6">
+                <TabsContent value="branding" className="py-6">
                     <div className="grid gap-6">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Box Identity</CardTitle>
-                                <CardDescription>This information will be visible to all members.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="box-name">Box Name</Label>
-                                    <Input
-                                        id="box-name"
-                                        value={boxName}
-                                        onChange={(e) => setBoxName(e.target.value)}
-                                    />
+                        <Card className="border-none shadow-premium bg-card/50 backdrop-blur-xl overflow-hidden">
+                            <CardHeader className="pb-4">
+                                <div className="flex items-center gap-2">
+                                    <ImageIcon className="h-5 w-5 text-primary" />
+                                    <CardTitle>Global Branding</CardTitle>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="box-email">Official Email</Label>
-                                    <Input id="box-email" placeholder="contact@crossfitbox.com" />
+                                <CardDescription>Customize how your Box appears to members and the public.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="box-name">Box Name</Label>
+                                            <Input
+                                                id="box-name"
+                                                value={boxSettings.box_name}
+                                                onChange={(e) => setBoxSettings({ ...boxSettings, box_name: e.target.value })}
+                                                className="rounded-xl h-11"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="logo-url">Logo URL</Label>
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    id="logo-url"
+                                                    placeholder="https://example.com/logo.png"
+                                                    value={boxSettings.logo_url}
+                                                    onChange={(e) => setBoxSettings({ ...boxSettings, logo_url: e.target.value })}
+                                                    className="rounded-xl h-11 flex-1"
+                                                />
+                                                <Button
+                                                    variant="outline"
+                                                    className="rounded-xl h-11 flex-shrink-0"
+                                                    onClick={() => logoInputRef.current?.click()}
+                                                    disabled={isUploading === 'logo'}
+                                                >
+                                                    {isUploading === 'logo' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                                                </Button>
+                                            </div>
+                                            <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'logo')} />
+                                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Recommended: 512x512px Transparent PNG</p>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="favicon-url">Favicon URL</Label>
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    id="favicon-url"
+                                                    placeholder="https://example.com/favicon.ico"
+                                                    value={boxSettings.favicon_url}
+                                                    onChange={(e) => setBoxSettings({ ...boxSettings, favicon_url: e.target.value })}
+                                                    className="rounded-xl h-11 flex-1"
+                                                />
+                                                <Button
+                                                    variant="outline"
+                                                    className="rounded-xl h-11 flex-shrink-0"
+                                                    onClick={() => faviconInputRef.current?.click()}
+                                                    disabled={isUploading === 'favicon'}
+                                                >
+                                                    {isUploading === 'favicon' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                                                </Button>
+                                            </div>
+                                            <input type="file" ref={faviconInputRef} className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'favicon')} />
+                                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Format: .ico or .png (32x32px)</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-primary/10 rounded-3xl bg-primary/5">
+                                        <div className="mb-4 text-center">
+                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 mb-2 block">Live Preview</span>
+                                            <div className="bg-card w-48 h-12 rounded-2xl shadow-xl flex items-center px-4 gap-3 border border-white/5 overflow-hidden">
+                                                {boxSettings.logo_url ? (
+                                                    <img src={boxSettings.logo_url} alt="Preview" className="h-6 w-6 object-contain" />
+                                                ) : (
+                                                    <div className="h-6 w-6 bg-primary/20 rounded-lg flex items-center justify-center">
+                                                        <span className="text-[10px] text-primary font-black italic">B</span>
+                                                    </div>
+                                                )}
+                                                <span className="font-black italic uppercase text-primary text-xs truncate">{boxSettings.box_name || 'Box Name'}</span>
+                                            </div>
+                                        </div>
+                                        <div className="mt-4 flex gap-2">
+                                            {boxSettings.favicon_url && (
+                                                <div className="p-2 bg-card rounded-lg border border-white/5 flex items-center gap-2">
+                                                    <img src={boxSettings.favicon_url} alt="Favicon" className="h-4 w-4" />
+                                                    <span className="text-[8px] font-bold uppercase text-muted-foreground">Favicon.ico</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             </CardContent>
-                            <CardFooter className="border-t bg-muted/20 py-4">
-                                <Button className="ml-auto gap-2">
-                                    <Save className="h-4 w-4" /> Save Changes
+                            <CardFooter className="border-t border-primary/5 bg-primary/5 p-4 flex flex-col items-stretch gap-4">
+                                {message && (
+                                    <div className={`p-3 rounded-xl text-xs font-bold text-center border ${message.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-destructive/10 border-destructive/20 text-destructive'
+                                        }`}>
+                                        {message.text}
+                                    </div>
+                                )}
+                                <Button
+                                    className="ml-auto gap-2 rounded-xl"
+                                    onClick={handleSaveBranding}
+                                    disabled={isSaving}
+                                >
+                                    {isSaving ? (
+                                        <RefreshCcw className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Save className="h-4 w-4" />
+                                    )}
+                                    {isSaving ? 'Saving Changes...' : 'Sync Branding'}
                                 </Button>
                             </CardFooter>
-                        </Card>
-
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Localization</CardTitle>
-                                <CardDescription>Configure timezones and units of measurement.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <div className="space-y-0.5">
-                                        <Label className="text-base">Metric System</Label>
-                                        <p className="text-sm text-muted-foreground font-light">Use kilograms and centimeters instead of imperial.</p>
-                                    </div>
-                                    <Switch defaultChecked />
-                                </div>
-                                <Separator />
-                                <div className="flex items-center justify-between">
-                                    <div className="space-y-0.5">
-                                        <Label className="text-base">Public Profile</Label>
-                                        <p className="text-sm text-muted-foreground font-light">Allow non-members to see basic box info.</p>
-                                    </div>
-                                    <Switch />
-                                </div>
-                            </CardContent>
                         </Card>
                     </div>
                 </TabsContent>
 
                 <TabsContent value="appearance" className="py-6">
                     <div className="grid gap-6">
-                        <Card className="overflow-hidden border-none shadow-2xl bg-gradient-to-br from-card to-muted/30">
+                        <Card className="overflow-hidden border-none shadow-premium bg-card/50 backdrop-blur-xl">
                             <CardHeader className="pb-4">
                                 <CardTitle className="text-2xl">Design Philosophy</CardTitle>
                                 <CardDescription>Switch between distinct visual languages for the platform.</CardDescription>
@@ -197,7 +320,7 @@ export const Settings: React.FC = () => {
                             </CardContent>
                         </Card>
 
-                        <Card className="overflow-hidden border-none shadow-2xl bg-gradient-to-br from-card to-muted/30">
+                        <Card className="overflow-hidden border-none shadow-premium bg-card/50 backdrop-blur-xl">
                             <CardHeader className="pb-4">
                                 <CardTitle className="text-2xl">Theme Mode</CardTitle>
                                 <CardDescription>Select your preferred interface style.</CardDescription>
@@ -229,7 +352,7 @@ export const Settings: React.FC = () => {
                             </CardContent>
                         </Card>
 
-                        <Card className="overflow-hidden border-none shadow-2xl bg-gradient-to-br from-card to-muted/30">
+                        <Card className="overflow-hidden border-none shadow-premium bg-card/50 backdrop-blur-xl">
                             <CardHeader>
                                 <CardTitle className="text-2xl">Brand Identity</CardTitle>
                                 <CardDescription>Customize the primary color of your Box's ecosystem.</CardDescription>
@@ -262,7 +385,7 @@ export const Settings: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div className="space-y-4 pt-4 border-t">
+                                <div className="space-y-4 pt-4 border-t border-primary/5">
                                     <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Custom Color</Label>
                                     <div className="flex gap-4 items-center">
                                         <div className="relative group">
@@ -292,7 +415,7 @@ export const Settings: React.FC = () => {
                             </CardContent>
                         </Card>
 
-                        <Card className="overflow-hidden border-none shadow-2xl bg-gradient-to-br from-card to-muted/30">
+                        <Card className="overflow-hidden border-none shadow-premium bg-card/50 backdrop-blur-xl">
                             <CardHeader>
                                 <CardTitle className="text-2xl">Interface Style</CardTitle>
                                 <CardDescription>Fine-tune the geometry and feel of the UI.</CardDescription>
@@ -320,7 +443,7 @@ export const Settings: React.FC = () => {
                                         <div className="p-3 bg-muted/50 rounded-[var(--radius)] border border-border flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">
                                             Preview Card
                                         </div>
-                                        <Button size="sm" className="pointer-events-none">
+                                        <Button size="sm" className="pointer-events-none rounded-[var(--radius)]">
                                             Preview Button
                                         </Button>
                                     </div>
@@ -329,7 +452,7 @@ export const Settings: React.FC = () => {
                             <CardFooter className="bg-primary/5 pt-6 pb-6 border-t border-primary/10">
                                 <Button
                                     variant="ghost"
-                                    className="w-full gap-2 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-300"
+                                    className="w-full gap-2 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-300 rounded-xl"
                                     onClick={resetTheme}
                                 >
                                     <RefreshCcw className="h-4 w-4" /> Reset to Factory Defaults
@@ -339,53 +462,41 @@ export const Settings: React.FC = () => {
                     </div>
                 </TabsContent>
 
-                <TabsContent value="security" className="py-6">
-                    <Card>
+                <TabsContent value="localization" className="py-6">
+                    <Card className="border-none shadow-premium bg-card/50 backdrop-blur-xl">
                         <CardHeader>
-                            <CardTitle>Account Security</CardTitle>
-                            <CardDescription>Update your password and manage security settings.</CardDescription>
+                            <CardTitle>Regional & Localization</CardTitle>
+                            <CardDescription>Configure timezones and units of measurement.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="new-password">New Password</Label>
-                                <Input
-                                    id="new-password"
-                                    type="password"
-                                    placeholder="••••••••"
-                                    value={passwords.new}
-                                    onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
-                                />
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-0.5">
+                                    <Label className="text-base">Metric System</Label>
+                                    <p className="text-sm text-muted-foreground font-light">Use kilograms and centimeters instead of imperial.</p>
+                                </div>
+                                <Switch defaultChecked />
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="confirm-password">Confirm New Password</Label>
-                                <Input
-                                    id="confirm-password"
-                                    type="password"
-                                    placeholder="••••••••"
-                                    value={passwords.confirm}
-                                    onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
-                                />
+                            <Separator className="bg-primary/5" />
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-0.5">
+                                    <Label className="text-base">Public Profile</Label>
+                                    <p className="text-sm text-muted-foreground font-light">Allow non-members to see basic box info.</p>
+                                </div>
+                                <Switch />
                             </div>
                         </CardContent>
-                        <CardFooter className="border-t bg-muted/20 py-4 flex flex-col items-stretch gap-4">
-                            {passError && (
-                                <p className="text-xs font-medium text-destructive">{passError}</p>
-                            )}
-                            {passSuccess && (
-                                <p className="text-xs font-medium text-emerald-500">Password updated successfully!</p>
-                            )}
-                            <Button
-                                className="ml-auto gap-2"
-                                disabled={isChangingPass}
-                                onClick={handlePasswordChange}
-                            >
-                                {isChangingPass ? "Updating..." : (
-                                    <>
-                                        <Save className="h-4 w-4" /> Change Password
-                                    </>
-                                )}
-                            </Button>
-                        </CardFooter>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="notifications" className="py-6">
+                    <Card className="border-none shadow-premium bg-card/50 backdrop-blur-xl">
+                        <CardHeader>
+                            <CardTitle>Global Notifications</CardTitle>
+                            <CardDescription>Configure system-wide notifications and alerts.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <p className="text-sm text-muted-foreground">Notification settings coming soon...</p>
+                        </CardContent>
                     </Card>
                 </TabsContent>
             </Tabs>

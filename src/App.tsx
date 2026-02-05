@@ -15,6 +15,7 @@ import { BoxDisplay } from './pages/BoxDisplay';
 import { Competitions } from './pages/Competitions';
 import { AuditLogs } from './pages/AuditLogs';
 import { Movements } from './pages/Movements';
+import { Profile } from './pages/Profile';
 import { ThemeProvider } from './components/theme-provider';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -101,6 +102,8 @@ function AppContent() {
             <Movements />
           </ProtectedRoute>
         );
+      case 'profile':
+        return <Profile />;
       case 'dashboard':
       default:
         return <Dashboard userProfile={userProfile} />;

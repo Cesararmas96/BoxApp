@@ -10,7 +10,7 @@ interface AuthContextType {
     isAdmin: boolean;
     isCoach: boolean;
     isAthlete: boolean;
-    signIn: (credentials: any) => Promise<{ error: any }>;
+    signIn: (credentials: any) => Promise<{ error: any; data?: any }>;
     signUp: (credentials: any) => Promise<{ data: any; error: any }>;
     resetPassword: (email: string) => Promise<{ error: any }>;
     updateUser: (attributes: any) => Promise<{ data: any; error: any }>;
@@ -24,37 +24,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [user, setUser] = useState<User | null>(null);
     const [userProfile, setUserProfile] = useState<any | null>(null);
     const [loading, setLoading] = useState(true);
+
     const isAdmin = userProfile?.role_id === 'admin';
     const isCoach = userProfile?.role_id === 'coach';
     const isAthlete = userProfile?.role_id === 'athlete';
 
-    useEffect(() => {
-        // Initial session check
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            setUser(session?.user ?? null);
-            if (session?.user) fetchProfile(session.user.id);
-            else setLoading(false);
-        });
-
-        // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            console.log(`Auth Event: ${event}`);
-            setSession(session);
-            setUser(session?.user ?? null);
-
-            if (session?.user) {
-                await fetchProfile(session.user.id);
-            } else {
-                setUserProfile(null);
-                setLoading(false);
-            }
-        });
-
-        return () => subscription.unsubscribe();
-    }, []);
-
     const fetchProfile = async (userId: string) => {
+        console.log('[AuthContext] fetchProfile started for:', userId);
+
+        // Safety timeout to prevent indefinite loading
+        const timeoutId = setTimeout(() => {
+            console.warn('[AuthContext] fetchProfile timed out, forcing loading to false');
+            setLoading(false);
+        }, 5000);
+
         try {
             const { data, error } = await supabase
                 .from('profiles')
@@ -62,27 +45,83 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 .eq('id', userId)
                 .single();
 
-            if (!error && data) {
+            if (error) {
+                console.warn('[AuthContext] Error fetching profile:', error.message);
+                setUserProfile(null);
+            } else {
+                console.log('[AuthContext] Profile loaded successfully');
                 setUserProfile(data);
             }
         } catch (err) {
-            console.error('Error fetching profile:', err);
+            console.error('[AuthContext] Unexpected error in fetchProfile:', err);
         } finally {
+            clearTimeout(timeoutId);
             setLoading(false);
+            console.log('[AuthContext] Loading set to false');
         }
     };
 
+    useEffect(() => {
+        // Initial session check
+        console.log('[AuthContext] Initial session check...');
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setSession(session);
+            setUser(session?.user ?? null);
+            if (session?.user) {
+                fetchProfile(session.user.id);
+            } else {
+                setLoading(false);
+                console.log('[AuthContext] No initial session, loading set to false');
+            }
+        });
+
+        // Listen for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+            console.log(`[AuthContext] OnAuthStateChange: ${event}`, newSession?.user?.id);
+
+            setSession(newSession);
+            setUser(newSession?.user ?? null);
+
+            if (newSession?.user) {
+                // Only fetch if session changed or event is SIGNED_IN
+                // This helps avoid redundant fetches but ensures we get the latest profile
+                fetchProfile(newSession.user.id);
+            } else {
+                setUserProfile(null);
+                setLoading(false);
+                console.log('[AuthContext] Clear session, loading set to false');
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
+
     const signIn = async (credentials: any) => {
         setLoading(true);
+        console.log('[AuthContext] SignIn process started');
         const result = await supabase.auth.signInWithPassword(credentials);
-        if (result.error) setLoading(false);
+
+        if (result.error) {
+            setLoading(false);
+            console.log('[AuthContext] SignIn error, loading set to false');
+        } else if (result.data.user) {
+            // Explicitly fetch profile to ensure it's ready when the promise resolves
+            await fetchProfile(result.data.user.id);
+        }
+
         return result;
     };
 
     const signUp = async (credentials: any) => {
         setLoading(true);
         const result = await supabase.auth.signUp(credentials);
-        if (result.error) setLoading(false);
+        if (result.error || !result.data.user) {
+            setLoading(false);
+        } else {
+            // For sign up, we might not have a profile yet if it's created via trigger
+            // but we call it anyway to be sure
+            await fetchProfile(result.data.user.id);
+        }
         return result;
     };
 
@@ -105,9 +144,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const signOut = async () => {
         setLoading(true);
         await supabase.auth.signOut();
-        setLoading(false);
+        // onAuthStateChange will handle resetting state
     };
-
 
     const value = {
         session,

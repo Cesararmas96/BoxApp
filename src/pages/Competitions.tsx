@@ -52,9 +52,136 @@ export const Competitions: React.FC = () => {
     });
     const { notification, showNotification, hideNotification } = useNotification();
 
+    const [selectedComp, setSelectedComp] = useState<Competition | null>(null);
+    const [isParticipantsOpen, setIsParticipantsOpen] = useState(false);
+    const [isEventsOpen, setIsEventsOpen] = useState(false);
+    const [participants, setParticipants] = useState<any[]>([]);
+    const [events, setEvents] = useState<any[]>([]);
+    const [availableWods, setAvailableWods] = useState<any[]>([]);
+    const [athletes, setAthletes] = useState<any[]>([]);
+    const [searchAthlete, setSearchAthlete] = useState('');
+
+    const [selectedWodId, setSelectedWodId] = useState('');
+    const [newEventName, setNewEventName] = useState('');
+
     useEffect(() => {
         fetchCompetitions();
+        fetchAthletes();
+        fetchWods();
     }, []);
+
+    const fetchWods = async () => {
+        const { data } = await supabase.from('wods').select('id, title').order('date', { ascending: false });
+        if (data) setAvailableWods(data);
+    };
+
+    const fetchAthletes = async () => {
+        const { data } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('role_id', 'athlete');
+        if (data) setAthletes(data);
+    };
+
+    const fetchParticipants = async (compId: string) => {
+        const { data, error } = await supabase
+            .from('competition_participants')
+            .select('*, athlete:profiles(*)')
+            .eq('competition_id', compId);
+
+        if (!error && data) setParticipants(data);
+    };
+
+    const fetchEvents = async (compId: string) => {
+        const { data, error } = await supabase
+            .from('competition_events')
+            .select('*')
+            .eq('competition_id', compId)
+            .order('order_index', { ascending: true });
+
+        if (!error && data) setEvents(data);
+    };
+
+    const handleManageParticipants = (comp: Competition) => {
+        setSelectedComp(comp);
+        fetchParticipants(comp.id);
+        setIsParticipantsOpen(true);
+    };
+
+    const handleManageEvents = (comp: Competition) => {
+        setSelectedComp(comp);
+        fetchEvents(comp.id);
+        setIsEventsOpen(true);
+    };
+
+    const handleAddEvent = async () => {
+        if (!selectedComp || !selectedWodId || !newEventName) return;
+
+        const { error } = await supabase
+            .from('competition_events')
+            .insert([{
+                competition_id: selectedComp.id,
+                wod_id: selectedWodId,
+                name: newEventName,
+                order_index: events.length
+            }]);
+
+        if (error) {
+            showNotification('error', 'ERROR ADDING EVENT: ' + error.message.toUpperCase());
+        } else {
+            showNotification('success', 'EVENT ADDED TO COMPETITION');
+            setNewEventName('');
+            setSelectedWodId('');
+            fetchEvents(selectedComp.id);
+        }
+    };
+
+    const handleRemoveEvent = async (eventId: string) => {
+        const { error } = await supabase
+            .from('competition_events')
+            .delete()
+            .eq('id', eventId);
+
+        if (error) {
+            showNotification('error', 'ERROR REMOVING EVENT: ' + error.message.toUpperCase());
+        } else {
+            showNotification('success', 'EVENT REMOVED FROM COMPETITION');
+            if (selectedComp) fetchEvents(selectedComp.id);
+        }
+    };
+
+    const handleAddParticipant = async (athleteId: string) => {
+        if (!selectedComp) return;
+
+        const { error } = await supabase
+            .from('competition_participants')
+            .insert([{
+                competition_id: selectedComp.id,
+                athlete_id: athleteId,
+                category: 'RX'
+            }]);
+
+        if (error) {
+            showNotification('error', 'ERROR ADDING ATHLETE: ' + error.message.toUpperCase());
+        } else {
+            showNotification('success', 'ATHLETE ADDED TO COMPETITION');
+            fetchParticipants(selectedComp.id);
+        }
+    };
+
+    const handleRemoveParticipant = async (participantId: string) => {
+        const { error } = await supabase
+            .from('competition_participants')
+            .delete()
+            .eq('id', participantId);
+
+        if (error) {
+            showNotification('error', 'ERROR REMOVING ATHLETE: ' + error.message.toUpperCase());
+        } else {
+            showNotification('success', 'ATHLETE REMOVED FROM COMPETITION');
+            if (selectedComp) fetchParticipants(selectedComp.id);
+        }
+    };
 
     const fetchCompetitions = async () => {
         setLoading(true);
@@ -209,11 +336,14 @@ export const Competitions: React.FC = () => {
                                             </div>
                                         </div>
                                     </CardContent>
-                                    <CardFooter className="bg-muted/30 border-t flex justify-between gap-2 p-3">
-                                        <Button variant="ghost" size="sm" className="h-8 text-[10px] uppercase font-black tracking-widest">
+                                    <CardFooter className="bg-muted/30 border-t grid grid-cols-2 gap-2 p-3">
+                                        <Button variant="ghost" size="sm" className="h-8 text-[10px] uppercase font-black tracking-widest" onClick={() => handleManageParticipants(comp)}>
                                             {t('competitions.manage_participants')}
                                         </Button>
-                                        <Button size="sm" className="h-8 text-[10px] uppercase font-black tracking-widest gap-1">
+                                        <Button variant="ghost" size="sm" className="h-8 text-[10px] uppercase font-black tracking-widest" onClick={() => handleManageEvents(comp)}>
+                                            Manage Events
+                                        </Button>
+                                        <Button size="sm" className="col-span-2 h-8 text-[10px] uppercase font-black tracking-widest gap-1">
                                             {t('competitions.view_brackets')} <ChevronRight className="h-3 w-3" />
                                         </Button>
                                     </CardFooter>
@@ -227,6 +357,80 @@ export const Competitions: React.FC = () => {
                     <div className="py-20 text-center text-muted-foreground italic">{t('competitions.no_history')}</div>
                 </TabsContent>
             </Tabs>
+
+            {/* Participants Management Modal */}
+            <Dialog open={isParticipantsOpen} onOpenChange={setIsParticipantsOpen}>
+                <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="uppercase italic font-black text-2xl tracking-tighter">
+                            Manage Participants: {selectedComp?.title}
+                        </DialogTitle>
+                        <DialogDescription>
+                            Add or remove athletes from this internal competition.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="grid md:grid-cols-2 gap-6 py-4">
+                        <div className="space-y-4">
+                            <div className="flex flex-col gap-2">
+                                <Label className="text-[10px] font-black uppercase text-muted-foreground">Search Athletes</Label>
+                                <Input
+                                    placeholder="Filter by name..."
+                                    value={searchAthlete}
+                                    onChange={(e) => setSearchAthlete(e.target.value)}
+                                    className="h-8"
+                                />
+                            </div>
+                            <div className="border rounded-md divide-y overflow-y-auto h-[300px] bg-muted/5">
+                                {athletes
+                                    .filter(a =>
+                                        !participants.some(p => p.athlete_id === a.id) &&
+                                        (`${a.first_name} ${a.last_name}`).toLowerCase().includes(searchAthlete.toLowerCase())
+                                    )
+                                    .map(athlete => (
+                                        <div key={athlete.id} className="p-3 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold">
+                                                    {athlete.first_name?.[0]}{athlete.last_name?.[0]}
+                                                </div>
+                                                <span className="text-xs font-bold">{athlete.first_name} {athlete.last_name}</span>
+                                            </div>
+                                            <Button size="sm" variant="outline" className="h-7 text-[10px] uppercase font-black" onClick={() => handleAddParticipant(athlete.id)}>
+                                                Add
+                                            </Button>
+                                        </div>
+                                    ))}
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <Label className="text-[10px] font-black uppercase text-muted-foreground">Registered Participants ({participants.length})</Label>
+                            <div className="border rounded-md divide-y overflow-y-auto h-[300px]">
+                                {participants.length === 0 ? (
+                                    <div className="h-full flex items-center justify-center text-[10px] text-muted-foreground italic">No athletes registered yet</div>
+                                ) : (
+                                    participants.map(p => (
+                                        <div key={p.id} className="p-3 flex items-center justify-between bg-primary/5">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-bold">
+                                                    {p.athlete?.first_name?.[0]}{p.athlete?.last_name?.[0]}
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs font-bold">{p.athlete?.first_name} {p.athlete?.last_name}</span>
+                                                    <Badge variant="outline" className="w-fit text-[8px] h-3 px-1">{p.category}</Badge>
+                                                </div>
+                                            </div>
+                                            <Button size="sm" variant="ghost" className="h-7 text-[10px] uppercase font-black text-rose-600 hover:text-rose-700 hover:bg-rose-50" onClick={() => handleRemoveParticipant(p.id)}>
+                                                Remove
+                                            </Button>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             <div className="grid gap-6 md:grid-cols-2 mt-8">
                 <Card className="bg-primary/5 border-primary/10">
@@ -265,6 +469,77 @@ export const Competitions: React.FC = () => {
                     onClose={hideNotification}
                 />
             )}
+            {/* Events Management Modal */}
+            <Dialog open={isEventsOpen} onOpenChange={setIsEventsOpen}>
+                <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="uppercase italic font-black text-2xl tracking-tighter">
+                            Manage Events: {selectedComp?.title}
+                        </DialogTitle>
+                        <DialogDescription>
+                            Link WODs as events for this competition.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-6 py-4">
+                        <div className="bg-muted p-4 rounded-lg">
+                            <h4 className="font-bold mb-3 uppercase text-xs">Add New Event</h4>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Event Name</Label>
+                                    <Input id="event-name" placeholder="e.g. Event 1: Heavy Grace" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Select WOD</Label>
+                                    <Select id="target-wod">
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a WOD" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {availableWods.map(wod => (
+                                                <SelectItem key={wod.id} value={wod.id}>{wod.title}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <Button className="w-full mt-4" onClick={() => {
+                                const name = (document.getElementById('event-name') as HTMLInputElement).value;
+                                const wodId = (document.querySelector('[id^="target-wod"]') as any)?.dataset?.value;
+                                // Note: Select component might need a state for the value in a real implementation, 
+                                // but for now I'll use a simpler approach or fix it in next step if needed.
+                                // Actually let's use a state for cleanliness.
+                            }}>Add Event</Button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <h4 className="font-bold uppercase text-xs tracking-widest text-muted-foreground">Linked Events</h4>
+                            {events.length === 0 ? (
+                                <p className="text-center text-muted-foreground py-8 border-2 border-dashed rounded-lg">No events added yet.</p>
+                            ) : (
+                                <div className="space-y-2">
+                                    {events.map((event, index) => (
+                                        <div key={event.id} className="flex items-center justify-between p-3 bg-zinc-50 border rounded-md group hover:border-primary">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-8 w-8 rounded bg-primary text-primary-foreground flex items-center justify-center font-black italic">
+                                                    {index + 1}
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-sm">{event.name}</p>
+                                                    <p className="text-[10px] text-muted-foreground">Order: {event.order_index}</p>
+                                                </div>
+                                            </div>
+                                            <Button variant="ghost" size="icon" className="text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import {
     Image as ImageIcon,
-    Save
+    Save,
+    Sun,
+    Moon,
+    Monitor,
+    RefreshCcw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,11 +22,18 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/components/theme-provider';
 
 export const Settings: React.FC = () => {
     const { updateUser } = useAuth();
+    const {
+        theme, setTheme,
+        primaryColor, setPrimaryColor,
+        radius, setRadius,
+        resetTheme
+    } = useTheme();
+
     const [boxName, setBoxName] = useState('Box Manager');
-    const [primaryColor, setPrimaryColor] = useState('#FF3B30');
     const [passwords, setPasswords] = useState({ new: '', confirm: '' });
     const [isChangingPass, setIsChangingPass] = useState(false);
     const [passError, setPassError] = useState<string | null>(null);
@@ -126,39 +137,147 @@ export const Settings: React.FC = () => {
                 </TabsContent>
 
                 <TabsContent value="appearance" className="py-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Branding & Theme</CardTitle>
-                            <CardDescription>Customize the look and feel of the athlete dashboard.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="space-y-2">
-                                <Label>Primary Brand Color</Label>
-                                <div className="flex gap-4 items-center">
-                                    <div
-                                        className="w-12 h-12 rounded-lg border-4 border-white shadow-xl"
-                                        style={{ backgroundColor: primaryColor }}
-                                    ></div>
-                                    <Input
-                                        type="text"
-                                        value={primaryColor}
-                                        onChange={(e) => setPrimaryColor(e.target.value)}
-                                        className="w-40"
-                                    />
+                    <div className="grid gap-6">
+                        <Card className="overflow-hidden border-none shadow-2xl bg-gradient-to-br from-card to-muted/30">
+                            <CardHeader className="pb-4">
+                                <CardTitle className="text-2xl">Theme Mode</CardTitle>
+                                <CardDescription>Select your preferred interface style.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-3 gap-4">
+                                    {[
+                                        { id: 'light', label: 'Light', icon: <Sun className="h-5 w-5" /> },
+                                        { id: 'dark', label: 'Dark', icon: <Moon className="h-5 w-5" /> },
+                                        { id: 'system', label: 'System', icon: <Monitor className="h-5 w-5" /> },
+                                    ].map((item) => (
+                                        <button
+                                            key={item.id}
+                                            onClick={() => setTheme(item.id as any)}
+                                            className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-300 gap-2 ${theme === item.id
+                                                ? 'border-primary bg-primary/10 shadow-[0_0_20px_rgba(var(--primary),0.2)]'
+                                                : 'border-border hover:border-border/80 hover:bg-muted'
+                                                }`}
+                                        >
+                                            <div className={`${theme === item.id ? 'text-primary' : 'text-muted-foreground'}`}>
+                                                {item.icon}
+                                            </div>
+                                            <span className={`text-xs font-bold uppercase tracking-wider ${theme === item.id ? 'text-primary' : 'text-muted-foreground'}`}>
+                                                {item.label}
+                                            </span>
+                                        </button>
+                                    ))}
                                 </div>
-                            </div>
-                            <Separator />
-                            <div className="space-y-2">
-                                <Label>Box Logo</Label>
-                                <div className="flex items-center gap-6">
-                                    <div className="h-24 w-24 rounded-xl bg-muted flex items-center justify-center border-2 border-dashed border-muted-foreground/30">
-                                        <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
+                            </CardContent>
+                        </Card>
+
+                        <Card className="overflow-hidden border-none shadow-2xl bg-gradient-to-br from-card to-muted/30">
+                            <CardHeader>
+                                <CardTitle className="text-2xl">Brand Identity</CardTitle>
+                                <CardDescription>Customize the primary color of your Box's ecosystem.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
+                                <div className="space-y-4">
+                                    <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Preset Colors</Label>
+                                    <div className="flex flex-wrap gap-3">
+                                        {[
+                                            { name: 'Scarlet', hex: '#FF3B30' },
+                                            { name: 'Azure', hex: '#007AFF' },
+                                            { name: 'Emerald', hex: '#34C759' },
+                                            { name: 'Gold', hex: '#FFD700' },
+                                            { name: 'Purple', hex: '#AF52DE' },
+                                            { name: 'Orange', hex: '#FF9500' },
+                                            { name: 'Pink', hex: '#FF2D55' },
+                                            { name: 'Teal', hex: '#5AC8FA' },
+                                        ].map((color) => (
+                                            <button
+                                                key={color.hex}
+                                                onClick={() => setPrimaryColor(color.hex)}
+                                                className={`w-10 h-10 rounded-full border-4 transition-all duration-300 transform hover:scale-110 ${primaryColor.toLowerCase() === color.hex.toLowerCase()
+                                                    ? 'border-white ring-2 ring-primary shadow-lg scale-110'
+                                                    : 'border-transparent shadow-sm'
+                                                    }`}
+                                                style={{ backgroundColor: color.hex }}
+                                                title={color.name}
+                                            />
+                                        ))}
                                     </div>
-                                    <Button variant="outline">Upload New Logo</Button>
                                 </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+
+                                <div className="space-y-4 pt-4 border-t">
+                                    <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Custom Color</Label>
+                                    <div className="flex gap-4 items-center">
+                                        <div className="relative group">
+                                            <div
+                                                className="w-14 h-14 rounded-2xl border-4 border-white dark:border-zinc-800 shadow-2xl transition-transform group-hover:scale-105"
+                                                style={{ backgroundColor: primaryColor }}
+                                            />
+                                            <input
+                                                type="color"
+                                                value={primaryColor}
+                                                onChange={(e) => setPrimaryColor(e.target.value)}
+                                                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                            />
+                                        </div>
+                                        <div className="flex-1 space-y-1">
+                                            <Input
+                                                type="text"
+                                                value={primaryColor.toUpperCase()}
+                                                onChange={(e) => setPrimaryColor(e.target.value)}
+                                                className="font-mono text-sm tracking-wider h-12 rounded-xl"
+                                                placeholder="#HEXCODE"
+                                            />
+                                            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">This color affects buttons, links, and system accents.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="overflow-hidden border-none shadow-2xl bg-gradient-to-br from-card to-muted/30">
+                            <CardHeader>
+                                <CardTitle className="text-2xl">Interface Style</CardTitle>
+                                <CardDescription>Fine-tune the geometry and feel of the UI.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Border Radius</Label>
+                                        <span className="text-xs font-mono bg-primary/20 text-primary px-2 py-1 rounded-md">{radius}rem</span>
+                                    </div>
+                                    <div className="flex items-center gap-6">
+                                        <span className="text-[10px] font-black uppercase text-muted-foreground italic tracking-tighter">Sharp</span>
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="1.5"
+                                            step="0.05"
+                                            value={radius}
+                                            onChange={(e) => setRadius(parseFloat(e.target.value))}
+                                            className="flex-1 accent-primary h-1.5 bg-muted rounded-full appearance-none cursor-pointer"
+                                        />
+                                        <span className="text-[10px] font-black uppercase text-muted-foreground italic tracking-tighter">Rounded</span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4 pt-2">
+                                        <div className="p-3 bg-muted/50 rounded-[var(--radius)] border border-border flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">
+                                            Preview Card
+                                        </div>
+                                        <Button size="sm" className="pointer-events-none">
+                                            Preview Button
+                                        </Button>
+                                    </div>
+                                </div>
+                            </CardContent>
+                            <CardFooter className="bg-primary/5 pt-6 pb-6 border-t border-primary/10">
+                                <Button
+                                    variant="ghost"
+                                    className="w-full gap-2 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-300"
+                                    onClick={resetTheme}
+                                >
+                                    <RefreshCcw className="h-4 w-4" /> Reset to Factory Defaults
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    </div>
                 </TabsContent>
 
                 <TabsContent value="security" className="py-6">

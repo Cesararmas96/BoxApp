@@ -1,16 +1,8 @@
 import React, { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { Dumbbell, Loader2, Mail, Lock, Info } from 'lucide-react';
+import { Dumbbell, Loader2, Mail, Lock, Info, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-    CardFooter
-} from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useNotification } from '@/hooks/useNotification';

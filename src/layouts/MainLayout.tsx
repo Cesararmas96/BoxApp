@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { LayoutDashboard, Users, Trophy, BarChart3, Settings as SettingsIcon, Calendar as CalendarIcon, Receipt, LogOut, Inbox, Menu, X, Monitor, Medal, Shield, History, Dumbbell, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from "@/components/ui/separator"
@@ -15,32 +16,31 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 
 interface LayoutProps {
-    children: React.ReactNode;
-    activePage: string;
-    onNavigate: (page: string) => void;
     userProfile?: any;
 }
 
 const getNavItems = (t: any) => [
-    { id: 'dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
-    { id: 'schedule', label: t('nav.schedule'), icon: CalendarIcon },
-    { id: 'members', label: t('nav.members'), icon: Users, roles: ['admin', 'receptionist', 'coach'] },
-    { id: 'roles', label: t('nav.roles'), icon: Shield, roles: ['admin'] },
-    { id: 'audit-logs', label: t('nav.audit_logs'), icon: History, roles: ['admin'] },
-    { id: 'leads', label: t('nav.leads'), icon: Inbox, roles: ['admin', 'receptionist'] },
-    { id: 'billing', label: t('nav.billing'), icon: Receipt, roles: ['admin', 'receptionist'] },
-    { id: 'wods', label: t('nav.programming'), icon: Trophy },
-    { id: 'movements', label: t('nav.movements', { defaultValue: 'MOVEMENTS' }), icon: Dumbbell, roles: ['admin', 'coach'] },
-    { id: 'benchmarks', label: t('nav.benchmarks'), icon: Trophy },
-    { id: 'competitions', label: t('nav.competitions'), icon: Medal, roles: ['admin', 'coach'] },
-    { id: 'box-display', label: t('nav.tv_view'), icon: Monitor, roles: ['admin', 'receptionist', 'coach'] },
-    { id: 'analytics', label: t('nav.analytics'), icon: BarChart3, roles: ['admin'] },
+    { id: 'dashboard', path: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
+    { id: 'schedule', path: '/schedule', label: t('nav.schedule'), icon: CalendarIcon },
+    { id: 'members', path: '/members', label: t('nav.members'), icon: Users, roles: ['admin', 'receptionist', 'coach'] },
+    { id: 'roles', path: '/roles', label: t('nav.roles'), icon: Shield, roles: ['admin'] },
+    { id: 'audit-logs', path: '/audit-logs', label: t('nav.audit_logs'), icon: History, roles: ['admin'] },
+    { id: 'leads', path: '/leads', label: t('nav.leads'), icon: Inbox, roles: ['admin', 'receptionist'] },
+    { id: 'billing', path: '/billing', label: t('nav.billing'), icon: Receipt, roles: ['admin', 'receptionist'] },
+    { id: 'wods', path: '/wods', label: t('nav.programming'), icon: Trophy },
+    { id: 'movements', path: '/movements', label: t('nav.movements', { defaultValue: 'MOVEMENTS' }), icon: Dumbbell, roles: ['admin', 'coach'] },
+    { id: 'benchmarks', path: '/benchmarks', label: t('nav.benchmarks'), icon: Trophy },
+    { id: 'competitions', path: '/competitions', label: t('nav.competitions'), icon: Medal, roles: ['admin', 'coach'] },
+    { id: 'box-display', path: '/box-display', label: t('nav.tv_view'), icon: Monitor, roles: ['admin', 'receptionist', 'coach'] },
+    { id: 'analytics', path: '/analytics', label: t('nav.analytics'), icon: BarChart3, roles: ['admin'] },
 ];
 
-export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, userProfile }) => {
+export const MainLayout: React.FC<LayoutProps> = ({ userProfile }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const { t, i18n } = useTranslation();
     const { currentBox, signOut } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         // Update Favicon based on current box
@@ -63,20 +63,23 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
 
     const handleLogout = async () => {
         await signOut();
+        navigate('/login');
     };
 
     const filteredNavItems = navItems.filter(item =>
         !item.roles || (userProfile?.role_id && item.roles.includes(userProfile.role_id))
     );
 
-    const navigateTo = (page: string) => {
-        onNavigate(page);
+    const navigateTo = (path: string) => {
+        navigate(path);
         setIsSidebarOpen(false);
     };
 
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
     };
+
+    const isActive = (path: string) => location.pathname === path;
 
     return (
         <div className="flex min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -96,7 +99,7 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
             )}>
                 <div className="flex h-20 items-center justify-between px-6 shrink-0 relative overflow-hidden group">
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3" onClick={() => navigateTo('/dashboard')} style={{ cursor: 'pointer' }}>
                         {currentBox?.logo_url ? (
                             <img src={currentBox.logo_url} alt="Logo" className="h-10 w-10 object-contain rounded-lg shadow-lg shadow-primary/10" />
                         ) : (
@@ -130,21 +133,21 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
                         {filteredNavItems.map((item) => (
                             <Button
                                 key={item.id}
-                                variant={activePage === item.id ? "default" : "ghost"}
+                                variant={isActive(item.path) ? "default" : "ghost"}
                                 className={cn(
                                     "w-full justify-start gap-3 h-12 px-5 font-bold uppercase text-[10px] tracking-widest transition-all duration-500 rounded-2xl relative group overflow-hidden border-none",
-                                    activePage === item.id
+                                    isActive(item.path)
                                         ? "bg-primary text-white shadow-lg shadow-primary/20 scale-[1.02]"
                                         : "text-muted-foreground/80 hover:bg-primary/10 hover:text-primary hover:scale-[1.02]"
                                 )}
-                                onClick={() => navigateTo(item.id)}
+                                onClick={() => navigateTo(item.path)}
                             >
-                                {activePage === item.id && (
+                                {isActive(item.path) && (
                                     <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-white rounded-r-full animate-in fade-in slide-in-from-left-2 duration-300" />
                                 )}
-                                <item.icon className={cn("h-4 w-4 transition-transform duration-300", activePage === item.id ? "text-white scale-110" : "text-primary/70 group-hover:scale-125")} />
+                                <item.icon className={cn("h-4 w-4 transition-transform duration-300", isActive(item.path) ? "text-white scale-110" : "text-primary/70 group-hover:scale-125")} />
                                 {item.label}
-                                {activePage !== item.id && (
+                                {!isActive(item.path) && (
                                     <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                 )}
                             </Button>
@@ -154,12 +157,12 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
 
                 <div className="p-4 space-y-2 mt-auto bg-white/5 backdrop-blur-md rounded-b-[2rem] border-t border-white/5">
                     <Button
-                        variant={activePage === 'settings' ? "default" : "ghost"}
+                        variant={isActive('/settings') ? "default" : "ghost"}
                         className={cn(
                             "w-full justify-start gap-3 h-11 px-4 font-bold uppercase text-[10px] tracking-widest rounded-xl transition-all border-none",
-                            activePage === 'settings' ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-muted-foreground/80 hover:bg-primary/10 hover:text-primary"
+                            isActive('/settings') ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-muted-foreground/80 hover:bg-primary/10 hover:text-primary"
                         )}
-                        onClick={() => navigateTo('settings')}
+                        onClick={() => navigateTo('/settings')}
                     >
                         <SettingsIcon className="h-4 w-4 transition-transform group-hover:rotate-45" />
                         {t('nav.settings')}
@@ -235,10 +238,10 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
                                     <p className="text-[10px] font-black uppercase tracking-widest text-primary truncate">{userProfile?.first_name} {userProfile?.last_name}</p>
                                     <p className="text-[8px] font-medium text-muted-foreground truncate italic">{userProfile?.role_id}</p>
                                 </div>
-                                <DropdownMenuItem onClick={() => navigateTo('profile')} className="cursor-pointer font-black uppercase text-[9px] tracking-[0.15em] rounded-xl focus:bg-primary/10 focus:text-primary transition-colors gap-2">
+                                <DropdownMenuItem onClick={() => navigateTo('/profile')} className="cursor-pointer font-black uppercase text-[9px] tracking-[0.15em] rounded-xl focus:bg-primary/10 focus:text-primary transition-colors gap-2">
                                     <User className="h-3 w-3" /> Profile Settings
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => navigateTo('settings')} className="cursor-pointer font-black uppercase text-[9px] tracking-[0.15em] rounded-xl focus:bg-primary/10 focus:text-primary transition-colors gap-2">
+                                <DropdownMenuItem onClick={() => navigateTo('/settings')} className="cursor-pointer font-black uppercase text-[9px] tracking-[0.15em] rounded-xl focus:bg-primary/10 focus:text-primary transition-colors gap-2">
                                     <SettingsIcon className="h-3 w-3" /> System Settings
                                 </DropdownMenuItem>
                                 <Separator className="my-2 bg-primary/10" />
@@ -256,7 +259,7 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
                     "lg:ml-[288px]"
                 )}>
                     <div className="container mx-auto p-6 md:p-10 max-w-7xl animate-premium-in">
-                        {children}
+                        <Outlet />
                     </div>
                 </main>
             </div>

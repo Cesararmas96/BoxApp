@@ -125,6 +125,36 @@ export const Settings: React.FC = () => {
         }
     };
 
+    const handleSaveAppearance = async () => {
+        if (!currentBox?.id) return;
+        setIsSaving(true);
+        setMessage(null);
+        try {
+            const themeConfig = {
+                primaryColor,
+                radius,
+                designStyle
+            };
+
+            const { error } = await supabase
+                .from('boxes')
+                .update({
+                    theme_config: themeConfig as any,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', currentBox.id);
+
+            if (error) throw error;
+            setMessage({ type: 'success', text: 'Appearance settings saved successfully!' });
+            // Reload page to refresh context
+            setTimeout(() => window.location.reload(), 1500);
+        } catch (err: any) {
+            setMessage({ type: 'error', text: err.message });
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
@@ -448,14 +478,30 @@ export const Settings: React.FC = () => {
                                     </div>
                                 </div>
                             </CardContent>
-                            <CardFooter className="bg-primary/5 pt-6 pb-6 border-t border-primary/10">
-                                <Button
-                                    variant="ghost"
-                                    className="w-full gap-2 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-300 rounded-xl"
-                                    onClick={resetTheme}
-                                >
-                                    <RefreshCcw className="h-4 w-4" /> Reset to Factory Defaults
-                                </Button>
+                            <CardFooter className="bg-primary/5 pt-6 pb-6 border-t border-primary/10 flex flex-col gap-4">
+                                {message && (
+                                    <div className={`p-3 rounded-xl text-xs font-bold text-center border ${message.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-destructive/10 border-destructive/20 text-destructive'
+                                        }`}>
+                                        {message.text}
+                                    </div>
+                                )}
+                                <div className="flex gap-4">
+                                    <Button
+                                        variant="ghost"
+                                        className="flex-1 gap-2 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-300 rounded-xl"
+                                        onClick={resetTheme}
+                                    >
+                                        <RefreshCcw className="h-4 w-4" /> Reset
+                                    </Button>
+                                    <Button
+                                        className="flex-2 gap-2 rounded-xl"
+                                        onClick={handleSaveAppearance}
+                                        disabled={isSaving}
+                                    >
+                                        {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                                        Save Appearance
+                                    </Button>
+                                </div>
                             </CardFooter>
                         </Card>
                     </div>

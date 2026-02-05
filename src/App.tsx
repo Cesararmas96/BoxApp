@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { MainLayout } from './layouts/MainLayout';
 import { Login } from './pages/Login';
 import { Members } from './pages/Members';
@@ -16,14 +17,23 @@ import { Competitions } from './pages/Competitions';
 import { AuditLogs } from './pages/AuditLogs';
 import { Movements } from './pages/Movements';
 import { Profile } from './pages/Profile';
-import { ThemeProvider } from './components/theme-provider';
+import { ThemeProvider, useTheme } from './components/theme-provider';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import './index.css';
 
 function AppContent() {
-  const { session, userProfile, loading } = useAuth();
-  const [activePage, setActivePage] = useState('dashboard');
+  const { session, userProfile, currentBox, loading } = useAuth();
+  const { setPrimaryColor, setRadius, setDesignStyle } = useTheme();
+
+  useEffect(() => {
+    if (currentBox?.theme_config) {
+      const config = currentBox.theme_config as any;
+      if (config.primaryColor) setPrimaryColor(config.primaryColor);
+      if (config.radius) setRadius(config.radius);
+      if (config.designStyle) setDesignStyle(config.designStyle);
+    }
+  }, [currentBox, setPrimaryColor, setRadius, setDesignStyle]);
 
   if (loading) {
     return (
@@ -37,87 +47,97 @@ function AppContent() {
   }
 
   if (!session) {
-    return <Login />;
+    return (
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    );
   }
-
-  if (activePage === 'box-display') {
-    return <BoxDisplay />;
-  }
-
-  const renderPage = () => {
-    switch (activePage) {
-      case 'members':
-        return (
-          <ProtectedRoute allowedRoles={['admin', 'coach', 'receptionist']}>
-            <Members userProfile={userProfile} />
-          </ProtectedRoute>
-        );
-      case 'leads':
-        return (
-          <ProtectedRoute allowedRoles={['admin', 'receptionist']}>
-            <Leads />
-          </ProtectedRoute>
-        );
-      case 'wods':
-        return <Wods />;
-      case 'analytics':
-        return (
-          <ProtectedRoute allowedRoles={['admin']}>
-            <Analytics />
-          </ProtectedRoute>
-        );
-      case 'settings':
-        return <Settings />;
-      case 'schedule':
-        return <Schedule />;
-      case 'billing':
-        return (
-          <ProtectedRoute allowedRoles={['admin', 'receptionist']}>
-            <Billing />
-          </ProtectedRoute>
-        );
-      case 'roles':
-        return (
-          <ProtectedRoute allowedRoles={['admin']}>
-            <Roles />
-          </ProtectedRoute>
-        );
-      case 'audit-logs':
-        return (
-          <ProtectedRoute allowedRoles={['admin']}>
-            <AuditLogs />
-          </ProtectedRoute>
-        );
-      case 'benchmarks':
-        return <Benchmarks />;
-      case 'competitions':
-        return (
-          <ProtectedRoute allowedRoles={['admin', 'coach']}>
-            <Competitions />
-          </ProtectedRoute>
-        );
-      case 'movements':
-        return (
-          <ProtectedRoute allowedRoles={['admin', 'coach']}>
-            <Movements />
-          </ProtectedRoute>
-        );
-      case 'profile':
-        return <Profile />;
-      case 'dashboard':
-      default:
-        return <Dashboard userProfile={userProfile} />;
-    }
-  };
 
   return (
-    <MainLayout
-      activePage={activePage}
-      onNavigate={setActivePage}
-      userProfile={userProfile}
-    >
-      {renderPage()}
-    </MainLayout>
+    <Routes>
+      {/* Standalone pages */}
+      <Route path="/box-display" element={<BoxDisplay />} />
+
+      {/* Layout wrapper pages */}
+      <Route element={<MainLayout userProfile={userProfile} />}>
+        <Route path="/dashboard" element={<Dashboard userProfile={userProfile} />} />
+        <Route path="/schedule" element={<Schedule />} />
+        <Route
+          path="/members"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'coach', 'receptionist']}>
+              <Members userProfile={userProfile} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leads"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'receptionist']}>
+              <Leads />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/wods" element={<Wods />} />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <Analytics />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/settings" element={<Settings />} />
+        <Route
+          path="/billing"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'receptionist']}>
+              <Billing />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/roles"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <Roles />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/audit-logs"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AuditLogs />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/benchmarks" element={<Benchmarks />} />
+        <Route
+          path="/competitions"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'coach']}>
+              <Competitions />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/movements"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'coach']}>
+              <Movements />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/profile" element={<Profile />} />
+
+        {/* Default Redirect */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Route>
+    </Routes>
   );
 }
 
@@ -125,7 +145,9 @@ function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <AuthProvider>
-        <AppContent />
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>
   );

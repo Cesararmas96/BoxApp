@@ -460,6 +460,54 @@ export type Database = {
                     },
                 ]
             }
+            functional_feedback: {
+                Row: {
+                    athlete_id: string | null
+                    coach_private_note: string | null
+                    created_at: string | null
+                    effort_score: number | null
+                    fatigue_level: number | null
+                    id: string
+                    satisfaction: string | null
+                    session_id: string | null
+                }
+                Insert: {
+                    athlete_id?: string | null
+                    coach_private_note?: string | null
+                    created_at?: string | null
+                    effort_score?: number | null
+                    fatigue_level?: number | null
+                    id?: string
+                    satisfaction?: string | null
+                    session_id?: string | null
+                }
+                Update: {
+                    athlete_id?: string | null
+                    coach_private_note?: string | null
+                    created_at?: string | null
+                    effort_score?: number | null
+                    fatigue_level?: number | null
+                    id?: string
+                    satisfaction?: string | null
+                    session_id?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "functional_feedback_athlete_id_fkey"
+                        columns: ["athlete_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "functional_feedback_session_id_fkey"
+                        columns: ["session_id"]
+                        isOneToOne: false
+                        referencedRelation: "sessions"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
             invoices: {
                 Row: {
                     amount: number | null
@@ -545,6 +593,41 @@ export type Database = {
                 Relationships: [
                     {
                         foreignKeyName: "leads_box_id_fkey"
+                        columns: ["box_id"]
+                        isOneToOne: false
+                        referencedRelation: "boxes"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
+            movements: {
+                Row: {
+                    box_id: string | null
+                    category: string | null
+                    created_at: string | null
+                    demo_url: string | null
+                    id: string
+                    name: string
+                }
+                Insert: {
+                    box_id?: string | null
+                    category?: string | null
+                    created_at?: string | null
+                    demo_url?: string | null
+                    id?: string
+                    name: string
+                }
+                Update: {
+                    box_id?: string | null
+                    category?: string | null
+                    created_at?: string | null
+                    demo_url?: string | null
+                    id?: string
+                    name?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "movements_box_id_fkey"
                         columns: ["box_id"]
                         isOneToOne: false
                         referencedRelation: "boxes"
@@ -752,33 +835,196 @@ export type Database = {
                     },
                 ]
             }
+            results: {
+                Row: {
+                    athlete_id: string | null
+                    box_id: string | null
+                    created_at: string | null
+                    id: string
+                    result: string | null
+                    rx: boolean | null
+                    wod_id: string | null
+                }
+                Insert: {
+                    athlete_id?: string | null
+                    box_id?: string | null
+                    created_at?: string | null
+                    id?: string
+                    result?: string | null
+                    rx?: boolean | null
+                    wod_id?: string | null
+                }
+                Update: {
+                    athlete_id?: string | null
+                    box_id?: string | null
+                    created_at?: string | null
+                    id?: string
+                    result?: string | null
+                    rx?: boolean | null
+                    wod_id?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "results_athlete_id_fkey"
+                        columns: ["athlete_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "results_box_id_fkey"
+                        columns: ["box_id"]
+                        isOneToOne: false
+                        referencedRelation: "boxes"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "results_wod_id_fkey"
+                        columns: ["wod_id"]
+                        isOneToOne: false
+                        referencedRelation: "wods"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
+            personal_records: {
+                Row: {
+                    box_id: string | null
+                    id: string
+                    movement_id: string | null
+                    performed_at: string | null
+                    user_id: string | null
+                    value: string | null
+                }
+                Insert: {
+                    box_id?: string | null
+                    id?: string
+                    movement_id?: string | null
+                    performed_at?: string | null
+                    user_id?: string | null
+                    value?: string | null
+                }
+                Update: {
+                    box_id?: string | null
+                    id?: string
+                    movement_id?: string | null
+                    performed_at?: string | null
+                    user_id?: string | null
+                    value?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "personal_records_box_id_fkey"
+                        columns: ["box_id"]
+                        isOneToOne: false
+                        referencedRelation: "boxes"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "personal_records_movement_id_fkey"
+                        columns: ["movement_id"]
+                        isOneToOne: false
+                        referencedRelation: "movements"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "personal_records_user_id_fkey"
+                        columns: ["user_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
+            session_types: {
+                Row: {
+                    box_id: string | null
+                    color: string | null
+                    created_at: string | null
+                    id: string
+                    name: string
+                }
+                Insert: {
+                    box_id?: string | null
+                    color?: string | null
+                    created_at?: string | null
+                    id?: string
+                    name: string
+                }
+                Update: {
+                    box_id?: string | null
+                    color?: string | null
+                    created_at?: string | null
+                    id?: string
+                    name?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "session_types_box_id_fkey"
+                        columns: ["box_id"]
+                        isOneToOne: false
+                        referencedRelation: "boxes"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
             wods: {
                 Row: {
                     box_id: string | null
                     created_at: string | null
                     date: string | null
-                    description: string | null
                     id: string
-                    name: string
-                    type: string | null
+                    lesson_plan: Json[] | null
+                    metcon: string | null
+                    modalities: string[] | null
+                    scaling_advanced: string | null
+                    scaling_beginner: string | null
+                    scaling_injured: string | null
+                    scaling_intermediate: string | null
+                    scaling_options: string | null
+                    status: string | null
+                    stimulus: string | null
+                    structure: Json[] | null
+                    title: string | null
+                    track: string | null
                 }
                 Insert: {
                     box_id?: string | null
                     created_at?: string | null
                     date?: string | null
-                    description?: string | null
                     id?: string
-                    name: string
-                    type?: string | null
+                    lesson_plan?: Json[] | null
+                    metcon?: string | null
+                    modalities?: string[] | null
+                    scaling_advanced?: string | null
+                    scaling_beginner?: string | null
+                    scaling_injured?: string | null
+                    scaling_intermediate?: string | null
+                    scaling_options?: string | null
+                    status?: string | null
+                    stimulus?: string | null
+                    structure?: Json[] | null
+                    title?: string | null
+                    track?: string | null
                 }
                 Update: {
                     box_id?: string | null
                     created_at?: string | null
                     date?: string | null
-                    description?: string | null
                     id?: string
-                    name?: string
-                    type?: string | null
+                    lesson_plan?: Json[] | null
+                    metcon?: string | null
+                    modalities?: string[] | null
+                    scaling_advanced?: string | null
+                    scaling_beginner?: string | null
+                    scaling_injured?: string | null
+                    scaling_intermediate?: string | null
+                    scaling_options?: string | null
+                    status?: string | null
+                    stimulus?: string | null
+                    structure?: Json[] | null
+                    title?: string | null
+                    track?: string | null
                 }
                 Relationships: [
                     {
@@ -813,13 +1059,19 @@ export type Tables<
     | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
     | { schema: keyof Database },
     TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions["schema"]] extends { Tables: any }
+    ? keyof (Database[PublicTableNameOrOptions["schema"]] extends {
+        Tables: any
+        Views: any
+    }
         ? Database[PublicTableNameOrOptions["schema"]]["Tables"] &
         Database[PublicTableNameOrOptions["schema"]]["Views"]
         : never)
     : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-    ? (Database[PublicTableNameOrOptions["schema"]] extends { Tables: any }
+    ? (Database[PublicTableNameOrOptions["schema"]] extends {
+        Tables: any
+        Views: any
+    }
         ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
             Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
                 Row: infer R

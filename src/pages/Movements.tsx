@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     Plus,
     Trash2,
@@ -57,6 +58,7 @@ const CATEGORY_ICONS: Record<string, any> = {
 
 export const Movements: React.FC = () => {
     const { t } = useTranslation();
+    const { currentBox } = useAuth();
     const [movements, setMovements] = useState<Movement[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -80,6 +82,7 @@ export const Movements: React.FC = () => {
         const { data, error } = await supabase
             .from('movements')
             .select('*')
+            .eq('box_id', currentBox?.id)
             .order('name', { ascending: true });
 
         if (!error && data) {
@@ -95,7 +98,8 @@ export const Movements: React.FC = () => {
         const movementData = {
             name: formData.name,
             category: formData.category,
-            demo_url: formData.demo_url || null
+            demo_url: formData.demo_url || null,
+            box_id: currentBox?.id
         };
 
         let result;

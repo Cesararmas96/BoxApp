@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     UserPlus,
     Search,
@@ -56,6 +57,7 @@ interface MembersProps {
 
 export const Members: React.FC<MembersProps> = ({ userProfile }) => {
     const { t } = useTranslation();
+    const { currentBox } = useAuth();
     const [members, setMembers] = useState<Profile[]>([]);
     const [loading, setLoading] = useState(true);
     const [open, setOpen] = useState(false);
@@ -82,6 +84,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
         const { data, error } = await supabase
             .from('profiles')
             .select('*')
+            .eq('box_id', currentBox?.id)
             .order('created_at', { ascending: false });
 
         if (!error && data) setMembers(data);
@@ -103,7 +106,8 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                     status: newMember.status,
                     medical_history: newMember.medicalHistory,
                     emergency_contact_name: newMember.emergencyName,
-                    emergency_contact_phone: newMember.emergencyPhone
+                    emergency_contact_phone: newMember.emergencyPhone,
+                    box_id: currentBox?.id
                 }
             ]);
 

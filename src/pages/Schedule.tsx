@@ -40,7 +40,7 @@ interface WODSummary {
 
 export const Schedule: React.FC = () => {
     const { t } = useTranslation();
-    const { user } = useAuth();
+    const { user, currentBox } = useAuth();
     const [sessions, setSessions] = useState<any[]>([]);
     const [wods, setWods] = useState<WODSummary[]>([]);
     const [loading, setLoading] = useState(true);
@@ -72,6 +72,7 @@ export const Schedule: React.FC = () => {
         const { data } = await supabase
             .from('wods')
             .select('*')
+            .eq('box_id', currentBox?.id)
             .gte('date', start.toISOString())
             .lt('date', end.toISOString());
 
@@ -92,6 +93,7 @@ export const Schedule: React.FC = () => {
                 *,
                 session_types (name, color)
             `)
+            .eq('box_id', currentBox?.id)
             .gte('start_time', start.toISOString())
             .lt('start_time', end.toISOString())
             .order('start_time', { ascending: true });

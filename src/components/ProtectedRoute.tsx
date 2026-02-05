@@ -1,5 +1,7 @@
 import { ReactNode } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { ShieldAlert, Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
     children: ReactNode;
@@ -7,35 +9,53 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
-    const { userProfile, loading } = useAuth();
+    const { userProfile, loading, session } = useAuth();
+    const location = useLocation();
 
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
                 <div className="text-center">
-                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4"></div>
-                    <p className="text-muted-foreground font-medium uppercase tracking-widest text-xs">Authenticating Security Clearance...</p>
+                    <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto mb-4" />
+                    <p className="text-muted-foreground font-black italic uppercase tracking-[0.2em] text-[10px]">
+                        Synchronizing Security Clearance...
+                    </p>
                 </div>
             </div>
         );
+    }
+
+    if (!session) {
+        return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
     if (!userProfile) {
         return (
-            <div className="flex flex-col items-center justify-center min-vh-50 space-y-4">
-                <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs">Access Denied: Terminal Not Identified</p>
+            <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+                <ShieldAlert className="h-12 w-12 text-zinc-500 animate-pulse" />
+                <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs italic">
+                    Access Denied: Terminal Not Identified
+                </p>
             </div>
         );
     }
 
-    if (allowedRoles && !allowedRoles.includes(userProfile.role_id)) {
+    if (allowedRoles && (!userProfile.role_id || !allowedRoles.includes(userProfile.role_id))) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-                <div className="p-4 bg-destructive/10 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-destructive"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /><path d="m14.5 9-5 5" /><path d="m9.5 9 5 5" /></svg>
+            <div className="flex flex-col items-center justify-center min-h-[400px] space-y-6 bg-card/20 backdrop-blur-3xl rounded-[2rem] border border-white/5 m-4">
+                <div className="p-6 bg-destructive/10 rounded-full shadow-2xl shadow-destructive/20 animate-bounce">
+                    <ShieldAlert className="h-12 w-12 text-destructive" />
                 </div>
-                <h2 className="text-2xl font-black italic uppercase tracking-tighter text-destructive">Access Denied</h2>
-                <p className="text-muted-foreground text-center max-w-md">Your current role <strong>({userProfile.role_id})</strong> does not have the required permissions to access this high-security sector.</p>
+                <div className="text-center space-y-2">
+                    <h2 className="text-3xl font-black italic uppercase tracking-tighter text-destructive text-glow">
+                        Access Restricted
+                    </h2>
+                    <p className="text-muted-foreground font-medium text-sm tracking-wide max-w-sm mx-auto uppercase">
+                        Protocol error: current credentials
+                        <span className="text-primary font-black mx-1 italic">({userProfile.role_id || 'UNKNOWN'})</span>
+                        insufficient for this sector.
+                    </p>
+                </div>
             </div>
         );
     }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     Trophy,
     Plus,
@@ -44,7 +45,7 @@ import { Toast } from '@/components/ui/toast-custom';
 
 interface Competition {
     id: string;
-    title: string;
+    name: string;
     description: string;
     start_date: string;
     end_date: string;
@@ -53,11 +54,12 @@ interface Competition {
 
 export const Competitions: React.FC = () => {
     const { t } = useTranslation();
+    const { currentBox } = useAuth();
     const [competitions, setCompetitions] = useState<Competition[]>([]);
     const [loading, setLoading] = useState(true);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [newComp, setNewComp] = useState({
-        title: '',
+        name: '',
         description: '',
         start_date: '',
         end_date: ''
@@ -85,22 +87,31 @@ export const Competitions: React.FC = () => {
     }, []);
 
     const fetchStaff = async () => {
+        if (!currentBox) return;
         const { data } = await supabase
             .from('profiles')
             .select('*')
+            .eq('box_id', currentBox.id)
             .in('role_id', ['admin', 'coach', 'receptionist']);
         if (data) setStaffMembers(data);
     };
 
     const fetchWods = async () => {
-        const { data } = await supabase.from('wods').select('id, title').order('date', { ascending: false });
+        if (!currentBox) return;
+        const { data } = await supabase
+            .from('wods')
+            .select('id, title')
+            .eq('box_id', currentBox.id)
+            .order('date', { ascending: false });
         if (data) setAvailableWods(data);
     };
 
     const fetchAthletes = async () => {
+        if (!currentBox) return;
         const { data } = await supabase
             .from('profiles')
             .select('*')
+            .eq('box_id', currentBox.id)
             .eq('role_id', 'athlete');
         if (data) setAthletes(data);
     };
@@ -248,6 +259,7 @@ export const Competitions: React.FC = () => {
         const { data, error } = await supabase
             .from('competitions')
             .select('*')
+            .eq('box_id', currentBox?.id)
             .order('start_date', { ascending: false });
 
         if (!error && data) setCompetitions(data);
@@ -259,14 +271,17 @@ export const Competitions: React.FC = () => {
         setLoading(true);
         const { error } = await supabase
             .from('competitions')
-            .insert([newComp]);
+            .insert([{
+                ...newComp,
+                box_id: currentBox?.id
+            }]);
 
         if (error) {
             showNotification('error', 'ERROR CREATING COMPETITION: ' + error.message.toUpperCase());
         } else {
             showNotification('success', 'COMPETITION CREATED SUCCESSFULLY');
             setIsCreateOpen(false);
-            setNewComp({ title: '', description: '', start_date: '', end_date: '' });
+            setNewComp({ name: '', description: '', start_date: '', end_date: '' });
             fetchCompetitions();
         }
         setLoading(false);
@@ -307,8 +322,8 @@ export const Competitions: React.FC = () => {
                                 <Input
                                     placeholder="e.g. Winter Open 2026"
                                     required
-                                    value={newComp.title}
-                                    onChange={(e) => setNewComp({ ...newComp, title: e.target.value })}
+                                    value={newComp.name}
+                                    onChange={(e) => setNewComp({ ...newComp, name: e.target.value })}
                                     className="h-14 bg-white/5 border-white/10 text-lg font-bold rounded-2xl focus:ring-primary/20 px-6"
                                 />
                             </div>
@@ -390,7 +405,7 @@ export const Competitions: React.FC = () => {
                                                 <div className="h-8 w-8 rounded-full border-2 border-zinc-900 bg-zinc-900/50 backdrop-blur-md flex items-center justify-center text-[8px] font-black text-primary shadow-lg">+12</div>
                                             </div>
                                         </div>
-                                        <CardTitle className="text-3xl font-black italic uppercase tracking-tighter mb-2 group-hover:text-primary transition-colors">{comp.title}</CardTitle>
+                                        <CardTitle className="text-3xl font-black italic uppercase tracking-tighter mb-2 group-hover:text-primary transition-colors">{comp.name}</CardTitle>
                                         <CardDescription className="line-clamp-2 text-xs font-medium text-muted-foreground/70 leading-relaxed uppercase tracking-wide">
                                             {comp.description}
                                         </CardDescription>
@@ -446,7 +461,7 @@ export const Competitions: React.FC = () => {
                                 <div className="h-14 w-14 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
                                     <Trophy className="h-8 w-8 text-primary-foreground" />
                                 </div>
-                                {selectedComp?.title}
+                                {selectedComp?.name}
                             </DialogTitle>
                             <DialogDescription className="uppercase text-[10px] font-bold tracking-[0.3em] text-primary/60 mt-4 px-1 flex items-center gap-2">
                                 <div className="h-1 w-1 rounded-full bg-primary" />

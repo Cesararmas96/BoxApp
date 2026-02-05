@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     TrendingUp,
     ArrowUpRight,
@@ -7,8 +8,12 @@ import {
     AlertTriangle,
     DollarSign,
     HeartPulse,
-    Trophy
+    Trophy,
+    Receipt,
+    Bell
 } from 'lucide-react';
+import { useNotification } from '@/hooks/useNotification';
+import { Toast } from '@/components/ui/toast-custom';
 import {
     Card,
     CardContent,
@@ -20,6 +25,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 export const Analytics: React.FC = () => {
+    const { currentBox } = useAuth();
     const [stats, setStats] = useState({
         totalMembers: 0,
         activeLeads: 0,
@@ -31,6 +37,8 @@ export const Analytics: React.FC = () => {
     });
 
     const [atRiskAthletes, setAtRiskAthletes] = useState<any[]>([]);
+    const [unpaidAthletes, setUnpaidAthletes] = useState<any[]>([]);
+    const { notification, showNotification, hideNotification } = useNotification();
 
     useEffect(() => {
         fetchStats();
@@ -38,10 +46,10 @@ export const Analytics: React.FC = () => {
 
     const fetchStats = async () => {
         const [members, leads, invoices, bookings] = await Promise.all([
-            supabase.from('profiles').select('*'),
-            supabase.from('leads').select('*', { count: 'exact', head: true }),
-            supabase.from('invoices').select('amount'),
-            supabase.from('bookings').select('athlete_id, created_at')
+            supabase.from('profiles').select('*').eq('box_id', currentBox?.id),
+            supabase.from('leads').select('*', { count: 'exact', head: true }).eq('box_id', currentBox?.id),
+            supabase.from('invoices').select('*, profiles(*)').eq('box_id', currentBox?.id),
+            supabase.from('bookings').select('athlete_id, created_at').eq('box_id', currentBox?.id)
         ]);
 
         const totalRevenue = invoices.data?.reduce((acc, inv) => acc + Number(inv.amount), 0) || 0;
@@ -58,6 +66,33 @@ export const Analytics: React.FC = () => {
         const riskAthletes = members.data?.filter(m => m.role_id === 'athlete' && !activeIds.has(m.id)) || [];
         setAtRiskAthletes(riskAthletes);
 
+        // Payment Risk Detection (Unpaid Invoices)
+        const overdueInvoices = invoices.data?.filter(inv =>
+            inv.status === 'unpaid' || inv.status === 'overdue'
+        ) || [];
+
+        // Group by user to avoid duplicates
+        const uniqueUnpaidUsers = Array.from(new Set(overdueInvoices.map(inv => inv.user_id)))
+            .map(userId => {
+                const userInvoices = overdueInvoices.filter(inv => inv.user_id === userId);
+                const firstInvoice = userInvoices[0];
+                const totalDebt = userInvoices.reduce((acc, inv) => acc + (inv.amount || 0), 0);
+
+                // Handle different potential return formats for joined data
+                const profile = Array.isArray(firstInvoice.profiles)
+                    ? firstInvoice.profiles[0]
+                    : firstInvoice.profiles;
+
+                return {
+                    ...profile,
+                    totalDebt,
+                    invoiceCount: userInvoices.length
+                };
+            })
+            .filter(u => u.id); // Ensure we only show users with profile data
+
+        setUnpaidAthletes(uniqueUnpaidUsers);
+
         setStats({
             totalMembers: totalUsers,
             activeLeads: leads.count || 0,
@@ -67,6 +102,27 @@ export const Analytics: React.FC = () => {
             avgTicket: totalRevenue / (invoices.data?.length || 1),
             churnRiskCount: riskAthletes.length
         });
+    };
+
+    const handleAlertCoach = (athlete: any, type: 'inactivity' | 'payment') => {
+        const message = type === 'inactivity'
+            ? `Coach alert sent for ${athlete.first_name}: Inactive for +10 days.`
+            : `Coach alert sent for ${athlete.first_name}: Outstanding debt of $${athlete.totalDebt}.`;
+
+        showNotification('success', message);
+
+        // Send real alert via Supabase Edge Function
+        supabase.functions.invoke('coach-alerts', {
+            body: {
+                athleteId: athlete.id,
+                athleteName: athlete.first_name,
+                type: type,
+                boxId: athlete.box_id,
+                details: message
+            }
+        }).catch(err => console.error('Failed to trigger coach alert:', err));
+
+        console.log(`[AUTOMATION] Alerting coach about ${athlete.id} (${type})`);
     };
 
     const PerformanceCard = ({ title, value, label, trend, icon: Icon, color }: any) => (
@@ -185,7 +241,7 @@ export const Analytics: React.FC = () => {
                             {atRiskAthletes.length === 0 ? (
                                 <p className="py-8 text-center text-muted-foreground italic text-sm">Perfect! All athletes are active.</p>
                             ) : (
-                                atRiskAthletes.slice(0, 5).map((athlete) => (
+                                atRiskAthletes.slice(0, 3).map((athlete) => (
                                     <div key={athlete.id} className="py-3 flex items-center justify-between group">
                                         <div className="flex items-center gap-3">
                                             <div className="h-8 w-8 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center text-xs font-bold uppercase transition-all group-hover:bg-rose-600 group-hover:text-white">
@@ -196,20 +252,76 @@ export const Analytics: React.FC = () => {
                                                 <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">12 Days Inactive</p>
                                             </div>
                                         </div>
-                                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Button size="sm" variant="outline" className="h-8 text-[10px] font-black uppercase">Message</Button>
-                                            <Button size="sm" className="h-8 text-[10px] font-black uppercase bg-rose-600 hover:bg-rose-700">Alert Coach</Button>
+                                        <div className="flex gap-2">
+                                            <Button
+                                                size="sm"
+                                                className="h-8 text-[10px] font-black uppercase bg-rose-600 hover:bg-rose-700"
+                                                onClick={() => handleAlertCoach(athlete, 'inactivity')}
+                                            >
+                                                Alert Coach
+                                            </Button>
                                         </div>
                                     </div>
                                 ))
                             )}
                         </div>
-                        {atRiskAthletes.length > 5 && (
-                            <Button variant="ghost" className="w-full text-[10px] uppercase font-bold tracking-[0.2em]">View All {atRiskAthletes.length} Athletes</Button>
+                    </CardContent>
+                </Card>
+
+                <Card className="lg:col-span-3">
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <div>
+                            <CardTitle className="text-orange-600 flex items-center gap-2">
+                                <Receipt className="h-5 w-5" /> Payment Risk
+                            </CardTitle>
+                            <CardDescription>Members with overdue payments.</CardDescription>
+                        </div>
+                        <Badge variant="outline" className="text-orange-600 border-orange-200 bg-orange-50">{unpaidAthletes.length} Pending</Badge>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="divide-y divide-border">
+                            {unpaidAthletes.length === 0 ? (
+                                <p className="py-8 text-center text-muted-foreground italic text-sm">Finances are up to date! 🚀</p>
+                            ) : (
+                                unpaidAthletes.slice(0, 3).map((athlete) => (
+                                    <div key={athlete.id} className="py-3 flex items-center justify-between group">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-8 w-8 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center text-xs font-bold uppercase transition-all group-hover:bg-orange-600 group-hover:text-white">
+                                                {athlete.first_name?.[0]}{athlete.last_name?.[0]}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold leading-none">{athlete.first_name} {athlete.last_name}</p>
+                                                <p className="text-[10px] text-orange-600 font-bold uppercase tracking-tighter">
+                                                    Debt: ${athlete.totalDebt.toFixed(2)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="h-8 w-8 p-0 rounded-full hover:bg-orange-600 hover:text-white transition-colors"
+                                            onClick={() => handleAlertCoach(athlete, 'payment')}
+                                        >
+                                            <Bell className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                        {unpaidAthletes.length > 3 && (
+                            <Button variant="ghost" className="w-full text-[10px] uppercase font-bold tracking-[0.2em]">View All {unpaidAthletes.length} Payments</Button>
                         )}
                     </CardContent>
                 </Card>
             </div>
+
+            {notification && (
+                <Toast
+                    type={notification.type}
+                    message={notification.message}
+                    onClose={hideNotification}
+                />
+            )}
         </div>
     );
 };

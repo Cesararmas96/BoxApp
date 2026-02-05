@@ -36,6 +36,10 @@
 
     --glass-bg: rgba(255, 255, 255, 0.7);
     --glass-border: rgba(255, 255, 255, 0.3);
+
+    /* Design System Defaults */
+    --shadow-premium: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+    --sidebar-width: 272px;
   }
 
   .dark {
@@ -69,7 +73,75 @@
 
     --glass-bg: rgba(10, 10, 15, 0.6);
     --glass-border: rgba(255, 255, 255, 0.1);
+    --shadow-premium: 0 20px 40px -20px rgba(0, 0, 0, 0.5);
   }
+}
+
+/* Design System Overrides */
+
+/* 1. Cyber Style (Default/Premium) */
+.cyber {
+  --glass-blur: 12px;
+}
+
+.cyber .glass {
+  @apply backdrop-blur-[var(--glass-blur)] border shadow-xl;
+  background-color: var(--glass-bg);
+  border-color: var(--glass-border);
+}
+
+/* 2. Minimalist Style */
+.minimal {
+  --background: 0 0% 100%;
+  --card: 0 0% 98%;
+  --border: 0 0% 92%;
+  --shadow-premium: none;
+}
+
+.minimal.dark {
+  --background: 0 0% 3%;
+  --card: 0 0% 7%;
+  --border: 0 0% 15%;
+}
+
+.minimal .glass {
+  @apply backdrop-blur-none bg-background shadow-none border-border;
+  background-color: hsl(var(--background));
+}
+
+.minimal * {
+  @apply transition-none;
+}
+
+/* 3. Brutalist Style */
+.brutalist {
+  --radius: 0 !important;
+  --border: 0 0% 0%;
+}
+
+.brutalist.dark {
+  --border: 0 0% 100%;
+}
+
+.brutalist .glass {
+  @apply backdrop-blur-none bg-background border-2 shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_hsl(var(--primary))] !important;
+  background-color: hsl(var(--background)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+.brutalist button,
+.brutalist .card,
+.brutalist input,
+.brutalist [class*="Card"] {
+  @apply border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_hsl(var(--primary))] !important;
+  transform: translate(-2px, -2px) !important;
+  transition: all 0.1s ease !important;
+}
+
+.brutalist button:active,
+.brutalist button[data-state="active"] {
+  transform: translate(0, 0) !important;
+  box-shadow: none !important;
 }
 
 @layer base {
@@ -88,6 +160,7 @@
     @apply backdrop-blur-md bg-opacity-70 border;
     background-color: var(--glass-bg);
     border-color: var(--glass-border);
+    box-shadow: var(--shadow-premium);
   }
 
   .text-glow {

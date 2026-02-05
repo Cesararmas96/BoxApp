@@ -43,6 +43,7 @@
         "designer_subtitle": "Create a multi-dimensional training session or smart-import from .md",
         "manual_draft": "Manual Draft",
         "smart_import": "Smart Import (.md)",
+        "date": "Program Date",
         "track": "Programming Track",
         "wod_title": "WOD Title",
         "routine_structure": "Routine Structure",
@@ -250,7 +251,9 @@
         "note_placeholder": "Any pain or special feeling?",
         "save_wellness": "Save Wellness Data",
         "feedback_success": "Success! Your feedback helps us improve.",
-        "rpe_scale": "Scale of RPE: {{value}}"
+        "rpe_scale": "Scale of RPE: {{value}}",
+        "programmed_wod": "Programmed WOD",
+        "track_suffix": "TRACK"
     },
     "dashboard": {
         "athlete_hub": "Athlete Hub",

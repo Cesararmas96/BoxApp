@@ -2,12 +2,14 @@ import { createContext, useContext, useEffect, useState } from "react"
 import { hexToHSL } from "@/utils/colorUtils"
 
 type Theme = "dark" | "light" | "system"
+type DesignStyle = "cyber" | "minimal" | "brutalist"
 
 type ThemeProviderProps = {
     children: React.ReactNode
     defaultTheme?: Theme
     defaultPrimary?: string
     defaultRadius?: number
+    defaultStyle?: DesignStyle
     storageKey?: string
 }
 
@@ -18,11 +20,14 @@ type ThemeProviderState = {
     setPrimaryColor: (color: string) => void
     radius: number
     setRadius: (radius: number) => void
+    designStyle: DesignStyle
+    setDesignStyle: (style: DesignStyle) => void
     resetTheme: () => void
 }
 
 const DEFAULT_PRIMARY = "#FF3B30"
 const DEFAULT_RADIUS = 0.75
+const DEFAULT_STYLE = "cyber"
 
 const initialState: ThemeProviderState = {
     theme: "system",
@@ -31,6 +36,8 @@ const initialState: ThemeProviderState = {
     setPrimaryColor: () => null,
     radius: DEFAULT_RADIUS,
     setRadius: () => null,
+    designStyle: DEFAULT_STYLE,
+    setDesignStyle: () => null,
     resetTheme: () => null,
 }
 
@@ -41,6 +48,7 @@ export function ThemeProvider({
     defaultTheme = "system",
     defaultPrimary = DEFAULT_PRIMARY,
     defaultRadius = DEFAULT_RADIUS,
+    defaultStyle = DEFAULT_STYLE,
     storageKey = "vite-ui-theme",
     ...props
 }: ThemeProviderProps) {
@@ -52,6 +60,9 @@ export function ThemeProvider({
     )
     const [radius, setRadius] = useState(
         () => parseFloat(localStorage.getItem("ui-radius") || defaultRadius.toString())
+    )
+    const [designStyle, setDesignStyle] = useState<DesignStyle>(
+        () => (localStorage.getItem("design-style") as DesignStyle) || defaultStyle
     )
 
     useEffect(() => {
@@ -73,6 +84,15 @@ export function ThemeProvider({
     useEffect(() => {
         const root = window.document.documentElement
 
+        // Apply design style class
+        root.classList.remove("cyber", "minimal", "brutalist")
+        root.classList.add(designStyle)
+        localStorage.setItem("design-style", designStyle)
+    }, [designStyle])
+
+    useEffect(() => {
+        const root = window.document.documentElement
+
         // Apply primary color HSL to CSS variable
         const hsl = hexToHSL(primaryColor)
         root.style.setProperty('--primary', hsl)
@@ -88,6 +108,7 @@ export function ThemeProvider({
         setTheme(defaultTheme)
         setPrimaryColor(DEFAULT_PRIMARY)
         setRadius(DEFAULT_RADIUS)
+        setDesignStyle(DEFAULT_STYLE)
         localStorage.setItem(storageKey, defaultTheme)
     }
 
@@ -101,6 +122,8 @@ export function ThemeProvider({
         setPrimaryColor,
         radius,
         setRadius,
+        designStyle,
+        setDesignStyle,
         resetTheme
     }
 

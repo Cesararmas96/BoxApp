@@ -154,7 +154,7 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
             {/* Content Wrapper */}
             <div className="flex-1 flex flex-col min-w-0 lg:pl-4 transition-all duration-500">
                 {/* Header */}
-                <header className="flex h-16 items-center justify-between px-6 md:px-10 glass sticky top-4 mx-4 mt-4 rounded-2xl z-30 shadow-lg border-primary/5 font-inter">
+                <header className="flex h-16 items-center justify-between px-6 md:px-10 glass sticky top-4 mx-4 mt-4 rounded-2xl z-30 shadow-lg border-primary/5 font-inter transition-all duration-500 lg:ml-[272px]">
                     <div className="flex items-center gap-3 lg:hidden">
                         <Button
                             variant="ghost"

@@ -43,6 +43,7 @@
         "designer_subtitle": "Crea una sesión multidimensional o importa desde .md",
         "manual_draft": "Borrador Manual",
         "smart_import": "Importación Inteligente (.md)",
+        "date": "Fecha de Programación",
         "track": "Track de Programación",
         "wod_title": "Título del WOD",
         "routine_structure": "Estructura de la Rutina",
@@ -228,7 +229,9 @@
         "note_placeholder": "¿Algún dolor o sensación especial?",
         "save_wellness": "Guardar Datos de Bienestar",
         "feedback_success": "¡Éxito! Tu feedback nos ayuda a mejorar.",
-        "rpe_scale": "Escala de RPE: {{value}}"
+        "rpe_scale": "Escala de RPE: {{value}}",
+        "programmed_wod": "WOD Programado",
+        "track_suffix": "TRACK"
     },
     "dashboard": {
         "athlete_hub": "Centro del Atleta",

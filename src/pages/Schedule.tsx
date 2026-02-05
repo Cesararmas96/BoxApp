@@ -7,7 +7,9 @@ import {
     ChevronRight,
     Users as UsersIcon,
     Info,
-    Star
+    Star,
+    Dumbbell,
+    Trophy
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,42 +29,56 @@ import { useNotification } from '@/hooks/useNotification';
 import { Toast } from '@/components/ui/toast-custom';
 import { useAuth } from '@/contexts/AuthContext';
 
-interface Session {
+interface WODSummary {
     id: string;
     title: string;
-    start_time: string;
-    end_time: string;
-    type_id: string;
-    coach_id: string;
-    capacity: number;
-    location_id: string;
-    session_types: {
-        name: string;
-        color: string;
-    };
-    coaches?: {
-        first_name: string;
-        last_name: string;
-    };
+    date: string;
+    track: string;
+    metcon: string;
+    structure?: any[];
 }
 
 export const Schedule: React.FC = () => {
     const { t } = useTranslation();
     const { user } = useAuth();
-    const [sessions, setSessions] = useState<Session[]>([]);
+    const [sessions, setSessions] = useState<any[]>([]);
+    const [wods, setWods] = useState<WODSummary[]>([]);
     const [loading, setLoading] = useState(true);
     const [viewDate, setViewDate] = useState(new Date());
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isFeedbackOpen, setIsFeedbackOpen] = useState<string | null>(null);
+    const [selectedWod, setSelectedWod] = useState<WODSummary | null>(null);
     const [feedback, setFeedback] = useState({ effort: 5, fatigue: 3, satisfaction: '😀', note: '' });
     const { notification, showNotification, hideNotification } = useNotification();
 
     useEffect(() => {
-        fetchSessions();
+        fetchData();
     }, [viewDate]);
 
-    const fetchSessions = async () => {
+    const fetchData = async () => {
         setLoading(true);
+        await Promise.all([fetchSessions(), fetchWods()]);
+        setLoading(false);
+    };
+
+    const fetchWods = async () => {
+        const start = new Date(viewDate);
+        start.setHours(0, 0, 0, 0);
+        start.setDate(start.getDate() - start.getDay());
+
+        const end = new Date(start);
+        end.setDate(end.getDate() + 7);
+
+        const { data } = await supabase
+            .from('wods')
+            .select('*')
+            .gte('date', start.toISOString())
+            .lt('date', end.toISOString());
+
+        if (data) setWods(data);
+    };
+
+    const fetchSessions = async () => {
         const start = new Date(viewDate);
         start.setHours(0, 0, 0, 0);
         start.setDate(start.getDate() - start.getDay());
@@ -81,7 +97,6 @@ export const Schedule: React.FC = () => {
             .order('start_time', { ascending: true });
 
         if (!error && data) setSessions(data);
-        setLoading(false);
     };
 
     const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -185,6 +200,36 @@ export const Schedule: React.FC = () => {
                                                     </Badge>
                                                 </div>
                                                 <p className="text-xs font-bold truncate leading-none mb-1">{session.title || session.session_types.name}</p>
+
+                                                {/* WOD Integration */}
+                                                {(() => {
+                                                    const localDateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                                                    const matchedWod = wods.find(w => {
+                                                        const wodDateStr = w.date.split('T')[0];
+                                                        return wodDateStr === localDateStr &&
+                                                            (session.session_types.name.toLowerCase().includes(w.track.toLowerCase()) ||
+                                                                (w.track === 'CrossFit' && session.session_types.name.toLowerCase().includes('functional')));
+                                                    });
+
+                                                    if (matchedWod) {
+                                                        return (
+                                                            <div
+                                                                className="mt-2 p-1.5 rounded bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-colors"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setSelectedWod(matchedWod);
+                                                                }}
+                                                            >
+                                                                <div className="flex items-center gap-1 text-[8px] font-black text-primary uppercase italic mb-0.5">
+                                                                    <Trophy className="h-2 w-2" /> {t('schedule.programmed_wod')}
+                                                                </div>
+                                                                <p className="text-[9px] font-bold uppercase truncate leading-tight opacity-80">{matchedWod.title}</p>
+                                                            </div>
+                                                        );
+                                                    }
+                                                    return null;
+                                                })()}
+
                                                 <div className="flex items-center justify-between mt-1">
                                                     <div className="flex items-center gap-1 text-muted-foreground">
                                                         <UsersIcon className="h-2.5 w-2.5" />
@@ -220,6 +265,54 @@ export const Schedule: React.FC = () => {
                     );
                 })}
             </div>
+
+            <Dialog open={!!selectedWod} onOpenChange={(open) => !open && setSelectedWod(null)}>
+                <DialogContent className="sm:max-w-[500px] border-primary/20 shadow-2xl">
+                    <DialogHeader>
+                        <div className="flex items-center gap-2 mb-2">
+                            <Badge className="bg-primary text-white text-[9px] font-black uppercase italic">
+                                {selectedWod?.track} {t('schedule.track_suffix')}
+                            </Badge>
+                            <Badge variant="outline" className="text-[9px] font-black opacity-60">
+                                {selectedWod && new Date(selectedWod.date).toLocaleDateString()}
+                            </Badge>
+                        </div>
+                        <DialogTitle className="text-2xl font-black uppercase italic tracking-tight text-primary">
+                            {selectedWod?.title}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="max-h-[60vh] overflow-y-auto pr-2 space-y-4 py-4">
+                        {selectedWod?.structure && selectedWod.structure.length > 0 ? (
+                            <div className="space-y-4">
+                                {selectedWod.structure.map((block: any) => (
+                                    <div key={block.id} className="p-3 rounded-xl bg-muted/30 border border-muted-foreground/10">
+                                        <p className="text-[10px] font-black uppercase text-primary mb-2 italic tracking-widest">{block.title}</p>
+                                        <div className="space-y-2">
+                                            {block.items.map((item: any) => (
+                                                <div key={item.id} className="flex justify-between items-start gap-2">
+                                                    <div className="flex-1">
+                                                        <p className="text-xs font-bold uppercase leading-none">{item.movementName}</p>
+                                                        {item.notes && <p className="text-[8px] text-muted-foreground uppercase opacity-70 mt-0.5">{item.notes}</p>}
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="text-[10px] font-black italic text-primary/80">
+                                                            {item.sets && `${item.sets} x `}{item.reps} {item.weight && `@ ${item.weight}`}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="p-4 rounded-xl bg-muted/40 font-mono text-sm whitespace-pre-wrap">
+                                {selectedWod?.metcon}
+                            </div>
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             <Dialog open={!!isFeedbackOpen} onOpenChange={(open) => !open && setIsFeedbackOpen(null)}>
                 <DialogContent className="sm:max-w-[400px]">

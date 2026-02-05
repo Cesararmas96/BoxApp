@@ -229,7 +229,8 @@ export const Wods: React.FC = () => {
         scaling_injured: '',
         modalities: [] as string[],
         lesson_plan: [] as LessonBlock[],
-        track: 'CrossFit' as any
+        track: 'CrossFit' as any,
+        date: new Date().toISOString().split('T')[0]
     });
 
     const [sessionBlocks, setSessionBlocks] = useState<SessionBlock[]>([]);
@@ -381,7 +382,8 @@ export const Wods: React.FC = () => {
             scaling_injured: wod.scaling_injured,
             modalities: wod.modalities,
             lesson_plan: wod.lesson_plan,
-            track: wod.track
+            track: wod.track,
+            date: new Date(wod.date).toISOString().split('T')[0]
         });
 
         if (wod.structure) {
@@ -461,8 +463,7 @@ export const Wods: React.FC = () => {
         const wodData = {
             ...newWOD,
             metcon: finalMetcon,
-            structure: sessionBlocks,
-            date: new Date().toISOString()
+            structure: sessionBlocks
         };
 
         let error;
@@ -486,7 +487,8 @@ export const Wods: React.FC = () => {
             setNewWOD({
                 title: '', metcon: '', stimulus: '', scaling_options: '',
                 scaling_beginner: '', scaling_intermediate: '', scaling_advanced: '',
-                scaling_injured: '', modalities: [], lesson_plan: [], track: 'CrossFit'
+                scaling_injured: '', modalities: [], lesson_plan: [], track: 'CrossFit',
+                date: new Date().toISOString().split('T')[0]
             });
             setSessionBlocks([]);
             fetchWods();
@@ -589,14 +591,25 @@ export const Wods: React.FC = () => {
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label className="uppercase text-[10px] font-black">{t('wods.wod_title')}</Label>
-                                        <Input
-                                            placeholder="e.g. MORNING GRIND"
-                                            className="uppercase italic font-bold h-10"
-                                            value={newWOD.title}
-                                            onChange={(e) => setNewWOD({ ...newWOD, title: e.target.value })}
-                                        />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1.5">
+                                            <Label className="uppercase text-[10px] font-black">{t('wods.wod_title')}</Label>
+                                            <Input
+                                                placeholder="e.g. MORNING GRIND"
+                                                className="uppercase italic font-bold h-10"
+                                                value={newWOD.title}
+                                                onChange={(e) => setNewWOD({ ...newWOD, title: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <Label className="uppercase text-[10px] font-black">{t('wods.date', { defaultValue: 'PROGRAM DATE' })}</Label>
+                                            <Input
+                                                type="date"
+                                                value={newWOD.date}
+                                                onChange={(e) => setNewWOD({ ...newWOD, date: e.target.value })}
+                                                className="font-black italic h-10"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 

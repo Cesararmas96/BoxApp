@@ -5,7 +5,10 @@ import {
     Sun,
     Moon,
     Monitor,
-    RefreshCcw
+    RefreshCcw,
+    Zap,
+    Feather,
+    Square
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +33,7 @@ export const Settings: React.FC = () => {
         theme, setTheme,
         primaryColor, setPrimaryColor,
         radius, setRadius,
+        designStyle, setDesignStyle,
         resetTheme
     } = useTheme();
 
@@ -138,6 +142,61 @@ export const Settings: React.FC = () => {
 
                 <TabsContent value="appearance" className="py-6">
                     <div className="grid gap-6">
+                        <Card className="overflow-hidden border-none shadow-2xl bg-gradient-to-br from-card to-muted/30">
+                            <CardHeader className="pb-4">
+                                <CardTitle className="text-2xl">Design Philosophy</CardTitle>
+                                <CardDescription>Switch between distinct visual languages for the platform.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    {[
+                                        {
+                                            id: 'cyber',
+                                            label: 'Cyber Tech',
+                                            description: 'Glows, glassmorphism, and high-tech aesthetics.',
+                                            icon: <Zap className="h-6 w-6" />
+                                        },
+                                        {
+                                            id: 'minimal',
+                                            label: 'Minimalist',
+                                            description: 'Clean, flat, and focused on pure functionality.',
+                                            icon: <Feather className="h-6 w-6" />
+                                        },
+                                        {
+                                            id: 'brutalist',
+                                            label: 'Brutalist',
+                                            description: 'Sharp, industrial, and high-impact design.',
+                                            icon: <Square className="h-6 w-6" />
+                                        },
+                                    ].map((style) => (
+                                        <button
+                                            key={style.id}
+                                            onClick={() => setDesignStyle(style.id as any)}
+                                            className={`flex flex-col items-start p-6 rounded-2xl border-2 transition-all duration-500 text-left gap-4 group ${designStyle === style.id
+                                                ? 'border-primary bg-primary/5 shadow-premium scale-[1.02]'
+                                                : 'border-border hover:border-border/80 hover:bg-muted/50'
+                                                }`}
+                                        >
+                                            <div className={`p-3 rounded-xl transition-all duration-500 ${designStyle === style.id ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-muted text-muted-foreground group-hover:bg-muted-foreground/10'}`}>
+                                                {style.icon}
+                                            </div>
+                                            <div>
+                                                <h4 className={`text-sm font-bold uppercase tracking-widest ${designStyle === style.id ? 'text-primary' : 'text-foreground'}`}>
+                                                    {style.label}
+                                                </h4>
+                                                <p className="text-xs text-muted-foreground mt-1 font-medium leading-relaxed">
+                                                    {style.description}
+                                                </p>
+                                            </div>
+                                            {designStyle === style.id && (
+                                                <div className="w-full h-1 bg-primary mt-2 rounded-full animate-in fade-in zoom-in duration-500" />
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+
                         <Card className="overflow-hidden border-none shadow-2xl bg-gradient-to-br from-card to-muted/30">
                             <CardHeader className="pb-4">
                                 <CardTitle className="text-2xl">Theme Mode</CardTitle>

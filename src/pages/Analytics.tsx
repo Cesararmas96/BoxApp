@@ -12,6 +12,7 @@ import {
     Receipt,
     Bell
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useNotification } from '@/hooks/useNotification';
 import { Toast } from '@/components/ui/toast-custom';
 import {
@@ -25,6 +26,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 export const Analytics: React.FC = () => {
+    const { t } = useTranslation();
     const { currentBox } = useAuth();
     const [stats, setStats] = useState({
         totalMembers: 0,
@@ -106,8 +108,8 @@ export const Analytics: React.FC = () => {
 
     const handleAlertCoach = (athlete: any, type: 'inactivity' | 'payment') => {
         const message = type === 'inactivity'
-            ? `Coach alert sent for ${athlete.first_name}: Inactive for +10 days.`
-            : `Coach alert sent for ${athlete.first_name}: Outstanding debt of $${athlete.totalDebt}.`;
+            ? t('analytics.alert_message_inactivity', { name: athlete.first_name, defaultValue: `Coach alert sent for ${athlete.first_name}: Inactive for +10 days.` })
+            : t('analytics.alert_message_payment', { name: athlete.first_name, amount: athlete.totalDebt, defaultValue: `Coach alert sent for ${athlete.first_name}: Outstanding debt of $${athlete.totalDebt}.` });
 
         showNotification('success', message);
 
@@ -142,7 +144,7 @@ export const Analytics: React.FC = () => {
                         <ArrowDownRight className="h-3 w-3 text-rose-500 mr-1" />
                     )}
                     <p className="text-xs font-medium text-muted-foreground">
-                        <span className={trend === 'up' ? 'text-emerald-500' : 'text-rose-500'}>{label}</span> vs last month
+                        <span className={trend === 'up' ? 'text-emerald-500' : 'text-rose-500'}>{label}</span> {t('analytics.vs_last_month')}
                     </p>
                 </div>
             </CardContent>
@@ -153,13 +155,13 @@ export const Analytics: React.FC = () => {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h1>
-                <p className="text-muted-foreground text-sm">Real-time performance metrics for your community.</p>
+                <h1 className="text-3xl font-bold tracking-tight">{t('analytics.title')}</h1>
+                <p className="text-muted-foreground text-sm">{t('analytics.subtitle')}</p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <PerformanceCard
-                    title="Average LTV"
+                    title={t('analytics.ltv')}
                     value={`$${stats.ltv.toFixed(2)}`}
                     label="+8%"
                     trend="up"
@@ -167,7 +169,7 @@ export const Analytics: React.FC = () => {
                     color="emerald-600"
                 />
                 <PerformanceCard
-                    title="Average Ticket"
+                    title={t('analytics.avg_ticket')}
                     value={`$${stats.avgTicket.toFixed(2)}`}
                     label="+4.1%"
                     trend="up"
@@ -175,7 +177,7 @@ export const Analytics: React.FC = () => {
                     color="indigo-600"
                 />
                 <PerformanceCard
-                    title="Churn Risk"
+                    title={t('analytics.churn_risk')}
                     value={stats.churnRiskCount}
                     label="-10%"
                     trend="down"
@@ -183,8 +185,8 @@ export const Analytics: React.FC = () => {
                     color="rose-600"
                 />
                 <PerformanceCard
-                    title="Community Pulse"
-                    value="Stable"
+                    title={t('analytics.community_pulse')}
+                    value={t('analytics.stable')}
                     label="+0.4%"
                     trend="up"
                     icon={HeartPulse}
@@ -195,13 +197,13 @@ export const Analytics: React.FC = () => {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
                 <Card className="lg:col-span-4">
                     <CardHeader>
-                        <CardTitle>Attendance Overview</CardTitle>
-                        <CardDescription>Daily logins and results posted across all hours.</CardDescription>
+                        <CardTitle>{t('analytics.attendance')}</CardTitle>
+                        <CardDescription>{t('analytics.attendance_desc')}</CardDescription>
                     </CardHeader>
                     <CardContent className="h-[300px] flex items-center justify-center border-t border-dashed bg-muted/20 m-6 rounded-lg">
                         <div className="flex flex-col items-center gap-2 text-muted-foreground">
                             <TrendingUp className="h-12 w-12 opacity-20" />
-                            <p className="text-sm italic">Growth Chart Preview</p>
+                            <p className="text-sm italic">{t('analytics.growth_preview')}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -209,19 +211,19 @@ export const Analytics: React.FC = () => {
                 <Card className="lg:col-span-3">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Trophy className="h-5 w-5 text-yellow-500" /> Internal Competitions
+                            <Trophy className="h-5 w-5 text-yellow-500" /> {t('analytics.competitions')}
                         </CardTitle>
-                        <CardDescription>Upcoming and active box events.</CardDescription>
+                        <CardDescription>{t('analytics.competitions_desc')}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="rounded-lg border bg-primary/5 p-4 border-primary/20">
-                            <p className="text-xs font-black uppercase tracking-widest text-primary mb-1">Upcoming</p>
+                            <p className="text-xs font-black uppercase tracking-widest text-primary mb-1">{t('analytics.upcoming')}</p>
                             <h4 className="font-bold text-sm">Winter Open 2026</h4>
                             <p className="text-[10px] text-muted-foreground">Starts in 12 days • 45 athletes registered</p>
-                            <Button size="sm" variant="ghost" className="w-full mt-2 h-7 text-[10px] uppercase font-bold">Register Athletes</Button>
+                            <Button size="sm" variant="ghost" className="w-full mt-2 h-7 text-[10px] uppercase font-bold">{t('analytics.register_athletes')}</Button>
                         </div>
                         <p className="text-[10px] text-center text-muted-foreground italic">
-                            Create new internal rankings and customized WOD competitions.
+                            {t('analytics.create_rankings')}
                         </p>
                     </CardContent>
                 </Card>
@@ -230,16 +232,16 @@ export const Analytics: React.FC = () => {
                     <CardHeader className="flex flex-row items-center justify-between">
                         <div>
                             <CardTitle className="text-rose-600 flex items-center gap-2">
-                                <AlertTriangle className="h-5 w-5" /> Inactivity Alert
+                                <AlertTriangle className="h-5 w-5" /> {t('analytics.inactivity_alert')}
                             </CardTitle>
-                            <CardDescription>Athletes with no attendance in +10 days.</CardDescription>
+                            <CardDescription>{t('analytics.inactivity_desc')}</CardDescription>
                         </div>
-                        <Badge variant="destructive">{atRiskAthletes.length} At Risk</Badge>
+                        <Badge variant="destructive">{t('analytics.at_risk', { count: atRiskAthletes.length })}</Badge>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="divide-y divide-border">
                             {atRiskAthletes.length === 0 ? (
-                                <p className="py-8 text-center text-muted-foreground italic text-sm">Perfect! All athletes are active.</p>
+                                <p className="py-8 text-center text-muted-foreground italic text-sm">{t('analytics.no_inactivity')}</p>
                             ) : (
                                 atRiskAthletes.slice(0, 3).map((athlete) => (
                                     <div key={athlete.id} className="py-3 flex items-center justify-between group">
@@ -249,7 +251,9 @@ export const Analytics: React.FC = () => {
                                             </div>
                                             <div>
                                                 <p className="text-sm font-bold leading-none">{athlete.first_name} {athlete.last_name}</p>
-                                                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">12 Days Inactive</p>
+                                                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
+                                                    {t('analytics.days_inactive', { count: 12 })}
+                                                </p>
                                             </div>
                                         </div>
                                         <div className="flex gap-2">
@@ -258,7 +262,7 @@ export const Analytics: React.FC = () => {
                                                 className="h-8 text-[10px] font-black uppercase bg-rose-600 hover:bg-rose-700"
                                                 onClick={() => handleAlertCoach(athlete, 'inactivity')}
                                             >
-                                                Alert Coach
+                                                {t('analytics.alert_coach')}
                                             </Button>
                                         </div>
                                     </div>
@@ -272,16 +276,18 @@ export const Analytics: React.FC = () => {
                     <CardHeader className="flex flex-row items-center justify-between">
                         <div>
                             <CardTitle className="text-orange-600 flex items-center gap-2">
-                                <Receipt className="h-5 w-5" /> Payment Risk
+                                <Receipt className="h-5 w-5" /> {t('analytics.payment_risk')}
                             </CardTitle>
-                            <CardDescription>Members with overdue payments.</CardDescription>
+                            <CardDescription>{t('analytics.payment_desc')}</CardDescription>
                         </div>
-                        <Badge variant="outline" className="text-orange-600 border-orange-200 bg-orange-50">{unpaidAthletes.length} Pending</Badge>
+                        <Badge variant="outline" className="text-orange-600 border-orange-200 bg-orange-50">
+                            {t('analytics.pending', { count: unpaidAthletes.length })}
+                        </Badge>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="divide-y divide-border">
                             {unpaidAthletes.length === 0 ? (
-                                <p className="py-8 text-center text-muted-foreground italic text-sm">Finances are up to date! 🚀</p>
+                                <p className="py-8 text-center text-muted-foreground italic text-sm">{t('analytics.no_payment_risk')}</p>
                             ) : (
                                 unpaidAthletes.slice(0, 3).map((athlete) => (
                                     <div key={athlete.id} className="py-3 flex items-center justify-between group">
@@ -292,7 +298,7 @@ export const Analytics: React.FC = () => {
                                             <div>
                                                 <p className="text-sm font-bold leading-none">{athlete.first_name} {athlete.last_name}</p>
                                                 <p className="text-[10px] text-orange-600 font-bold uppercase tracking-tighter">
-                                                    Debt: ${athlete.totalDebt.toFixed(2)}
+                                                    {t('analytics.debt_label', { amount: athlete.totalDebt.toFixed(2) })}
                                                 </p>
                                             </div>
                                         </div>
@@ -309,7 +315,9 @@ export const Analytics: React.FC = () => {
                             )}
                         </div>
                         {unpaidAthletes.length > 3 && (
-                            <Button variant="ghost" className="w-full text-[10px] uppercase font-bold tracking-[0.2em]">View All {unpaidAthletes.length} Payments</Button>
+                            <Button variant="ghost" className="w-full text-[10px] uppercase font-bold tracking-[0.2em]">
+                                {t('analytics.view_all', { count: unpaidAthletes.length })}
+                            </Button>
                         )}
                     </CardContent>
                 </Card>

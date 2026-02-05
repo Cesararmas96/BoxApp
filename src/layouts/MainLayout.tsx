@@ -42,6 +42,9 @@ export const MainLayout: React.FC<LayoutProps> = ({ userProfile }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
+    const navItems = getNavItems(t);
+    const currentNavItem = navItems.find(item => item.path === location.pathname);
+
     useEffect(() => {
         // Update Favicon based on current box
         if (currentBox?.favicon_url) {
@@ -53,13 +56,23 @@ export const MainLayout: React.FC<LayoutProps> = ({ userProfile }) => {
             }
             link.href = currentBox.favicon_url;
         }
-    }, [currentBox]);
+
+        // Update Page Title based on current box and active item
+        if (currentBox?.name) {
+            const pageName = currentNavItem ? currentNavItem.label : '';
+            document.title = pageName
+                ? `${currentBox.name} | ${pageName}`.toUpperCase()
+                : `${currentBox.name} | BOX MANAGER`.toUpperCase();
+        } else {
+            document.title = "BOX MANAGER";
+        }
+    }, [currentBox, location.pathname, t]);
 
     const changeLanguage = (lng: string) => {
         i18n.changeLanguage(lng);
     };
 
-    const navItems = getNavItems(t);
+
 
     const handleLogout = async () => {
         await signOut();

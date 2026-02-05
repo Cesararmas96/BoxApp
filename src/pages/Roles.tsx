@@ -98,6 +98,11 @@ export const Roles: React.FC = () => {
     };
 
     const handleRoleChange = async (userId: string, newRole: string) => {
+        if (!isRoot) {
+            setMessage({ type: 'error', text: 'SECURITY VIOLATION: Only Root user can modify internal roles.' });
+            return;
+        }
+
         setUpdatingId(userId);
         setMessage(null);
 
@@ -147,6 +152,7 @@ export const Roles: React.FC = () => {
     };
 
     const isAdmin = userProfile?.role_id === 'admin';
+    const isRoot = userProfile?.email === 'root@test.com';
 
     return (
         <div className="space-y-6 text-left">
@@ -249,7 +255,7 @@ export const Roles: React.FC = () => {
                                                         <div className="flex justify-end items-center gap-2">
                                                             {updatingId === user.id && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
                                                             <Select
-                                                                disabled={updatingId === user.id || user.email === 'root@test.com'}
+                                                                disabled={updatingId === user.id || user.email === 'root@test.com' || !isRoot}
                                                                 value={user.role_id}
                                                                 onValueChange={(value) => handleRoleChange(user.id, value)}
                                                             >
@@ -279,7 +285,10 @@ export const Roles: React.FC = () => {
                     <Card className="border shadow-xl">
                         <CardHeader className="bg-muted/20 border-b">
                             <CardTitle className="text-lg font-bold uppercase tracking-tight italic">{t('roles.access_matrix')}</CardTitle>
-                            <CardDescription>{t('roles.subtitle')}</CardDescription>
+                            <CardDescription>
+                                {t('roles.subtitle')}
+                                {!isRoot && <span className="block mt-2 text-destructive font-bold uppercase text-[9px] animate-pulse">Read-Only: Contact Root to modify permissions</span>}
+                            </CardDescription>
                         </CardHeader>
                         <CardContent className="p-0">
                             <div className="overflow-x-auto">

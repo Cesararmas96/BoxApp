@@ -354,6 +354,47 @@ export type Database = {
                     },
                 ]
             }
+            expenses: {
+                Row: {
+                    amount: number | null
+                    box_id: string | null
+                    category: string | null
+                    created_at: string | null
+                    date: string | null
+                    description: string | null
+                    id: string
+                    updated_at: string | null
+                }
+                Insert: {
+                    amount?: number | null
+                    box_id?: string | null
+                    category?: string | null
+                    created_at?: string | null
+                    date?: string | null
+                    description?: string | null
+                    id?: string
+                    updated_at?: string | null
+                }
+                Update: {
+                    amount?: number | null
+                    box_id?: string | null
+                    category?: string | null
+                    created_at?: string | null
+                    date?: string | null
+                    description?: string | null
+                    id?: string
+                    updated_at?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "expenses_box_id_fkey"
+                        columns: ["box_id"]
+                        isOneToOne: false
+                        referencedRelation: "boxes"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
             competition_scores: {
                 Row: {
                     box_id: string | null
@@ -692,6 +733,8 @@ export type Database = {
             }
             plans: {
                 Row: {
+                    duration_days: number | null
+                    total_credits: number | null
                     box_id: string | null
                     button_text: string | null
                     created_at: string | null
@@ -705,6 +748,8 @@ export type Database = {
                     updated_at: string | null
                 }
                 Insert: {
+                    duration_days?: number | null
+                    total_credits?: number | null
                     box_id?: string | null
                     button_text?: string | null
                     created_at?: string | null
@@ -718,6 +763,8 @@ export type Database = {
                     updated_at?: string | null
                 }
                 Update: {
+                    duration_days?: number | null
+                    total_credits?: number | null
                     box_id?: string | null
                     button_text?: string | null
                     created_at?: string | null

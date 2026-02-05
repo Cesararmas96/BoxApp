@@ -38,8 +38,8 @@ export const Toast: React.FC<ToastProps> = ({ type, message, onClose, duration =
 
     return (
         <div className={cn(
-            "fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] transition-all duration-300 ease-out",
-            isVisible ? "translate-y-0 opacity-100 scale-100" : "translate-y-4 opacity-0 scale-95"
+            "fixed top-6 right-6 z-[100] transition-all duration-300 ease-out",
+            isVisible ? "translate-x-0 opacity-100 scale-100" : "translate-x-4 opacity-0 scale-95"
         )}>
             <div className={cn(
                 "flex items-center gap-3 px-5 py-3 rounded-2xl border backdrop-blur-md min-w-[320px] max-w-[90vw]",

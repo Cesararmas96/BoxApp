@@ -25,6 +25,7 @@ import {
     DialogFooter
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Benchmark {
     id: string;
@@ -45,6 +46,7 @@ interface PR {
 }
 
 export const Benchmarks: React.FC = () => {
+    const { user } = useAuth();
     const [benchmarks, setBenchmarks] = useState<Benchmark[]>([]);
     const [prs, setPrs] = useState<PR[]>([]);
     const [loading, setLoading] = useState(true);
@@ -57,14 +59,13 @@ export const Benchmarks: React.FC = () => {
 
     const fetchPRData = async () => {
         setLoading(true);
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return;
+        if (!user) return;
 
         const [benchRes, prRes] = await Promise.all([
             supabase.from('benchmark_types').select('*'),
             supabase.from('personal_records')
                 .select('*, benchmark_types(name)')
-                .eq('athlete_id', session.user.id)
+                .eq('athlete_id', user.id)
                 .order('date', { ascending: false })
         ]);
 
@@ -74,13 +75,12 @@ export const Benchmarks: React.FC = () => {
     };
 
     const handleAddPR = async () => {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return;
+        if (!user) return;
 
         const { error } = await supabase
             .from('personal_records')
             .insert([{
-                athlete_id: session.user.id,
+                athlete_id: user.id,
                 benchmark_id: newPR.benchmarkId,
                 value: newPR.value,
                 notes: newPR.notes

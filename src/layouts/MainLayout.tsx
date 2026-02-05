@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { LayoutDashboard, Users, Trophy, BarChart3, Settings as SettingsIcon, Calendar as CalendarIcon, Receipt, LogOut, Inbox, Menu, X, Monitor, Medal, Shield, History, Dumbbell } from 'lucide-react';
-import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
@@ -13,6 +12,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from '@/contexts/AuthContext';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -40,6 +40,7 @@ const getNavItems = (t: any) => [
 export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, userProfile }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const { t, i18n } = useTranslation();
+    const { signOut } = useAuth();
 
     const changeLanguage = (lng: string) => {
         i18n.changeLanguage(lng);
@@ -48,7 +49,7 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
     const navItems = getNavItems(t);
 
     const handleLogout = async () => {
-        await supabase.auth.signOut();
+        await signOut();
     };
 
     const filteredNavItems = navItems.filter(item =>

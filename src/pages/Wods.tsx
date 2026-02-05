@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     Plus,
     Trophy,
@@ -208,6 +209,7 @@ const MovementSearch: React.FC<{
 
 export const Wods: React.FC = () => {
     const { t } = useTranslation();
+    const { user } = useAuth();
     const [wods, setWods] = useState<WOD[]>([]);
     const [loading, setLoading] = useState(true);
     const [showEditor, setShowEditor] = useState(false);
@@ -437,7 +439,6 @@ export const Wods: React.FC = () => {
     };
 
     const fetchUserPRs = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
         const { data } = await supabase
             .from('personal_records')

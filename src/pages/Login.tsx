@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import { Dumbbell, Loader2, Mail, Lock, Info, Zap } from 'lucide-react';
+import { Dumbbell, Loader2, Mail, Lock, Info, Zap, Eye, EyeOff } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,35 +10,51 @@ import { useNotification } from '@/hooks/useNotification';
 import { Toast } from '@/components/ui/toast-custom';
 
 export const Login: React.FC = () => {
+    const { t } = useTranslation();
+    const { signIn, signUp, resetPassword } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [isSignUp, setIsSignUp] = useState(false);
     const [isResetting, setIsResetting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { notification, showNotification, hideNotification } = useNotification();
 
+    const validateForm = () => {
+        if (!email.includes('@')) {
+            setError(t('auth.email_invalid'));
+            return false;
+        }
+        if (!isResetting && password.length < 6) {
+            setError(t('auth.password_too_short'));
+            return false;
+        }
+        return true;
+    };
+
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
         setError(null);
 
+        if (!validateForm()) return;
+
+        setLoading(true);
+
         if (isResetting) {
-            const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: `${window.location.origin}/reset-password`,
-            });
+            const { error } = await resetPassword(email);
             if (error) setError(error.message);
-            else showNotification('success', 'PASSWORD RESET LINK SENT TO YOUR EMAIL');
+            else showNotification('success', t('auth.reset_sent'));
             setIsResetting(false);
         } else {
             const { error } = isSignUp
-                ? await supabase.auth.signUp({ email, password })
-                : await supabase.auth.signInWithPassword({ email, password });
+                ? await signUp({ email, password })
+                : await signIn({ email, password });
 
             if (error) {
                 setError(error.message);
             } else if (isSignUp) {
-                showNotification('success', 'VERIFICATION EMAIL SENT');
+                showNotification('success', t('auth.verification_sent'));
             }
         }
         setLoading(false);
@@ -59,7 +76,6 @@ export const Login: React.FC = () => {
                 <div className="hidden lg:flex flex-col justify-between p-12 relative overflow-hidden bg-zinc-950">
                     <div className="absolute inset-0 opacity-20 grayscale pointer-events-none">
                         <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent z-10" />
-                        {/* Placeholder for a cool gym image background if available, or just keeping the dark gradient */}
                     </div>
 
                     <div className="relative z-20">
@@ -104,10 +120,10 @@ export const Login: React.FC = () => {
 
                     <div className="space-y-2 mb-10">
                         <h3 className="text-3xl font-black italic tracking-tighter text-white uppercase">
-                            {isResetting ? "Recovery Mode" : (isSignUp ? "New Recruitment" : "System Access")}
+                            {isResetting ? t('auth.recovery_mode') : (isSignUp ? t('auth.new_recruitment') : t('auth.system_access'))}
                         </h3>
                         <p className="text-zinc-500 text-sm font-bold uppercase tracking-widest">
-                            {isResetting ? "Identify your system profile" : (isSignUp ? "Initialize your athlete data" : "Enter your operator credentials")}
+                            {isResetting ? t('auth.identify_profile') : (isSignUp ? t('auth.initialize_data') : t('auth.enter_credentials'))}
                         </p>
                     </div>
 
@@ -120,7 +136,7 @@ export const Login: React.FC = () => {
                         )}
 
                         <div className="space-y-2">
-                            <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Universal Identifier (Email)</Label>
+                            <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">{t('auth.email')}</Label>
                             <div className="relative group">
                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600 transition-colors group-focus-within:text-primary" />
                                 <Input
@@ -138,14 +154,15 @@ export const Login: React.FC = () => {
                         {!isResetting && (
                             <div className="space-y-2">
                                 <div className="flex justify-between items-end ml-1">
-                                    <Label htmlFor="pass" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Secure Access (Password)</Label>
+                                    <Label htmlFor="pass" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">{t('auth.password')}</Label>
                                     {!isSignUp && (
                                         <Button
                                             variant="link"
+                                            type="button"
                                             className="text-[9px] h-auto p-0 text-zinc-600 font-black uppercase tracking-widest hover:text-primary transition-colors"
-                                            onClick={(e) => { e.preventDefault(); setIsResetting(true); }}
+                                            onClick={() => setIsResetting(true)}
                                         >
-                                            Lost Credential?
+                                            {t('auth.forgot_password')}
                                         </Button>
                                     )}
                                 </div>
@@ -153,13 +170,20 @@ export const Login: React.FC = () => {
                                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600 transition-colors group-focus-within:text-primary" />
                                     <Input
                                         id="pass"
-                                        type="password"
+                                        type={showPassword ? "text" : "password"}
                                         placeholder="••••••••"
-                                        className="bg-zinc-950/50 border-white/5 pl-12 h-14 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all text-white font-mono italic"
+                                        className="bg-zinc-950/50 border-white/5 pl-12 pr-12 h-14 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all text-white font-mono italic"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
                                     />
+                                    <button
+                                        type="button"
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-primary transition-colors"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                    >
+                                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                    </button>
                                 </div>
                             </div>
                         )}
@@ -174,7 +198,7 @@ export const Login: React.FC = () => {
                                 <Loader2 className="h-5 w-5 animate-spin" />
                             ) : (
                                 <>
-                                    <span>{isResetting ? "Initiate Recovery" : (isSignUp ? "Confirm Deployment" : "Establish Connection")}</span>
+                                    <span>{isResetting ? t('auth.initiate_recovery') : (isSignUp ? t('auth.confirm_deployment') : t('auth.establish_connection'))}</span>
                                     <Zap className="ml-2 h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-primary" />
                                 </>
                             )}
@@ -183,7 +207,7 @@ export const Login: React.FC = () => {
 
                     <div className="mt-12 pt-8 border-t border-white/5 flex items-center justify-center gap-2">
                         <p className="text-zinc-600 text-[10px] font-black uppercase tracking-widest">
-                            {isResetting ? "Back to identification" : (isSignUp ? "Existing operative?" : "New operative?")}
+                            {isResetting ? t('auth.back_to_id') : (isSignUp ? t('auth.existing_operative') : t('auth.new_operative'))}
                         </p>
                         <Button
                             variant="link"
@@ -194,7 +218,7 @@ export const Login: React.FC = () => {
                                 setError(null);
                             }}
                         >
-                            {isResetting ? "Login" : (isSignUp ? "Login" : "Register")}
+                            {isResetting ? t('auth.login') : (isSignUp ? t('auth.login') : t('auth.register'))}
                         </Button>
                     </div>
                 </div>
@@ -216,3 +240,4 @@ export const Login: React.FC = () => {
         </div>
     );
 };
+

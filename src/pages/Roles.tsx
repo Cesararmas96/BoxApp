@@ -36,6 +36,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "../lib/utils";
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Profile {
     id: string;
@@ -71,26 +72,17 @@ const TEST_USERS = [
 
 export const Roles: React.FC = () => {
     const { t } = useTranslation();
+    const { userProfile, signIn } = useAuth();
     const [users, setUsers] = useState<Profile[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [testLoginLoading, setTestLoginLoading] = useState<string | null>(null);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-    const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
 
     useEffect(() => {
         fetchUsers();
-        getCurrentUser();
     }, []);
-
-    const getCurrentUser = async () => {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-            const { data } = await supabase.from('profiles').select('role_id').eq('id', session.user.id).single();
-            if (data) setCurrentUserRole(data.role_id);
-        }
-    };
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -126,7 +118,7 @@ export const Roles: React.FC = () => {
 
     const handleTestLogin = async (email: string) => {
         setTestLoginLoading(email);
-        const { error } = await supabase.auth.signInWithPassword({
+        const { error } = await signIn({
             email,
             password: 'password123',
         });
@@ -154,7 +146,7 @@ export const Roles: React.FC = () => {
         }
     };
 
-    const isAdmin = currentUserRole === 'admin';
+    const isAdmin = userProfile?.role_id === 'admin';
 
     return (
         <div className="space-y-6 text-left">

@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '@/hooks/useNotification';
 import { Toast } from '@/components/ui/toast-custom';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Session {
     id: string;
@@ -47,6 +48,7 @@ interface Session {
 
 export const Schedule: React.FC = () => {
     const { t } = useTranslation();
+    const { user } = useAuth();
     const [sessions, setSessions] = useState<Session[]>([]);
     const [loading, setLoading] = useState(true);
     const [viewDate, setViewDate] = useState(new Date());
@@ -269,7 +271,6 @@ export const Schedule: React.FC = () => {
                         <Button
                             className="w-full"
                             onClick={async () => {
-                                const { data: { user } } = await supabase.auth.getUser();
                                 if (!user) return;
 
                                 const { error } = await supabase

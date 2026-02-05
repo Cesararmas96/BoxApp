@@ -1,64 +1,77 @@
 import React, { useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import { Dumbbell, Loader2, Mail, Lock, User, UserPlus, ArrowLeft, Zap, Info } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Dumbbell, Loader2, Mail, Lock, UserPlus, ArrowLeft, Zap, Info, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useNotification } from '@/hooks/useNotification';
 import { Toast } from '@/components/ui/toast-custom';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SignUpProps {
     onBackToLogin: () => void;
 }
 
 export const SignUp: React.FC<SignUpProps> = ({ onBackToLogin }) => {
+    const { t } = useTranslation();
+    const { signUp } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const { notification, showNotification, hideNotification } = useNotification();
 
+    const validateForm = () => {
+        if (!email.includes('@')) {
+            setError(t('auth.email_invalid'));
+            return false;
+        }
+        if (password.length < 6) {
+            setError(t('auth.password_too_short'));
+            return false;
+        }
+        if (!firstName || !lastName) {
+            setError(t('auth.error_generic'));
+            return false;
+        }
+        return true;
+    };
+
     const handleSignUp = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
         setError(null);
 
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-            email,
-            password,
-        });
+        if (!validateForm()) return;
 
-        if (authError) {
-            setError(authError.message);
-            setLoading(false);
-            return;
-        }
-
-        if (authData.user) {
-            const { error: profileError } = await supabase
-                .from('profiles')
-                .insert([
-                    {
-                        id: authData.user.id,
+        setLoading(true);
+        try {
+            const { data, error: authError } = await signUp({
+                email,
+                password,
+                options: {
+                    data: {
                         first_name: firstName,
                         last_name: lastName,
-                        role: 'athlete',
-                        status: 'active'
                     }
-                ]);
+                }
+            });
 
-            if (profileError) {
-                console.error('Error creating profile:', profileError);
+            if (authError) {
+                setError(authError.message);
+            } else if (data?.user) {
+                setSuccess(true);
+                showNotification('success', t('auth.verification_sent'));
             }
-            setSuccess(true);
-            showNotification('success', 'VERIFICATION EMAIL SENT');
+        } catch (err: any) {
+            setError(err.message || t('auth.error_generic'));
+        } finally {
+            setLoading(false);
         }
-
-        setLoading(false);
     };
 
     if (success) {
@@ -69,12 +82,12 @@ export const SignUp: React.FC<SignUpProps> = ({ onBackToLogin }) => {
                     <div className="inline-flex p-4 bg-emerald-500/10 rounded-full mb-6">
                         <UserPlus className="h-8 w-8 text-emerald-500" />
                     </div>
-                    <h2 className="text-3xl font-black italic tracking-tighter text-white uppercase mb-4">Registration Complete</h2>
+                    <h2 className="text-3xl font-black italic tracking-tighter text-white uppercase mb-4">{t('auth.verification_sent')}</h2>
                     <p className="text-zinc-400 font-medium leading-relaxed mb-8">
-                        The recruitment process has been initiated. Please check your secure inbox to verify your credentials.
+                        {t('auth.initialize_data')}
                     </p>
                     <Button variant="premium" className="w-full h-12" onClick={onBackToLogin}>
-                        Return to Access Point
+                        {t('auth.back_to_id')}
                     </Button>
                 </div>
             </div>
@@ -83,16 +96,13 @@ export const SignUp: React.FC<SignUpProps> = ({ onBackToLogin }) => {
 
     return (
         <div className="min-h-screen w-full flex items-center justify-center bg-[#050508] p-4 lg:p-0 relative overflow-hidden font-inter">
-            {/* Animated background elements */}
             <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/20 blur-[120px] rounded-full animate-pulse" />
             <div className="absolute bottom-[-10%] left-[-10%] w-[30%] h-[30%] bg-indigo-500/10 blur-[100px] rounded-full animate-bounce duration-[10s]" />
 
-            {/* Grid background */}
             <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none"
                 style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
             <div className="relative z-10 w-full max-w-[1100px] grid lg:grid-cols-2 gap-0 glass rounded-[2rem] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.5)] border-white/5 animate-premium-in">
-                {/* Left Side: Visual/Branding */}
                 <div className="hidden lg:flex flex-col justify-between p-12 relative overflow-hidden bg-zinc-950">
                     <div className="absolute inset-0 opacity-20 grayscale pointer-events-none">
                         <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent z-10" />
@@ -108,11 +118,11 @@ export const SignUp: React.FC<SignUpProps> = ({ onBackToLogin }) => {
 
                         <div className="space-y-6">
                             <h2 className="text-5xl font-black italic tracking-tighter text-white uppercase leading-[0.9]">
-                                Join the <br />
-                                <span className="text-primary">Elite</span> network.
+                                {t('auth.new_recruitment')} <br />
+                                <span className="text-primary">{t('auth.establish_connection')}</span>
                             </h2>
                             <p className="text-zinc-400 text-lg max-w-sm font-medium leading-relaxed">
-                                Professional grade athlete management, real-time performance tracking, and community oversight.
+                                {t('auth.identify_profile')}
                             </p>
                         </div>
                     </div>
@@ -130,12 +140,11 @@ export const SignUp: React.FC<SignUpProps> = ({ onBackToLogin }) => {
                     </div>
                 </div>
 
-                {/* Right Side: Form */}
                 <div className="p-8 lg:p-16 flex flex-col justify-center bg-card/10 backdrop-blur-xl">
                     <div className="flex items-center justify-between mb-8">
                         <button onClick={onBackToLogin} className="group flex items-center gap-2 text-zinc-500 hover:text-white transition-colors">
                             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-                            <span className="text-[10px] font-black uppercase tracking-widest">Back</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest">{t('auth.back_to_id')}</span>
                         </button>
                         <div className="lg:hidden p-2 bg-primary rounded-lg text-white">
                             <Dumbbell className="h-5 w-5" />
@@ -143,13 +152,13 @@ export const SignUp: React.FC<SignUpProps> = ({ onBackToLogin }) => {
                     </div>
 
                     <div className="space-y-2 mb-10">
-                        <h3 className="text-3xl font-black italic tracking-tighter text-white uppercase">Initialize Profile</h3>
+                        <h3 className="text-3xl font-black italic tracking-tighter text-white uppercase">{t('auth.register')}</h3>
                         <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em]">Deployment Sequence: Athlete Recruitment</p>
                     </div>
 
                     <form onSubmit={handleSignUp} className="space-y-5">
                         {error && (
-                            <Alert variant="destructive" className="glass border-destructive/20 py-3">
+                            <Alert variant="destructive" className="glass border-destructive/20 py-3 animate-in fade-in zoom-in duration-300">
                                 <Info className="h-4 w-4" />
                                 <AlertDescription className="text-xs font-bold uppercase tracking-wider">{error}</AlertDescription>
                             </Alert>
@@ -157,7 +166,7 @@ export const SignUp: React.FC<SignUpProps> = ({ onBackToLogin }) => {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">First Name</Label>
+                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">{t('auth.first_name')}</Label>
                                 <Input
                                     value={firstName}
                                     onChange={(e) => setFirstName(e.target.value)}
@@ -167,7 +176,7 @@ export const SignUp: React.FC<SignUpProps> = ({ onBackToLogin }) => {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Last Name</Label>
+                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">{t('auth.last_name')}</Label>
                                 <Input
                                     value={lastName}
                                     onChange={(e) => setLastName(e.target.value)}
@@ -179,7 +188,7 @@ export const SignUp: React.FC<SignUpProps> = ({ onBackToLogin }) => {
                         </div>
 
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Universal Identifier (Email)</Label>
+                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">{t('auth.email')}</Label>
                             <div className="relative group">
                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600 group-focus-within:text-primary transition-colors" />
                                 <Input
@@ -194,18 +203,25 @@ export const SignUp: React.FC<SignUpProps> = ({ onBackToLogin }) => {
                         </div>
 
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Secure Access (Password)</Label>
+                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">{t('auth.password')}</Label>
                             <div className="relative group">
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600 group-focus-within:text-primary transition-colors" />
                                 <Input
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="••••••••"
-                                    className="bg-zinc-950/50 border-white/5 pl-12 h-14 rounded-xl focus:border-primary/50 text-white font-mono italic"
+                                    className="bg-zinc-950/50 border-white/5 pl-12 pr-12 h-14 rounded-xl focus:border-primary/50 text-white font-mono italic"
                                     required
                                     minLength={6}
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-white transition-colors"
+                                >
+                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
                             </div>
                         </div>
 
@@ -219,7 +235,7 @@ export const SignUp: React.FC<SignUpProps> = ({ onBackToLogin }) => {
                                 <Loader2 className="h-5 w-5 animate-spin" />
                             ) : (
                                 <>
-                                    <span>Establish Identity</span>
+                                    <span>{t('auth.establish_connection')}</span>
                                     <Zap className="ml-2 h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-primary" />
                                 </>
                             )}
@@ -242,4 +258,5 @@ export const SignUp: React.FC<SignUpProps> = ({ onBackToLogin }) => {
         </div>
     );
 };
+
 

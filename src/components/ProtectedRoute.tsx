@@ -1,19 +1,29 @@
 import { ReactNode } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ProtectedRouteProps {
     children: ReactNode;
-    userProfile: any;
     allowedRoles?: string[];
 }
 
-export const ProtectedRoute = ({ children, userProfile, allowedRoles }: ProtectedRouteProps) => {
-    if (!userProfile) {
+export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
+    const { userProfile, loading } = useAuth();
+
+    if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
                 <div className="text-center">
                     <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4"></div>
                     <p className="text-muted-foreground font-medium uppercase tracking-widest text-xs">Authenticating Security Clearance...</p>
                 </div>
+            </div>
+        );
+    }
+
+    if (!userProfile) {
+        return (
+            <div className="flex flex-col items-center justify-center min-vh-50 space-y-4">
+                <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs">Access Denied: Terminal Not Identified</p>
             </div>
         );
     }
@@ -32,3 +42,4 @@ export const ProtectedRoute = ({ children, userProfile, allowedRoles }: Protecte
 
     return <>{children}</>;
 };
+

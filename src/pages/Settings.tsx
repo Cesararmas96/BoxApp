@@ -17,9 +17,10 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const Settings: React.FC = () => {
+    const { updateUser } = useAuth();
     const [boxName, setBoxName] = useState('Box Manager');
     const [primaryColor, setPrimaryColor] = useState('#FF3B30');
     const [passwords, setPasswords] = useState({ new: '', confirm: '' });
@@ -42,7 +43,7 @@ export const Settings: React.FC = () => {
         }
 
         setIsChangingPass(true);
-        const { error } = await supabase.auth.updateUser({
+        const { error } = await updateUser({
             password: passwords.new
         });
 

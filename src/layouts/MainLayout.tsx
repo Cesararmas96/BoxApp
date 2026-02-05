@@ -77,50 +77,62 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
 
             {/* Sidebar */}
             <aside className={cn(
-                "fixed inset-y-0 left-0 z-[110] w-64 flex flex-col border-r bg-card transition-all duration-300 ease-in-out lg:translate-x-0 lg:z-40",
-                isSidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
+                "fixed inset-y-4 left-4 z-[110] w-64 flex flex-col glass rounded-2xl shadow-2xl transition-all duration-500 ease-in-out lg:translate-x-0 lg:z-40",
+                isSidebarOpen ? "translate-x-0" : "-translate-x-[calc(100%+16px)]"
             )}>
-                <div className="flex h-16 items-center justify-between px-6 shrink-0">
-                    <span className="text-xl font-bold tracking-tight text-primary uppercase italic">Box Manager</span>
+                <div className="flex h-20 items-center justify-between px-6 shrink-0 relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                    <div className="flex flex-col">
+                        <span className="text-xl font-black tracking-tighter text-primary uppercase italic text-glow leading-none">Box Manager</span>
+                        <span className="text-[8px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 mt-1">Sport-Tech Engine</span>
+                    </div>
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="lg:hidden hover:bg-destructive/10 hover:text-destructive transition-colors"
+                        className="lg:hidden hover:bg-destructive/10 hover:text-destructive transition-colors rounded-full z-10"
                         onClick={() => setIsSidebarOpen(false)}
                     >
                         <X className="h-5 w-5" />
                     </Button>
                 </div>
 
-                <Separator />
+                <div className="px-4">
+                    <Separator className="bg-primary/10" />
+                </div>
 
-                <div className="flex-1 px-4 py-6 overflow-y-auto">
-                    <nav className="space-y-1.5">
+                <div className="flex-1 px-3 py-6 overflow-y-auto">
+                    <nav className="space-y-1">
                         {filteredNavItems.map((item) => (
                             <Button
                                 key={item.id}
                                 variant={activePage === item.id ? "default" : "ghost"}
                                 className={cn(
-                                    "w-full justify-start gap-3 h-11 px-4 font-bold uppercase text-xs tracking-wider transition-all",
+                                    "w-full justify-start gap-3 h-11 px-4 font-bold uppercase text-[10px] tracking-widest transition-all duration-300 rounded-xl relative group overflow-hidden",
                                     activePage === item.id
-                                        ? "bg-primary text-white shadow-lg shadow-primary/20 scale-[1.02]"
-                                        : "text-muted-foreground hover:bg-muted/50"
+                                        ? "bg-primary text-white shadow-lg shadow-primary/30 scale-[1.02] hover:bg-primary/90"
+                                        : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
                                 )}
                                 onClick={() => navigateTo(item.id)}
                             >
-                                <item.icon className={cn("h-4 w-4", activePage === item.id ? "text-white" : "text-primary/70")} />
+                                {activePage === item.id && (
+                                    <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-white rounded-r-full animate-in fade-in slide-in-from-left-2 duration-300" />
+                                )}
+                                <item.icon className={cn("h-4 w-4 transition-transform duration-300", activePage === item.id ? "text-white scale-110" : "text-primary/70 group-hover:scale-125")} />
                                 {item.label}
+                                {activePage !== item.id && (
+                                    <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                )}
                             </Button>
                         ))}
                     </nav>
                 </div>
 
-                <div className="p-4 space-y-2 mt-auto border-t bg-muted/10">
+                <div className="p-3 space-y-1 mt-auto bg-primary/5 rounded-b-2xl border-t border-primary/10">
                     <Button
                         variant={activePage === 'settings' ? "default" : "ghost"}
                         className={cn(
-                            "w-full justify-start gap-3 h-11 px-4 font-bold uppercase text-xs tracking-wider",
-                            activePage === 'settings' ? "bg-primary text-white" : "text-muted-foreground"
+                            "w-full justify-start gap-3 h-11 px-4 font-bold uppercase text-[10px] tracking-widest rounded-xl transition-all",
+                            activePage === 'settings' ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-muted-foreground hover:bg-primary/5"
                         )}
                         onClick={() => navigateTo('settings')}
                     >
@@ -129,7 +141,7 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
                     </Button>
                     <Button
                         variant="ghost"
-                        className="w-full justify-start gap-3 h-11 px-4 text-muted-foreground font-bold uppercase text-xs tracking-wider hover:text-destructive hover:bg-destructive/10 transition-colors"
+                        className="w-full justify-start gap-3 h-11 px-4 text-muted-foreground font-bold uppercase text-[10px] tracking-widest rounded-xl hover:text-destructive hover:bg-destructive/10 transition-colors"
                         onClick={handleLogout}
                     >
                         <LogOut className="h-4 w-4 text-destructive/70" />
@@ -139,35 +151,42 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
             </aside>
 
             {/* Content Wrapper */}
-            <div className="flex-1 flex flex-col min-w-0">
+            <div className="flex-1 flex flex-col min-w-0 lg:pl-4 transition-all duration-500">
                 {/* Header */}
-                <header className="flex h-16 items-center justify-between px-4 md:px-8 border-b bg-card sticky top-0 z-30">
+                <header className="flex h-16 items-center justify-between px-6 md:px-10 glass sticky top-4 mx-4 mt-4 rounded-2xl z-30 shadow-lg border-primary/5 font-inter">
                     <div className="flex items-center gap-3 lg:hidden">
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="text-primary hover:bg-primary/10"
+                            className="text-primary hover:bg-primary/10 rounded-full"
                             onClick={toggleSidebar}
                         >
                             <Menu className="h-6 w-6" />
                         </Button>
-                        <span className="text-lg font-black italic tracking-tighter text-primary uppercase">Box Manager</span>
+                        <span className="text-lg font-black italic tracking-tighter text-primary uppercase text-glow">Box Manager</span>
                     </div>
-                    <div className="hidden lg:block">
-                        {/* Desktop breadcrumbs or page title could go here */}
+                    <div className="hidden lg:flex items-center gap-4 bg-zinc-950/20 px-4 py-1.5 rounded-full border border-primary/10">
+                        <div className="flex items-center gap-2">
+                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                            <span className="text-[9px] font-black uppercase tracking-[0.1em] text-emerald-500/80">LNX-Node: 01-Active</span>
+                        </div>
+                        <div className="w-px h-3 bg-primary/10" />
+                        <div className="flex items-center gap-2">
+                            <span className="text-[9px] font-black uppercase tracking-[0.1em] text-muted-foreground/60">{t('nav.system_online')}</span>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="hover:bg-primary/10 text-primary">
+                                <Button variant="ghost" size="icon" className="hover:bg-primary/10 text-primary rounded-full transition-transform hover:rotate-12">
                                     <Languages className="h-5 w-5" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-40">
-                                <DropdownMenuItem onClick={() => changeLanguage('es')} className="cursor-pointer font-bold uppercase text-[10px] tracking-widest">
+                            <DropdownMenuContent align="end" className="glass border-primary/10 w-44 rounded-xl p-2">
+                                <DropdownMenuItem onClick={() => changeLanguage('es')} className="cursor-pointer font-black uppercase text-[9px] tracking-[0.15em] rounded-lg">
                                     Español
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => changeLanguage('en')} className="cursor-pointer font-bold uppercase text-[10px] tracking-widest">
+                                <DropdownMenuItem onClick={() => changeLanguage('en')} className="cursor-pointer font-black uppercase text-[9px] tracking-[0.15em] rounded-lg">
                                     English
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -178,10 +197,10 @@ export const MainLayout: React.FC<LayoutProps> = ({ children, activePage, onNavi
 
                 {/* Main Content Area */}
                 <main className={cn(
-                    "flex-1 transition-all duration-300",
-                    "lg:ml-64"
+                    "flex-1 transition-all duration-500",
+                    "lg:ml-[272px]"
                 )}>
-                    <div className="container mx-auto p-4 md:p-8 max-w-7xl">
+                    <div className="container mx-auto p-6 md:p-10 max-w-7xl animate-premium-in">
                         {children}
                     </div>
                 </main>

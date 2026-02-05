@@ -52,118 +52,165 @@ export const Login: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen w-full flex items-center justify-center bg-background p-4 sm:p-8">
-            {/* Background pattern */}
-            <div className="absolute inset-0 z-0 opacity-20 pointer-events-none"
-                style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, hsl(var(--muted-foreground)), transparent 0)', backgroundSize: '24px 24px' }} />
+        <div className="min-h-screen w-full flex items-center justify-center bg-[#050508] p-4 lg:p-0 relative overflow-hidden font-inter">
+            {/* Animated background elements */}
+            <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/20 blur-[120px] rounded-full animate-pulse" />
+            <div className="absolute bottom-[-10%] left-[-10%] w-[30%] h-[30%] bg-indigo-500/10 blur-[100px] rounded-full animate-bounce duration-[10s]" />
 
-            <div className="relative z-10 w-full max-w-[400px]">
-                <div className="flex flex-col items-center mb-8 gap-2">
-                    <div className="p-3 bg-primary rounded-2xl shadow-2xl shadow-primary/20">
-                        <Dumbbell className="h-8 w-8 text-white" />
+            {/* Grid background */}
+            <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none"
+                style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+
+            <div className="relative z-10 w-full max-w-[1100px] grid lg:grid-cols-2 gap-0 glass rounded-[2rem] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.5)] border-white/5 animate-premium-in">
+
+                {/* Left Side: Visual/Branding */}
+                <div className="hidden lg:flex flex-col justify-between p-12 relative overflow-hidden bg-zinc-950">
+                    <div className="absolute inset-0 opacity-20 grayscale pointer-events-none">
+                        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent z-10" />
+                        {/* Placeholder for a cool gym image background if available, or just keeping the dark gradient */}
                     </div>
-                    <h1 className="text-3xl font-black italic tracking-tighter text-foreground uppercase">
-                        Antigravity <span className="text-primary italic">Box</span>
-                    </h1>
+
+                    <div className="relative z-20">
+                        <div className="flex items-center gap-3 mb-12">
+                            <div className="p-2.5 bg-primary rounded-xl shadow-[0_0_20px_rgba(255,50,50,0.4)]">
+                                <Dumbbell className="h-6 w-6 text-white" />
+                            </div>
+                            <span className="text-xl font-black italic tracking-tighter text-white uppercase">Box Manager <span className="text-primary italic">OS</span></span>
+                        </div>
+
+                        <div className="space-y-6">
+                            <h2 className="text-5xl font-black italic tracking-tighter text-white uppercase leading-[0.9]">
+                                Push your <br />
+                                <span className="text-primary">Limits</span> today.
+                            </h2>
+                            <p className="text-zinc-400 text-lg max-w-sm font-medium leading-relaxed">
+                                Manage your athletes, tracking benchmarks, and scaling your programming with precision.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="relative z-20 flex gap-8">
+                        <div>
+                            <p className="text-2xl font-black text-white italic tracking-tighter">+500</p>
+                            <p className="text-[10px] text-zinc-500 uppercase font-black tracking-widest">Active Athletes</p>
+                        </div>
+                        <div>
+                            <p className="text-2xl font-black text-white italic tracking-tighter">99.9%</p>
+                            <p className="text-[10px] text-zinc-500 uppercase font-black tracking-widest">Uptime Performance</p>
+                        </div>
+                    </div>
                 </div>
 
-                <Card className="border shadow-2xl overflow-hidden">
-                    <CardHeader className="space-y-1 pb-6 text-center">
-                        <CardTitle className="text-2xl font-bold tracking-tight">
-                            {isResetting ? "Reset Password" : (isSignUp ? "Create athlete account" : "Welcome back, athlete")}
-                        </CardTitle>
-                        <CardDescription className="text-muted-foreground text-sm font-light">
-                            {isResetting ? "Enter your email to receive a reset link" : (isSignUp ? "Join the community today" : "Enter your credentials to enter the box")}
-                        </CardDescription>
-                    </CardHeader>
+                {/* Right Side: Form */}
+                <div className="p-8 lg:p-16 flex flex-col justify-center bg-card/10 backdrop-blur-xl">
+                    <div className="lg:hidden flex items-center justify-center gap-3 mb-10">
+                        <div className="p-2 bg-primary rounded-lg">
+                            <Dumbbell className="h-5 w-5 text-white" />
+                        </div>
+                        <span className="text-lg font-black italic tracking-tighter text-white uppercase">Box Manager</span>
+                    </div>
 
-                    <CardContent>
-                        <form onSubmit={handleAuth} className="space-y-4">
-                            {error && (
-                                <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 py-2">
-                                    <Info className="h-4 w-4" />
-                                    <AlertDescription className="text-xs">{error}</AlertDescription>
-                                </Alert>
-                            )}
+                    <div className="space-y-2 mb-10">
+                        <h3 className="text-3xl font-black italic tracking-tighter text-white uppercase">
+                            {isResetting ? "Recovery Mode" : (isSignUp ? "New Recruitment" : "System Access")}
+                        </h3>
+                        <p className="text-zinc-500 text-sm font-bold uppercase tracking-widest">
+                            {isResetting ? "Identify your system profile" : (isSignUp ? "Initialize your athlete data" : "Enter your operator credentials")}
+                        </p>
+                    </div>
 
+                    <form onSubmit={handleAuth} className="space-y-6">
+                        {error && (
+                            <Alert variant="destructive" className="glass border-destructive/20 py-3 animate-in fade-in zoom-in duration-300">
+                                <Info className="h-4 w-4" />
+                                <AlertDescription className="text-xs font-bold uppercase tracking-wider">{error}</AlertDescription>
+                            </Alert>
+                        )}
+
+                        <div className="space-y-2">
+                            <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Universal Identifier (Email)</Label>
+                            <div className="relative group">
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600 transition-colors group-focus-within:text-primary" />
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    placeholder="operator@system.com"
+                                    className="bg-zinc-950/50 border-white/5 pl-12 h-14 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all text-white font-medium italic"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        {!isResetting && (
                             <div className="space-y-2">
-                                <Label htmlFor="email">Email Address</Label>
-                                <div className="relative">
-                                    <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <div className="flex justify-between items-end ml-1">
+                                    <Label htmlFor="pass" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Secure Access (Password)</Label>
+                                    {!isSignUp && (
+                                        <Button
+                                            variant="link"
+                                            className="text-[9px] h-auto p-0 text-zinc-600 font-black uppercase tracking-widest hover:text-primary transition-colors"
+                                            onClick={(e) => { e.preventDefault(); setIsResetting(true); }}
+                                        >
+                                            Lost Credential?
+                                        </Button>
+                                    )}
+                                </div>
+                                <div className="relative group">
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600 transition-colors group-focus-within:text-primary" />
                                     <Input
-                                        id="email"
-                                        type="email"
-                                        placeholder="root@test.com"
-                                        className="pl-10 focus-visible:ring-primary h-10"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
+                                        id="pass"
+                                        type="password"
+                                        placeholder="••••••••"
+                                        className="bg-zinc-950/50 border-white/5 pl-12 h-14 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all text-white font-mono italic"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
                                         required
                                     />
                                 </div>
                             </div>
+                        )}
 
-                            {!isResetting && (
-                                <div className="space-y-2">
-                                    <div className="flex justify-between">
-                                        <Label htmlFor="pass">Password</Label>
-                                        {!isSignUp && (
-                                            <Button
-                                                variant="link"
-                                                className="text-[10px] h-auto p-0 text-muted-foreground font-light"
-                                                onClick={(e) => { e.preventDefault(); setIsResetting(true); }}
-                                            >
-                                                Forgot?
-                                            </Button>
-                                        )}
-                                    </div>
-                                    <div className="relative">
-                                        <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                        <Input
-                                            id="pass"
-                                            type="password"
-                                            className="pl-10 focus-visible:ring-primary h-10"
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            required
-                                        />
-                                    </div>
-                                </div>
+                        <Button
+                            type="submit"
+                            variant="premium"
+                            className="w-full h-14 group"
+                            disabled={loading}
+                        >
+                            {loading ? (
+                                <Loader2 className="h-5 w-5 animate-spin" />
+                            ) : (
+                                <>
+                                    <span>{isResetting ? "Initiate Recovery" : (isSignUp ? "Confirm Deployment" : "Establish Connection")}</span>
+                                    <Zap className="ml-2 h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-primary" />
+                                </>
                             )}
+                        </Button>
+                    </form>
 
-                            <Button
-                                type="submit"
-                                className="w-full font-bold uppercase tracking-widest italic h-12 mt-4"
-                                disabled={loading}
-                            >
-                                {loading ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                    isResetting ? "Send Reset Link" : (isSignUp ? "Start Training" : "Enter Box")
-                                )}
-                            </Button>
-                        </form>
-                    </CardContent>
+                    <div className="mt-12 pt-8 border-t border-white/5 flex items-center justify-center gap-2">
+                        <p className="text-zinc-600 text-[10px] font-black uppercase tracking-widest">
+                            {isResetting ? "Back to identification" : (isSignUp ? "Existing operative?" : "New operative?")}
+                        </p>
+                        <Button
+                            variant="link"
+                            className="text-primary font-black uppercase text-[10px] tracking-widest h-auto p-0 hover:scale-105 transition-transform"
+                            onClick={() => {
+                                if (isResetting) setIsResetting(false);
+                                else setIsSignUp(!isSignUp);
+                                setError(null);
+                            }}
+                        >
+                            {isResetting ? "Login" : (isSignUp ? "Login" : "Register")}
+                        </Button>
+                    </div>
+                </div>
+            </div>
 
-                    <CardFooter className="flex flex-col gap-4 border-t bg-muted/30 py-4">
-                        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                            <span>{isResetting ? "Remembered your password?" : (isSignUp ? "Already a member?" : "New athlete?")}</span>
-                            <Button
-                                variant="link"
-                                className="text-primary font-bold h-auto p-0"
-                                onClick={() => {
-                                    if (isResetting) setIsResetting(false);
-                                    else setIsSignUp(!isSignUp);
-                                    setError(null);
-                                }}
-                            >
-                                {isResetting ? "Log In" : (isSignUp ? "Log In" : "Register Now")}
-                            </Button>
-                        </div>
-                    </CardFooter>
-                </Card>
-
-                <p className="mt-8 text-center text-[10px] text-zinc-600 uppercase tracking-[0.2em]">
-                    Powered by BoxManager OS 2026
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center">
+                <p className="text-[10px] text-zinc-700 font-black uppercase tracking-[0.4em]">
+                    Core Engine BoxManager 2.0.26 // All systems nominal
                 </p>
             </div>
 

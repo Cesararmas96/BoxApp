@@ -218,7 +218,7 @@ export const Profile: React.FC = () => {
                                     <div className="w-full h-full rounded-full bg-zinc-950 flex items-center justify-center border-4 border-zinc-900 ring-2 ring-primary/20 animate-pulse">
                                         <Loader2 className="h-10 w-10 text-primary animate-spin" />
                                     </div>
-                                ) : profile.avatar_url ? (
+                                ) : profile.avatar_url && (profile.avatar_url.startsWith('http') || profile.avatar_url.startsWith('/')) ? (
                                     <img
                                         src={profile.avatar_url}
                                         alt="Avatar"

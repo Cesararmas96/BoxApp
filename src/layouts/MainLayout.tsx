@@ -245,7 +245,7 @@ export const MainLayout: React.FC<LayoutProps> = ({ userProfile }) => {
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-10 w-10 p-0 rounded-full border border-primary/20 overflow-hidden hover:scale-105 transition-transform">
-                                    {userProfile?.avatar_url ? (
+                                    {userProfile?.avatar_url && (userProfile.avatar_url.startsWith('http') || userProfile.avatar_url.startsWith('/')) ? (
                                         <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                                     ) : (
                                         <User className="h-5 w-5 text-primary" />

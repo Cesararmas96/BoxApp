@@ -412,6 +412,9 @@ export const Billing: React.FC = () => {
                                                 <Tag className="h-5 w-5 text-primary" />
                                                 {editingPlan ? t('billing.edit_plan') : t('billing.new_plan')}
                                             </DialogTitle>
+                                            <DialogDescription className="sr-only">
+                                                Configure plan details including name, price, and duration.
+                                            </DialogDescription>
                                         </DialogHeader>
                                         <div className="grid gap-4 py-4">
                                             <div className="grid gap-2">
@@ -556,6 +559,9 @@ export const Billing: React.FC = () => {
                                                 <Briefcase className="h-5 w-5 text-destructive" />
                                                 {editingExpense ? t('billing.edit_expense') : t('billing.new_expense')}
                                             </DialogTitle>
+                                            <DialogDescription className="sr-only">
+                                                Register or edit business expenses to track your box finances.
+                                            </DialogDescription>
                                         </DialogHeader>
                                         <div className="grid gap-4 py-4">
                                             <div className="grid gap-2">

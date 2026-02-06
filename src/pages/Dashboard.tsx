@@ -91,7 +91,7 @@ export const Dashboard: React.FC = () => {
             // 5. Recent Results
             const { data: resultsData } = await supabase
                 .from('results')
-                .select('id, result, rx, wods!results_wod_id_fkey(title), profiles!results_athlete_id_fkey(first_name, last_name)')
+                .select('id, result, rx, wods!wod_id(title), profiles!athlete_id(first_name, last_name)')
                 .order('created_at', { ascending: false })
                 .limit(3);
 

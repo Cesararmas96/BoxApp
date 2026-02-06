@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useNotification, useLanguage } from '@/hooks';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 
 interface Movement {
     id: string;
@@ -177,6 +178,9 @@ export const Movements: React.FC = () => {
                                 <Zap className="h-6 w-6 text-primary" />
                                 {editingMovement ? 'EDIT MOVEMENT' : 'CREATE MOVEMENT'}
                             </DialogTitle>
+                            <DialogDescription className="sr-only">
+                                {editingMovement ? `Editing ${editingMovement.name}` : 'Create a new movement in the library'}
+                            </DialogDescription>
                         </DialogHeader>
                         <form onSubmit={handleSave} className="space-y-4 pt-4">
                             <div className="space-y-2">

@@ -176,6 +176,9 @@ export const Schedule: React.FC = () => {
                                 <DialogTitle className="text-3xl font-black italic uppercase tracking-tight text-primary">
                                     {t('schedule.programming_viewer', { defaultValue: 'PROGRAMMING VIEWER' })}
                                 </DialogTitle>
+                                <DialogDescription className="sr-only">
+                                    Display of programmed workouts for the different tracks today
+                                </DialogDescription>
                             </DialogHeader>
                             <div className="py-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {['CrossFit', 'Novice', 'Bodybuilding', 'Engine'].map(track => {
@@ -347,6 +350,9 @@ export const Schedule: React.FC = () => {
                         <DialogTitle className="text-2xl font-black uppercase italic tracking-tight text-primary">
                             {selectedWod?.title}
                         </DialogTitle>
+                        <DialogDescription className="sr-only">
+                            {t('schedule.workout_details_desc') || 'Workout details view'}
+                        </DialogDescription>
                     </DialogHeader>
                     <div className="max-h-[60vh] overflow-y-auto pr-2 space-y-4 py-4">
                         {selectedWod?.structure && selectedWod.structure.length > 0 ? (
@@ -385,6 +391,9 @@ export const Schedule: React.FC = () => {
                 <DialogContent className="sm:max-w-[400px]">
                     <DialogHeader>
                         <DialogTitle>{t('schedule.feedback_title')}</DialogTitle>
+                        <DialogDescription className="sr-only">
+                            {t('schedule.feedback_title')}
+                        </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-6 py-4">
                         <div className="space-y-2">

@@ -413,6 +413,9 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                             </Avatar>
                             <span>{selectedMember?.first_name} {selectedMember?.last_name}</span>
                         </DialogTitle>
+                        <DialogDescription className="sr-only">
+                            {t('members.member_details_desc') || `Information for ${selectedMember?.first_name} ${selectedMember?.last_name}`}
+                        </DialogDescription>
                     </DialogHeader>
 
                     <div className="grid gap-6 py-4">

@@ -110,6 +110,9 @@ export const Benchmarks: React.FC = () => {
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle>Register Personal Record</DialogTitle>
+                            <DialogDescription className="sr-only">
+                                Log your progress and keep track of your performance milestones.
+                            </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                             <div className="space-y-2">

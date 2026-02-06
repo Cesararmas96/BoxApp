@@ -245,7 +245,7 @@ export const Wods: React.FC = () => {
         const { data } = await supabase
             .from('personal_records')
             .select('*, movements(name)')
-            .eq('user_id', user.id)
+            .eq('athlete_id', user.id)
             .eq('box_id', currentBox.id);
         if (data) setUserPRs(data);
     };

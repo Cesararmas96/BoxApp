@@ -47,8 +47,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/hooks/useLanguage';
 import { useNotification } from '@/hooks/useNotification';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Toast } from '@/components/ui/toast-custom';
 
 interface WOD {
@@ -73,7 +74,7 @@ const TRACKS = ['CrossFit', 'Novice', 'Bodybuilding', 'Engine'];
 
 
 export const Wods: React.FC = () => {
-    const { t } = useTranslation();
+    const { t } = useLanguage();
     const { user, currentBox } = useAuth();
     const [wods, setWods] = useState<WOD[]>([]);
     const [loading, setLoading] = useState(true);
@@ -102,9 +103,7 @@ export const Wods: React.FC = () => {
     const [movements, setMovements] = useState<any[]>([]);
     const [userPRs, setUserPRs] = useState<any[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
-    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-    const [idToDelete, setIdToDelete] = useState<string | null>(null);
-    const { notification, showNotification, hideNotification } = useNotification();
+    const { notification, showNotification, hideNotification, confirmState, showConfirm, hideConfirm } = useNotification();
 
 
     useEffect(() => {
@@ -196,16 +195,15 @@ export const Wods: React.FC = () => {
         setShowEditor(true);
     };
 
-    const handleDeleteWod = async () => {
-        if (!idToDelete) return;
-
+    const handleDeleteWod = async (id: string) => {
         setLoading(true);
-        const { error } = await supabase.from('wods').delete().eq('id', idToDelete);
+        const { error } = await supabase.from('wods').delete().eq('id', id);
         if (!error) {
             fetchWods();
+            showNotification('success', 'SESSION DELETED SUCCESSFULLY');
+        } else {
+            showNotification('error', 'FAILED TO DELETE SESSION');
         }
-        setDeleteConfirmOpen(false);
-        setIdToDelete(null);
         setLoading(false);
     };
 
@@ -605,10 +603,13 @@ export const Wods: React.FC = () => {
                                         variant="ghost"
                                         size="icon"
                                         className="h-10 w-10 rounded-xl text-destructive hover:bg-destructive/10 transition-all"
-                                        onClick={() => {
-                                            setIdToDelete(wod.id);
-                                            setDeleteConfirmOpen(true);
-                                        }}
+                                        onClick={() => showConfirm({
+                                            title: t('common.confirm_delete', { defaultValue: 'CONFIRMAR ELIMINACIÓN' }),
+                                            description: t('wods.delete_warning', { defaultValue: '¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR ESTE WOD? ESTA ACCIÓN NO SE PUEDE DESHACER.' }),
+                                            onConfirm: () => handleDeleteWod(wod.id),
+                                            variant: 'destructive',
+                                            icon: 'destructive'
+                                        })}
                                     >
                                         <Trash2 className="h-5 w-5" />
                                     </Button>
@@ -722,43 +723,15 @@ export const Wods: React.FC = () => {
             )}
 
             {/* Premium Confirmation Dialog */}
-            <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-                <DialogContent className="sm:max-w-[400px] border-destructive/20 bg-background/95 backdrop-blur-xl rounded-[2rem]">
-                    <DialogHeader className="space-y-4 text-center">
-                        <div className="mx-auto h-20 w-20 rounded-full bg-destructive/10 flex items-center justify-center border-2 border-destructive/20 shadow-[0_0_30px_rgba(239,68,68,0.1)]">
-                            <Trash2 className="h-10 w-10 text-destructive animate-pulse" />
-                        </div>
-                        <div className="space-y-2">
-                            <DialogTitle className="text-3xl font-black italic uppercase tracking-tighter text-destructive">
-                                {t('common.confirm_delete', { defaultValue: 'CONFIRMAR ELIMINACIÓN' })}
-                            </DialogTitle>
-                            <p className="text-sm font-bold uppercase italic tracking-tight text-muted-foreground opacity-70 px-4 leading-relaxed">
-                                {t('wods.delete_warning', { defaultValue: '¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR ESTE WOD? ESTA ACCIÓN NO SE PUEDE DESHACER.' })}
-                            </p>
-                        </div>
-                    </DialogHeader>
-                    <div className="grid grid-cols-2 gap-3 mt-6">
-                        <Button
-                            variant="outline"
-                            className="font-black uppercase italic h-14 border-muted-foreground/20 hover:bg-muted/50 text-base rounded-xl"
-                            onClick={() => {
-                                setDeleteConfirmOpen(false);
-                                setIdToDelete(null);
-                            }}
-                        >
-                            {t('common.cancel', { defaultValue: 'CANCELAR' })}
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            className="font-black uppercase italic h-14 shadow-xl shadow-destructive/20 text-base rounded-xl"
-                            onClick={handleDeleteWod}
-                            disabled={loading}
-                        >
-                            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : t('common.delete', { defaultValue: 'ELIMINAR' })}
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
+            <ConfirmationDialog
+                isOpen={confirmState.isOpen}
+                onClose={hideConfirm}
+                onConfirm={confirmState.onConfirm}
+                title={confirmState.title}
+                description={confirmState.description}
+                variant={confirmState.variant}
+                icon={confirmState.icon}
+            />
         </div>
     );
 };

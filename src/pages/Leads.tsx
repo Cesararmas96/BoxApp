@@ -37,6 +37,9 @@ import {
 } from "@/components/ui/select";
 import { useNotification } from '@/hooks/useNotification';
 import { Toast } from '@/components/ui/toast-custom';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { useLanguage } from '@/hooks/useLanguage';
+import { cn } from '@/lib/utils';
 
 interface Lead {
     id: string;
@@ -48,11 +51,12 @@ interface Lead {
 }
 
 export const Leads: React.FC = () => {
+    const { t } = useLanguage();
     const [leads, setLeads] = useState<Lead[]>([]);
     const [loading, setLoading] = useState(true);
     const [open, setOpen] = useState(false);
     const [newLead, setNewLead] = useState({ firstName: '', lastName: '', email: '' });
-    const { notification, showNotification, hideNotification } = useNotification();
+    const { notification, showNotification, hideNotification, confirmState, showConfirm, hideConfirm } = useNotification();
 
     useEffect(() => {
         fetchLeads();
@@ -93,32 +97,46 @@ export const Leads: React.FC = () => {
     };
 
     const updateStatus = async (lead: Lead, newStatus: string) => {
-        setLoading(true);
-        const { error } = await supabase
-            .from('leads')
-            .update({ status: newStatus })
-            .eq('id', lead.id);
+        const executeUpdate = async () => {
+            setLoading(true);
+            const { error } = await supabase
+                .from('leads')
+                .update({ status: newStatus })
+                .eq('id', lead.id);
 
-        if (error) {
-            showNotification('error', 'ERROR UPDATING STATUS: ' + error.message.toUpperCase());
-        } else {
-            if (newStatus === 'converted') {
-                await supabase
-                    .from('profiles')
-                    .insert([{
-                        first_name: lead.first_name,
-                        last_name: lead.last_name,
-                        email: lead.email,
-                        role: 'athlete',
-                        status: 'active'
-                    }]);
-                showNotification('success', 'LEAD CONVERTED TO MEMBER!');
+            if (error) {
+                showNotification('error', 'ERROR UPDATING STATUS: ' + error.message.toUpperCase());
             } else {
-                showNotification('success', 'STATUS UPDATED');
+                if (newStatus === 'converted') {
+                    await supabase
+                        .from('profiles')
+                        .insert([{
+                            first_name: lead.first_name,
+                            last_name: lead.last_name,
+                            email: lead.email,
+                            role: 'athlete',
+                            status: 'active'
+                        }]);
+                    showNotification('success', 'LEAD CONVERTED TO MEMBER!');
+                } else {
+                    showNotification('success', 'STATUS UPDATED');
+                }
+                fetchLeads();
             }
-            fetchLeads();
+            setLoading(false);
+        };
+
+        if (newStatus === 'converted') {
+            showConfirm({
+                title: t('leads.confirm_conversion_title', { defaultValue: 'CONVERTIR PROSPECTO' }),
+                description: t('leads.confirm_conversion_desc', { defaultValue: '¿ESTÁS SEGURO DE QUE DESEAS CONVERTIR ESTE PROSPECTO EN MIEMBRO? ESTA ACCIÓN CREARÁ UN PERFIL DE ATLETA Y NO SE PUEDE DESHACER.' }),
+                onConfirm: executeUpdate,
+                variant: 'default',
+                icon: 'warning'
+            });
+        } else {
+            executeUpdate();
         }
-        setLoading(false);
     };
 
     const getStatusIcon = (status: string) => {
@@ -327,6 +345,16 @@ export const Leads: React.FC = () => {
                     onClose={hideNotification}
                 />
             )}
+
+            <ConfirmationDialog
+                isOpen={confirmState.isOpen}
+                onClose={hideConfirm}
+                onConfirm={confirmState.onConfirm}
+                title={confirmState.title}
+                description={confirmState.description}
+                variant={confirmState.variant}
+                icon={confirmState.icon}
+            />
         </div>
     );
 };

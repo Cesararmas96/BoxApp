@@ -5,12 +5,8 @@ import {
     Plus,
     ChevronLeft,
     ChevronRight,
-    Clock,
-    Users,
-    Flame,
-    CheckCircle2,
-    StickyNote,
-    Trophy
+    Trophy,
+    Star
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,7 +21,7 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/hooks/useLanguage';
 import { useNotification } from '@/hooks/useNotification';
 import { Toast } from '@/components/ui/toast-custom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -40,7 +36,7 @@ interface WODSummary {
 }
 
 export const Schedule: React.FC = () => {
-    const { t } = useTranslation();
+    const { t } = useLanguage();
     const { user, currentBox } = useAuth();
     const [sessions, setSessions] = useState<any[]>([]);
     const [wods, setWods] = useState<WODSummary[]>([]);
@@ -128,8 +124,9 @@ export const Schedule: React.FC = () => {
     const getMatchedWod = (session: any, date: Date) => {
         const localDateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
         return wods.find(w => {
+            if (!w.date || !w.track) return false;
             const wodDateStr = w.date.split('T')[0];
-            const sessionTypeName = session.session_types.name.toLowerCase();
+            const sessionTypeName = session.session_types?.name?.toLowerCase() || '';
             const trackName = w.track.toLowerCase();
 
             return wodDateStr === localDateStr && (
@@ -185,7 +182,7 @@ export const Schedule: React.FC = () => {
                                 {['CrossFit', 'Novice', 'Bodybuilding', 'Engine'].map(track => {
                                     const date = new Date();
                                     const localDateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                                    const trackWod = wods.find(w => w.track === track && w.date.split('T')[0] === localDateStr);
+                                    const trackWod = wods.find(w => w.track === track && w.date?.split('T')[0] === localDateStr);
 
                                     return (
                                         <Card key={track} className="bg-white/5 border-white/5 overflow-hidden">
@@ -303,7 +300,7 @@ export const Schedule: React.FC = () => {
 
                                                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
                                                     <div className="flex items-center gap-1.5 text-muted-foreground/60">
-                                                        <UsersIcon className="h-3 w-3" />
+                                                        <Users className="h-3 w-3" />
                                                         <span className="text-[10px] font-bold uppercase tracking-widest">0 / {session.capacity}</span>
                                                     </div>
 
@@ -345,7 +342,7 @@ export const Schedule: React.FC = () => {
                                 {selectedWod?.track} {t('schedule.track_suffix')}
                             </Badge>
                             <Badge variant="outline" className="text-[9px] font-black opacity-60">
-                                {selectedWod && new Date(selectedWod.date).toLocaleDateString()}
+                                {selectedWod?.date && new Date(selectedWod.date).toLocaleDateString()}
                             </Badge>
                         </div>
                         <DialogTitle className="text-2xl font-black uppercase italic tracking-tight text-primary">

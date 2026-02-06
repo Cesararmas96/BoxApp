@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/hooks/useLanguage';
 import {
     Plus,
     TrendingUp,
@@ -73,7 +73,7 @@ interface Expense {
 }
 
 export const Billing: React.FC = () => {
-    const { t } = useTranslation();
+    const { t } = useLanguage();
     const [plans, setPlans] = useState<Plan[]>([]);
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [memberships, setMemberships] = useState<any[]>([]);

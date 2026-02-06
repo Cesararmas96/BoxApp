@@ -32,9 +32,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useTranslation } from 'react-i18next';
 import { useNotification } from '@/hooks/useNotification';
 import { Toast } from '@/components/ui/toast-custom';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface Profile {
     id: string;
@@ -56,11 +57,12 @@ interface MembersProps {
 }
 
 export const Members: React.FC<MembersProps> = ({ userProfile }) => {
-    const { t } = useTranslation();
+    const { t } = useLanguage();
     const { currentBox } = useAuth();
     const [members, setMembers] = useState<Profile[]>([]);
     const [loading, setLoading] = useState(true);
     const [open, setOpen] = useState(false);
+    const [detailsOpen, setDetailsOpen] = useState(false);
     const [newMember, setNewMember] = useState({
         firstName: '',
         lastName: '',
@@ -73,8 +75,8 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
         createAccount: true
     });
     const [selectedMember, setSelectedMember] = useState<Profile | null>(null);
-    const [detailsOpen, setDetailsOpen] = useState(false);
-    const { notification, showNotification, hideNotification } = useNotification();
+    const [showPhotoUpload, setShowPhotoUpload] = useState(false);
+    const { notification, showNotification, hideNotification, confirmState, showConfirm, hideConfirm } = useNotification();
 
     useEffect(() => {
         fetchMembers();
@@ -127,6 +129,33 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
             fetchMembers();
         }
         setLoading(false);
+    };
+
+    const toggleMemberStatus = async (id: string, currentStatus: string) => {
+        const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+
+        showConfirm({
+            title: t('common.confirm_action', { defaultValue: 'CONFIRMAR ACCIÓN' }),
+            description: t('members.toggle_status_confirm', {
+                defaultValue: `¿ESTÁS SEGURO DE QUE DESEAS ${newStatus === 'inactive' ? 'DESACTIVAR' : 'ACTIVAR'} A ESTE MIEMBRO?`
+            }),
+            onConfirm: async () => {
+                const { error } = await supabase
+                    .from('profiles')
+                    .update({ status: newStatus })
+                    .eq('id', id);
+
+                if (error) {
+                    showNotification('error', 'ERROR UPDATING STATUS: ' + error.message.toUpperCase());
+                } else {
+                    showNotification('success', 'MEMBER STATUS UPDATED');
+                    fetchMembers();
+                    setDetailsOpen(false);
+                }
+            },
+            variant: newStatus === 'inactive' ? 'destructive' : 'default',
+            icon: newStatus === 'inactive' ? 'destructive' : 'default'
+        });
     };
 
     const getStatusVariant = (status: string) => {
@@ -431,7 +460,15 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                         </div>
                     </div>
 
-                    <DialogFooter>
+                    <DialogFooter className="flex flex-col sm:flex-row gap-2">
+                        <Button
+                            variant={selectedMember?.status === 'active' ? "destructive" : "default"}
+                            className="w-full sm:w-auto font-bold uppercase"
+                            onClick={() => selectedMember && toggleMemberStatus(selectedMember.id, selectedMember.status)}
+                        >
+                            {selectedMember?.status === 'active' ? t('members.deactivate_btn') : t('members.activate_btn')}
+                        </Button>
+                        <div className="flex-1" />
                         <Button variant="outline" onClick={() => setDetailsOpen(false)}>{t('common.cancel')}</Button>
                         <Button variant="default">{t('members.edit_profile')}</Button>
                     </DialogFooter>
@@ -445,6 +482,16 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                     onClose={hideNotification}
                 />
             )}
+
+            <ConfirmationDialog
+                isOpen={confirmState.isOpen}
+                onClose={hideConfirm}
+                onConfirm={confirmState.onConfirm}
+                title={confirmState.title}
+                description={confirmState.description}
+                variant={confirmState.variant}
+                icon={confirmState.icon}
+            />
         </div>
     );
 };

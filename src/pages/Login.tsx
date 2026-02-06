@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Dumbbell, Loader2, Mail, Lock, Info, Zap, Eye, EyeOff } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,7 @@ import { Toast } from '@/components/ui/toast-custom';
 import { supabase } from '@/lib/supabaseClient';
 
 export const Login: React.FC = () => {
-    const { t } = useTranslation();
+    const { t } = useLanguage();
     const { signIn, signUp, resetPassword } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');

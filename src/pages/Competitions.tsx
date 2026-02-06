@@ -40,6 +40,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '@/hooks/useNotification';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Toast } from '@/components/ui/toast-custom';
 
 
@@ -64,7 +65,7 @@ export const Competitions: React.FC = () => {
         start_date: '',
         end_date: ''
     });
-    const { notification, showNotification, hideNotification } = useNotification();
+    const { notification, showNotification, hideNotification, confirmState, showConfirm, hideConfirm } = useNotification();
 
     const [selectedComp, setSelectedComp] = useState<Competition | null>(null);
     const [athletes, setAthletes] = useState<any[]>([]);
@@ -176,17 +177,25 @@ export const Competitions: React.FC = () => {
     };
 
     const handleRemoveEvent = async (eventId: string) => {
-        const { error } = await supabase
-            .from('competition_events')
-            .delete()
-            .eq('id', eventId);
+        showConfirm({
+            title: t('common.confirm_delete', { defaultValue: 'CONFIRMAR ELIMINACIÓN' }),
+            description: t('competitions.remove_event_warning', { defaultValue: '¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR ESTE EVENTO? ESTA ACCIÓN NO SE PUEDE DESHACER.' }),
+            onConfirm: async () => {
+                const { error } = await supabase
+                    .from('competition_events')
+                    .delete()
+                    .eq('id', eventId);
 
-        if (error) {
-            showNotification('error', 'ERROR REMOVING EVENT: ' + error.message.toUpperCase());
-        } else {
-            showNotification('success', 'EVENT REMOVED FROM COMPETITION');
-            if (selectedComp) fetchEvents(selectedComp.id);
-        }
+                if (error) {
+                    showNotification('error', 'ERROR REMOVING EVENT: ' + error.message.toUpperCase());
+                } else {
+                    showNotification('success', 'EVENT REMOVED FROM COMPETITION');
+                    if (selectedComp) fetchEvents(selectedComp.id);
+                }
+            },
+            variant: 'destructive',
+            icon: 'destructive'
+        });
     };
 
     const handleAddJudge = async (profileId: string) => {
@@ -208,17 +217,25 @@ export const Competitions: React.FC = () => {
     };
 
     const handleRemoveJudge = async (judgeId: string) => {
-        const { error } = await supabase
-            .from('competition_judges')
-            .delete()
-            .eq('id', judgeId);
+        showConfirm({
+            title: t('common.confirm_delete', { defaultValue: 'CONFIRMAR ELIMINACIÓN' }),
+            description: t('competitions.remove_judge_warning', { defaultValue: '¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR ESTE JUEZ? ESTA ACCIÓN NO SE PUEDE DESHACER.' }),
+            onConfirm: async () => {
+                const { error } = await supabase
+                    .from('competition_judges')
+                    .delete()
+                    .eq('id', judgeId);
 
-        if (error) {
-            showNotification('error', 'ERROR REMOVING JUDGE: ' + error.message.toUpperCase());
-        } else {
-            showNotification('success', 'JUDGE REMOVED FROM COMPETITION');
-            if (selectedComp) fetchJudges(selectedComp.id);
-        }
+                if (error) {
+                    showNotification('error', 'ERROR REMOVING JUDGE: ' + error.message.toUpperCase());
+                } else {
+                    showNotification('success', 'JUDGE REMOVED FROM COMPETITION');
+                    if (selectedComp) fetchJudges(selectedComp.id);
+                }
+            },
+            variant: 'destructive',
+            icon: 'destructive'
+        });
     };
 
     const handleAddParticipant = async (athleteId: string) => {
@@ -241,17 +258,25 @@ export const Competitions: React.FC = () => {
     };
 
     const handleRemoveParticipant = async (participantId: string) => {
-        const { error } = await supabase
-            .from('competition_participants')
-            .delete()
-            .eq('id', participantId);
+        showConfirm({
+            title: t('common.confirm_delete', { defaultValue: 'CONFIRMAR ELIMINACIÓN' }),
+            description: t('competitions.remove_athlete_warning', { defaultValue: '¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR ESTE ATLETA? ESTA ACCIÓN NO SE PUEDE DESHACER.' }),
+            onConfirm: async () => {
+                const { error } = await supabase
+                    .from('competition_participants')
+                    .delete()
+                    .eq('id', participantId);
 
-        if (error) {
-            showNotification('error', 'ERROR REMOVING ATHLETE: ' + error.message.toUpperCase());
-        } else {
-            showNotification('success', 'ATHLETE REMOVED FROM COMPETITION');
-            if (selectedComp) fetchParticipants(selectedComp.id);
-        }
+                if (error) {
+                    showNotification('error', 'ERROR REMOVING ATHLETE: ' + error.message.toUpperCase());
+                } else {
+                    showNotification('success', 'ATHLETE REMOVED FROM COMPETITION');
+                    if (selectedComp) fetchParticipants(selectedComp.id);
+                }
+            },
+            variant: 'destructive',
+            icon: 'destructive'
+        });
     };
 
     const fetchCompetitions = async () => {
@@ -859,13 +884,16 @@ export const Competitions: React.FC = () => {
                 </Card>
             </div>
 
-            {notification && (
-                <Toast
-                    type={notification.type}
-                    message={notification.message}
-                    onClose={hideNotification}
-                />
-            )}
+            {/* Premium Confirmation Dialog */}
+            <ConfirmationDialog
+                isOpen={confirmState.isOpen}
+                onClose={hideConfirm}
+                onConfirm={confirmState.onConfirm}
+                title={confirmState.title}
+                description={confirmState.description}
+                variant={confirmState.variant}
+                icon={confirmState.icon}
+            />
         </div>
     );
 };

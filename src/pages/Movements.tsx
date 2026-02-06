@@ -34,9 +34,10 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { useTranslation } from 'react-i18next';
 import { useNotification } from '@/hooks/useNotification';
 import { Toast } from '@/components/ui/toast-custom';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface Movement {
     id: string;
@@ -57,7 +58,7 @@ const CATEGORY_ICONS: Record<string, any> = {
 };
 
 export const Movements: React.FC = () => {
-    const { t } = useTranslation();
+    const { t } = useLanguage();
     const { currentBox } = useAuth();
     const [movements, setMovements] = useState<Movement[]>([]);
     const [loading, setLoading] = useState(true);
@@ -69,9 +70,7 @@ export const Movements: React.FC = () => {
         category: 'Weightlifting' as Movement['category'],
         demo_url: ''
     });
-    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-    const [idToDelete, setIdToDelete] = useState<string | null>(null);
-    const { notification, showNotification, hideNotification } = useNotification();
+    const { notification, showNotification, hideNotification, confirmState, showConfirm, hideConfirm } = useNotification();
 
     useEffect(() => {
         fetchMovements();
@@ -130,10 +129,9 @@ export const Movements: React.FC = () => {
         setLoading(false);
     };
 
-    const handleDelete = async () => {
-        if (!idToDelete) return;
+    const handleDelete = async (id: string) => {
         setLoading(true);
-        const { error } = await supabase.from('movements').delete().eq('id', idToDelete);
+        const { error } = await supabase.from('movements').delete().eq('id', id);
 
         if (error) {
             showNotification('error', `ERROR ELIMINANDO: ${error.message.toUpperCase()}`);
@@ -141,8 +139,6 @@ export const Movements: React.FC = () => {
             showNotification('success', 'MOVIMIENTO ELIMINADO CORRECTAMENTE');
             fetchMovements();
         }
-        setDeleteConfirmOpen(false);
-        setIdToDelete(null);
         setLoading(false);
     };
 
@@ -274,10 +270,13 @@ export const Movements: React.FC = () => {
                                         variant="ghost"
                                         size="icon"
                                         className="h-9 w-9 text-destructive hover:bg-destructive/10 border border-transparent hover:border-destructive/20"
-                                        onClick={() => {
-                                            setIdToDelete(m.id);
-                                            setDeleteConfirmOpen(true);
-                                        }}
+                                        onClick={() => showConfirm({
+                                            title: t('common.confirm_delete', { defaultValue: 'CONFIRMAR ELIMINACIÓN' }),
+                                            description: t('movements.delete_warning', { defaultValue: '¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR ESTE MOVIMIENTO? ESTA ACCIÓN NO SE PUEDE DESHACER.' }),
+                                            onConfirm: () => handleDelete(m.id),
+                                            variant: 'destructive',
+                                            icon: 'destructive'
+                                        })}
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
@@ -305,43 +304,15 @@ export const Movements: React.FC = () => {
             )}
 
             {/* Premium Confirmation Dialog */}
-            <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-                <DialogContent shadow-none className="sm:max-w-[400px] border-destructive/20 bg-background/95 backdrop-blur-xl">
-                    <DialogHeader className="space-y-4">
-                        <div className="mx-auto h-20 w-20 rounded-full bg-destructive/10 flex items-center justify-center border-2 border-destructive/20 shadow-[0_0_30px_rgba(239,68,68,0.1)]">
-                            <Trash2 className="h-10 w-10 text-destructive animate-pulse" />
-                        </div>
-                        <div className="space-y-2 text-center">
-                            <DialogTitle className="text-3xl font-black italic uppercase tracking-tighter text-destructive">
-                                {t('common.confirm_delete', { defaultValue: 'CONFIRMAR ELIMINACIÓN' })}
-                            </DialogTitle>
-                            <p className="text-sm font-bold uppercase italic tracking-tight text-muted-foreground opacity-70 px-4 leading-relaxed">
-                                {t('movements.delete_warning', { defaultValue: '¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR ESTE MOVIMIENTO? ESTA ACCIÓN NO SE PUEDE DESHACER.' })}
-                            </p>
-                        </div>
-                    </DialogHeader>
-                    <div className="grid grid-cols-2 gap-3 mt-6">
-                        <Button
-                            variant="outline"
-                            className="font-black uppercase italic h-14 border-muted-foreground/20 hover:bg-muted/50 text-base"
-                            onClick={() => {
-                                setDeleteConfirmOpen(false);
-                                setIdToDelete(null);
-                            }}
-                        >
-                            {t('common.cancel', { defaultValue: 'CANCELAR' })}
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            className="font-black uppercase italic h-14 shadow-xl shadow-destructive/20 text-base"
-                            onClick={handleDelete}
-                            disabled={loading}
-                        >
-                            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : t('common.delete', { defaultValue: 'ELIMINAR' })}
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
+            <ConfirmationDialog
+                isOpen={confirmState.isOpen}
+                onClose={hideConfirm}
+                onConfirm={confirmState.onConfirm}
+                title={confirmState.title}
+                description={confirmState.description}
+                variant={confirmState.variant}
+                icon={confirmState.icon}
+            />
         </div>
     );
 };

@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Dumbbell, Loader2, Mail, Lock, UserPlus, ArrowLeft, Zap, Info, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useNotification } from '@/hooks/useNotification';
+import { useLanguage, useNotification } from '@/hooks';
 import { Toast } from '@/components/ui/toast-custom';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -14,7 +13,7 @@ interface SignUpProps {
 }
 
 export const SignUp: React.FC<SignUpProps> = ({ onBackToLogin }) => {
-    const { t } = useTranslation();
+    const { t } = useLanguage();
     const { signUp } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');

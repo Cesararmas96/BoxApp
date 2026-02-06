@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/hooks';
 import {
     Plus,
     GripVertical,
@@ -55,7 +55,7 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
     setSessionBlocks,
     movements
 }) => {
-    const { t } = useTranslation();
+    const { t } = useLanguage();
     const [searchQuery, setSearchQuery] = useState('');
     const [activeSearchBlockId, setActiveSearchBlockId] = useState<string | null>(null);
 

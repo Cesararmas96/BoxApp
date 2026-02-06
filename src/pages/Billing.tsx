@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { useLanguage } from '@/hooks/useLanguage';
+
 import {
     Plus,
     TrendingUp,
@@ -21,8 +21,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useLanguage, useNotification } from '@/hooks';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNotification } from '@/hooks/useNotification';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

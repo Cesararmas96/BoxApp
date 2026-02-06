@@ -23,9 +23,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/hooks';
 
-const formatDate = (dateString: string, i18n: any) => {
+const formatDate = (dateString: string | null | undefined, i18n: any) => {
+    if (!dateString) return '-';
     return new Intl.DateTimeFormat(i18n.language === 'es' ? 'es-ES' : 'en-US', {
         year: 'numeric',
         month: '2-digit',
@@ -44,8 +45,8 @@ interface AuditLog {
     action: string;
     old_data: any;
     new_data: any;
-    changed_by: string;
-    created_at: string;
+    changed_by: string | null;
+    created_at: string | null;
     profiles?: {
         first_name: string;
         last_name: string;
@@ -54,7 +55,7 @@ interface AuditLog {
 }
 
 export const AuditLogs: React.FC = () => {
-    const { t, i18n } = useTranslation();
+    const { t, i18n } = useLanguage();
     const [logs, setLogs] = useState<AuditLog[]>([]);
     const [loading, setLoading] = useState(true);
     const [expandedId, setExpandedId] = useState<string | null>(null);

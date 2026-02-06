@@ -35,7 +35,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "../lib/utils";
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/hooks';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface Profile {
@@ -62,7 +62,7 @@ const TEST_USERS = [
 ];
 
 export const Roles: React.FC = () => {
-    const { t } = useTranslation();
+    const { t } = useLanguage();
     const { userProfile, signIn, isRoot } = useAuth();
     const [users, setUsers] = useState<Profile[]>([]);
     const [matrixData, setMatrixData] = useState<PermissionMatrixItem[]>([]);

@@ -34,17 +34,15 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { useNotification } from '@/hooks/useNotification';
-import { Toast } from '@/components/ui/toast-custom';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { useLanguage } from '@/hooks/useLanguage';
+import { useNotification, useLanguage } from '@/hooks';
 
 interface Movement {
     id: string;
     name: string;
-    category: 'Weightlifting' | 'Gymnastics' | 'Monostructural' | 'Accessory' | 'Other';
-    demo_url?: string;
-    created_at: string;
+    category: 'Weightlifting' | 'Gymnastics' | 'Monostructural' | 'Accessory' | 'Other' | string | null;
+    demo_url?: string | null;
+    box_id?: string | null;
+    created_at: string | null;
 }
 
 const CATEGORIES = ['Weightlifting', 'Gymnastics', 'Monostructural', 'Accessory', 'Other'];

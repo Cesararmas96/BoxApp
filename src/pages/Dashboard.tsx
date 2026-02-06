@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import {
-    Activity,
     Users,
     Trophy,
     TrendingUp,
     Zap,
     Clock,
     Flame,
-    Calendar
+    Calendar,
+    Award,
+    ChevronRight,
+    Search,
+    Dumbbell,
+    Target
 } from 'lucide-react';
 import {
     Card,
@@ -23,20 +27,23 @@ import { Button } from '@/components/ui/button';
 import { Progress } from "@/components/ui/progress"
 import { AthleteDashboard } from '@/components/AthleteDashboard';
 import { CoachDashboard } from '@/components/CoachDashboard';
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/hooks';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface DashboardProps {
-    userProfile?: any;
+
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
-    const { t } = useTranslation();
+export const Dashboard: React.FC = () => {
+    const { t } = useLanguage();
+    const { userProfile } = useAuth();
     const [stats, setStats] = useState({
         members: 0,
         activeWOD: null as any,
         attendance: 0,
         pendingLeads: 0,
-        totalBookings: 0
+        totalBookings: 0,
+        recentResults: [] as any[]
     });
     const [loading, setLoading] = useState(true);
 
@@ -84,13 +91,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
             // 5. Recent Results
             const { data: resultsData } = await supabase
                 .from('results')
-                .select(`
-                    id,
-                    result,
-                    rx,
-                    wods!results_wod_id_fkey (title),
-                    profiles!results_athlete_id_fkey (first_name, last_name)
-                `)
+                .select('id, result, rx, wods!results_wod_id_fkey(title), profiles!results_athlete_id_fkey(first_name, last_name)')
                 .order('created_at', { ascending: false })
                 .limit(3);
 
@@ -215,7 +216,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
                         <div className="mt-8 flex gap-2 h-2">
                             {[0.8, 0.9, 0.7, 0.85, 0.92, stats.attendance / 100, stats.attendance / 100].map((v, i) => (
                                 <div key={i} className="flex-1 rounded-full bg-black/5 dark:bg-white/5 overflow-hidden">
-                                    <div className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] transition-all duration-1000 delay-300 transform origin-left group-hover:scale-x-110" style={{ width: `${v * 100}%` }} />
+                                    <div className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] transition-all duration-1000 delay-300 transform origin-left group-hover:scale-x-110" style={{ width: (v * 100) + '%' }} />
                                 </div>
                             ))}
                         </div>
@@ -273,7 +274,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
                                 <Zap className="h-5 w-5 text-primary" />
                             </div>
                             <div className="space-y-1">
-                                <p className="text-sm font-black uppercase tracking-tight text-white">{t('dashboard.leads_waiting', { count: stats.pendingLeads, defaultValue: `${stats.pendingLeads} PENDING LEADS` })}</p>
+                                <p className="text-sm font-black uppercase tracking-tight text-white">{t('dashboard.leads_waiting', { count: stats.pendingLeads, defaultValue: stats.pendingLeads + ' PENDING LEADS' })}</p>
                                 <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest leading-relaxed">{t('dashboard.contact_prospects')}</p>
                             </div>
                         </div>

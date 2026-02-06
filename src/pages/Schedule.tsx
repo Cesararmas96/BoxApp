@@ -21,8 +21,7 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { useLanguage } from '@/hooks/useLanguage';
-import { useNotification } from '@/hooks/useNotification';
+import { useLanguage, useNotification } from '@/hooks';
 import { Toast } from '@/components/ui/toast-custom';
 import { useAuth } from '@/contexts/AuthContext';
 

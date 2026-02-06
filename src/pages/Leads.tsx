@@ -35,19 +35,22 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useNotification } from '@/hooks/useNotification';
 import { Toast } from '@/components/ui/toast-custom';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { useLanguage } from '@/hooks/useLanguage';
+import { useNotification, useLanguage } from '@/hooks';
 import { cn } from '@/lib/utils';
 
 interface Lead {
     id: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-    status: string;
-    created_at: string;
+    first_name: string | null;
+    last_name: string | null;
+    email: string | null;
+    phone: string | null;
+    source: string | null;
+    notes: string | null;
+    status: string | null;
+    box_id: string | null;
+    created_at: string | null;
 }
 
 export const Leads: React.FC = () => {
@@ -148,14 +151,7 @@ export const Leads: React.FC = () => {
         }
     };
 
-    const getStatusVariant = (status: string) => {
-        switch (status) {
-            case 'new': return 'default';
-            case 'contacted': return 'secondary';
-            case 'converted': return 'outline';
-            default: return 'outline';
-        }
-    };
+
 
     return (
         <div className="space-y-8 pb-12">

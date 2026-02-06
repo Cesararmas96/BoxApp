@@ -11,7 +11,7 @@ import {
     AlertCircle,
     Zap
 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useLanguage, useNotification } from '@/hooks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -26,11 +26,11 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
-import { useNotification } from '@/hooks/useNotification';
+import { useNotification } from '@/hooks';
 import { Toast } from '@/components/ui/toast-custom';
 
 export const Profile: React.FC = () => {
-    const { t } = useTranslation();
+    const { t } = useLanguage();
     const { userProfile, user, updateUser, refreshProfile } = useAuth();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { notification, showNotification, hideNotification } = useNotification();

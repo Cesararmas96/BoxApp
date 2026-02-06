@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import { ModeToggle } from '@/components/mode-toggle';
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/hooks';
 import { Languages } from 'lucide-react';
 import {
     DropdownMenu,
@@ -37,7 +37,7 @@ const getNavItems = (t: any) => [
 
 export const MainLayout: React.FC<LayoutProps> = ({ userProfile }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const { t, i18n } = useTranslation();
+    const { t, i18n } = useLanguage();
     const { currentBox, signOut } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();

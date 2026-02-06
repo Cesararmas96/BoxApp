@@ -8,8 +8,12 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { useTranslation } from 'react-i18next';
-import { AlertCircle, Trash2, HelpCircle } from 'lucide-react';
+import {
+    HelpCircle,
+    Trash2,
+    AlertCircle
+} from "lucide-react";
+import { useLanguage } from '@/hooks';
 import { cn } from '@/lib/utils';
 
 interface ConfirmationDialogProps {
@@ -35,7 +39,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
     variant = 'default',
     icon = 'default'
 }) => {
-    const { t } = useTranslation();
+    const { t } = useLanguage();
 
     const icons = {
         default: <HelpCircle className="h-10 w-10 text-primary animate-pulse" />,

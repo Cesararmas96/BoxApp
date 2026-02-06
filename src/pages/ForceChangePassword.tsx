@@ -1,22 +1,20 @@
 import React, { useState } from 'react';
 import { Key, Lock, ShieldCheck, Loader2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useLanguage, useNotification } from '@/hooks';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useNotification } from '@/hooks/useNotification';
-import { Toast } from '@/components/ui/toast-custom';
 import { supabase } from '@/lib/supabaseClient';
 
 export const ForceChangePassword: React.FC = () => {
-    const { t } = useTranslation();
+    const { t } = useLanguage();
     const { user, updateUser, signOut } = useAuth();
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const { notification, showNotification, hideNotification } = useNotification();
+    const { showNotification } = useNotification();
 
     const handleUpdatePassword = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -43,7 +41,7 @@ export const ForceChangePassword: React.FC = () => {
             const { error: profileError } = await supabase
                 .from('profiles')
                 .update({ force_password_change: false })
-                .eq('id', user?.id);
+                .eq('id', user?.id || '');
 
             if (profileError) throw profileError;
 
@@ -145,13 +143,6 @@ export const ForceChangePassword: React.FC = () => {
                 </form>
             </div>
 
-            {notification && (
-                <Toast
-                    type={notification.type}
-                    message={notification.message}
-                    onClose={hideNotification}
-                />
-            )}
         </div>
     );
 };

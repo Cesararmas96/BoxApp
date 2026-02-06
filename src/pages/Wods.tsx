@@ -18,7 +18,7 @@ import {
     Pencil,
     Check
 } from 'lucide-react';
-import { WODDesigner, SessionBlock, LessonBlock, BlockItem } from '@/components/WODDesigner';
+import { WODDesigner, SessionBlock, LessonBlock } from '@/components/WODDesigner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -47,8 +47,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useLanguage } from '@/hooks/useLanguage';
-import { useNotification } from '@/hooks/useNotification';
+import { useLanguage, useNotification } from '@/hooks';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Toast } from '@/components/ui/toast-custom';
 

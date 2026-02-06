@@ -12,8 +12,7 @@ import {
     Receipt,
     Bell
 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { useNotification } from '@/hooks/useNotification';
+import { useLanguage, useNotification } from '@/hooks';
 import { Toast } from '@/components/ui/toast-custom';
 import {
     Card,
@@ -26,7 +25,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 export const Analytics: React.FC = () => {
-    const { t } = useTranslation();
+    const { t } = useLanguage();
     const { currentBox } = useAuth();
     const [stats, setStats] = useState({
         totalMembers: 0,
@@ -40,7 +39,7 @@ export const Analytics: React.FC = () => {
 
     const [atRiskAthletes, setAtRiskAthletes] = useState<any[]>([]);
     const [unpaidAthletes, setUnpaidAthletes] = useState<any[]>([]);
-    const { notification, showNotification, hideNotification } = useNotification();
+    const { showNotification } = useNotification();
 
     useEffect(() => {
         fetchStats();
@@ -48,10 +47,10 @@ export const Analytics: React.FC = () => {
 
     const fetchStats = async () => {
         const [members, leads, invoices, bookings] = await Promise.all([
-            supabase.from('profiles').select('*').eq('box_id', currentBox?.id),
-            supabase.from('leads').select('*', { count: 'exact', head: true }).eq('box_id', currentBox?.id),
-            supabase.from('invoices').select('*, profiles(*)').eq('box_id', currentBox?.id),
-            supabase.from('bookings').select('athlete_id, created_at').eq('box_id', currentBox?.id)
+            supabase.from('profiles').select('*').eq('box_id', currentBox?.id || ''),
+            supabase.from('leads').select('*', { count: 'exact', head: true }).eq('box_id', currentBox?.id || ''),
+            supabase.from('invoices').select('*, profiles(*)').eq('box_id', currentBox?.id || ''),
+            supabase.from('bookings').select('user_id, created_at').eq('box_id', currentBox?.id || '')
         ]);
 
         const totalRevenue = invoices.data?.reduce((acc, inv) => acc + Number(inv.amount), 0) || 0;
@@ -62,7 +61,7 @@ export const Analytics: React.FC = () => {
         tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
 
         const activeIds = new Set(
-            bookings.data?.filter(b => new Date(b.created_at) > tenDaysAgo).map(b => b.athlete_id)
+            (bookings.data as any[])?.filter(b => b.created_at && new Date(b.created_at) > tenDaysAgo).map(b => b.user_id)
         );
 
         const riskAthletes = members.data?.filter(m => m.role_id === 'athlete' && !activeIds.has(m.id)) || [];

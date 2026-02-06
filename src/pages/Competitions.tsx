@@ -38,23 +38,23 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useTranslation } from 'react-i18next';
-import { useNotification } from '@/hooks/useNotification';
+import { useLanguage, useNotification } from '@/hooks';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { Toast } from '@/components/ui/toast-custom';
-
 
 interface Competition {
     id: string;
     name: string;
-    description: string;
-    start_date: string;
-    end_date: string;
-    status: string;
+    description: string | null;
+    start_date: string | null;
+    end_date: string | null;
+    status: string | null;
+    type?: string | null;
+    box_id?: string | null;
+    created_at?: string | null;
 }
 
 export const Competitions: React.FC = () => {
-    const { t } = useTranslation();
+    const { t } = useLanguage();
     const { currentBox } = useAuth();
     const [competitions, setCompetitions] = useState<Competition[]>([]);
     const [loading, setLoading] = useState(true);
@@ -65,7 +65,7 @@ export const Competitions: React.FC = () => {
         start_date: '',
         end_date: ''
     });
-    const { notification, showNotification, hideNotification, confirmState, showConfirm, hideConfirm } = useNotification();
+    const { showNotification, confirmState, showConfirm, hideConfirm } = useNotification();
 
     const [selectedComp, setSelectedComp] = useState<Competition | null>(null);
     const [athletes, setAthletes] = useState<any[]>([]);
@@ -284,10 +284,10 @@ export const Competitions: React.FC = () => {
         const { data, error } = await supabase
             .from('competitions')
             .select('*')
-            .eq('box_id', currentBox?.id)
+            .eq('box_id', currentBox?.id || '')
             .order('start_date', { ascending: false });
 
-        if (!error && data) setCompetitions(data);
+        if (!error && data) setCompetitions(data as Competition[]);
         setLoading(false);
     };
 

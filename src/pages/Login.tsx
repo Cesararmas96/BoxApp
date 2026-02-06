@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { Dumbbell, Loader2, Mail, Lock, Info, Zap, Eye, EyeOff } from 'lucide-react';
-import { useLanguage } from '@/hooks/useLanguage';
+import { useLanguage, useNotification } from '@/hooks';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useNotification } from '@/hooks/useNotification';
 import { Toast } from '@/components/ui/toast-custom';
 import { supabase } from '@/lib/supabaseClient';
 

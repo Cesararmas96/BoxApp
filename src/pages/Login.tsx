@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useNotification } from '@/hooks/useNotification';
 import { Toast } from '@/components/ui/toast-custom';
+import { supabase } from '@/lib/supabaseClient';
 
 export const Login: React.FC = () => {
     const { t } = useTranslation();
@@ -47,7 +48,7 @@ export const Login: React.FC = () => {
             else showNotification('success', t('auth.reset_sent'));
             setIsResetting(false);
         } else {
-            const { error } = isSignUp
+            const { data, error } = isSignUp
                 ? await signUp({ email, password })
                 : await signIn({ email, password });
 
@@ -55,6 +56,20 @@ export const Login: React.FC = () => {
                 setError(error.message);
             } else if (isSignUp) {
                 showNotification('success', t('auth.verification_sent'));
+            } else if (data?.user) {
+                // Check if force_password_change is true
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('force_password_change')
+                    .eq('id', data.user.id)
+                    .single();
+
+                if (profile?.force_password_change) {
+                    showNotification('info', t('auth.force_change_msg'));
+                    // We can either redirect to a specific page or show the reset form
+                    // For now, let's just trigger the resetting mode but maybe with a special flag
+                    setIsResetting(true);
+                }
             }
         }
         setLoading(false);

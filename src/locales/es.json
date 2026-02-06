@@ -106,6 +106,9 @@
         "operator": "Operador",
         "entity": "Entidad",
         "operation": "Operación",
+        "action_create": "Crear",
+        "action_update": "Actualizar",
+        "action_delete": "Eliminar",
         "decrypting": "Descifrando rastros de auditoría...",
         "no_events": "No se registraron eventos de seguridad que coincidan.",
         "state_previous": "Estado: Anterior",
@@ -205,9 +208,11 @@
         "details_btn": "Detalles",
         "details_title": "Detalles del Miembro",
         "medical_background": "Antecedentes Médicos",
-        "no_medical": "Sin historial médico registrado.",
+        "no_medical": "Sin antecedentes médicos registrados.",
         "emergency": "Emergencia",
-        "waiver_status": "Estado de Deslinde",
+        "enable_account_label": "Habilitar Cuenta de Usuario",
+        "enable_account_hint": "Asigna una contraseña predeterminada (BoxApp2026!) y fuerza el cambio en el primer inicio de sesión.",
+        "waiver_status": "Estado Legal",
         "waiver_legal": "Deslinde Legal Firmado",
         "edit_profile": "Editar Perfil",
         "no_email": "Sin email"
@@ -287,13 +292,22 @@
         "back_to_id": "Volver a identificación",
         "existing_operative": "¿Operativo existente?",
         "new_operative": "¿Nuevo operativo?",
-        "verification_sent": "EMAIL DE VERIFICACIÓN ENVIADO",
-        "reset_sent": "LINK DE REINICIO ENVIADO A TU EMAIL",
+        "verification_sent": "Email de verificación enviado. Revisa tu bandeja de entrada.",
+        "force_change_msg": "Política de seguridad: Debes cambiar tu contraseña para continuar.",
+        "reset_password_title": "Actualizar Credenciales de Seguridad",
+        "reset_sent": "LINK DE RESETEO ENVIADO A TU EMAIL",
         "error_generic": "Ocurrió un error durante la autenticación",
         "invalid_credentials": "Credenciales inválidas",
         "password_mismatch": "Las contraseñas no coinciden",
         "password_too_short": "La contraseña debe tener al menos 6 caracteres",
-        "email_invalid": "Introduce un email válido"
+        "email_invalid": "Introduce un email válido",
+        "security_policy": "Política de Seguridad",
+        "force_change_subtitle": "Debes actualizar tu contraseña predeterminada para continuar",
+        "update_credentials": "Actualizar Credenciales",
+        "logout_cancel": "Cerrar Sesión y Cancelar",
+        "password_success_redirect": "¡CONTRASEÑA ACTUALIZADA! REDIRIGIENDO...",
+        "new_password_force": "Nueva Contraseña Técnica",
+        "confirm_password_force": "Confirmar Nueva Contraseña"
     },
     "billing": {
         "title": "Facturación y Finanzas del Box",
@@ -360,6 +374,8 @@
         "no_payment_risk": "¡Las finanzas están al día! 🚀",
         "debt_label": "Deuda: ${{amount}}",
         "days_inactive": "{{count}} Días Inactivo",
+        "starts_in": "Comienza en {{count}} días",
+        "athletes_registered": "{{count}} atletas registrados",
         "stable": "Estable"
     }
 }

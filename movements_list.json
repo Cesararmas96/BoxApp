@@ -1,0 +1,946 @@
+[
+  {
+    "name": "Row O Run",
+    "category": "Monostructural"
+  },
+  {
+    "name": "Técnica De Clean",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Broad Jump Con Caída Controlada",
+    "category": "Accessory"
+  },
+  {
+    "name": "Jump Shrug",
+    "category": "Accessory"
+  },
+  {
+    "name": "Clean Complex",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Clean Pull",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Hang Clean",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Squat Clean",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Front Rack Reverse Lunges",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Run Suave",
+    "category": "Monostructural"
+  },
+  {
+    "name": "Ring Row Tempo",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Dead Hang",
+    "category": "Accessory"
+  },
+  {
+    "name": "Band Face Pull",
+    "category": "Accessory"
+  },
+  {
+    "name": "Bounding  M",
+    "category": "Accessory"
+  },
+  {
+    "name": "Dumbell Power Clean And Jerk Alt",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Ring Mu/t2r",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Sand Bag Clean",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "10 T2B",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Doble KB Snatch",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Hammer Curl",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Extension De Triceps Con Mancuerna Overhead",
+    "category": "Accessory"
+  },
+  {
+    "name": "Monster Walks",
+    "category": "Accessory"
+  },
+  {
+    "name": "Hip Airplane",
+    "category": "Accessory"
+  },
+  {
+    "name": "Goblet Squat Tempo",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Hollow",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Glute Bridge Hold",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Depth Jump",
+    "category": "Accessory"
+  },
+  {
+    "name": "Sprint Corto 4×3 Jumps",
+    "category": "Monostructural"
+  },
+  {
+    "name": "Back Squat",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Squat Snatch",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Wod",
+    "category": "Accessory"
+  },
+  {
+    "name": "6/4/2 Squat Snatch",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Box Jump  Cajon Alto/medio",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Run",
+    "category": "Monostructural"
+  },
+  {
+    "name": "Plyo Push-ups",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Med Ball Chest Pass",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Power Snatch",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Complex",
+    "category": "Accessory"
+  },
+  {
+    "name": "Complex =  1 Muscle Snatch",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Hang Power Snatch",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Low Hang Power Snatch",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Snatch Balance",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "KB Carry Carry",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Sumo Deadlift High Pull",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Chest To Bar",
+    "category": "Accessory"
+  },
+  {
+    "name": "Skipping",
+    "category": "Monostructural"
+  },
+  {
+    "name": "Bounding Drills",
+    "category": "Accessory"
+  },
+  {
+    "name": "Front Squat",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Wall Balls",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Pistol Squats",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Squat  Clean 70 %",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Burpees",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Squat  Clean 75 %",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Clean Andjerk 50/35 Kg",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Bar Facing Burpees",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Air Squats",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Shouder Taps",
+    "category": "Accessory"
+  },
+  {
+    "name": "Walk Out",
+    "category": "Accessory"
+  },
+  {
+    "name": "Box Jump Over Alto",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Overhead Mb Throw",
+    "category": "Monostructural"
+  },
+  {
+    "name": "Mb Oh Sit Ups",
+    "category": "Accessory"
+  },
+  {
+    "name": "Abs Bicy",
+    "category": "Accessory"
+  },
+  {
+    "name": "Endurance",
+    "category": "Accessory"
+  },
+  {
+    "name": "Box Jump Overs Step Down",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Doblé Unders",
+    "category": "Accessory"
+  },
+  {
+    "name": "-4-3-2",
+    "category": "Accessory"
+  },
+  {
+    "name": "Walk Wall",
+    "category": "Accessory"
+  },
+  {
+    "name": "Banded Lat Pulldown",
+    "category": "Accessory"
+  },
+  {
+    "name": "Push Ups  Lento",
+    "category": "Accessory"
+  },
+  {
+    "name": "Towel Pull-ups Explosivos",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Strict Press",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Strict Pull Ups",
+    "category": "Accessory"
+  },
+  {
+    "name": "× 3",
+    "category": "Accessory"
+  },
+  {
+    "name": "Combinado",
+    "category": "Accessory"
+  },
+  {
+    "name": "Escaldos 5/3 Ring MU O El Doble Ring Pull Ups",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Hang Clean And Jerk",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Toes-to-bar",
+    "category": "Accessory"
+  },
+  {
+    "name": "Shuttle Run",
+    "category": "Monostructural"
+  },
+  {
+    "name": "Alternating Pustol Squats",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Biceps Curl Barra",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Reverse Curl",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Walking Lunges",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Glute Bridge",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Cossack Squat",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Broad Jump",
+    "category": "Accessory"
+  },
+  {
+    "name": "Droop Jump",
+    "category": "Accessory"
+  },
+  {
+    "name": "Dumbell Overhead Squats",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Burpees Over The Dumbell",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Dumbell Thrusters",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "T2B",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Devil Press Alt",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Box Jump Over",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Doble Unders",
+    "category": "Accessory"
+  },
+  {
+    "name": "Pull Ups",
+    "category": "Accessory"
+  },
+  {
+    "name": "Débil Press",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Box Jump Overs",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Bmu/c2b",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Devils Press",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Ghd Sit-ups",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Russian Twist X Lado En Ghd",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Suitcase Carry Pesado  M",
+    "category": "Accessory"
+  },
+  {
+    "name": "Muscle Snatch",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Drop Snatch",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Power Snatch Subiendo Peso",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "70/80/",
+    "category": "Accessory"
+  },
+  {
+    "name": "Burpees Box Jump Over Cajon Alto/medio",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Row  O Run",
+    "category": "Monostructural"
+  },
+  {
+    "name": "Wall Pike Push-ups",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Push Jerk",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Squat Clean Desde Bloques  Barra Justo En La Rodilla",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Front Squat Con Pausa Abajo",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Box Jump Over Box Steps Down",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Push Jerk 60/45 Kg",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Squats",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Complex Técnico Clean And Jerk",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Clean Deadlift",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Hang Power Clean",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Front Squats",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Jerk Con Pausa",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Overhead Med Ball Throw",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Jump Shrug Con Barra Vacía",
+    "category": "Accessory"
+  },
+  {
+    "name": "Clean And Jerk",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Clean",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Jerk",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Entre El 85/90 %",
+    "category": "Accessory"
+  },
+  {
+    "name": "Box Front Squat  Sumo",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Con Pausa Abajo  Manteniendo Firme Abdomen Espalda Y Codos Arriba",
+    "category": "Accessory"
+  },
+  {
+    "name": "Thrusters 50/35 Kg",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Burpees Over The Bar",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Seria Asi",
+    "category": "Accessory"
+  },
+  {
+    "name": "Hago 21",
+    "category": "Accessory"
+  },
+  {
+    "name": "Ring Row Lento",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "2 Bar Mu/c2b",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Ring Dips",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Dbbell Hang Snatch Alternados 60/50 45 40 Lbs",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Drop Jump Cajón Bajo",
+    "category": "Accessory"
+  },
+  {
+    "name": "Back Squat Con Pausa",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Ot2m",
+    "category": "Accessory"
+  },
+  {
+    "name": "Burpees Db Facing",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Squat Snatch 90/",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Deficit Snatch",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Low Hang Snatch Pull",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Front Squats 60/40 Kg",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Db Walking Lunges 60/50 45/40 Lbs",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Wall Ballshots 22/14 Lbs",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Sumo Deadlift High Pull 50/35 Kg",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Banded Face Pull",
+    "category": "Accessory"
+  },
+  {
+    "name": "Pike Hold",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Hollow Rock",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Snatch Grip Rdl",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "High Pull",
+    "category": "Accessory"
+  },
+  {
+    "name": "Ohs Ligero",
+    "category": "Accessory"
+  },
+  {
+    "name": "... Hand Stand Push Ups",
+    "category": "Accessory"
+  },
+  {
+    "name": "... Burpees Box Jump",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "... Dbbell Snatch Alternados",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Hip Thrust",
+    "category": "Accessory"
+  },
+  {
+    "name": "Rdl Ligero",
+    "category": "Accessory"
+  },
+  {
+    "name": "Good Morning",
+    "category": "Accessory"
+  },
+  {
+    "name": "Back Rack Strict Press",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Clean & Jerk",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Deadlift 88/",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Clean And Jerk  50/35 Kg",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "KB Hang Clean And Jerk Alt 20/16",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Strict HSPU",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Rope Climbs",
+    "category": "Accessory"
+  },
+  {
+    "name": "General",
+    "category": "Accessory"
+  },
+  {
+    "name": "KB Goblet Squat",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Side Plank",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Glute Ham Raise Parcial",
+    "category": "Accessory"
+  },
+  {
+    "name": "Lateral Bound  C/lado",
+    "category": "Accessory"
+  },
+  {
+    "name": "In 30 Ring Dips",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Dumbell Front Squats",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Débil Press Alt",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Banded Shoulder Press",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Hollow Hold",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Serratus Push-up",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Plyo Push-up",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Oh Med Ball Throw",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Power Clean",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Puesh Press",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Fuerza",
+    "category": "Accessory"
+  },
+  {
+    "name": "Push Press",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Pclean",
+    "category": "Weightlifting"
+  },
+  {
+    "name": ".2  Km Run",
+    "category": "Monostructural"
+  },
+  {
+    "name": "Bar MU  O Burpee Jumping C2b",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Double Unders",
+    "category": "Monostructural"
+  },
+  {
+    "name": "Banded Glute Bridge",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Banded Lateral Walk C/lado",
+    "category": "Accessory"
+  },
+  {
+    "name": "Dead Bug",
+    "category": "Accessory"
+  },
+  {
+    "name": "Pogo Jumps",
+    "category": "Accessory"
+  },
+  {
+    "name": "Drop Jump",
+    "category": "Accessory"
+  },
+  {
+    "name": "Stick Landing",
+    "category": "Accessory"
+  },
+  {
+    "name": "Dumbell Squats Snatch",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Workout",
+    "category": "Accessory"
+  },
+  {
+    "name": "C2b Pull Ups",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "KB Deadlift",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Wod 1",
+    "category": "Accessory"
+  },
+  {
+    "name": "Push Press 60/40 50/30 Kg",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Walk Walk",
+    "category": "Accessory"
+  },
+  {
+    "name": "Wod 2:",
+    "category": "Accessory"
+  },
+  {
+    "name": "Burpees Over Bar",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Dumbell Front Rack Box  Step Ups",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Slow Clean Pull X",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Tall Power Clean  X",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Tempo Front Squats X",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Seria De Esta Forma",
+    "category": "Accessory"
+  },
+  {
+    "name": "Front Squat A Cajon",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Debe Ser Tan Bajo Como Un Front Squat Comun Profundo Pero Sin Permitir Que Sufra La Rodilla La Flexión Máxima",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Hang Squat Clean",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Dumbell Facing Burpees",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "C2b /pull Ups",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Single Unders",
+    "category": "Accessory"
+  },
+  {
+    "name": "Lunges",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Seg Hs Hold",
+    "category": "Accessory"
+  },
+  {
+    "name": "Endurance Fot Time",
+    "category": "Accessory"
+  },
+  {
+    "name": "Devils Press Alt",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Hang Stand Push Ups",
+    "category": "Accessory"
+  },
+  {
+    "name": "Déficit Hang Stand Push Ups",
+    "category": "Accessory"
+  },
+  {
+    "name": "Strict Hang Stand Push Ups",
+    "category": "Accessory"
+  },
+  {
+    "name": "Burpees Bastardos",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Banded Strict Press",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Seg L Sit En Paralelas",
+    "category": "Accessory"
+  },
+  {
+    "name": "Power Clean Touch And Go",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Bmu",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "KB Swing 30/20",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Wall Climbs",
+    "category": "Accessory"
+  },
+  {
+    "name": "Bar Mu/c2b",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Banded Hip Thrust",
+    "category": "Accessory"
+  },
+  {
+    "name": "Tempo Goblet Squat 5",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Pvc Pass Atras Y Adelante",
+    "category": "Accessory"
+  },
+  {
+    "name": "Barra Vacía  Practica De Snatch",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "E2mom 10",
+    "category": "Accessory"
+  },
+  {
+    "name": "Fallo = Bajar Peso",
+    "category": "Accessory"
+  },
+  {
+    "name": "Back Squats Tempo 5 Seg Bajada Lenta",
+    "category": "Weightlifting"
+  },
+  {
+    "name": "Burpees Box Jump",
+    "category": "Gymnastics"
+  },
+  {
+    "name": "Sit Ups",
+    "category": "Accessory"
+  }
+]

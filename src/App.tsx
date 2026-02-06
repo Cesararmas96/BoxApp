@@ -17,6 +17,7 @@ import { Competitions } from './pages/Competitions';
 import { AuditLogs } from './pages/AuditLogs';
 import { Movements } from './pages/Movements';
 import { Profile } from './pages/Profile';
+import { ForceChangePassword } from './pages/ForceChangePassword';
 import { ThemeProvider, useTheme } from './components/theme-provider';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -53,6 +54,10 @@ function AppContent() {
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     );
+  }
+
+  if (userProfile?.force_password_change) {
+    return <ForceChangePassword />;
   }
 
   return (

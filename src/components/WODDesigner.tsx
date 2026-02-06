@@ -62,6 +62,7 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
 }) => {
     const { t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');
+    const [activeSearchBlockId, setActiveSearchBlockId] = useState<string | null>(null);
 
     const BLOCK_TEMPLATES: Record<string, { title: string; icon: any; color: string }> = {
         warmup: { title: t('wods.block_warmup'), icon: <FlameIcon className="h-4 w-4" />, color: 'bg-orange-500/10 text-orange-500' },
@@ -254,30 +255,50 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
                                                     </div>
                                                     <Input
                                                         placeholder={t('common.search')}
-                                                        className="pl-8 h-8 text-xs bg-muted/50 border-dashed"
-                                                        value={searchQuery}
-                                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                                        className="pl-8 h-8 text-xs bg-muted/50 border-dashed focus:border-solid transition-all"
+                                                        value={activeSearchBlockId === block.id ? searchQuery : ''}
+                                                        onFocus={() => setActiveSearchBlockId(block.id)}
+                                                        onChange={(e) => {
+                                                            setSearchQuery(e.target.value);
+                                                            setActiveSearchBlockId(block.id);
+                                                        }}
                                                     />
-                                                    {searchQuery && (
-                                                        <div className="absolute top-full left-0 right-0 mt-1 bg-popover border rounded-md shadow-lg z-50 overflow-hidden">
-                                                            {filteredMovements.map((m) => (
+                                                    {activeSearchBlockId === block.id && searchQuery && (
+                                                        <div className="absolute top-full left-0 right-0 mt-1 bg-popover/95 backdrop-blur-md border rounded-md shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in duration-200">
+                                                            <div className="max-h-[200px] overflow-y-auto">
+                                                                {filteredMovements.map((m) => (
+                                                                    <button
+                                                                        key={m.id}
+                                                                        className="w-full text-left px-3 py-2 text-xs hover:bg-primary/10 flex items-center justify-between group transition-colors border-b last:border-0"
+                                                                        onClick={() => {
+                                                                            addMovementToBlock(block.id, m);
+                                                                            setSearchQuery('');
+                                                                            setActiveSearchBlockId(null);
+                                                                        }}
+                                                                    >
+                                                                        <div className="flex flex-col">
+                                                                            <span className="font-bold uppercase italic tracking-tighter">{m.name}</span>
+                                                                            {m.category && <span className="text-[8px] text-muted-foreground uppercase">{m.category}</span>}
+                                                                        </div>
+                                                                        <Plus className="h-3 w-3 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                                    </button>
+                                                                ))}
+                                                                {filteredMovements.length === 0 && (
+                                                                    <div className="px-3 py-4 text-center">
+                                                                        <p className="text-[10px] text-muted-foreground italic uppercase tracking-widest">
+                                                                            {t('common.no_data')}
+                                                                        </p>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="bg-muted/50 p-1 flex justify-center border-t">
                                                                 <button
-                                                                    key={m.id}
-                                                                    className="w-full text-left px-3 py-2 text-xs hover:bg-accent flex items-center justify-between group"
-                                                                    onClick={() => {
-                                                                        addMovementToBlock(block.id, m);
-                                                                        setSearchQuery('');
-                                                                    }}
+                                                                    className="text-[8px] uppercase font-bold text-muted-foreground hover:text-primary transition-colors"
+                                                                    onClick={() => setActiveSearchBlockId(null)}
                                                                 >
-                                                                    <span>{m.name}</span>
-                                                                    <Plus className="h-3 w-3 opacity-0 group-hover:opacity-100" />
+                                                                    Close Search
                                                                 </button>
-                                                            ))}
-                                                            {filteredMovements.length === 0 && (
-                                                                <div className="px-3 py-2 text-xs text-muted-foreground italic">
-                                                                    {t('common.no_data')}
-                                                                </div>
-                                                            )}
+                                                            </div>
                                                         </div>
                                                     )}
                                                 </div>

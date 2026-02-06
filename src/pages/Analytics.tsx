@@ -219,7 +219,9 @@ export const Analytics: React.FC = () => {
                         <div className="rounded-lg border bg-primary/5 p-4 border-primary/20">
                             <p className="text-xs font-black uppercase tracking-widest text-primary mb-1">{t('analytics.upcoming')}</p>
                             <h4 className="font-bold text-sm">Winter Open 2026</h4>
-                            <p className="text-[10px] text-muted-foreground">Starts in 12 days • 45 athletes registered</p>
+                            <p className="text-[10px] text-muted-foreground">
+                                {t('analytics.starts_in', { count: 12 })} • {t('analytics.athletes_registered', { count: 45 })}
+                            </p>
                             <Button size="sm" variant="ghost" className="w-full mt-2 h-7 text-[10px] uppercase font-bold">{t('analytics.register_athletes')}</Button>
                         </div>
                         <p className="text-[10px] text-center text-muted-foreground italic">

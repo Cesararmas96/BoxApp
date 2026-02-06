@@ -69,7 +69,8 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
         status: 'active',
         medicalHistory: '',
         emergencyName: '',
-        emergencyPhone: ''
+        emergencyPhone: '',
+        createAccount: true
     });
     const [selectedMember, setSelectedMember] = useState<Profile | null>(null);
     const [detailsOpen, setDetailsOpen] = useState(false);
@@ -107,9 +108,25 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                     medical_history: newMember.medicalHistory,
                     emergency_contact_name: newMember.emergencyName,
                     emergency_contact_phone: newMember.emergencyPhone,
-                    box_id: currentBox?.id
+                    box_id: currentBox?.id,
+                    force_password_change: newMember.createAccount
                 }
             ]);
+
+        if (!error && newMember.createAccount) {
+            // Attempt to create auth account with default password
+            await supabase.auth.signUp({
+                email: newMember.email,
+                password: 'BoxApp2026!',
+                options: {
+                    data: {
+                        first_name: newMember.firstName,
+                        last_name: newMember.lastName,
+                        box_id: currentBox?.id
+                    }
+                }
+            });
+        }
 
         if (error) {
             showNotification('error', 'ERROR ADDING MEMBER: ' + error.message.toUpperCase());
@@ -124,7 +141,8 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                 status: 'active',
                 medicalHistory: '',
                 emergencyName: '',
-                emergencyPhone: ''
+                emergencyPhone: '',
+                createAccount: true
             });
             fetchMembers();
         }
@@ -203,7 +221,9 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                         <option value="athlete">{t('roles.role_athlete')}</option>
                                         <option value="coach">{t('roles.role_coach')}</option>
                                         <option value="receptionist">{t('roles.role_receptionist')}</option>
-                                        <option value="admin">{t('roles.role_admin')}</option>
+                                        {userProfile?.email === 'root@test.com' && (
+                                            <option value="admin">{t('roles.role_admin')}</option>
+                                        )}
                                     </select>
                                 </div>
 
@@ -238,6 +258,22 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                         />
                                     </div>
                                 </div>
+
+                                <div className="flex items-center space-x-2 border-t pt-4">
+                                    <input
+                                        type="checkbox"
+                                        id="createAccount"
+                                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                        checked={newMember.createAccount}
+                                        onChange={(e) => setNewMember({ ...newMember, createAccount: e.target.checked })}
+                                    />
+                                    <label htmlFor="createAccount" className="text-sm font-bold uppercase italic tracking-tighter text-primary">
+                                        {t('members.enable_account_label')}
+                                    </label>
+                                </div>
+                                <p className="text-[10px] text-muted-foreground italic px-1">
+                                    {t('members.enable_account_hint')}
+                                </p>
                                 <DialogFooter>
                                     <Button type="submit" disabled={loading}>
                                         {loading ? t('common.loading') : t('members.confirm_btn')}

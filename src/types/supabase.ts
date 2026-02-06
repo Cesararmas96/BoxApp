@@ -797,6 +797,7 @@ export type Database = {
                     last_name: string | null
                     role_id: string | null
                     status: string | null
+                    force_password_change: boolean | null
                 }
                 Insert: {
                     avatar_url?: string | null
@@ -807,6 +808,7 @@ export type Database = {
                     last_name?: string | null
                     role_id?: string | null
                     status?: string | null
+                    force_password_change?: boolean | null
                 }
                 Update: {
                     avatar_url?: string | null
@@ -817,6 +819,7 @@ export type Database = {
                     last_name?: string | null
                     role_id?: string | null
                     status?: string | null
+                    force_password_change?: boolean | null
                 }
                 Relationships: [
                     {

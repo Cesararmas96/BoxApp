@@ -25,8 +25,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from 'react-i18next';
 
-const formatDate = (dateString: string) => {
-    return new Intl.DateTimeFormat('en-US', {
+const formatDate = (dateString: string, i18n: any) => {
+    return new Intl.DateTimeFormat(i18n.language === 'es' ? 'es-ES' : 'en-US', {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
@@ -54,7 +54,7 @@ interface AuditLog {
 }
 
 export const AuditLogs: React.FC = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [logs, setLogs] = useState<AuditLog[]>([]);
     const [loading, setLoading] = useState(true);
     const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -85,9 +85,9 @@ export const AuditLogs: React.FC = () => {
 
     const getActionBadge = (action: string) => {
         switch (action) {
-            case 'INSERT': return <Badge className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border-emerald-500/30 uppercase text-[10px]">Create</Badge>;
-            case 'UPDATE': return <Badge className="bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border-amber-500/30 uppercase text-[10px]">Update</Badge>;
-            case 'DELETE': return <Badge className="bg-destructive/10 text-destructive hover:bg-destructive/20 border-destructive/30 uppercase text-[10px]">Delete</Badge>;
+            case 'INSERT': return <Badge className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border-emerald-500/30 uppercase text-[10px]">{t('audit.action_create')}</Badge>;
+            case 'UPDATE': return <Badge className="bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border-amber-500/30 uppercase text-[10px]">{t('audit.action_update')}</Badge>;
+            case 'DELETE': return <Badge className="bg-destructive/10 text-destructive hover:bg-destructive/20 border-destructive/30 uppercase text-[10px]">{t('audit.action_delete')}</Badge>;
             default: return <Badge variant="outline" className="uppercase text-[10px]">{action}</Badge>;
         }
     };
@@ -167,7 +167,7 @@ export const AuditLogs: React.FC = () => {
                                                 {expandedId === log.id ? <ChevronUp className="h-4 w-4 mx-auto" /> : <ChevronDown className="h-4 w-4 mx-auto" />}
                                             </TableCell>
                                             <TableCell className="pl-6 font-mono text-xs text-muted-foreground">
-                                                {formatDate(log.created_at)}
+                                                {formatDate(log.created_at, i18n)}
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-2">

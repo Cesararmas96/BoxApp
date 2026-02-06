@@ -88,8 +88,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
                     id,
                     result,
                     rx,
-                    wods (title),
-                    profiles (first_name, last_name)
+                    wods!results_wod_id_fkey (title),
+                    profiles!results_athlete_id_fkey (first_name, last_name)
                 `)
                 .order('created_at', { ascending: false })
                 .limit(3);

@@ -5,10 +5,11 @@ import {
     Plus,
     ChevronLeft,
     ChevronRight,
-    Users as UsersIcon,
-    Info,
-    Star,
-    Dumbbell,
+    Clock,
+    Users,
+    Flame,
+    CheckCircle2,
+    StickyNote,
     Trophy
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -31,11 +32,11 @@ import { useAuth } from '@/contexts/AuthContext';
 
 interface WODSummary {
     id: string;
-    title: string;
-    date: string;
-    track: string;
-    metcon: string;
-    structure?: any[];
+    title: string | null;
+    date: string | null;
+    track: string | null;
+    metcon: string | null;
+    structure?: any[] | null;
 }
 
 export const Schedule: React.FC = () => {
@@ -61,29 +62,10 @@ export const Schedule: React.FC = () => {
         setLoading(false);
     };
 
-    const fetchWods = async () => {
-        const start = new Date(viewDate);
-        start.setHours(0, 0, 0, 0);
-        start.setDate(start.getDate() - start.getDay());
-
-        const end = new Date(start);
-        end.setDate(end.getDate() + 7);
-
-        const { data } = await supabase
-            .from('wods')
-            .select('*')
-            .eq('box_id', currentBox?.id)
-            .gte('date', start.toISOString())
-            .lt('date', end.toISOString());
-
-        if (data) setWods(data);
-    };
-
     const fetchSessions = async () => {
+        if (!currentBox?.id) return;
         const start = new Date(viewDate);
-        start.setHours(0, 0, 0, 0);
         start.setDate(start.getDate() - start.getDay());
-
         const end = new Date(start);
         end.setDate(end.getDate() + 7);
 
@@ -91,14 +73,36 @@ export const Schedule: React.FC = () => {
             .from('sessions')
             .select(`
                 *,
-                session_types (name, color)
+                session_types (name, color),
+                profiles:coach_id (first_name, last_name)
             `)
-            .eq('box_id', currentBox?.id)
+            .eq('box_id', currentBox.id)
             .gte('start_time', start.toISOString())
             .lt('start_time', end.toISOString())
             .order('start_time', { ascending: true });
 
-        if (!error && data) setSessions(data);
+        if (!error && data) {
+            setSessions(data);
+        }
+    };
+
+    const fetchWods = async () => {
+        if (!currentBox?.id) return;
+        const start = new Date(viewDate);
+        start.setDate(start.getDate() - start.getDay());
+        const end = new Date(start);
+        end.setDate(end.getDate() + 7);
+
+        const { data, error } = await supabase
+            .from('wods')
+            .select('*')
+            .eq('box_id', currentBox.id)
+            .gte('date', start.toISOString())
+            .lt('date', end.toISOString());
+
+        if (!error && data) {
+            setWods(data as any);
+        }
     };
 
     const getDatesOfWeek = () => {
@@ -110,6 +114,16 @@ export const Schedule: React.FC = () => {
             return d;
         });
     };
+
+    const weekDays = [
+        t('common.sun', { defaultValue: 'SUN' }),
+        t('common.mon', { defaultValue: 'MON' }),
+        t('common.tue', { defaultValue: 'TUE' }),
+        t('common.wed', { defaultValue: 'WED' }),
+        t('common.thu', { defaultValue: 'THU' }),
+        t('common.fri', { defaultValue: 'FRI' }),
+        t('common.sat', { defaultValue: 'SAT' })
+    ];
 
     const getMatchedWod = (session: any, date: Date) => {
         const localDateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;

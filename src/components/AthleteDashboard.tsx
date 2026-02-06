@@ -25,7 +25,7 @@ export const AthleteDashboard: React.FC = () => {
             const { count: prCount } = await supabase
                 .from('results')
                 .select('*', { count: 'exact', head: true })
-                .eq('user_id', userId)
+                .eq('athlete_id', userId)
                 .eq('rx', true)
                 .gt('created_at', thirtyDaysAgo.toISOString());
 

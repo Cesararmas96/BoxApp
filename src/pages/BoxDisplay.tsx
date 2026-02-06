@@ -118,6 +118,21 @@ export const BoxDisplay: React.FC = () => {
         setTime(timerType === 'stopwatch' ? 0 : initialTime);
     };
 
+    // Keyboard Shortcuts
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                toggleTimer();
+            } else if (e.code === 'KeyR') {
+                resetTimer();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isRunning, timerType]); // Re-bind when state changes to capture correct closures if necessary
+
     return (
         <div className="min-h-[100dvh] bg-black text-white p-4 md:p-6 flex flex-col gap-6 animate-in fade-in duration-500 overflow-x-hidden">
             {/* Header */}
@@ -177,7 +192,10 @@ export const BoxDisplay: React.FC = () => {
                             </div>
                         </CardHeader>
                         <CardContent className="flex-1 flex flex-col items-center justify-center p-4 md:p-0 min-h-[300px]">
-                            <div className="text-[8rem] md:text-[18rem] font-black font-mono tracking-tighter tabular-nums leading-none select-none text-primary drop-shadow-[0_0_50px_rgba(34,197,94,0.3)]">
+                            <div className={cn(
+                                "text-[8rem] md:text-[18rem] font-black font-mono tracking-tighter tabular-nums leading-none select-none text-primary transition-all duration-500",
+                                isRunning ? "drop-shadow-[0_0_80px_rgba(34,197,94,0.6)] animate-pulse scale-105" : "drop-shadow-[0_0_30px_rgba(34,197,94,0.2)]"
+                            )}>
                                 {formatTime(time)}
                             </div>
                             <div className="flex gap-8 mt-4 md:mt-0 mb-8 scale-125 md:scale-150">

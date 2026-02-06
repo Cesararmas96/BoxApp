@@ -164,7 +164,7 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
                                         <Card
                                             ref={provided.innerRef}
                                             {...provided.draggableProps}
-                                            className="border-l-4 overflow-hidden"
+                                            className="border-l-4"
                                             style={{
                                                 borderLeftColor: `var(--${block.type}-color)`,
                                                 ...provided.draggableProps.style

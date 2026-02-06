@@ -59,7 +59,13 @@ export const MainLayout: React.FC<LayoutProps> = ({ userProfile }) => {
 
         // Update Page Title based on current box and active item
         if (currentBox?.name) {
-            const pageName = currentNavItem ? currentNavItem.label : '';
+            // Find nav item by checking if path starts with item path (for nested routes) or is exact
+            const matchingItem = navItems.find(item =>
+                location.pathname === item.path ||
+                (item.path !== '/' && location.pathname.startsWith(`${item.path}/`))
+            );
+
+            const pageName = matchingItem ? matchingItem.label : '';
             document.title = pageName
                 ? `${currentBox.name} | ${pageName}`.toUpperCase()
                 : `${currentBox.name} | BOX MANAGER`.toUpperCase();

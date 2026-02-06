@@ -26,7 +26,6 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
-import { useNotification } from '@/hooks';
 import { Toast } from '@/components/ui/toast-custom';
 
 export const Profile: React.FC = () => {

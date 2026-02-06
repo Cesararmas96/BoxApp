@@ -51,6 +51,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Toast } from '@/components/ui/toast-custom';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { cn } from '@/lib/utils';
 
 interface Plan {
@@ -82,7 +83,14 @@ export const Billing: React.FC = () => {
     const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
     const [estimatedIncome, setEstimatedIncome] = useState(0);
     const { currentBox } = useAuth();
-    const { notification, showNotification: addNotification, hideNotification } = useNotification();
+    const {
+        notification,
+        showNotification: addNotification,
+        hideNotification,
+        confirmState,
+        showConfirm,
+        hideConfirm
+    } = useNotification();
 
     const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
     const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
@@ -151,7 +159,7 @@ export const Billing: React.FC = () => {
         if (error) {
             addNotification('error', `Error ${editingPlan ? 'updating' : 'creating'} plan: ` + error.message);
         } else {
-            addNotification('success', `Plan ${editingPlan ? 'updated' : 'created'} successfully`);
+            addNotification('success', editingPlan ? t('billing.plan_updated') : t('billing.plan_created'));
             setIsPlanDialogOpen(false);
             setEditingPlan(null);
             setNewPlan({ name: '', price: '', type: 'monthly', duration_days: 30, total_credits: 0 });
@@ -161,16 +169,23 @@ export const Billing: React.FC = () => {
     };
 
     const handleDeletePlan = async (id: string) => {
-        if (!window.confirm(t('billing.delete_confirm'))) return;
-        setLoading(true);
-        const { error } = await supabase.from('plans').delete().eq('id', id);
-        if (error) {
-            addNotification('error', 'Error deleting plan: ' + error.message);
-        } else {
-            addNotification('success', 'Plan deleted successfully');
-            fetchFinanceData();
-        }
-        setLoading(false);
+        showConfirm({
+            title: t('billing.delete_plan_title', { defaultValue: 'Delete Plan' }),
+            description: t('billing.delete_confirm'),
+            variant: 'destructive',
+            icon: 'destructive',
+            onConfirm: async () => {
+                setLoading(true);
+                const { error } = await supabase.from('plans').delete().eq('id', id);
+                if (error) {
+                    addNotification('error', 'Error deleting plan: ' + error.message);
+                } else {
+                    addNotification('success', t('billing.plan_deleted'));
+                    fetchFinanceData();
+                }
+                setLoading(false);
+            }
+        });
     };
 
     const handleCreateExpense = async () => {
@@ -189,7 +204,7 @@ export const Billing: React.FC = () => {
         if (error) {
             addNotification('error', `Error ${editingExpense ? 'recording' : 'logging'} expense: ` + error.message);
         } else {
-            addNotification('success', `Expense ${editingExpense ? 'updated' : 'recorded'} successfully`);
+            addNotification('success', editingExpense ? t('billing.expense_updated') : t('billing.expense_logged'));
             setIsExpenseDialogOpen(false);
             setEditingExpense(null);
             setNewExpense({ description: '', category: 'Rent', amount: '', date: new Date().toISOString().split('T')[0] });
@@ -199,16 +214,23 @@ export const Billing: React.FC = () => {
     };
 
     const handleDeleteExpense = async (id: string) => {
-        if (!window.confirm(t('billing.delete_expense_confirm'))) return;
-        setLoading(true);
-        const { error } = await supabase.from('expenses').delete().eq('id', id);
-        if (error) {
-            addNotification('error', 'Error deleting expense: ' + error.message);
-        } else {
-            addNotification('success', 'Expense deleted successfully');
-            fetchFinanceData();
-        }
-        setLoading(false);
+        showConfirm({
+            title: t('billing.delete_expense_title', { defaultValue: 'Delete Expense' }),
+            description: t('billing.delete_expense_confirm'),
+            variant: 'destructive',
+            icon: 'destructive',
+            onConfirm: async () => {
+                setLoading(true);
+                const { error } = await supabase.from('expenses').delete().eq('id', id);
+                if (error) {
+                    addNotification('error', 'Error deleting expense: ' + error.message);
+                } else {
+                    addNotification('success', t('billing.expense_deleted'));
+                    fetchFinanceData();
+                }
+                setLoading(false);
+            }
+        });
     };
 
     const handleMarkPaid = async (membership: any) => {
@@ -254,19 +276,27 @@ export const Billing: React.FC = () => {
     };
 
     const handleDeleteMembership = async (id: string) => {
-        setLoading(true);
-        const { error } = await supabase
-            .from('memberships')
-            .delete()
-            .eq('id', id);
+        showConfirm({
+            title: t('billing.delete_membership_title', { defaultValue: 'Cancel Membership' }),
+            description: t('billing.delete_membership_confirm', { defaultValue: 'Are you sure you want to delete this membership? This action cannot be undone.' }),
+            variant: 'destructive',
+            icon: 'destructive',
+            onConfirm: async () => {
+                setLoading(true);
+                const { error } = await supabase
+                    .from('memberships')
+                    .delete()
+                    .eq('id', id);
 
-        if (error) {
-            addNotification('error', 'Error deleting membership: ' + error.message);
-        } else {
-            addNotification('success', 'Membership deleted successfully');
-            fetchFinanceData();
-        }
-        setLoading(false);
+                if (error) {
+                    addNotification('error', 'Error deleting membership: ' + error.message);
+                } else {
+                    addNotification('success', t('billing.membership_deleted'));
+                    fetchFinanceData();
+                }
+                setLoading(false);
+            }
+        });
     };
 
     const openEditPlan = (plan: Plan) => {
@@ -808,6 +838,16 @@ export const Billing: React.FC = () => {
                     onClose={hideNotification}
                 />
             )}
+
+            <ConfirmationDialog
+                isOpen={confirmState.isOpen}
+                onClose={hideConfirm}
+                onConfirm={confirmState.onConfirm}
+                title={confirmState.title}
+                description={confirmState.description}
+                variant={confirmState.variant}
+                icon={confirmState.icon}
+            />
         </div>
     );
 };

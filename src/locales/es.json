@@ -385,7 +385,19 @@
             "Oct": "Oct",
             "Nov": "Nov",
             "Dec": "Dic"
-        }
+        },
+        "delete_plan_title": "Eliminar Plan de Suscripción",
+        "delete_expense_title": "Eliminar Registro de Gasto",
+        "delete_membership_title": "Cancelar Membresía de Atleta",
+        "delete_membership_confirm": "¿Estás seguro de que quieres eliminar esta membresía? Esta acción no se puede deshacer y el atleta perderá el acceso a las clases.",
+        "success_paid": "Pago registrado correctamente y membresía extendida.",
+        "plan_created": "Plan creado correctamente.",
+        "plan_updated": "Plan actualizado correctamente.",
+        "plan_deleted": "Plan eliminado correctamente.",
+        "expense_logged": "Gasto registrado correctamente.",
+        "expense_updated": "Registro de gasto actualizado correctamente.",
+        "expense_deleted": "Registro de gasto eliminado correctamente.",
+        "membership_deleted": "Membresía eliminada correctamente."
     },
     "analytics": {
         "title": "Panel de Analíticas",

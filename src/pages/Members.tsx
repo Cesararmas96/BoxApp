@@ -96,37 +96,17 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
         e.preventDefault();
         setLoading(true);
 
-        const { error } = await supabase
-            .from('profiles')
-            .insert([
-                {
-                    first_name: newMember.firstName,
-                    last_name: newMember.lastName,
-                    email: newMember.email,
-                    role_id: newMember.roleId,
-                    status: newMember.status,
-                    medical_history: newMember.medicalHistory,
-                    emergency_contact_name: newMember.emergencyName,
-                    emergency_contact_phone: newMember.emergencyPhone,
-                    box_id: currentBox?.id,
-                    force_password_change: newMember.createAccount
-                }
-            ]);
-
-        if (!error && newMember.createAccount) {
-            // Attempt to create auth account with default password
-            await supabase.auth.signUp({
+        // Call the Edge Function to create member and auth account securely
+        const { data, error } = await supabase.functions.invoke('create-member', {
+            body: {
                 email: newMember.email,
                 password: 'BoxApp2026!',
-                options: {
-                    data: {
-                        first_name: newMember.firstName,
-                        last_name: newMember.lastName,
-                        box_id: currentBox?.id
-                    }
-                }
-            });
-        }
+                first_name: newMember.firstName,
+                last_name: newMember.lastName,
+                role_id: newMember.roleId,
+                box_id: currentBox?.id
+            }
+        });
 
         if (error) {
             showNotification('error', 'ERROR ADDING MEMBER: ' + error.message.toUpperCase());

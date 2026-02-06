@@ -101,7 +101,6 @@ export const Schedule: React.FC = () => {
         if (!error && data) setSessions(data);
     };
 
-    const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const getDatesOfWeek = () => {
         const start = new Date(viewDate);
         start.setDate(start.getDate() - start.getDay());
@@ -109,6 +108,20 @@ export const Schedule: React.FC = () => {
             const d = new Date(start);
             d.setDate(d.getDate() + i);
             return d;
+        });
+    };
+
+    const getMatchedWod = (session: any, date: Date) => {
+        const localDateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        return wods.find(w => {
+            const wodDateStr = w.date.split('T')[0];
+            const sessionTypeName = session.session_types.name.toLowerCase();
+            const trackName = w.track.toLowerCase();
+
+            return wodDateStr === localDateStr && (
+                sessionTypeName.includes(trackName) ||
+                (trackName === 'crossfit' && (sessionTypeName.includes('functional') || sessionTypeName.includes('wods')))
+            );
         });
     };
 
@@ -148,18 +161,46 @@ export const Schedule: React.FC = () => {
                                 <Plus className="h-4 w-4" /> {t('schedule.program_btn')}
                             </Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="sm:max-w-[700px] rounded-3xl border-white/10 glass">
                             <DialogHeader>
-                                <DialogTitle>{t('schedule.new_title')}</DialogTitle>
+                                <DialogTitle className="text-3xl font-black italic uppercase tracking-tight text-primary">
+                                    {t('schedule.programming_viewer', { defaultValue: 'PROGRAMMING VIEWER' })}
+                                </DialogTitle>
                             </DialogHeader>
-                            <div className="py-4 space-y-4">
-                                <p className="text-sm text-muted-foreground italic flex items-center gap-2">
-                                    <Info className="h-4 w-4" /> {t('schedule.coming_soon')}
-                                </p>
+                            <div className="py-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {['CrossFit', 'Novice', 'Bodybuilding', 'Engine'].map(track => {
+                                    const date = new Date();
+                                    const localDateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                                    const trackWod = wods.find(w => w.track === track && w.date.split('T')[0] === localDateStr);
+
+                                    return (
+                                        <Card key={track} className="bg-white/5 border-white/5 overflow-hidden">
+                                            <CardHeader className="p-4 border-b border-white/5 flex flex-row items-center justify-between">
+                                                <Badge className="font-black italic uppercase tracking-widest">{track}</Badge>
+                                                {trackWod && <Badge variant="outline" className="text-[8px] opacity-60">ACTIVE</Badge>}
+                                            </CardHeader>
+                                            <CardContent className="p-4 min-h-[100px] flex flex-col justify-center">
+                                                {trackWod ? (
+                                                    <div className="space-y-2">
+                                                        <p className="text-xs font-black uppercase text-white/90">{trackWod.title}</p>
+                                                        <Button
+                                                            variant="link"
+                                                            className="p-0 h-auto text-[10px] text-primary font-bold uppercase tracking-widest"
+                                                            onClick={() => setSelectedWod(trackWod)}
+                                                        >
+                                                            View Details →
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-[10px] text-muted-foreground uppercase font-bold italic opacity-40">No programming found for today</p>
+                                                )}
+                                            </CardContent>
+                                        </Card>
+                                    );
+                                })}
                             </div>
                             <DialogFooter>
-                                <Button variant="outline" onClick={() => setIsCreateOpen(false)}>{t('common.cancel')}</Button>
-                                <Button disabled>{t('schedule.create_btn')}</Button>
+                                <Button variant="outline" className="rounded-xl border-white/10" onClick={() => setIsCreateOpen(false)}>{t('common.close', { defaultValue: 'CLOSE' })}</Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
@@ -221,13 +262,7 @@ export const Schedule: React.FC = () => {
 
                                                 {/* WOD Integration */}
                                                 {(() => {
-                                                    const localDateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                                                    const matchedWod = wods.find(w => {
-                                                        const wodDateStr = w.date.split('T')[0];
-                                                        return wodDateStr === localDateStr &&
-                                                            (session.session_types.name.toLowerCase().includes(w.track.toLowerCase()) ||
-                                                                (w.track === 'CrossFit' && session.session_types.name.toLowerCase().includes('functional')));
-                                                    });
+                                                    const matchedWod = getMatchedWod(session, date);
 
                                                     if (matchedWod) {
                                                         return (

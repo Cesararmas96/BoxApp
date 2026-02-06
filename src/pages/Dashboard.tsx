@@ -33,20 +33,80 @@ export const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
     const { t } = useTranslation();
     const [stats, setStats] = useState({
         members: 0,
-        activeWOD: 'Murph Challenge',
-        attendance: 85
+        activeWOD: null as any,
+        attendance: 0,
+        pendingLeads: 0,
+        totalBookings: 0
     });
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchStats();
     }, []);
 
     const fetchStats = async () => {
-        const { count } = await supabase
-            .from('profiles')
-            .select('*', { count: 'exact', head: true });
+        setLoading(true);
+        try {
+            const today = new Date().toISOString().split('T')[0];
 
-        setStats(prev => ({ ...prev, members: count || 0 }));
+            // 1. Members Count
+            const { count: membersCount } = await supabase
+                .from('profiles')
+                .select('*', { count: 'exact', head: true });
+
+            // 2. Pending Leads Count
+            const { count: leadsCount } = await supabase
+                .from('leads')
+                .select('*', { count: 'exact', head: true })
+                .eq('status', 'new');
+
+            // 3. Today's WOD (CrossFit track preferred)
+            const { data: wodData } = await supabase
+                .from('wods')
+                .select('*')
+                .eq('date', today)
+                .order('track', { ascending: true })
+                .limit(1);
+
+            // 4. Attendance (Simple avg from last 30 days)
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+            const { data: bookingsData } = await supabase
+                .from('bookings')
+                .select('status')
+                .gt('created_at', thirtyDaysAgo.toISOString());
+
+            const totalBookings = bookingsData?.length || 0;
+            const attendedBookings = bookingsData?.filter(b => b.status === 'attended').length || 0;
+            const attendanceRate = totalBookings > 0 ? Math.round((attendedBookings / totalBookings) * 100) : 0;
+
+            // 5. Recent Results
+            const { data: resultsData } = await supabase
+                .from('results')
+                .select(`
+                    id,
+                    result,
+                    rx,
+                    wods (title),
+                    profiles (first_name, last_name)
+                `)
+                .order('created_at', { ascending: false })
+                .limit(3);
+
+            setStats({
+                members: membersCount || 0,
+                activeWOD: wodData?.[0] || null,
+                attendance: attendanceRate,
+                pendingLeads: leadsCount || 0,
+                totalBookings,
+                recentResults: (resultsData as any[]) || []
+            });
+        } catch (error) {
+            console.error('Error fetching dashboard stats:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Role-based rendering
@@ -112,12 +172,29 @@ export const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
                         <Badge variant="outline" className="bg-primary/20 text-primary border-primary/30 text-[10px] font-black animate-pulse px-3 py-1 rounded-full">{t('dashboard.live_now')}</Badge>
                     </CardHeader>
                     <CardContent className="pt-8 px-8 flex-1 flex flex-col relative z-10">
-                        <div className="text-3xl font-black italic uppercase mb-2 tracking-tight text-glow group-hover:translate-x-1 transition-transform duration-500 italic">The Chief</div>
-                        <div className="flex gap-5 text-[11px] font-black text-muted-foreground/80 mb-8 uppercase tracking-[0.15em]">
-                            <span className="flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full"><Clock className="h-3.5 w-3.5 text-primary" /> {t('dashboard.amrap', { minutes: 15 })}</span>
-                            <span className="flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full"><Flame className="h-3.5 w-3.5 text-primary" /> {t('dashboard.intense')}</span>
-                        </div>
-                        <Button variant="outline" className="w-full mt-auto rounded-2xl hover:bg-primary/10 border-primary/10 transition-all font-black tracking-widest text-[10px] h-12">{t('dashboard.view_details')}</Button>
+                        {stats.activeWOD ? (
+                            <>
+                                <div className="text-3xl font-black italic uppercase mb-2 tracking-tight text-glow group-hover:translate-x-1 transition-transform duration-500 italic">{stats.activeWOD.title}</div>
+                                <div className="flex flex-wrap gap-2 text-[11px] font-black text-muted-foreground/80 mb-8 uppercase tracking-[0.15em]">
+                                    <span className="flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full"><Badge variant="outline" className="border-primary/20 text-primary px-2">{stats.activeWOD.track}</Badge></span>
+                                    {stats.activeWOD.description?.toLowerCase().includes('amrap') && (
+                                        <span className="flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full"><Clock className="h-3.5 w-3.5 text-primary" /> AMRAP</span>
+                                    )}
+                                    <span className="flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full"><Flame className="h-3.5 w-3.5 text-primary" /> {t('dashboard.intense')}</span>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="h-24 flex items-center justify-center border border-dashed border-white/5 rounded-2xl mb-8">
+                                <p className="text-[10px] font-black uppercase tracking-widest opacity-40 italic">No programming found for today</p>
+                            </div>
+                        )}
+                        <Button
+                            variant="outline"
+                            className="w-full mt-auto rounded-2xl hover:bg-primary/10 border-primary/10 transition-all font-black tracking-widest text-[10px] h-12"
+                            onClick={() => window.location.href = '/wods'}
+                        >
+                            {t('dashboard.view_details')}
+                        </Button>
                     </CardContent>
                 </Card>
 
@@ -133,10 +210,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
                         </div>
                     </CardHeader>
                     <CardContent className="pt-8 px-8 relative z-10">
-                        <div className="text-5xl font-black italic mb-3 group-hover:text-glow group-hover:text-emerald-500 transition-all duration-700">92%</div>
+                        <div className="text-5xl font-black italic mb-3 group-hover:text-glow group-hover:text-emerald-500 transition-all duration-700">{stats.attendance}%</div>
                         <p className="text-[12px] font-bold text-muted-foreground/80 leading-snug uppercase tracking-[0.1em]">{t('dashboard.attendance_avg')}</p>
                         <div className="mt-8 flex gap-2 h-2">
-                            {[1, 1, 1, 1, 0.4, 1, 0.8].map((v, i) => (
+                            {[0.8, 0.9, 0.7, 0.85, 0.92, stats.attendance / 100, stats.attendance / 100].map((v, i) => (
                                 <div key={i} className="flex-1 rounded-full bg-black/5 dark:bg-white/5 overflow-hidden">
                                     <div className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] transition-all duration-1000 delay-300 transform origin-left group-hover:scale-x-110" style={{ width: `${v * 100}%` }} />
                                 </div>
@@ -153,16 +230,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
                         <CardDescription className="text-[10px] font-black uppercase tracking-[0.2em]">{t('dashboard.community_records')}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-0 p-0">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="flex items-center justify-between group p-6 border-b border-primary/5 last:border-0 hover:bg-primary/[0.02] transition-colors">
+                        {stats.recentResults?.map((res, i) => (
+                            <div key={res.id || i} className="flex items-center justify-between group p-6 border-b border-primary/5 last:border-0 hover:bg-primary/[0.02] transition-colors">
                                 <div className="flex items-center gap-5">
                                     <div className="h-12 w-12 rounded-2xl glass flex items-center justify-center font-black italic group-hover:border-primary/40 transition-all group-hover:scale-110">
                                         <Trophy className="h-5 w-5 group-hover:text-primary transition-colors" />
                                     </div>
                                     <div className="space-y-1">
-                                        <p className="font-black text-base uppercase tracking-tight">Fran <span className="text-primary italic ml-2">2:45</span></p>
+                                        <p className="font-black text-base uppercase tracking-tight">{res.wods?.title || 'Unknown WOD'} <span className="text-primary italic ml-2">{res.result}</span></p>
                                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">
-                                            {t('dashboard.athlete_generic')} John Doe • <span className="text-primary/70">{t('dashboard.rx')}</span>
+                                            {res.profiles?.first_name} {res.profiles?.last_name} • <span className="text-primary/70">{res.rx ? t('dashboard.rx') : 'Scaled'}</span>
                                         </p>
                                     </div>
                                 </div>
@@ -171,6 +248,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
                                 </div>
                             </div>
                         ))}
+                        {(!stats.recentResults || stats.recentResults.length === 0) && (
+                            <div className="p-8 text-center opacity-40 text-[10px] font-black uppercase tracking-widest italic">
+                                No recent activity found
+                            </div>
+                        )}
                         <div className="p-4">
                             <Button variant="ghost" className="w-full text-[10px] font-black tracking-[0.3em] uppercase text-muted-foreground/60 hover:text-primary transition-all">
                                 {t('dashboard.see_all_results')}
@@ -191,7 +273,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
                                 <Zap className="h-5 w-5 text-primary" />
                             </div>
                             <div className="space-y-1">
-                                <p className="text-sm font-black uppercase tracking-tight text-white">{t('dashboard.leads_waiting', { count: 3 })}</p>
+                                <p className="text-sm font-black uppercase tracking-tight text-white">{t('dashboard.leads_waiting', { count: stats.pendingLeads, defaultValue: `${stats.pendingLeads} PENDING LEADS` })}</p>
                                 <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest leading-relaxed">{t('dashboard.contact_prospects')}</p>
                             </div>
                         </div>

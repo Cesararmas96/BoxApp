@@ -14,12 +14,14 @@ interface AuthContextType {
     loading: boolean;
     isAdmin: boolean;
     isCoach: boolean;
+    isRoot: boolean;
     isAthlete: boolean;
     signIn: (credentials: any) => Promise<{ error: any; data?: any }>;
     signUp: (credentials: any) => Promise<{ data: any; error: any }>;
     resetPassword: (email: string) => Promise<{ error: any }>;
     updateUser: (attributes: any) => Promise<{ data: any; error: any }>;
     signOut: () => Promise<void>;
+    refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,9 +32,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [userProfile, setUserProfile] = useState<Profile | null>(null);
     const [currentBox, setCurrentBox] = useState<Box | null>(null);
     const [loading, setLoading] = useState(true);
-
     const isAdmin = userProfile?.role_id === 'admin';
     const isCoach = userProfile?.role_id === 'coach';
+    const isRoot = session?.user?.email === 'root@test.com' || session?.user?.user_metadata?.is_root === true;
     const isAthlete = userProfile?.role_id === 'athlete';
 
     const fetchProfile = async (userId: string) => {
@@ -68,7 +70,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         .single();
 
                     if (boxData && !boxError) {
-                        setCurrentBox(boxData as Box);
+                        setCurrentBox(boxData as unknown as Box);
                         console.log('[AuthContext] Box settings loaded successfully');
                     }
                 }
@@ -79,6 +81,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             clearTimeout(timeoutId);
             setLoading(false);
             console.log('[AuthContext] Loading set to false');
+        }
+    };
+
+    const refreshProfile = async () => {
+        if (user) {
+            await fetchProfile(user.id);
         }
     };
 
@@ -176,12 +184,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loading,
         isAdmin,
         isCoach,
+        isRoot,
         isAthlete,
         signIn,
         signUp,
         resetPassword,
         updateUser,
-        signOut
+        signOut,
+        refreshProfile
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

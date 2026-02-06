@@ -1,8 +1,56 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Trophy, Activity, Calendar } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const AthleteDashboard: React.FC = () => {
+    const { user } = useAuth();
+    const [metrics, setMetrics] = useState({
+        prs: 0,
+        attendance: 0,
+        loading: true
+    });
+
+    useEffect(() => {
+        if (user?.id) fetchMetrics(user.id);
+    }, [user]);
+
+    const fetchMetrics = async (userId: string) => {
+        try {
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+            // 1. Fetch PRs (Results marked as RX or just count results)
+            const { count: prCount } = await supabase
+                .from('results')
+                .select('*', { count: 'exact', head: true })
+                .eq('user_id', userId)
+                .eq('rx', true)
+                .gt('created_at', thirtyDaysAgo.toISOString());
+
+            // 2. Attendance (Bookings marked as attended)
+            const { data: bookings } = await supabase
+                .from('bookings')
+                .select('status')
+                .eq('user_id', userId)
+                .gt('created_at', thirtyDaysAgo.toISOString());
+
+            const totalBookings = (bookings as any[])?.length || 0;
+            const attendedCount = (bookings as any[])?.filter((b: any) => b.status === 'attended').length || 0;
+            const attendanceRate = totalBookings > 0 ? Math.round((attendedCount / totalBookings) * 100) : 0;
+
+            setMetrics({
+                prs: prCount || 0,
+                attendance: attendanceRate,
+                loading: false
+            });
+        } catch (error) {
+            console.error('Error fetching athlete metrics:', error);
+            setMetrics(prev => ({ ...prev, loading: false }));
+        }
+    };
+
     return (
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             <Card className="col-span-full bg-primary/20 border-primary/30 shadow-premium overflow-hidden relative group">
@@ -28,8 +76,10 @@ export const AthleteDashboard: React.FC = () => {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="px-8 pb-8">
-                    <div className="text-5xl font-black italic tracking-tighter mb-2 group-hover:text-primary transition-colors duration-500">12 PRs</div>
-                    <p className="text-[11px] font-bold text-muted-foreground/80 uppercase tracking-widest leading-relaxed">Logged in the last 30 days — Record Breaking Pace</p>
+                    <div className="text-5xl font-black italic tracking-tighter mb-2 group-hover:text-primary transition-colors duration-500">
+                        {metrics.prs} {metrics.prs === 1 ? 'PR' : 'PRs'}
+                    </div>
+                    <p className="text-[11px] font-bold text-muted-foreground/80 uppercase tracking-widest leading-relaxed">Logged in the last 30 days — {metrics.prs > 5 ? 'Record Breaking Pace' : 'Stay Consistent'}</p>
                 </CardContent>
             </Card>
 
@@ -41,8 +91,8 @@ export const AthleteDashboard: React.FC = () => {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="px-8 pb-8">
-                    <div className="text-5xl font-black italic tracking-tighter mb-2 group-hover:text-emerald-500 transition-colors duration-500">85%</div>
-                    <p className="text-[11px] font-bold text-muted-foreground/80 uppercase tracking-widest leading-relaxed">Class consistency — Elite Discipline Level</p>
+                    <div className="text-5xl font-black italic tracking-tighter mb-2 group-hover:text-emerald-500 transition-colors duration-500">{metrics.attendance}%</div>
+                    <p className="text-[11px] font-bold text-muted-foreground/80 uppercase tracking-widest leading-relaxed">Class consistency — {metrics.attendance > 80 ? 'Elite Discipline Level' : 'On Track'}</p>
                 </CardContent>
             </Card>
         </div>

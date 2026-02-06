@@ -57,9 +57,10 @@ interface Plan {
     id: string;
     name: string;
     price: number;
-    type: string;
-    duration_days?: number;
-    total_credits?: number;
+    interval: string;
+    duration_days: number;
+    sessions_count?: number;
+    has_limit?: boolean;
 }
 
 interface Expense {
@@ -75,6 +76,7 @@ export const Billing: React.FC = () => {
     const [plans, setPlans] = useState<Plan[]>([]);
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [memberships, setMemberships] = useState<any[]>([]);
+    const [invoices, setInvoices] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [isPlanDialogOpen, setIsPlanDialogOpen] = useState(false);
     const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
@@ -86,7 +88,7 @@ export const Billing: React.FC = () => {
     const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
     // Form states
-    const [newPlan, setNewPlan] = useState({ name: '', price: '', type: 'monthly', duration_days: 30, total_credits: 0 });
+    const [newPlan, setNewPlan] = useState({ name: '', price: '', interval: 'monthly', duration_days: 30, sessions_count: 0, has_limit: false });
     const [newExpense, setNewExpense] = useState({ description: '', category: 'Rent', amount: '', date: new Date().toISOString().split('T')[0] });
 
     useEffect(() => {
@@ -96,17 +98,19 @@ export const Billing: React.FC = () => {
     const fetchFinanceData = async () => {
         setLoading(true);
         try {
-            const [plansRes, expensesRes, membershipsRes] = await Promise.all([
+            const [plansRes, expensesRes, membershipsRes, invoicesRes] = await Promise.all([
                 supabase.from('plans').select('*').order('name'),
                 supabase.from('expenses').select('*').order('date', { ascending: false }),
-                supabase.from('memberships').select('*, plans(price)').eq('status', 'active')
+                supabase.from('memberships').select('*, plans(price)').eq('status', 'active'),
+                supabase.from('invoices').select('*').order('created_at', { ascending: false })
             ]);
 
             if (plansRes.error) throw plansRes.error;
             if (expensesRes.error) throw expensesRes.error;
 
-            setPlans((plansRes.data || []).map((p: any) => ({ ...p, type: p.interval })) || []);
+            setPlans(plansRes.data || []);
             setExpenses((expensesRes.data as any) || []);
+            setInvoices(invoicesRes.data || []);
 
             // Calculate estimated income from active memberships
             const income = (membershipsRes.data || []).reduce((acc: number, m: any) => {
@@ -207,9 +211,50 @@ export const Billing: React.FC = () => {
         setLoading(false);
     };
 
-    const handleDeleteMembership = async (id: string) => {
-        if (!window.confirm(t('common.confirm_delete'))) return;
+    const handleMarkPaid = async (membership: any) => {
+        setLoading(true);
+        try {
+            const plan = plans.find(p => p.id === membership.plan_id);
+            const amount = plan?.price || 0;
 
+            const { error: invoiceError } = await supabase
+                .from('invoices')
+                .insert([{
+                    user_id: membership.user_id,
+                    box_id: currentBox?.id,
+                    amount: amount,
+                    status: 'paid',
+                    due_date: new Date().toISOString()
+                }]);
+
+            if (invoiceError) throw invoiceError;
+
+            // Update membership status to active and extend end_date
+            const newEndDate = new Date();
+            newEndDate.setDate(newEndDate.getDate() + (plan?.duration_days || 30));
+
+            const { error: memberError } = await supabase
+                .from('memberships')
+                .update({
+                    status: 'active',
+                    end_date: newEndDate.toISOString()
+                })
+                .eq('id', membership.id);
+
+            if (memberError) throw memberError;
+
+            addNotification('success', t('billing.success_paid', { defaultValue: 'Payment recorded successfully' }));
+            fetchFinanceData();
+        } catch (error: any) {
+            console.error('Error marking as paid:', error);
+            addNotification('error', 'Error processing payment: ' + error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDeleteMembership = async (id: string) => {
+        setLoading(true);
         const { error } = await supabase
             .from('memberships')
             .delete()
@@ -221,6 +266,7 @@ export const Billing: React.FC = () => {
             addNotification('success', 'Membership deleted successfully');
             fetchFinanceData();
         }
+        setLoading(false);
     };
 
     const openEditPlan = (plan: Plan) => {
@@ -228,9 +274,10 @@ export const Billing: React.FC = () => {
         setNewPlan({
             name: plan.name,
             price: plan.price.toString(),
-            type: plan.type,
-            duration_days: plan.duration_days || 30,
-            total_credits: plan.total_credits || 0
+            duration_days: plan.duration_days.toString(),
+            interval: plan.interval,
+            sessions_count: plan.sessions_count || 0,
+            has_limit: plan.has_limit || false
         });
         setIsPlanDialogOpen(true);
     };
@@ -628,6 +675,7 @@ export const Billing: React.FC = () => {
                                         <TableRow className="bg-muted/50">
                                             <TableHead className="font-bold uppercase text-[10px] tracking-widest italic">Athlete</TableHead>
                                             <TableHead className="font-bold uppercase text-[10px] tracking-widest italic">Plan</TableHead>
+                                            <TableHead className="font-bold uppercase text-[10px] tracking-widest italic text-center">Installments</TableHead>
                                             <TableHead className="font-bold uppercase text-[10px] tracking-widest italic text-center">Status</TableHead>
                                             <TableHead className="font-bold uppercase text-[10px] tracking-widest italic">Renewal</TableHead>
                                             <TableHead className="font-bold uppercase text-[10px] tracking-widest italic text-right">Actions</TableHead>
@@ -658,27 +706,52 @@ export const Billing: React.FC = () => {
                                                             {plans.find(p => p.id === m.plan_id)?.name || 'Custom Plan'}
                                                         </Badge>
                                                     </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex justify-center gap-1">
+                                                            {[...Array(6)].map((_, i) => {
+                                                                const date = new Date();
+                                                                date.setMonth(date.getMonth() - (5 - i));
+                                                                const monthStr = date.toLocaleString('default', { month: 'short' });
+                                                                const hasPayment = invoices.some(inv =>
+                                                                    inv.user_id === m.user_id &&
+                                                                    new Date(inv.created_at).getMonth() === date.getMonth() &&
+                                                                    new Date(inv.created_at).getFullYear() === date.getFullYear() &&
+                                                                    inv.status === 'paid'
+                                                                );
+
+                                                                return (
+                                                                    <div key={i} className="flex flex-col items-center gap-1">
+                                                                        <div className={cn(
+                                                                            "h-2 w-2 rounded-full transition-all duration-300",
+                                                                            hasPayment ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" : "bg-zinc-800"
+                                                                        )} />
+                                                                        <span className="text-[7px] text-muted-foreground uppercase font-bold">{t(`billing.months.${monthStr}`, { defaultValue: monthStr })}</span>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </TableCell>
                                                     <TableCell className="text-center">
                                                         <div className="flex justify-center">
                                                             {m.status === 'active' ? (
                                                                 <div className="group relative">
                                                                     <CheckCircle2 className="h-5 w-5 text-green-500 drop-shadow-[0_0_8px_rgba(34,197,94,0.3)]" />
                                                                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black text-[8px] text-white uppercase font-bold italic rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                                                        Active Payment
+                                                                        {t('billing.status_paid')}
                                                                     </div>
                                                                 </div>
                                                             ) : m.status === 'expired' ? (
                                                                 <div className="group relative">
                                                                     <XCircle className="h-5 w-5 text-destructive drop-shadow-[0_0_8px_rgba(239,68,68,0.3)]" />
                                                                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black text-[8px] text-white uppercase font-bold italic rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                                                        Expired / Debt
+                                                                        {t('billing.status_overdue')}
                                                                     </div>
                                                                 </div>
                                                             ) : (
                                                                 <div className="group relative">
                                                                     <AlertCircle className="h-5 w-5 text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.3)]" />
                                                                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black text-[8px] text-white uppercase font-bold italic rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                                                        Pending Review
+                                                                        {t('billing.status_pending')}
                                                                     </div>
                                                                 </div>
                                                             )}
@@ -698,11 +771,14 @@ export const Billing: React.FC = () => {
                                                                 </Button>
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end" className="w-40 bg-zinc-900 border-zinc-800">
-                                                                <DropdownMenuItem className="text-zinc-400 focus:text-white cursor-pointer">
-                                                                    <Calendar className="mr-2 h-4 w-4" /> Extend
+                                                                <DropdownMenuItem
+                                                                    className="text-zinc-400 focus:text-white cursor-pointer"
+                                                                    onClick={() => handleMarkPaid(m)}
+                                                                >
+                                                                    <DollarSign className="mr-2 h-4 w-4" /> {t('billing.mark_paid')}
                                                                 </DropdownMenuItem>
                                                                 <DropdownMenuItem className="text-zinc-400 focus:text-white cursor-pointer">
-                                                                    <DollarSign className="mr-2 h-4 w-4" /> Mark Paid
+                                                                    <Calendar className="mr-2 h-4 w-4" /> {t('common.edit', { defaultValue: 'Extend' })}
                                                                 </DropdownMenuItem>
                                                                 <DropdownMenuSeparator className="bg-zinc-800" />
                                                                 <DropdownMenuItem

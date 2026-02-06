@@ -319,7 +319,35 @@
         "invalid_credentials": "Invalid credentials provided",
         "password_mismatch": "Passwords do not match",
         "password_too_short": "Password must be at least 6 characters",
-        "email_invalid": "Please enter a valid email address"
+        "email_invalid": "Please enter a valid email address",
+        "security_policy": "Security Policy",
+        "force_change_subtitle": "You must update your default password to continue",
+        "update_credentials": "Update Credentials",
+        "logout_cancel": "Log Out and Cancel",
+        "password_success_redirect": "PASSWORD UPDATED! REDIRECTING...",
+        "confirm_password_force": "Confirm New Password",
+        "logout": "Log Out"
+    },
+    "profile": {
+        "title": "Account Settings",
+        "subtitle": "Manage your personal information and security.",
+        "personal_info": "Personal Information",
+        "personal_info_desc": "Update your name and profile details.",
+        "security": "Security & Password",
+        "security_desc": "Secure your account with a strong password.",
+        "first_name": "First Name",
+        "last_name": "Last Name",
+        "avatar_url": "Avatar URL",
+        "new_password": "New Password",
+        "confirm_password": "Confirm New Password",
+        "save_changes": "Save Changes",
+        "update_password": "Update Password",
+        "success_profile": "Profile updated successfully!",
+        "success_password": "Password updated successfully!",
+        "upload_image_error": "Please upload an image file.",
+        "image_size_error": "Image must be less than 2MB.",
+        "updating": "Updating...",
+        "saving": "Saving..."
     },
     "billing": {
         "title": "Box Billing & Finances",
@@ -355,7 +383,26 @@
             "Staff": "Staff",
             "Equipment": "Equipment",
             "Marketing": "Marketing",
-            "Other": "Internal Other"
+            "Other": "Other"
+        },
+        "mark_paid": "Mark as Paid",
+        "payment_history": "Payment History",
+        "status_paid": "Paid",
+        "status_pending": "Pending",
+        "status_overdue": "Overdue",
+        "months": {
+            "Jan": "Jan",
+            "Feb": "Feb",
+            "Mar": "Mar",
+            "Apr": "Apr",
+            "May": "May",
+            "Jun": "Jun",
+            "Jul": "Jul",
+            "Aug": "Aug",
+            "Sep": "Sep",
+            "Oct": "Oct",
+            "Nov": "Nov",
+            "Dec": "Dec"
         }
     },
     "analytics": {

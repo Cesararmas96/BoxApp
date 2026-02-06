@@ -47,20 +47,11 @@ interface Profile {
     created_at: string;
 }
 
-const PERMISSIONS_MATRIX = [
-    { page: 'Dashboard', roles: ['admin', 'coach', 'athlete', 'receptionist'] },
-    { page: 'Schedule', roles: ['admin', 'coach', 'athlete', 'receptionist'] },
-    { page: 'Members', roles: ['admin', 'coach', 'receptionist'] },
-    { page: 'Internal Roles', roles: ['admin'] },
-    { page: 'Audit Logs', roles: ['admin'] },
-    { page: 'Leads / CRM', roles: ['admin', 'receptionist'] },
-    { page: 'Billing & Finance', roles: ['admin', 'receptionist'] },
-    { page: 'WOD Programming', roles: ['admin', 'coach', 'athlete', 'receptionist'] },
-    { page: 'Benchmarks', roles: ['admin', 'coach', 'athlete', 'receptionist'] },
-    { page: 'Competitions', roles: ['admin', 'coach'] },
-    { page: 'TV Display', roles: ['admin', 'coach', 'receptionist'] },
-    { page: 'Analytics', roles: ['admin'] },
-];
+interface PermissionMatrixItem {
+    id: string;
+    page_key: string;
+    roles: string[];
+}
 
 const TEST_USERS = [
     { email: 'root@test.com', label: 'Root (Superuser)', role: 'admin' },
@@ -72,9 +63,12 @@ const TEST_USERS = [
 
 export const Roles: React.FC = () => {
     const { t } = useTranslation();
-    const { userProfile, signIn } = useAuth();
+    const { userProfile, signIn, isRoot } = useAuth();
     const [users, setUsers] = useState<Profile[]>([]);
+    const [matrixData, setMatrixData] = useState<PermissionMatrixItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [matrixLoading, setMatrixLoading] = useState(true);
+    const [savingMatrix, setSavingMatrix] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [testLoginLoading, setTestLoginLoading] = useState<string | null>(null);
@@ -82,7 +76,21 @@ export const Roles: React.FC = () => {
 
     useEffect(() => {
         fetchUsers();
+        fetchMatrix();
     }, []);
+
+    const fetchMatrix = async () => {
+        setMatrixLoading(true);
+        const { data, error } = await supabase
+            .from('role_permissions')
+            .select('*')
+            .order('page_key');
+
+        if (!error && data) {
+            setMatrixData(data);
+        }
+        setMatrixLoading(false);
+    };
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -151,8 +159,47 @@ export const Roles: React.FC = () => {
         }
     };
 
+    const handlePermissionToggle = (pageKey: string, role: string) => {
+        if (!isRoot) return;
+
+        setMatrixData(prev => prev.map(item => {
+            if (item.page_key === pageKey) {
+                const hasRole = item.roles.includes(role);
+                const newRoles = hasRole
+                    ? item.roles.filter(r => r !== role)
+                    : [...item.roles, role];
+                return { ...item, roles: newRoles };
+            }
+            return item;
+        }));
+    };
+
+    const handleSaveMatrix = async () => {
+        if (!isRoot) return;
+        setSavingMatrix(true);
+
+        try {
+            // Update each row in role_permissions
+            for (const item of matrixData) {
+                const { error } = await supabase
+                    .from('role_permissions')
+                    .update({ roles: item.roles, updated_at: new Promise(resolve => resolve(new Date().toISOString())) as any })
+                    .eq('page_key', item.page_key);
+
+                if (error) throw error;
+            }
+
+            setMessage({ type: 'success', text: 'Access Matrix updated successfully' });
+            setTimeout(() => setMessage(null), 3000);
+        } catch (error: any) {
+            console.error('Error saving matrix:', error);
+            setMessage({ type: 'error', text: `Failed to update matrix: ${error.message}` });
+        } finally {
+            setSavingMatrix(false);
+        }
+    };
+
     const isAdmin = userProfile?.role_id === 'admin';
-    const isRoot = userProfile?.email === 'root@test.com';
 
     return (
         <div className="space-y-6 text-left">
@@ -303,26 +350,55 @@ export const Roles: React.FC = () => {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {PERMISSIONS_MATRIX.map((item, idx) => (
-                                            <TableRow key={idx} className="hover:bg-muted/10 border-muted/10">
-                                                <TableCell className="font-bold py-3 pl-6 text-sm italic">{item.page}</TableCell>
-                                                <TableCell className="text-center">
-                                                    {item.roles.includes('admin') ? <Check className="h-4 w-4 text-emerald-500 mx-auto" /> : <CloseIcon className="h-4 w-4 text-muted-foreground/30 mx-auto" />}
-                                                </TableCell>
-                                                <TableCell className="text-center">
-                                                    {item.roles.includes('coach') ? <Check className="h-4 w-4 text-emerald-500 mx-auto" /> : <CloseIcon className="h-4 w-4 text-muted-foreground/30 mx-auto" />}
-                                                </TableCell>
-                                                <TableCell className="text-center">
-                                                    {item.roles.includes('receptionist') ? <Check className="h-4 w-4 text-emerald-500 mx-auto" /> : <CloseIcon className="h-4 w-4 text-muted-foreground/30 mx-auto" />}
-                                                </TableCell>
-                                                <TableCell className="text-center">
-                                                    {item.roles.includes('athlete') ? <Check className="h-4 w-4 text-emerald-500 mx-auto" /> : <CloseIcon className="h-4 w-4 text-muted-foreground/30 mx-auto" />}
+                                        {matrixLoading ? (
+                                            <TableRow>
+                                                <TableCell colSpan={5} className="text-center py-10">
+                                                    <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto mb-2" />
+                                                    <p className="text-[10px] font-black uppercase italic tracking-widest text-muted-foreground">{t('common.loading')}</p>
                                                 </TableCell>
                                             </TableRow>
-                                        ))}
+                                        ) : (
+                                            matrixData.map((item) => (
+                                                <TableRow key={item.page_key} className="hover:bg-muted/10 border-muted/10">
+                                                    <TableCell className="font-bold py-3 pl-6 text-sm italic tracking-tight uppercase">
+                                                        {t(`nav.${item.page_key.toLowerCase()}`)}
+                                                    </TableCell>
+                                                    {['admin', 'coach', 'receptionist', 'athlete'].map(role => (
+                                                        <TableCell key={role} className="text-center">
+                                                            {isRoot ? (
+                                                                <div className="flex justify-center">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        className="accent-primary h-4 w-4 rounded border-muted/30"
+                                                                        checked={item.roles.includes(role)}
+                                                                        onChange={() => handlePermissionToggle(item.page_key, role)}
+                                                                    />
+                                                                </div>
+                                                            ) : (
+                                                                item.roles.includes(role) ?
+                                                                    <Check className="h-4 w-4 text-emerald-500 mx-auto" /> :
+                                                                    <CloseIcon className="h-4 w-4 text-muted-foreground/30 mx-auto" />
+                                                            )}
+                                                        </TableCell>
+                                                    ))}
+                                                </TableRow>
+                                            ))
+                                        )}
                                     </TableBody>
                                 </Table>
                             </div>
+                            {isRoot && (
+                                <div className="p-4 bg-muted/20 border-t flex justify-end">
+                                    <Button
+                                        onClick={handleSaveMatrix}
+                                        disabled={savingMatrix}
+                                        className="font-black italic uppercase text-xs shadow-lg shadow-primary/20"
+                                    >
+                                        {savingMatrix ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <Shield className="h-3 w-3 mr-2" />}
+                                        Save Access Matrix
+                                    </Button>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </TabsContent>

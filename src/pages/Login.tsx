@@ -19,6 +19,9 @@ export const Login: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [isSignUp, setIsSignUp] = useState(false);
     const [isResetting, setIsResetting] = useState(false);
+    const [isForcedReset, setIsForcedReset] = useState(false);
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
     const { notification, showNotification, hideNotification } = useNotification();
 
@@ -27,9 +30,19 @@ export const Login: React.FC = () => {
             setError(t('auth.email_invalid'));
             return false;
         }
-        if (!isResetting && password.length < 6) {
+        if (!isResetting && !isForcedReset && password.length < 6) {
             setError(t('auth.password_too_short'));
             return false;
+        }
+        if (isForcedReset) {
+            if (newPassword.length < 6) {
+                setError(t('auth.password_too_short'));
+                return false;
+            }
+            if (newPassword !== confirmPassword) {
+                setError(t('auth.password_mismatch'));
+                return false;
+            }
         }
         return true;
     };
@@ -47,6 +60,28 @@ export const Login: React.FC = () => {
             if (error) setError(error.message);
             else showNotification('success', t('auth.reset_sent'));
             setIsResetting(false);
+        } else if (isForcedReset) {
+            const { error: updateError } = await supabase.auth.updateUser({
+                password: newPassword
+            });
+
+            if (updateError) {
+                setError(updateError.message);
+            } else {
+                // Update profile flag
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    await supabase
+                        .from('profiles')
+                        .update({ force_password_change: false })
+                        .eq('id', user.id);
+                }
+
+                showNotification('success', t('auth.password_updated_success'));
+                setIsForcedReset(false);
+                // The Session change should automatically trigger redirect if handled by router
+                window.location.href = '/dashboard';
+            }
         } else {
             const { data, error } = isSignUp
                 ? await signUp({ email, password })
@@ -66,9 +101,7 @@ export const Login: React.FC = () => {
 
                 if (profile?.force_password_change) {
                     showNotification('info', t('auth.force_change_msg'));
-                    // We can either redirect to a specific page or show the reset form
-                    // For now, let's just trigger the resetting mode but maybe with a special flag
-                    setIsResetting(true);
+                    setIsForcedReset(true);
                 }
             }
         }
@@ -135,10 +168,10 @@ export const Login: React.FC = () => {
 
                     <div className="space-y-2 mb-10">
                         <h3 className="text-3xl font-black italic tracking-tighter text-white uppercase">
-                            {isResetting ? t('auth.recovery_mode') : (isSignUp ? t('auth.new_recruitment') : t('auth.system_access'))}
+                            {isForcedReset ? t('auth.security_policy') : (isResetting ? t('auth.recovery_mode') : (isSignUp ? t('auth.new_recruitment') : t('auth.system_access')))}
                         </h3>
                         <p className="text-zinc-500 text-sm font-bold uppercase tracking-widest">
-                            {isResetting ? t('auth.identify_profile') : (isSignUp ? t('auth.initialize_data') : t('auth.enter_credentials'))}
+                            {isForcedReset ? t('auth.force_change_subtitle') : (isResetting ? t('auth.identify_profile') : (isSignUp ? t('auth.initialize_data') : t('auth.enter_credentials')))}
                         </p>
                     </div>
 
@@ -150,23 +183,58 @@ export const Login: React.FC = () => {
                             </Alert>
                         )}
 
-                        <div className="space-y-2">
-                            <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">{t('auth.email')}</Label>
-                            <div className="relative group">
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600 transition-colors group-focus-within:text-primary" />
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    placeholder="operator@system.com"
-                                    className="bg-zinc-950/50 border-white/5 pl-12 h-14 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all text-white font-medium italic"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                />
+                        {!isForcedReset && (
+                            <div className="space-y-2">
+                                <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">{t('auth.email')}</Label>
+                                <div className="relative group">
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600 transition-colors group-focus-within:text-primary" />
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        placeholder="operator@system.com"
+                                        className="bg-zinc-950/50 border-white/5 pl-12 h-14 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all text-white font-medium italic"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                    />
+                                </div>
                             </div>
-                        </div>
+                        )}
 
-                        {!isResetting && (
+                        {isForcedReset && (
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">{t('auth.new_password_force')}</Label>
+                                    <div className="relative group">
+                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600 transition-colors group-focus-within:text-primary" />
+                                        <Input
+                                            type="password"
+                                            placeholder="••••••••"
+                                            className="bg-zinc-950/50 border-white/5 pl-12 h-14 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all text-white font-mono italic"
+                                            value={newPassword}
+                                            onChange={(e) => setNewPassword(e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">{t('auth.confirm_password_force')}</Label>
+                                    <div className="relative group">
+                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600 transition-colors group-focus-within:text-primary" />
+                                        <Input
+                                            type="password"
+                                            placeholder="••••••••"
+                                            className="bg-zinc-950/50 border-white/5 pl-12 h-14 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all text-white font-mono italic"
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {!isResetting && !isForcedReset && (
                             <div className="space-y-2">
                                 <div className="flex justify-between items-end ml-1">
                                     <Label htmlFor="pass" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">{t('auth.password')}</Label>
@@ -213,7 +281,11 @@ export const Login: React.FC = () => {
                                 <Loader2 className="h-5 w-5 animate-spin" />
                             ) : (
                                 <>
-                                    <span>{isResetting ? t('auth.initiate_recovery') : (isSignUp ? t('auth.confirm_deployment') : t('auth.establish_connection'))}</span>
+                                    <span>
+                                        {isForcedReset
+                                            ? t('auth.update_credentials')
+                                            : (isResetting ? t('auth.initiate_recovery') : (isSignUp ? t('auth.confirm_deployment') : t('auth.establish_connection')))}
+                                    </span>
                                     <Zap className="ml-2 h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-primary" />
                                 </>
                             )}
@@ -222,18 +294,28 @@ export const Login: React.FC = () => {
 
                     <div className="mt-12 pt-8 border-t border-white/5 flex items-center justify-center gap-2">
                         <p className="text-zinc-600 text-[10px] font-black uppercase tracking-widest">
-                            {isResetting ? t('auth.back_to_id') : (isSignUp ? t('auth.existing_operative') : t('auth.new_operative'))}
+                            {isForcedReset
+                                ? t('auth.logout_cancel')
+                                : (isResetting ? t('auth.back_to_id') : (isSignUp ? t('auth.existing_operative') : t('auth.new_operative')))}
                         </p>
                         <Button
                             variant="link"
                             className="text-primary font-black uppercase text-[10px] tracking-widest h-auto p-0 hover:scale-105 transition-transform"
-                            onClick={() => {
-                                if (isResetting) setIsResetting(false);
-                                else setIsSignUp(!isSignUp);
+                            onClick={async () => {
+                                if (isForcedReset) {
+                                    await supabase.auth.signOut();
+                                    setIsForcedReset(false);
+                                } else if (isResetting) {
+                                    setIsResetting(false);
+                                } else {
+                                    setIsSignUp(!isSignUp);
+                                }
                                 setError(null);
                             }}
                         >
-                            {isResetting ? t('auth.login') : (isSignUp ? t('auth.login') : t('auth.register'))}
+                            {isForcedReset
+                                ? t('auth.logout') // Using t('auth.logout') or similar
+                                : (isResetting ? t('auth.login') : (isSignUp ? t('auth.login') : t('auth.register')))}
                         </Button>
                     </div>
                 </div>

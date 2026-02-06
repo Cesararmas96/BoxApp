@@ -8,20 +8,15 @@ import {
     Timer,
     Target,
     Activity,
-    Trophy,
     Flame as FlameIcon,
     Dumbbell,
-    Check,
     Search
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
 
 export interface BlockItem {
     id: string;
@@ -254,8 +249,8 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
                                                         <Search className="h-3 w-3 text-muted-foreground" />
                                                     </div>
                                                     <Input
-                                                        placeholder={t('common.search')}
-                                                        className="pl-8 h-8 text-xs bg-muted/50 border-dashed focus:border-solid transition-all"
+                                                        placeholder={t('wods.search_movements', { defaultValue: 'SEARCH MOVEMENTS...' })}
+                                                        className="pl-8 h-10 text-xs bg-primary/5 border-primary/20 focus:border-primary/50 focus:ring-primary/10 transition-all font-bold uppercase tracking-widest"
                                                         value={activeSearchBlockId === block.id ? searchQuery : ''}
                                                         onFocus={() => setActiveSearchBlockId(block.id)}
                                                         onChange={(e) => {
@@ -264,7 +259,7 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
                                                         }}
                                                     />
                                                     {activeSearchBlockId === block.id && searchQuery && (
-                                                        <div className="absolute top-full left-0 right-0 mt-1 bg-popover/95 backdrop-blur-md border rounded-md shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in duration-200">
+                                                        <div className="absolute top-full left-0 right-0 mt-2 bg-background border border-primary/20 rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                                                             <div className="max-h-[200px] overflow-y-auto">
                                                                 {filteredMovements.map((m) => (
                                                                     <button

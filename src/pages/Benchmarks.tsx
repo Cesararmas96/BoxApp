@@ -32,16 +32,14 @@ interface Benchmark {
     id: string;
     name: string;
     category: string;
-    description: string;
 }
 
 interface PR {
     id: string;
-    benchmark_id: string;
+    movement_id: string;
     value: string;
-    date: string;
-    notes?: string;
-    benchmark_types: {
+    performed_at: string;
+    movements: {
         name: string;
     }
 }
@@ -65,11 +63,11 @@ export const Benchmarks: React.FC = () => {
         if (!user) return;
 
         const [benchRes, prRes] = await Promise.all([
-            supabase.from('benchmark_types' as any).select('*'),
-            supabase.from('personal_records' as any)
-                .select('*, benchmark_types(name)')
-                .eq('athlete_id', user.id)
-                .order('date', { ascending: false })
+            supabase.from('movements').select('*'),
+            supabase.from('personal_records')
+                .select('*, movements(name)')
+                .eq('user_id', user.id)
+                .order('performed_at', { ascending: false })
         ]);
 
         if (!benchRes.error) setBenchmarks(benchRes.data as unknown as Benchmark[] || []);
@@ -90,10 +88,10 @@ export const Benchmarks: React.FC = () => {
         const { error } = await supabase
             .from('personal_records')
             .insert([{
-                athlete_id: user.id,
-                benchmark_id: newPR.benchmarkId,
+                user_id: user.id,
+                movement_id: newPR.benchmarkId,
                 value: newPR.value,
-                notes: newPR.notes
+                performed_at: new Date().toISOString()
             }]);
 
         if (!error) {
@@ -200,17 +198,17 @@ export const Benchmarks: React.FC = () => {
                                 ) : (
                                     paginatedPrs.map((pr) => (
                                         <TableRow key={pr.id}>
-                                            <TableCell className="font-bold">{pr.benchmark_types.name}</TableCell>
+                                            <TableCell className="font-bold">{pr.movements.name}</TableCell>
                                             <TableCell>
                                                 <Badge variant="secondary" className="font-mono text-sm px-3">
                                                     {pr.value}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-xs text-muted-foreground">
-                                                {new Date(pr.date).toLocaleDateString()}
+                                                {new Date(pr.performed_at).toLocaleDateString()}
                                             </TableCell>
                                             <TableCell className="text-xs italic truncate max-w-[150px]">
-                                                {pr.notes || "-"}
+                                                -
                                             </TableCell>
                                         </TableRow>
                                     ))
@@ -282,11 +280,11 @@ export const Benchmarks: React.FC = () => {
                             <CardTitle className="text-sm font-bold uppercase tracking-tight text-muted-foreground">Top Lifts</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            {['back_squat', 'deadlift', 'clean_and_jerk'].map(liftingId => {
-                                const best = prs.filter(p => p.benchmark_id === liftingId)[0];
+                            {['Back Squat', 'Deadlift', 'Clean & Jerk'].map(movementName => {
+                                const best = prs.find(p => p.movements.name.toLowerCase() === movementName.toLowerCase());
                                 return (
-                                    <div key={liftingId} className="flex items-center justify-between border-b pb-2 last:border-0">
-                                        <span className="text-sm font-medium capitalize">{liftingId.replace(/_/g, ' ')}</span>
+                                    <div key={movementName} className="flex items-center justify-between border-b pb-2 last:border-0">
+                                        <span className="text-sm font-medium capitalize">{movementName}</span>
                                         <span className="font-mono font-bold text-primary">{best?.value || "N/A"}</span>
                                     </div>
                                 )

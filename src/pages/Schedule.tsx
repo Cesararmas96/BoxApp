@@ -46,6 +46,7 @@ export const Schedule: React.FC = () => {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isFeedbackOpen, setIsFeedbackOpen] = useState<string | null>(null);
     const [selectedWod, setSelectedWod] = useState<WODSummary | null>(null);
+    const [selectedSession, setSelectedSession] = useState<any | null>(null);
     const [feedback, setFeedback] = useState({ effort: 5, fatigue: 3, satisfaction: '😀', note: '' });
     const { notification, showNotification, hideNotification } = useNotification();
 
@@ -71,7 +72,8 @@ export const Schedule: React.FC = () => {
             .select(`
                 *,
                 session_types (name, color),
-                profiles:coach_id (first_name, last_name)
+                profiles:coach_id (first_name, last_name),
+                bookings (id, status, profiles:user_id (first_name, last_name))
             `)
             .eq('box_id', currentBox.id)
             .gte('start_time', start.toISOString())
@@ -104,8 +106,13 @@ export const Schedule: React.FC = () => {
 
     const getDatesOfWeek = () => {
         const start = new Date(viewDate);
-        start.setDate(start.getDate() - start.getDay());
-        return Array.from({ length: 7 }, (_, i) => {
+        const day = start.getDay();
+        // Adjust to Monday: If Sunday (0), go back 6 days. Otherwise go back (day - 1) days.
+        const diff = day === 0 ? -6 : 1 - day;
+        start.setDate(start.getDate() + diff);
+        start.setHours(0, 0, 0, 0);
+
+        return Array.from({ length: 6 }, (_, i) => { // length 6 for Mon-Sat
             const d = new Date(start);
             d.setDate(d.getDate() + i);
             return d;
@@ -113,7 +120,6 @@ export const Schedule: React.FC = () => {
     };
 
     const weekDays = [
-        t('common.sun', { defaultValue: 'SUN' }),
         t('common.mon', { defaultValue: 'MON' }),
         t('common.tue', { defaultValue: 'TUE' }),
         t('common.wed', { defaultValue: 'WED' }),
@@ -156,7 +162,7 @@ export const Schedule: React.FC = () => {
                         </Button>
                         <span className="px-4 text-sm font-medium">
                             {getDatesOfWeek()[0].toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} -
-                            {getDatesOfWeek()[6].toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                            {getDatesOfWeek()[5].toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                         </span>
                         <Button variant="ghost" size="icon" onClick={() => {
                             const d = new Date(viewDate);
@@ -222,7 +228,7 @@ export const Schedule: React.FC = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-7 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
                 {getDatesOfWeek().map((date, i) => {
                     const isToday = date.toDateString() === new Date().toDateString();
                     const daySessions = sessions.filter(s => new Date(s.start_time).toDateString() === date.toDateString());
@@ -257,7 +263,7 @@ export const Schedule: React.FC = () => {
                                                 key={session.id}
                                                 className="group p-3 rounded-2xl border border-white/5 bg-zinc-950/40 hover:bg-zinc-900/60 hover:border-primary/30 transition-all cursor-pointer relative overflow-hidden active:scale-[0.98]"
                                                 onClick={() => {
-                                                    // Potential session details action
+                                                    setSelectedSession(session);
                                                 }}
                                             >
                                                 <div className="absolute top-0 left-0 bottom-0 w-1" style={{ backgroundColor: session.session_types.color }} />
@@ -305,7 +311,9 @@ export const Schedule: React.FC = () => {
                                                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
                                                     <div className="flex items-center gap-1.5 text-muted-foreground/60">
                                                         <Users className="h-3 w-3" />
-                                                        <span className="text-[10px] font-bold uppercase tracking-widest">0 / {session.capacity}</span>
+                                                        <span className="text-[10px] font-bold uppercase tracking-widest">
+                                                            {session.bookings?.length || 0} / {session.capacity}
+                                                        </span>
                                                     </div>
 
                                                     {session.type_id === 'functional' && new Date(session.start_time) < new Date() && (
@@ -464,6 +472,93 @@ export const Schedule: React.FC = () => {
                             }}
                         >
                             {t('schedule.save_wellness')}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Session Details Modal (Members / Attendance) */}
+            <Dialog open={!!selectedSession} onOpenChange={(open) => !open && setSelectedSession(null)}>
+                <DialogContent className="sm:max-w-[450px] border-white/10 glass max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <div className="flex items-center justify-between mb-2">
+                            <Badge variant="glow" style={{ backgroundColor: selectedSession?.session_types?.color }}>
+                                {selectedSession?.session_types?.name}
+                            </Badge>
+                            <span className="text-[10px] font-black italic text-primary/60">
+                                {selectedSession && new Date(selectedSession.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                        </div>
+                        <DialogTitle className="text-3xl font-black italic uppercase tracking-tighter text-primary">
+                            {selectedSession?.title || selectedSession?.session_types?.name}
+                        </DialogTitle>
+                        <DialogDescription className="text-[10px] font-bold uppercase opacity-60">
+                            {t('schedule.attendance_management', { defaultValue: 'Attendance Management & Registrations' })}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="py-6 space-y-6">
+                        <div className="flex items-center justify-between px-2">
+                            <Label className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">{t('schedule.registered_members', { defaultValue: 'REGISTERED MEMBERS' })}</Label>
+                            <Badge variant="outline" className="text-[10px] font-black">{selectedSession?.bookings?.length || 0} / {selectedSession?.capacity}</Badge>
+                        </div>
+
+                        <div className="space-y-3 pr-2">
+                            {selectedSession?.bookings?.map((booking: any) => (
+                                <div key={booking.id} className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5 group hover:border-primary/30 transition-all">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center font-black text-xs text-primary">
+                                            {booking.profiles?.first_name?.charAt(0)}{booking.profiles?.last_name?.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-black uppercase italic leading-none">{booking.profiles?.first_name} {booking.profiles?.last_name}</p>
+                                            <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mt-1">{booking.status || 'registered'}</p>
+                                        </div>
+                                    </div>
+
+                                    {booking.status !== 'attended' && (
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="h-8 rounded-xl text-[9px] font-black uppercase tracking-widest border border-white/5 hover:bg-primary hover:text-white"
+                                            onClick={async () => {
+                                                const { error } = await supabase
+                                                    .from('bookings')
+                                                    .update({ status: 'attended' })
+                                                    .eq('id', booking.id);
+
+                                                if (!error) {
+                                                    showNotification('success', 'CHECK-IN RECORED');
+                                                    fetchSessions(); // Refresh
+                                                    // Update local state to keep modal open
+                                                    const updatedBookings = selectedSession.bookings.map((b: any) =>
+                                                        b.id === booking.id ? { ...b, status: 'attended' } : b
+                                                    );
+                                                    setSelectedSession({ ...selectedSession, bookings: updatedBookings });
+                                                }
+                                            }}
+                                        >
+                                            Check-in
+                                        </Button>
+                                    )}
+                                    {booking.status === 'attended' && (
+                                        <div className="h-8 flex items-center px-3 rounded-xl bg-emerald-500/20 text-emerald-500 text-[8px] font-black uppercase tracking-widest">
+                                            Present
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                            {(!selectedSession?.bookings || selectedSession.bookings.length === 0) && (
+                                <div className="py-8 text-center opacity-20 italic">
+                                    <p className="text-xs uppercase font-black">{t('schedule.no_registrations', { defaultValue: 'No one is registered yet' })}</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <DialogFooter>
+                        <Button variant="outline" className="w-full h-12 rounded-2xl font-black uppercase tracking-widest border-white/10" onClick={() => setSelectedSession(null)}>
+                            {t('common.close', { defaultValue: 'CLOSE' })}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

@@ -256,7 +256,7 @@ export const Wods: React.FC = () => {
         const { data } = await supabase
             .from('personal_records')
             .select('*, movements(name)')
-            .eq('athlete_id', user.id)
+            .eq('user_id', user.id)
             .eq('box_id', currentBox.id);
         if (data) setUserPRs(data);
     };
@@ -393,17 +393,29 @@ export const Wods: React.FC = () => {
 
     const last7DaysBias = useMemo(() => {
         const counts = { weightlifting: 0, gymnastics: 0, mono: 0, metcon: 0 };
-        // Si estamos editando, filtramos el WOD actual del historial para no duplicar
-        const historicalWods = wods
-            .filter(w => w.track === 'CrossFit' && w.id !== editingWodId)
-            .slice(0, 6); // Tomamos 6 para dejar espacio al actual
+        // Window Analysis: Mon-Sat of the current WOD week (Methodology Suggestion)
+        const currentWodDate = new Date(newWOD.date + 'T12:00:00');
+        const dayOfWeek = currentWodDate.getDay();
+        const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        const monday = new Date(currentWodDate);
+        monday.setDate(currentWodDate.getDate() - diffToMonday);
 
-        const allWodsForAnalysis = [...historicalWods];
+        const saturday = new Date(monday);
+        saturday.setDate(monday.getDate() + 5);
 
-        // Solo incluimos el actual si el track es CrossFit
-        if (newWOD.track === 'CrossFit') {
-            allWodsForAnalysis.push({ ...newWOD, id: 'current' } as any);
-        }
+        const mondayStr = monday.toISOString().split('T')[0];
+        const saturdayStr = saturday.toISOString().split('T')[0];
+
+        const currentTrack = newWOD.track || 'CrossFit';
+
+        const filteredWodsForWeek = wods.filter(w => {
+            if (w.track !== currentTrack || w.id === editingWodId) return false;
+            const d = w.date?.split('T')[0];
+            return d && d >= mondayStr && d <= saturdayStr;
+        });
+
+        const allWodsForAnalysis = [...filteredWodsForWeek];
+        allWodsForAnalysis.push({ ...newWOD, id: 'current' } as any);
 
         allWodsForAnalysis.forEach(w => {
             (w.modalities || []).forEach(m => {
@@ -415,7 +427,7 @@ export const Wods: React.FC = () => {
             });
         });
         return counts;
-    }, [wods, newWOD.modalities, newWOD.track, editingWodId]);
+    }, [wods, newWOD.modalities, newWOD.track, newWOD.date, editingWodId]);
 
     return (
         <div className="space-y-6 text-left">

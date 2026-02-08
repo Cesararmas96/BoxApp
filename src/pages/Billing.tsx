@@ -20,7 +20,8 @@ import {
     ChevronLeft,
     ChevronRight,
     Clock,
-    FileText
+    FileText,
+    Search
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -105,6 +106,7 @@ export const Billing: React.FC = () => {
         startDate: new Date().toISOString().split('T')[0],
         isUnclear: false
     });
+    const [athleteSearch, setAthleteSearch] = useState('');
 
     // List states
     const [allAthletes, setAllAthletes] = useState<any[]>([]);
@@ -388,7 +390,7 @@ export const Billing: React.FC = () => {
             const { error } = await supabase
                 .from('memberships')
                 .insert([{
-                    user_id: newMembership.userId,
+                    profile_id: newMembership.userId,
                     plan_id: newMembership.planId,
                     box_id: currentBox?.id,
                     start_date: startDate ? startDate.toISOString() : null,

@@ -401,7 +401,7 @@ export const Schedule: React.FC = () => {
                                     {date.getDate()}
                                 </p>
                             </CardHeader>
-                            <CardContent className="p-3 space-y-4 min-h-[400px]">
+                            <CardContent className="p-3 space-y-4 min-h-[300px] flex flex-col">
                                 {loading ? (
                                     <div className="animate-pulse space-y-3">
                                         <div className="h-20 bg-white/5 rounded-2xl" />
@@ -409,70 +409,68 @@ export const Schedule: React.FC = () => {
                                     </div>
                                 ) : (
                                     <>
-                                        {daySessions.map((session) => (
-                                            <div
-                                                key={session.id}
-                                                className="group p-3 rounded-2xl border border-white/5 bg-zinc-950/40 hover:bg-zinc-900/60 hover:border-primary/30 transition-all cursor-pointer relative overflow-hidden active:scale-[0.98]"
-                                                onClick={() => {
-                                                    setSelectedSession(session);
-                                                }}
-                                            >
-                                                <div className="absolute top-0 left-0 bottom-0 w-1" style={{ backgroundColor: session.session_types?.color }} />
-
-                                                <div className="flex justify-between items-center mb-3">
-                                                    <span className="text-[10px] font-black italic tracking-widest text-primary/80 uppercase">
-                                                        {new Date(session.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                    </span>
-                                                    <Badge variant="glow" className="text-[8px] h-4 px-2 tracking-widest leading-none bg-primary/20">
-                                                        {session.session_types?.name}
-                                                    </Badge>
-                                                </div>
-
-                                                <p className="text-sm font-black italic uppercase tracking-tight text-white mb-2 leading-none group-hover:text-primary transition-colors">
-                                                    {session.title || session.session_types?.name}
-                                                </p>
-
-                                                {/* WOD Integration */}
-                                                {(() => {
-                                                    const matchedWod = getMatchedWod(session, date);
-
-                                                    if (matchedWod) {
-                                                        return (
-                                                            <div
-                                                                className="mt-3 p-2.5 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all shadow-inner group/wod relative overflow-hidden"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    setSelectedWod(matchedWod);
-                                                                }}
-                                                            >
-                                                                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover/wod:opacity-100 transition-opacity" />
-                                                                <div className="flex items-center gap-2 text-[9px] font-black text-primary uppercase italic mb-1 tracking-tighter">
-                                                                    <div className="p-1 bg-primary rounded-md">
-                                                                        <Trophy className="h-2.5 w-2.5 text-white" />
-                                                                    </div>
-                                                                    WOD Programmed
+                                        {/* General Day Programming Summary */}
+                                        {(() => {
+                                            const dayWods = wods.filter(w => w.date?.split('T')[0] === date.toISOString().split('T')[0]);
+                                            if (dayWods.length > 0) {
+                                                return (
+                                                    <div className="mb-4 p-3 rounded-2xl bg-white/5 border border-white/5">
+                                                        <p className="text-[8px] font-black uppercase tracking-widest text-primary mb-2 italic">Daily Programming</p>
+                                                        <div className="space-y-2">
+                                                            {dayWods.slice(0, 2).map((wod, idx) => (
+                                                                <div key={idx} className="flex flex-col">
+                                                                    <span className="text-[7px] font-black text-zinc-500 uppercase tracking-tighter">{wod.track}</span>
+                                                                    <span className="text-[10px] font-bold text-white/90 truncate italic">{wod.title}</span>
                                                                 </div>
-                                                                <p className="text-[10px] font-bold uppercase truncate leading-tight text-white/70">{matchedWod.title}</p>
-                                                            </div>
-                                                        );
-                                                    }
-                                                    return null;
-                                                })()}
-
-                                                <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
-                                                    <div className="flex items-center gap-1.5 text-muted-foreground/40">
-                                                        <Users className="h-3 w-3" />
-                                                        <span className="text-[10px] font-bold uppercase tracking-widest italic">
-                                                            {session.profiles ? `${session.profiles.first_name} ${session.profiles.last_name}` : 'Coach'}
-                                                        </span>
+                                                            ))}
+                                                            {dayWods.length > 2 && (
+                                                                <p className="text-[7px] font-black text-primary/60 uppercase">+{dayWods.length - 2} more tracks</p>
+                                                            )}
+                                                        </div>
                                                     </div>
+                                                );
+                                            }
+                                            return null;
+                                        })()}
+
+                                        {daySessions.length > 0 ? (
+                                            <div className="space-y-4">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <span className="h-px flex-1 bg-white/5" />
+                                                    <span className="text-[8px] font-black uppercase text-zinc-600 tracking-widest">Sessions</span>
+                                                    <span className="h-px flex-1 bg-white/5" />
+                                                </div>
+                                                <div className="space-y-3">
+                                                    {daySessions.map((session) => (
+                                                        <div
+                                                            key={session.id}
+                                                            className="group p-3 rounded-2xl border border-white/5 bg-zinc-950/40 hover:bg-zinc-900/60 hover:border-primary/30 transition-all cursor-pointer relative overflow-hidden active:scale-[0.98]"
+                                                            onClick={() => {
+                                                                setSelectedSession(session);
+                                                            }}
+                                                        >
+                                                            <div className="absolute top-0 left-0 bottom-0 w-1" style={{ backgroundColor: session.session_types?.color }} />
+
+                                                            <div className="flex justify-between items-center mb-2">
+                                                                <span className="text-[9px] font-black italic tracking-widest text-primary/80 uppercase">
+                                                                    {new Date(session.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                </span>
+                                                                <Badge variant="glow" className="text-[7px] h-3.5 px-1.5 tracking-widest leading-none bg-primary/20">
+                                                                    {session.session_types?.name}
+                                                                </Badge>
+                                                            </div>
+
+                                                            <p className="text-xs font-black italic uppercase tracking-tight text-white group-hover:text-primary transition-colors truncate">
+                                                                {session.title || session.session_types?.name}
+                                                            </p>
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             </div>
-                                        ))}
-                                        {daySessions.length === 0 && (
-                                            <div className="flex-1 flex flex-col items-center justify-center opacity-10 py-12">
-                                                <CalendarIcon className="h-10 w-10 mb-3" />
-                                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-center">{t('schedule.empty_day')}</p>
+                                        ) : (
+                                            <div className="flex-1 flex flex-col items-center justify-center opacity-10 py-8">
+                                                <CalendarIcon className="h-8 w-8 mb-2" />
+                                                <p className="text-[8px] font-black uppercase tracking-[0.2em] text-center">No Sessions</p>
                                             </div>
                                         )}
                                     </>

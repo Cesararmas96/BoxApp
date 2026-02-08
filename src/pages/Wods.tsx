@@ -19,6 +19,8 @@ import {
     Check,
     ChevronLeft,
     ChevronRight,
+    LayoutGrid,
+    List,
 } from 'lucide-react';
 import { WODDesigner, SessionBlock, LessonBlock } from '@/components/WODDesigner';
 import { Button } from '@/components/ui/button';
@@ -84,7 +86,6 @@ export const Wods: React.FC = () => {
     const [isCopying, setIsCopying] = useState<string | null>(null);
     const [activeTrack, setActiveTrack] = useState<string>('all');
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 12;
 
     // UI State for Editor
     const [newWOD, setNewWOD] = useState({
@@ -106,6 +107,8 @@ export const Wods: React.FC = () => {
     const [movements, setMovements] = useState<any[]>([]);
     const [userPRs, setUserPRs] = useState<any[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedMonth, setSelectedMonth] = useState<string>('all');
+    const [viewMode, setViewMode] = useState<'grid' | 'compact'>('grid');
     const { notification, showNotification, hideNotification, confirmState, showConfirm, hideConfirm } = useNotification();
 
 
@@ -317,10 +320,22 @@ export const Wods: React.FC = () => {
         return null;
     };
 
+    const availableMonths = useMemo(() => {
+        const months = new Set<string>();
+        wods.forEach(wod => {
+            const date = new Date(wod.date);
+            months.add(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`);
+        });
+        return Array.from(months).sort((a, b) => b.localeCompare(a));
+    }, [wods]);
+
     const filteredWods = useMemo(() => {
         let items = wods;
         if (activeTrack !== 'all') {
             items = items.filter(w => w.track === activeTrack);
+        }
+        if (selectedMonth !== 'all') {
+            items = items.filter(w => w.date.startsWith(selectedMonth));
         }
         if (searchQuery) {
             items = items.filter(w =>
@@ -329,7 +344,9 @@ export const Wods: React.FC = () => {
             );
         }
         return items;
-    }, [wods, activeTrack, searchQuery]);
+    }, [wods, activeTrack, searchQuery, selectedMonth]);
+
+    const itemsPerPage = viewMode === 'compact' ? 50 : 12;
 
     const paginatedWods = useMemo(() => {
         const startIndex = (currentPage - 1) * itemsPerPage;
@@ -532,16 +549,65 @@ export const Wods: React.FC = () => {
                     ))}
                 </div>
 
-                <div className="relative group w-full md:w-80">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                    <Input
-                        placeholder={t('common.search')}
-                        className="pl-12 h-11 rounded-xl border-white/10 bg-white/5 focus:ring-primary/20 transition-all text-xs font-bold uppercase tracking-wider"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                    <div className="relative group flex-1 md:w-64">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                        <Input
+                            placeholder={t('common.search')}
+                            className="pl-12 h-11 rounded-xl border-white/10 bg-white/5 focus:ring-primary/20 transition-all text-xs font-bold uppercase tracking-wider"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 shrink-0">
+                        <Button
+                            variant={viewMode === 'grid' ? "secondary" : "ghost"}
+                            size="icon"
+                            onClick={() => setViewMode('grid')}
+                            className="h-9 w-9 rounded-lg"
+                        >
+                            <LayoutGrid className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant={viewMode === 'compact' ? "secondary" : "ghost"}
+                            size="icon"
+                            onClick={() => setViewMode('compact')}
+                            className="h-9 w-9 rounded-lg"
+                        >
+                            <List className="h-4 w-4" />
+                        </Button>
+                    </div>
                 </div>
             </div>
+
+            {/* Month Navigator */}
+            {availableMonths.length > 1 && (
+                <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-hide">
+                    <Button
+                        variant={selectedMonth === 'all' ? "secondary" : "ghost"}
+                        onClick={() => setSelectedMonth('all')}
+                        className="h-8 rounded-full px-5 text-[9px] font-black uppercase tracking-widest whitespace-nowrap border border-white/5"
+                    >
+                        {t('common.all')}
+                    </Button>
+                    {availableMonths.map(month => {
+                        const [year, monthNum] = month.split('-');
+                        const date = new Date(parseInt(year), parseInt(monthNum) - 1);
+                        const monthName = date.toLocaleDateString(undefined, { month: 'short' });
+                        return (
+                            <Button
+                                key={month}
+                                variant={selectedMonth === month ? "secondary" : "ghost"}
+                                onClick={() => setSelectedMonth(month)}
+                                className="h-8 rounded-full px-5 text-[9px] font-black uppercase tracking-widest whitespace-nowrap border border-white/5"
+                            >
+                                {monthName} {year}
+                            </Button>
+                        );
+                    })}
+                </div>
+            )}
 
             {/* Bias Dashboard */}
             {(activeTrack === 'all' || activeTrack === 'CrossFit') && (
@@ -621,8 +687,51 @@ export const Wods: React.FC = () => {
                                         <div className="h-px flex-1 bg-white/5" />
                                     </div>
 
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                                        {dateWods.map(wod => (
+                                    <div className={cn(
+                                        "grid gap-8 items-start",
+                                        viewMode === 'grid' ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"
+                                    )}>
+                                        {dateWods.map(wod => viewMode === 'compact' ? (
+                                            <div key={wod.id} className="group flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl hover:border-primary/30 transition-all duration-300 shadow-lg hover:shadow-primary/5">
+                                                <div className="flex items-center gap-6 min-w-0">
+                                                    <Badge className={cn(
+                                                        "text-[9px] h-5 px-2 font-black uppercase tracking-widest border-none shrink-0",
+                                                        wod.track === 'CrossFit' && "bg-primary text-primary-foreground",
+                                                        wod.track === 'Novice' && "bg-emerald-500 text-white",
+                                                        wod.track === 'Bodybuilding' && "bg-blue-500 text-white",
+                                                        wod.track === 'Engine' && "bg-orange-500 text-white"
+                                                    )}>
+                                                        {wod.track}
+                                                    </Badge>
+                                                    <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4 min-w-0">
+                                                        <h4 className="font-black uppercase italic tracking-tight text-sm text-foreground group-hover:text-primary transition-colors truncate">
+                                                            {wod.title}
+                                                        </h4>
+                                                        <p className="text-[10px] font-medium text-muted-foreground line-clamp-1 hidden md:block">
+                                                            {wod.metcon.replace(/[*#]/g, '')}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center gap-1">
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10" onClick={() => handleCopyWod(wod)}>
+                                                        {isCopying === wod.id ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10" onClick={() => handleEditWod(wod)}>
+                                                        <Pencil className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive hover:bg-destructive/10" onClick={() => showConfirm({
+                                                        title: t('common.confirm_delete'),
+                                                        description: t('wods.delete_warning'),
+                                                        onConfirm: () => handleDeleteWod(wod.id),
+                                                        variant: 'destructive',
+                                                        icon: 'destructive'
+                                                    })}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ) : (
                                             <Card key={wod.id} className="border-white/5 glass rounded-[2rem] overflow-hidden group hover:border-primary/30 transition-all duration-500 shadow-xl hover:shadow-primary/5 h-full flex flex-col">
                                                 <CardHeader className="flex flex-col md:flex-row md:items-start justify-between gap-4 p-6 border-b border-white/5 bg-white/5 flex-shrink-0">
                                                     <div className="space-y-4">
@@ -683,7 +792,7 @@ export const Wods: React.FC = () => {
                                                                     <div className="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center">
                                                                         <Timer className="h-3 w-3 text-primary" />
                                                                     </div>
-                                                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary italic">{t('wods.routine_description')}</p>
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">{t('wods.workout')}</span>
                                                                 </div>
                                                                 <span className="text-[9px] font-bold uppercase tracking-widest text-white/20">STRUCTURED</span>
                                                             </div>

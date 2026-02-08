@@ -272,14 +272,21 @@ export const Billing: React.FC = () => {
                     athlete_id: membership.athlete_id,
                     box_id: currentBox?.id,
                     amount: amount,
-                    status: 'paid',
-                    due_date: new Date().toISOString()
+                    status: 'paid'
                 }]);
 
             if (invoiceError) throw invoiceError;
 
             // Update membership status to active and extend end_date
-            const newEndDate = new Date();
+            // If already active and has an end_date, extend from there
+            // Otherwise extend from today
+            let newEndDate = new Date();
+            const currentEndDate = membership.end_date ? new Date(membership.end_date) : null;
+
+            if (currentEndDate && currentEndDate > new Date() && membership.status === 'active') {
+                newEndDate = new Date(currentEndDate);
+            }
+
             newEndDate.setDate(newEndDate.getDate() + (plan?.duration_days || 30));
 
             const { error: memberError } = await supabase
@@ -301,6 +308,36 @@ export const Billing: React.FC = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleExtend = async (membership: any, days: number = 7) => {
+        setLoading(true);
+        try {
+            const currentEndDate = membership.end_date ? new Date(membership.end_date) : new Date();
+            const newEndDate = new Date(currentEndDate);
+            newEndDate.setDate(newEndDate.getDate() + days);
+
+            const { error } = await supabase
+                .from('memberships')
+                .update({
+                    end_date: newEndDate.toISOString()
+                })
+                .eq('id', membership.id);
+
+            if (error) throw error;
+            addNotification('success', `Membership extended by ${days} days`);
+            fetchFinanceData();
+        } catch (error: any) {
+            console.error('Error extending membership:', error);
+            addNotification('error', 'Error extending membership: ' + error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRenew = (membership: any) => {
+        // Renewal is essentially marking a new period as paid
+        handleMarkPaid(membership);
     };
 
     const handleDeleteMembership = async (id: string) => {
@@ -1100,6 +1137,12 @@ export const Billing: React.FC = () => {
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end" className="w-40 bg-zinc-900 border-zinc-800">
                                                                 <DropdownMenuItem
+                                                                    className="text-primary focus:text-white cursor-pointer font-bold"
+                                                                    onClick={() => handleRenew(m)}
+                                                                >
+                                                                    <Briefcase className="mr-2 h-4 w-4" /> {t('billing.renew', { defaultValue: 'RENEW' })}
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem
                                                                     className="text-zinc-400 focus:text-white cursor-pointer"
                                                                     onClick={() => handleMarkPaid(m)}
                                                                 >
@@ -1107,14 +1150,17 @@ export const Billing: React.FC = () => {
                                                                 </DropdownMenuItem>
                                                                 {m.status === 'pending' && (
                                                                     <DropdownMenuItem
-                                                                        className="text-primary focus:text-white cursor-pointer"
+                                                                        className="text-blue-500 focus:text-white cursor-pointer"
                                                                         onClick={() => handleActivateMembership(m.id, m.plan_id)}
                                                                     >
-                                                                        <CheckCircle2 className="mr-2 h-4 w-4 text-primary" /> ACTIVAR AHORA
+                                                                        <CheckCircle2 className="mr-2 h-4 w-4 text-blue-500" /> ACTIVAR AHORA
                                                                     </DropdownMenuItem>
                                                                 )}
-                                                                <DropdownMenuItem className="text-zinc-400 focus:text-white cursor-pointer">
-                                                                    <Calendar className="mr-2 h-4 w-4" /> {t('common.edit', { defaultValue: 'Extend' })}
+                                                                <DropdownMenuItem
+                                                                    className="text-zinc-400 focus:text-white cursor-pointer"
+                                                                    onClick={() => handleExtend(m)}
+                                                                >
+                                                                    <Calendar className="mr-2 h-4 w-4" /> {t('common.edit', { defaultValue: 'Extend (+7d)' })}
                                                                 </DropdownMenuItem>
                                                                 <DropdownMenuSeparator className="bg-zinc-800" />
                                                                 <DropdownMenuItem

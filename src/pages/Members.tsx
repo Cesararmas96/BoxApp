@@ -74,7 +74,6 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
         createAccount: true
     });
     const [selectedMember, setSelectedMember] = useState<Profile | null>(null);
-    const [showPhotoUpload, setShowPhotoUpload] = useState(false);
     const { notification, showNotification, hideNotification, confirmState, showConfirm, hideConfirm } = useNotification();
 
     useEffect(() => {
@@ -86,10 +85,10 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
         const { data, error } = await supabase
             .from('profiles')
             .select('*')
-            .eq('box_id', currentBox?.id)
+            .eq('box_id', currentBox?.id || '')
             .order('created_at', { ascending: false });
 
-        if (!error && data) setMembers(data);
+        if (!error && data) setMembers(data as unknown as Profile[]);
         setLoading(false);
     };
 

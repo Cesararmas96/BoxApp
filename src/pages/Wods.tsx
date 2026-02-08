@@ -342,7 +342,10 @@ export const Wods: React.FC = () => {
             items = items.filter(w => w.date.startsWith(selectedMonth));
         }
         if (selectedDate) {
-            items = items.filter(w => w.date === selectedDate);
+            items = items.filter(w => {
+                const wodDate = w.date.includes('T') ? w.date.split('T')[0] : w.date;
+                return wodDate === selectedDate;
+            });
         }
         if (searchQuery) {
             items = items.filter(w =>
@@ -563,7 +566,10 @@ export const Wods: React.FC = () => {
                             type="date"
                             className="px-4 h-11 rounded-xl border-black/5 dark:border-white/20 bg-black/[0.02] dark:bg-white/10 focus:ring-primary/20 focus:border-primary/50 transition-all text-[10px] font-black uppercase tracking-widest cursor-pointer [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-inner-spin-button]:hidden [&::-webkit-clear-button]:hidden"
                             value={selectedDate}
-                            onChange={(e) => setSelectedDate(e.target.value)}
+                            onChange={(e) => {
+                                setSelectedDate(e.target.value);
+                                if (e.target.value) setSelectedMonth('all');
+                            }}
                             onClick={() => {
                                 try {
                                     dateInputRef.current?.showPicker();
@@ -633,7 +639,10 @@ export const Wods: React.FC = () => {
                 <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-hide">
                     <Button
                         variant={selectedMonth === 'all' ? "secondary" : "ghost"}
-                        onClick={() => setSelectedMonth('all')}
+                        onClick={() => {
+                            setSelectedMonth('all');
+                            setSelectedDate('');
+                        }}
                         className="h-8 rounded-full px-5 text-[9px] font-black uppercase tracking-widest whitespace-nowrap border border-white/5"
                     >
                         {t('common.all')}
@@ -646,7 +655,10 @@ export const Wods: React.FC = () => {
                             <Button
                                 key={month}
                                 variant={selectedMonth === month ? "secondary" : "ghost"}
-                                onClick={() => setSelectedMonth(month)}
+                                onClick={() => {
+                                    setSelectedMonth(month);
+                                    setSelectedDate('');
+                                }}
                                 className="h-8 rounded-full px-5 text-[9px] font-black uppercase tracking-widest whitespace-nowrap border border-white/5"
                             >
                                 {monthName} {year}

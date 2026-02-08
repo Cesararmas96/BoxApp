@@ -90,8 +90,7 @@ export const Schedule: React.FC = () => {
             .select(`
                 *,
                 session_types (name, color),
-                profiles:coach_id (first_name, last_name),
-                bookings (id, status, profiles:user_id (first_name, last_name))
+                profiles:coach_id (first_name, last_name)
             `)
             .eq('box_id', currentBox.id)
             .gte('start_time', start.toISOString())
@@ -428,7 +427,7 @@ export const Schedule: React.FC = () => {
                                                     </Badge>
                                                 </div>
 
-                                                <p className="text-sm font-black italic uppercase tracking-tight text-white/90 mb-2 leading-none group-hover:text-primary transition-colors">
+                                                <p className="text-sm font-black italic uppercase tracking-tight text-white mb-2 leading-none group-hover:text-primary transition-colors">
                                                     {session.title || session.session_types.name}
                                                 </p>
 
@@ -460,26 +459,12 @@ export const Schedule: React.FC = () => {
                                                 })()}
 
                                                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
-                                                    <div className="flex items-center gap-1.5 text-muted-foreground/60">
+                                                    <div className="flex items-center gap-1.5 text-muted-foreground/40">
                                                         <Users className="h-3 w-3" />
-                                                        <span className="text-[10px] font-bold uppercase tracking-widest">
-                                                            {session.bookings?.length || 0} / {session.capacity}
+                                                        <span className="text-[10px] font-bold uppercase tracking-widest italic">
+                                                            {session.profiles ? `${session.profiles.first_name} ${session.profiles.last_name}` : 'Coach'}
                                                         </span>
                                                     </div>
-
-                                                    {session.type_id === 'functional' && new Date(session.start_time) < new Date() && (
-                                                        <Button
-                                                            size="icon"
-                                                            variant="ghost"
-                                                            className="h-6 w-6 rounded-full hover:bg-yellow-500/20 hover:text-yellow-500"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setIsFeedbackOpen(session.id);
-                                                            }}
-                                                        >
-                                                            <Star className="h-3.5 w-3.5 fill-current" />
-                                                        </Button>
-                                                    )}
                                                 </div>
                                             </div>
                                         ))}
@@ -769,67 +754,53 @@ export const Schedule: React.FC = () => {
                             {selectedSession?.title || selectedSession?.session_types?.name}
                         </DialogTitle>
                         <DialogDescription className="text-[10px] font-bold uppercase opacity-60">
-                            {t('schedule.attendance_management', { defaultValue: 'Attendance Management & Registrations' })}
+                            {t('schedule.session_overview', { defaultValue: 'Session Details & Programming' })}
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="py-6 space-y-6">
-                        <div className="flex items-center justify-between px-2">
-                            <Label className="uppercase text-[10px] font-black tracking-widest text-muted-foreground">{t('schedule.registered_members', { defaultValue: 'REGISTERED MEMBERS' })}</Label>
-                            <Badge variant="outline" className="text-[10px] font-black">{selectedSession?.bookings?.length || 0} / {selectedSession?.capacity}</Badge>
+                    <div className="py-6 space-y-8">
+                        {/* Coach Info */}
+                        <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
+                            <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center font-black text-lg text-primary">
+                                {selectedSession?.profiles?.first_name?.charAt(0)}{selectedSession?.profiles?.last_name?.charAt(0)}
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Assigned Coach</p>
+                                <p className="text-lg font-black uppercase italic leading-none">{selectedSession?.profiles?.first_name} {selectedSession?.profiles?.last_name}</p>
+                            </div>
                         </div>
 
-                        <div className="space-y-3 pr-2">
-                            {selectedSession?.bookings?.map((booking: any) => (
-                                <div key={booking.id} className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5 group hover:border-primary/30 transition-all">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center font-black text-xs text-primary">
-                                            {booking.profiles?.first_name?.charAt(0)}{booking.profiles?.last_name?.charAt(0)}
+                        {/* WOD Integration in Session Details */}
+                        {(() => {
+                            const matchedWod = getMatchedWod(selectedSession, new Date(selectedSession?.start_time));
+                            if (matchedWod) {
+                                return (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-2">
+                                            <span className="h-px flex-1 bg-white/5" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-primary italic">Daily Programming</span>
+                                            <span className="h-px flex-1 bg-white/5" />
                                         </div>
-                                        <div>
-                                            <p className="text-xs font-black uppercase italic leading-none">{booking.profiles?.first_name} {booking.profiles?.last_name}</p>
-                                            <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mt-1">{booking.status || 'registered'}</p>
+                                        <div
+                                            className="p-6 rounded-3xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all group cursor-pointer"
+                                            onClick={() => setSelectedWod(matchedWod)}
+                                        >
+                                            <div className="flex items-center justify-between mb-4">
+                                                <Badge className="bg-primary text-white text-[9px] font-black uppercase tracking-widest">{matchedWod.track} TRACK</Badge>
+                                                <Trophy className="h-4 w-4 text-primary" />
+                                            </div>
+                                            <h3 className="text-2xl font-black uppercase italic tracking-tight text-white group-hover:text-primary transition-colors">{matchedWod.title}</h3>
+                                            <p className="text-[10px] text-zinc-400 mt-2 uppercase font-bold tracking-widest">Click to view full workout details</p>
                                         </div>
                                     </div>
-
-                                    {booking.status !== 'attended' && (
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            className="h-8 rounded-xl text-[9px] font-black uppercase tracking-widest border border-white/5 hover:bg-primary hover:text-white"
-                                            onClick={async () => {
-                                                const { error } = await supabase
-                                                    .from('bookings')
-                                                    .update({ status: 'attended' })
-                                                    .eq('id', booking.id);
-
-                                                if (!error) {
-                                                    showNotification('success', 'CHECK-IN RECORED');
-                                                    fetchSessions(); // Refresh
-                                                    // Update local state to keep modal open
-                                                    const updatedBookings = selectedSession.bookings.map((b: any) =>
-                                                        b.id === booking.id ? { ...b, status: 'attended' } : b
-                                                    );
-                                                    setSelectedSession({ ...selectedSession, bookings: updatedBookings });
-                                                }
-                                            }}
-                                        >
-                                            Check-in
-                                        </Button>
-                                    )}
-                                    {booking.status === 'attended' && (
-                                        <div className="h-8 flex items-center px-3 rounded-xl bg-emerald-500/20 text-emerald-500 text-[8px] font-black uppercase tracking-widest">
-                                            Present
-                                        </div>
-                                    )}
+                                );
+                            }
+                            return (
+                                <div className="text-center py-8 px-4 rounded-3xl border border-dashed border-white/10 opacity-40">
+                                    <p className="text-[10px] font-black uppercase tracking-widest">No programming assigned to this track yet</p>
                                 </div>
-                            ))}
-                            {(!selectedSession?.bookings || selectedSession.bookings.length === 0) && (
-                                <div className="py-8 text-center opacity-20 italic">
-                                    <p className="text-xs uppercase font-black">{t('schedule.no_registrations', { defaultValue: 'No one is registered yet' })}</p>
-                                </div>
-                            )}
-                        </div>
+                            );
+                        })()}
                     </div>
 
                     <DialogFooter>

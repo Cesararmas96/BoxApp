@@ -10,7 +10,9 @@ import {
     Lock,
     Check,
     X as CloseIcon,
-    Terminal
+    Terminal,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -73,6 +75,8 @@ export const Roles: React.FC = () => {
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [testLoginLoading, setTestLoginLoading] = useState<string | null>(null);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 8;
 
     useEffect(() => {
         fetchUsers();
@@ -148,6 +152,13 @@ export const Roles: React.FC = () => {
         `${user.first_name} ${user.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.email.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    const currentUsers = filteredUsers.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
+    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
 
     const getRoleBadge = (role: string) => {
         switch (role) {
@@ -271,7 +282,7 @@ export const Roles: React.FC = () => {
                                                 </TableCell>
                                             </TableRow>
                                         ) : (
-                                            filteredUsers.map((user) => (
+                                            currentUsers.map((user) => (
                                                 <TableRow key={user.id} className="hover:bg-muted/30 transition-colors border-muted/20">
                                                     <TableCell className="pl-6 py-4">
                                                         <div className="flex items-center gap-3">
@@ -324,6 +335,65 @@ export const Roles: React.FC = () => {
                                     </TableBody>
                                 </Table>
                             </div>
+                            {totalPages > 1 && (
+                                <div className="flex items-center justify-between gap-4 mt-8 bg-muted/20 p-4 rounded-2xl border border-muted-foreground/10 mx-6 mb-6">
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                            disabled={currentPage === 1}
+                                            className="h-9 px-3 font-bold uppercase text-[10px] tracking-widest gap-2 italic"
+                                        >
+                                            <ChevronLeft className="h-4 w-4" />
+                                            {t('common.previous', { defaultValue: 'PREVIOUS' })}
+                                        </Button>
+                                        <div className="flex items-center gap-1">
+                                            {[...Array(totalPages)].map((_, i) => {
+                                                const pageNumber = i + 1;
+                                                if (
+                                                    pageNumber === 1 ||
+                                                    pageNumber === totalPages ||
+                                                    Math.abs(pageNumber - currentPage) <= 1
+                                                ) {
+                                                    return (
+                                                        <Button
+                                                            key={pageNumber}
+                                                            variant={currentPage === pageNumber ? "default" : "outline"}
+                                                            size="sm"
+                                                            onClick={() => setCurrentPage(pageNumber)}
+                                                            className="h-9 w-9 font-bold text-[10px] italic shadow-lg shadow-primary/10"
+                                                        >
+                                                            {pageNumber}
+                                                        </Button>
+                                                    );
+                                                } else if (
+                                                    pageNumber === currentPage - 2 ||
+                                                    pageNumber === currentPage + 2
+                                                ) {
+                                                    return <span key={pageNumber} className="text-muted-foreground text-xs">...</span>;
+                                                }
+                                                return null;
+                                            })}
+                                        </div>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                            disabled={currentPage === totalPages}
+                                            className="h-9 px-3 font-bold uppercase text-[10px] tracking-widest gap-2 italic"
+                                        >
+                                            {t('common.next', { defaultValue: 'NEXT' })}
+                                            <ChevronRight className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                    <div className="hidden sm:block">
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 italic">
+                                            {t('common.showing', { defaultValue: 'SHOWING' })} <span className="text-primary">{Math.min(filteredUsers.length, (currentPage - 1) * itemsPerPage + 1)}-{Math.min(filteredUsers.length, currentPage * itemsPerPage)}</span> {t('common.of', { defaultValue: 'OF' })} {filteredUsers.length} {t('roles.users', { defaultValue: 'USERS' })}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </TabsContent>

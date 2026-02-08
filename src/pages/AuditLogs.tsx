@@ -9,7 +9,9 @@ import {
     Database,
     AlertCircle,
     Loader2,
-    RefreshCcw
+    RefreshCcw,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import {
     Table,
@@ -237,16 +239,16 @@ export const AuditLogs: React.FC = () => {
                     </Table>
                 </CardContent>
                 {totalPages > 1 && (
-                    <div className="flex items-center justify-between gap-4 p-4 border-t bg-muted/10">
+                    <div className="flex items-center justify-between gap-4 p-4 border-t bg-muted/20 rounded-b-2xl">
                         <div className="flex items-center gap-2">
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                                 disabled={currentPage === 1}
-                                className="h-9 px-3 font-bold uppercase text-[10px] tracking-widest gap-2"
+                                className="h-9 px-3 font-bold uppercase text-[10px] tracking-widest gap-2 italic"
                             >
-                                <ChevronDown className="h-4 w-4 rotate-90" />
+                                <ChevronLeft className="h-4 w-4" />
                                 {t('common.previous', { defaultValue: 'PREVIOUS' })}
                             </Button>
                             <div className="flex items-center gap-1">
@@ -263,7 +265,7 @@ export const AuditLogs: React.FC = () => {
                                                 variant={currentPage === pageNumber ? "default" : "outline"}
                                                 size="sm"
                                                 onClick={() => setCurrentPage(pageNumber)}
-                                                className="h-9 w-9 font-bold text-[10px]"
+                                                className="h-9 w-9 font-bold text-[10px] italic shadow-lg shadow-primary/10"
                                             >
                                                 {pageNumber}
                                             </Button>
@@ -272,7 +274,7 @@ export const AuditLogs: React.FC = () => {
                                         pageNumber === currentPage - 2 ||
                                         pageNumber === currentPage + 2
                                     ) {
-                                        return <span key={pageNumber} className="text-muted-foreground">...</span>;
+                                        return <span key={pageNumber} className="text-muted-foreground text-xs">...</span>;
                                     }
                                     return null;
                                 })}
@@ -282,13 +284,13 @@ export const AuditLogs: React.FC = () => {
                                 size="sm"
                                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                                 disabled={currentPage === totalPages}
-                                className="h-9 px-3 font-bold uppercase text-[10px] tracking-widest gap-2"
+                                className="h-9 px-3 font-bold uppercase text-[10px] tracking-widest gap-2 italic"
                             >
                                 {t('common.next', { defaultValue: 'NEXT' })}
-                                <ChevronDown className="h-4 w-4 -rotate-90" />
+                                <ChevronRight className="h-4 w-4" />
                             </Button>
                         </div>
-                        <div className="hidden sm:block text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                        <div className="hidden sm:block text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 italic">
                             {t('common.showing', { defaultValue: 'SHOWING' })} <span className="text-primary">{Math.min(filteredLogs.length, (currentPage - 1) * itemsPerPage + 1)}-{Math.min(filteredLogs.length, currentPage * itemsPerPage)}</span> {t('common.of', { defaultValue: 'OF' })} {filteredLogs.length} {t('audit.events', { defaultValue: 'EVENTS' })}
                         </div>
                     </div>

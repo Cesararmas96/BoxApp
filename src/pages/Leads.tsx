@@ -5,7 +5,9 @@ import {
     Inbox,
     CheckCircle,
     Clock,
-    Search
+    Search,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -373,42 +375,61 @@ export const Leads: React.FC = () => {
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-                <div className="flex items-center justify-between px-2 py-4">
-                    <p className="text-[10px] uppercase font-black italic text-muted-foreground tracking-widest">
-                        Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredLeads.length)} of {filteredLeads.length}
-                    </p>
-                    <div className="flex items-center gap-1">
+                <div className="flex items-center justify-between gap-4 mt-8 bg-muted/20 p-4 rounded-2xl border border-muted-foreground/10 mx-6 mb-6">
+                    <div className="flex items-center gap-2">
                         <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
                             onClick={() => handlePageChange(currentPage - 1)}
                             disabled={currentPage === 1}
-                            className="h-8 w-8 p-0 rounded-lg border border-white/5 hover:bg-primary/10"
+                            className="h-9 px-3 font-bold uppercase text-[10px] tracking-widest gap-2 italic"
                         >
-                            <span className="sr-only">Previous Page</span>
-                            &lt;
+                            <ChevronLeft className="h-4 w-4" />
+                            {t('common.previous', { defaultValue: 'PREVIOUS' })}
                         </Button>
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                            <Button
-                                key={page}
-                                variant={currentPage === page ? "default" : "ghost"}
-                                size="sm"
-                                onClick={() => handlePageChange(page)}
-                                className={`h-8 w-8 p-0 rounded-lg text-[10px] font-black italic ${currentPage === page ? "shadow-lg shadow-primary/20" : "border border-white/5 hover:bg-primary/10"}`}
-                            >
-                                {page}
-                            </Button>
-                        ))}
+                        <div className="flex items-center gap-1">
+                            {[...Array(totalPages)].map((_, i) => {
+                                const pageNumber = i + 1;
+                                if (
+                                    pageNumber === 1 ||
+                                    pageNumber === totalPages ||
+                                    Math.abs(pageNumber - currentPage) <= 1
+                                ) {
+                                    return (
+                                        <Button
+                                            key={pageNumber}
+                                            variant={currentPage === pageNumber ? "default" : "outline"}
+                                            size="sm"
+                                            onClick={() => handlePageChange(pageNumber)}
+                                            className="h-9 w-9 font-bold text-[10px] italic shadow-lg shadow-primary/10"
+                                        >
+                                            {pageNumber}
+                                        </Button>
+                                    );
+                                } else if (
+                                    pageNumber === currentPage - 2 ||
+                                    pageNumber === currentPage + 2
+                                ) {
+                                    return <span key={pageNumber} className="text-muted-foreground text-xs">...</span>;
+                                }
+                                return null;
+                            })}
+                        </div>
                         <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
                             onClick={() => handlePageChange(currentPage + 1)}
                             disabled={currentPage === totalPages}
-                            className="h-8 w-8 p-0 rounded-lg border border-white/5 hover:bg-primary/10"
+                            className="h-9 px-3 font-bold uppercase text-[10px] tracking-widest gap-2 italic"
                         >
-                            <span className="sr-only">Next Page</span>
-                            &gt;
+                            {t('common.next', { defaultValue: 'NEXT' })}
+                            <ChevronRight className="h-4 w-4" />
                         </Button>
+                    </div>
+                    <div className="hidden sm:block">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 italic">
+                            {t('common.showing', { defaultValue: 'SHOWING' })} <span className="text-primary">{Math.min(filteredLeads.length, (currentPage - 1) * itemsPerPage + 1)}-{Math.min(filteredLeads.length, currentPage * itemsPerPage)}</span> {t('common.of', { defaultValue: 'OF' })} {filteredLeads.length} {t('leads.title', { defaultValue: 'LEADS' })}
+                        </p>
                     </div>
                 </div>
             )}

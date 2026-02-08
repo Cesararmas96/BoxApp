@@ -1105,12 +1105,7 @@ export const Billing: React.FC = () => {
                                                                     inv.status === 'paid'
                                                                 );
 
-                                                                let label = '';
-                                                                switch (offset) {
-                                                                    case -1: label = 'PASADO'; break;
-                                                                    case 0: label = 'ESTE'; break;
-                                                                    case 1: label = 'SIGUIENTE'; break;
-                                                                }
+                                                                const label = monthStr.toUpperCase();
 
                                                                 return (
                                                                     <div key={offset} className="flex flex-col items-center gap-1 min-w-[45px]">

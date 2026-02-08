@@ -286,6 +286,7 @@ export const Billing: React.FC = () => {
                 .from('memberships')
                 .update({
                     status: 'active',
+                    start_date: membership.start_date || new Date().toISOString(),
                     end_date: newEndDate.toISOString()
                 })
                 .eq('id', membership.id);
@@ -357,6 +358,11 @@ export const Billing: React.FC = () => {
     const handleCreateMembership = async () => {
         if (!newMembership.userId || !newMembership.planId) {
             addNotification('error', 'Por favor selecciona atleta y plan');
+            return;
+        }
+
+        if (!currentBox?.id) {
+            addNotification('error', 'Box ID is missing');
             return;
         }
 

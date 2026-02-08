@@ -244,7 +244,7 @@ export const Competitions: React.FC = () => {
             .from('competition_judges')
             .insert([{
                 competition_id: selectedComp.id,
-                profile_id: profileId
+                user_id: profileId
             }]);
 
         if (error) {
@@ -284,7 +284,7 @@ export const Competitions: React.FC = () => {
             .from('competition_participants')
             .insert([{
                 competition_id: selectedComp.id,
-                athlete_id: athleteId,
+                user_id: athleteId,
                 category: 'RX'
             }]);
 

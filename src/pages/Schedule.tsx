@@ -64,9 +64,13 @@ export const Schedule: React.FC = () => {
     const fetchSessions = async () => {
         if (!currentBox?.id) return;
         const start = new Date(viewDate);
-        start.setDate(start.getDate() - start.getDay());
+        const day = start.getDay();
+        const diff = day === 0 ? -6 : 1 - day;
+        start.setDate(start.getDate() + diff);
+        start.setHours(0, 0, 0, 0);
+
         const end = new Date(start);
-        end.setDate(end.getDate() + 7);
+        end.setDate(end.getDate() + 6); // Up to Sunday morning (Saturday night)
 
         const { data, error } = await supabase
             .from('sessions')
@@ -89,9 +93,13 @@ export const Schedule: React.FC = () => {
     const fetchWods = async () => {
         if (!currentBox?.id) return;
         const start = new Date(viewDate);
-        start.setDate(start.getDate() - start.getDay());
+        const day = start.getDay();
+        const diff = day === 0 ? -6 : 1 - day;
+        start.setDate(start.getDate() + diff);
+        start.setHours(0, 0, 0, 0);
+
         const end = new Date(start);
-        end.setDate(end.getDate() + 7);
+        end.setDate(end.getDate() + 6);
 
         const { data, error } = await supabase
             .from('wods')

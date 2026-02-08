@@ -316,10 +316,23 @@ export const Wods: React.FC = () => {
         const percentMatch = text.match(/@?(\d{1,3})%/);
         if (!percentMatch) return null;
         const percent = parseInt(percentMatch[1]) / 100;
-        const movement = userPRs.find(pr => text.toLowerCase().includes(pr.movements.name.toLowerCase()));
-        if (movement) {
-            const weight = Math.round(movement.weight_kg * percent);
-            return { name: movement.movements.name, percent: Math.round(percent * 100), weight };
+
+        // Find a movement that matches the text
+        const movement = userPRs.find(pr =>
+            pr.movements?.name && text.toLowerCase().includes(pr.movements.name.toLowerCase())
+        );
+
+        if (movement && movement.value) {
+            // Parse numeric weight from string value (e.g., "100kg" -> 100)
+            const numericValue = parseFloat(movement.value.replace(/[^0-9.]/g, ''));
+            if (!isNaN(numericValue)) {
+                const weight = Math.round(numericValue * percent);
+                return {
+                    name: movement.movements.name,
+                    percent: Math.round(percent * 100),
+                    weight: `${weight}${movement.value.replace(/[0-9.]/g, '')}` || `${weight}kg`
+                };
+            }
         }
         return null;
     };

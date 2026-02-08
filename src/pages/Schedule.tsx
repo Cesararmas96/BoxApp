@@ -22,6 +22,7 @@ import {
     DialogFooter
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { useLanguage, useNotification } from '@/hooks';
 import { Toast } from '@/components/ui/toast-custom';

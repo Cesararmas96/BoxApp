@@ -167,7 +167,7 @@
   }
 
   .glass-dark {
-    @apply backdrop-blur-2xl bg-black/40 border-white/10 shadow-2xl;
+    @apply backdrop-blur-2xl bg-black/50 border-white/10 shadow-2xl;
   }
 
   .ios-squircle {

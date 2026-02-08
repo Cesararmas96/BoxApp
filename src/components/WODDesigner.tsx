@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLanguage } from '@/hooks';
+import { cn } from '@/lib/utils';
 import {
     Plus,
     GripVertical,
@@ -150,13 +151,21 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-wrap gap-2 p-2 bg-muted/30 rounded-lg">
+            <div className="flex flex-wrap gap-2 p-3 bg-black/[0.02] dark:bg-white/5 rounded-xl border border-black/5 dark:border-white/10">
                 {Object.entries(BLOCK_TEMPLATES).map(([type, config]) => (
                     <Button
                         key={type}
                         variant="outline"
                         size="sm"
-                        className="gap-2"
+                        className={cn(
+                            "gap-2 border-black/10 dark:border-white/20 hover:scale-[1.02] transition-all font-black uppercase text-[10px] tracking-widest h-9",
+                            type === 'warmup' && "text-orange-500 border-orange-500/20 bg-orange-500/5",
+                            type === 'strength' && "text-blue-500 border-blue-500/20 bg-blue-500/5",
+                            type === 'conditioning' && "text-purple-500 border-purple-500/20 bg-purple-500/5",
+                            type === 'wod' && "text-red-500 border-red-500/20 bg-red-500/5",
+                            type === 'accessory' && "text-green-500 border-green-500/20 bg-green-500/5",
+                            type === 'cooldown' && "text-slate-500 border-slate-500/20 bg-slate-500/5"
+                        )}
                         onClick={() => addBlock(type as any)}
                     >
                         {config.icon}
@@ -175,15 +184,15 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
                                         <Card
                                             ref={provided.innerRef}
                                             {...provided.draggableProps}
-                                            className="border-l-4 overflow-visible"
+                                            className="border-l-4 overflow-visible border-black/5 dark:border-white/20 bg-background/50 dark:bg-white/5 shadow-xl backdrop-blur-md"
                                             style={{
                                                 borderLeftColor: `var(--${block.type}-color)`,
                                                 ...provided.draggableProps.style
                                             }}
                                         >
-                                            <div className="flex items-center gap-3 p-3 bg-muted/20 border-b">
+                                            <div className="flex items-center gap-3 p-3 bg-black/[0.02] dark:bg-white/10 border-b border-black/5 dark:border-white/20">
                                                 <div {...provided.dragHandleProps}>
-                                                    <GripVertical className="h-4 w-4 text-muted-foreground" />
+                                                    <GripVertical className="h-4 w-4 text-muted-foreground/50" />
                                                 </div>
                                                 <Badge className={BLOCK_TEMPLATES[block.type].color}>
                                                     {BLOCK_TEMPLATES[block.type].icon}
@@ -197,14 +206,14 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
                                                     className="h-8 bg-transparent border-none font-bold text-sm focus-visible:ring-0 px-0"
                                                 />
                                                 <div className="flex items-center gap-2 ml-auto">
-                                                    <div className="flex items-center gap-1 bg-background/50 rounded px-2 py-1 border text-[10px] font-semibold">
-                                                        <span className="text-muted-foreground uppercase">Sets:</span>
+                                                    <div className="flex items-center gap-1 bg-black/[0.03] dark:bg-white/10 rounded-lg px-3 py-1.5 border border-black/5 dark:border-white/20 text-[10px] font-semibold">
+                                                        <span className="text-muted-foreground uppercase opacity-70">Sets:</span>
                                                         <input
                                                             type="text"
                                                             value={block.sets || ''}
                                                             onChange={(e) => updateBlock(block.id, { sets: e.target.value })}
                                                             placeholder="--"
-                                                            className="w-8 bg-transparent border-none text-center focus:outline-none"
+                                                            className="w-8 bg-transparent border-none text-center focus:outline-none font-black text-primary"
                                                         />
                                                     </div>
                                                     <Button
@@ -221,26 +230,26 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
                                             <CardContent className="p-4 space-y-4">
                                                 <div className="space-y-2">
                                                     {block.items.map((item) => (
-                                                        <div key={item.id} className="flex items-center gap-3 p-2 bg-muted/10 rounded-lg group">
-                                                            <div className="flex-1 font-medium text-sm">{item.movementName}</div>
+                                                        <div key={item.id} className="flex items-center gap-3 p-3 bg-black/[0.02] dark:bg-white/5 rounded-xl border border-black/5 dark:border-white/10 group hover:border-primary/20 transition-all">
+                                                            <div className="flex-1 font-bold italic uppercase text-xs tracking-tighter text-foreground/80">{item.movementName}</div>
                                                             <div className="flex items-center gap-2">
                                                                 <Input
                                                                     placeholder="Reps/Time"
                                                                     value={item.reps}
                                                                     onChange={(e) => updateMovementInBlock(block.id, item.id, { reps: e.target.value })}
-                                                                    className="h-7 w-20 text-[10px] bg-background"
+                                                                    className="h-9 w-24 text-[10px] bg-background/50 border-black/5 dark:border-white/20 focus:border-primary/50 font-black uppercase tracking-widest text-center"
                                                                 />
                                                                 <Input
                                                                     placeholder="Weight"
                                                                     value={item.weight}
                                                                     onChange={(e) => updateMovementInBlock(block.id, item.id, { weight: e.target.value })}
-                                                                    className="h-7 w-16 text-[10px] bg-background"
+                                                                    className="h-9 w-20 text-[10px] bg-background/50 border-black/5 dark:border-white/20 focus:border-primary/50 font-black uppercase tracking-widest text-center"
                                                                 />
                                                                 <Input
                                                                     placeholder="Notes"
                                                                     value={item.notes}
                                                                     onChange={(e) => updateMovementInBlock(block.id, item.id, { notes: e.target.value })}
-                                                                    className="h-7 flex-1 text-[10px] bg-background min-w-[100px]"
+                                                                    className="h-9 flex-1 text-[10px] bg-background/50 border-black/5 dark:border-white/20 focus:border-primary/50 font-black uppercase tracking-widest min-w-[120px]"
                                                                 />
                                                                 <Button
                                                                     variant="ghost"
@@ -261,7 +270,7 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
                                                     </div>
                                                     <Input
                                                         placeholder={t('wods.search_movements', { defaultValue: 'SEARCH MOVEMENTS...' })}
-                                                        className="pl-8 h-10 text-xs bg-primary/5 border-primary/20 focus:border-primary/50 focus:ring-primary/10 transition-all font-bold uppercase tracking-widest"
+                                                        className="pl-8 h-12 text-xs bg-black/[0.02] dark:bg-white/10 border-black/5 dark:border-white/20 focus:border-primary/50 focus:ring-primary/10 transition-all font-black uppercase tracking-widest"
                                                         value={activeSearchBlockId === block.id ? searchQuery : ''}
                                                         onFocus={() => setActiveSearchBlockId(block.id)}
                                                         onChange={(e) => {

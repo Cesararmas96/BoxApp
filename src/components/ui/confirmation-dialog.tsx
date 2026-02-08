@@ -49,31 +49,31 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[400px] bg-zinc-950/95 border-white/5 backdrop-blur-xl overflow-hidden">
+            <DialogContent className="sm:max-w-[400px] bg-background/95 dark:bg-zinc-950/95 border-black/5 dark:border-white/5 backdrop-blur-xl overflow-hidden rounded-[2rem] shadow-2xl">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50" />
 
                 <DialogHeader className="pt-6 flex flex-col items-center gap-4 text-center">
                     <div className={cn(
-                        "p-4 rounded-full bg-white/5 border border-white/10 shadow-2xl",
+                        "p-4 rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 shadow-2xl",
                         variant === 'destructive' ? "shadow-destructive/10" : "shadow-primary/10"
                     )}>
                         {icons[icon]}
                     </div>
                     <div className="space-y-2">
-                        <DialogTitle className="text-xl font-black italic uppercase tracking-tight text-white">
+                        <DialogTitle className="text-xl font-black italic uppercase tracking-tight text-foreground dark:text-white">
                             {title}
                         </DialogTitle>
-                        <DialogDescription className="text-sm text-zinc-400 font-medium leading-relaxed">
+                        <DialogDescription className="text-sm text-muted-foreground dark:text-zinc-400 font-medium leading-relaxed">
                             {description}
                         </DialogDescription>
                     </div>
                 </DialogHeader>
 
-                <DialogFooter className="mt-6 flex sm:flex-row gap-3">
+                <DialogFooter className="mt-6 flex flex-row gap-3">
                     <Button
                         variant="ghost"
                         onClick={onClose}
-                        className="flex-1 rounded-xl h-12 uppercase font-black italic tracking-widest text-[10px] border border-white/5 hover:bg-white/5"
+                        className="flex-1 rounded-xl h-12 uppercase font-black italic tracking-widest text-[10px] border border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/5 transition-all"
                     >
                         {cancelText || t('common.cancel')}
                     </Button>
@@ -84,7 +84,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
                             onClose();
                         }}
                         className={cn(
-                            "flex-1 rounded-xl h-12 uppercase font-black italic tracking-widest text-[10px] shadow-lg",
+                            "flex-1 rounded-xl h-12 uppercase font-black italic tracking-widest text-[10px] shadow-lg transition-all",
                             variant === 'destructive'
                                 ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-destructive/20"
                                 : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20"

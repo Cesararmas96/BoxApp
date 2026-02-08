@@ -224,7 +224,7 @@ export const BoxDisplay: React.FC = () => {
                         </CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
-                                <div className="bg-black/40 rounded-xl p-4 md:p-6 border border-zinc-800 overflow-auto max-h-[300px] md:max-h-none">
+                                <div className="bg-black/50 rounded-xl p-4 md:p-6 border border-zinc-800 overflow-auto max-h-[300px] md:max-h-none">
                                     <pre className="font-mono text-xl md:text-2xl text-zinc-300 whitespace-pre-wrap leading-tight">
                                         {currentWod?.metcon || 'Check back later for programming.'}
                                     </pre>

@@ -8,7 +8,8 @@
         "loading": "Cargando...",
         "no_data": "Sin datos",
         "back": "Volver",
-        "close": "Cerrar"
+        "close": "Cerrar",
+        "confirm_delete": "Confirmar Eliminación"
     },
     "nav": {
         "dashboard": "Panel Principal",
@@ -78,7 +79,9 @@
         "block_conditioning_short": "Condic.",
         "block_wod_short": "WOD",
         "block_accessory_short": "Extra",
-        "block_cooldown_short": "Final"
+        "block_cooldown_short": "Final",
+        "delete_warning": "¿Estás seguro de que deseas eliminar esta sesión? Esta acción no se puede deshacer.",
+        "deleted_success": "Programación eliminada con éxito"
     },
     "roles": {
         "title": "Control de Autoridad",

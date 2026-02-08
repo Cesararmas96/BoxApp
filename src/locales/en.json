@@ -8,7 +8,8 @@
         "loading": "Loading...",
         "no_data": "No data found",
         "back": "Back",
-        "close": "Close"
+        "close": "Close",
+        "confirm_delete": "Confirm Deletion"
     },
     "nav": {
         "dashboard": "Dashboard",
@@ -78,7 +79,9 @@
         "block_conditioning_short": "Power",
         "block_wod_short": "WOD",
         "block_accessory_short": "Extra",
-        "block_cooldown_short": "Recovery"
+        "block_cooldown_short": "Recovery",
+        "delete_warning": "Are you sure you want to delete this session? This action cannot be undone.",
+        "deleted_success": "Programming deleted successfully"
     },
     "roles": {
         "title": "Authority Control",

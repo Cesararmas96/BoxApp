@@ -568,7 +568,7 @@ export const Competitions: React.FC = () => {
                                 {selectedComp?.name}
                             </DialogTitle>
                             <DialogDescription className="uppercase text-[10px] font-bold tracking-[0.3em] text-primary/60 mt-4 px-1 flex items-center gap-2">
-                                <div className="h-1 w-1 rounded-full bg-primary" />
+                                <span className="h-1 w-1 rounded-full bg-primary" />
                                 {t('competitions.manage_desc')}
                             </DialogDescription>
                         </DialogHeader>

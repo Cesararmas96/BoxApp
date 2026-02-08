@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { useSearchParams } from 'react-router-dom';
 
 import {
     Plus,
@@ -79,6 +80,8 @@ interface Expense {
 
 export const Billing: React.FC = () => {
     const { t } = useLanguage();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const activeTab = searchParams.get('tab') || 'finance';
     const [plans, setPlans] = useState<Plan[]>([]);
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [memberships, setMemberships] = useState<any[]>([]);
@@ -456,7 +459,7 @@ export const Billing: React.FC = () => {
                 <p className="text-muted-foreground text-sm">{t('billing.subtitle')}</p>
             </div>
 
-            <Tabs defaultValue="finance" className="w-full">
+            <Tabs value={activeTab} onValueChange={(val) => setSearchParams({ tab: val })} className="w-full">
                 <TabsList className="grid w-full max-w-md grid-cols-2 bg-muted/50 p-1 mb-6">
                     <TabsTrigger value="finance" className="flex items-center gap-2">
                         <DollarSign className="h-4 w-4" />
@@ -845,26 +848,27 @@ export const Billing: React.FC = () => {
                                         {t('billing.add_membership')}
                                     </Button>
                                 </DialogTrigger>
-                                <DialogContent className="sm:max-w-[425px] bg-zinc-900 border-zinc-800">
-                                    <DialogHeader>
-                                        <DialogTitle className="text-xl font-black italic uppercase tracking-tighter">{t('billing.add_membership')}</DialogTitle>
-                                        <DialogDescription className="text-xs uppercase tracking-widest font-bold opacity-60">
+                                <DialogContent className="sm:max-w-[425px] glass border-white/10 shadow-2xl p-0 overflow-hidden">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent pointer-events-none" />
+                                    <DialogHeader className="p-6 pb-0 relative z-10">
+                                        <DialogTitle className="text-xl font-black italic uppercase tracking-tighter text-glow">{t('billing.add_membership')}</DialogTitle>
+                                        <DialogDescription className="text-[10px] uppercase tracking-widest font-bold opacity-60">
                                             Asigna un plan y define la fecha de inicio del atleta.
                                         </DialogDescription>
                                     </DialogHeader>
-                                    <div className="space-y-6 py-6">
+                                    <div className="space-y-6 p-6 relative z-10">
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('billing.select_athlete')}</Label>
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70">{t('billing.select_athlete')}</Label>
                                             <Select
                                                 value={newMembership.userId}
                                                 onValueChange={(val) => setNewMembership({ ...newMembership, userId: val })}
                                             >
-                                                <SelectTrigger className="h-12 bg-zinc-950 border-zinc-800">
+                                                <SelectTrigger className="h-12 bg-white/[0.03] border-white/10 rounded-xl focus:ring-primary/50 transition-all">
                                                     <SelectValue placeholder={t('billing.select_athlete')} />
                                                 </SelectTrigger>
-                                                <SelectContent className="bg-zinc-900 border-zinc-800 max-h-[200px]">
+                                                <SelectContent className="glass-dark border-white/10 max-h-[200px]">
                                                     {allAthletes.map(a => (
-                                                        <SelectItem key={a.id} value={a.id} className="focus:bg-zinc-800">
+                                                        <SelectItem key={a.id} value={a.id} className="focus:bg-primary/20 focus:text-primary transition-colors cursor-pointer">
                                                             {a.first_name} {a.last_name}
                                                         </SelectItem>
                                                     ))}
@@ -873,17 +877,17 @@ export const Billing: React.FC = () => {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('billing.select_plan')}</Label>
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70">{t('billing.select_plan')}</Label>
                                             <Select
                                                 value={newMembership.planId}
                                                 onValueChange={(val) => setNewMembership({ ...newMembership, planId: val })}
                                             >
-                                                <SelectTrigger className="h-12 bg-zinc-950 border-zinc-800">
+                                                <SelectTrigger className="h-12 bg-white/[0.03] border-white/10 rounded-xl focus:ring-primary/50 transition-all">
                                                     <SelectValue placeholder={t('billing.select_plan')} />
                                                 </SelectTrigger>
-                                                <SelectContent className="bg-zinc-900 border-zinc-800">
+                                                <SelectContent className="glass-dark border-white/10">
                                                     {plans.map(p => (
-                                                        <SelectItem key={p.id} value={p.id} className="focus:bg-zinc-800">
+                                                        <SelectItem key={p.id} value={p.id} className="focus:bg-primary/20 focus:text-primary transition-colors cursor-pointer">
                                                             {p.name} - ${p.price}
                                                         </SelectItem>
                                                     ))}
@@ -891,36 +895,50 @@ export const Billing: React.FC = () => {
                                             </Select>
                                         </div>
 
-                                        <div className="flex items-center space-x-3 p-4 rounded-2xl bg-zinc-950 border border-zinc-800/50 group cursor-pointer hover:border-primary/30 transition-colors" onClick={() => setNewMembership({ ...newMembership, isUnclear: !newMembership.isUnclear })}>
+                                        <div
+                                            className={cn(
+                                                "flex items-center space-x-3 p-4 rounded-2xl border transition-all duration-300 cursor-pointer group",
+                                                newMembership.isUnclear
+                                                    ? "bg-primary/10 border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.1)]"
+                                                    : "bg-white/[0.02] border-white/5 hover:border-white/10"
+                                            )}
+                                            onClick={() => setNewMembership({ ...newMembership, isUnclear: !newMembership.isUnclear })}
+                                        >
                                             <div className={cn(
-                                                "h-5 w-5 rounded border-2 flex items-center justify-center transition-colors",
-                                                newMembership.isUnclear ? "bg-primary border-primary" : "border-zinc-700 bg-transparent"
+                                                "h-5 w-5 rounded-lg border-2 flex items-center justify-center transition-all duration-300",
+                                                newMembership.isUnclear
+                                                    ? "bg-primary border-primary scale-110 shadow-lg shadow-primary/30"
+                                                    : "border-white/20 bg-transparent"
                                             )}>
-                                                {newMembership.isUnclear && <CheckCircle2 className="h-3 w-3 text-black" />}
+                                                {newMembership.isUnclear && <CheckCircle2 className="h-3 w-3 text-white" strokeWidth={4} />}
                                             </div>
                                             <div className="flex flex-col">
-                                                <Label className="text-[11px] font-black uppercase tracking-tight cursor-pointer">{t('billing.unclear_start_date')}</Label>
+                                                <Label className="text-[11px] font-black uppercase tracking-tight cursor-pointer group-hover:text-primary transition-colors">{t('billing.unclear_start_date')}</Label>
                                                 <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest opacity-60">La membresía quedará pendiente de activación manual</span>
                                             </div>
                                         </div>
 
                                         {!newMembership.isUnclear && (
-                                            <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('billing.start_date')}</Label>
-                                                <div className="relative">
+                                            <div className="space-y-2 animate-premium-in">
+                                                <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70">{t('billing.start_date')}</Label>
+                                                <div className="relative group">
                                                     <Input
                                                         type="date"
-                                                        className="h-12 bg-zinc-950 border-zinc-800 pl-4"
+                                                        className="h-12 bg-white/[0.03] border-white/10 rounded-xl pl-4 pr-10 focus:ring-primary/50 transition-all"
                                                         value={newMembership.startDate}
                                                         onChange={(e) => setNewMembership({ ...newMembership, startDate: e.target.value })}
                                                     />
-                                                    <Calendar className="absolute right-4 top-4 h-4 w-4 opacity-40" />
+                                                    <Calendar className="absolute right-4 top-4 h-4 w-4 opacity-40 group-focus-within:opacity-100 transition-opacity text-primary" />
                                                 </div>
                                             </div>
                                         )}
                                     </div>
-                                    <Button onClick={handleCreateMembership} disabled={loading} className="h-14 w-full rounded-2xl shadow-xl shadow-primary/20">
-                                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <span className="font-black italic uppercase tracking-wider">{t('common.confirm', { defaultValue: 'CREAR MEMBRESÍA' })}</span>}
+                                    <Button
+                                        onClick={handleCreateMembership}
+                                        disabled={loading}
+                                        className="h-14 w-full rounded-2xl shadow-xl shadow-primary/30 font-black italic uppercase tracking-wider text-sm hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                    >
+                                        {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : t('common.confirm', { defaultValue: 'CREAR MEMBRESÍA' })}
                                     </Button>
                                 </DialogContent>
                             </Dialog>

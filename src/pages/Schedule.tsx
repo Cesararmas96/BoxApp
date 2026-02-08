@@ -48,6 +48,7 @@ export const Schedule: React.FC = () => {
     const [isFeedbackOpen, setIsFeedbackOpen] = useState<string | null>(null);
     const [selectedWod, setSelectedWod] = useState<WODSummary | null>(null);
     const [selectedSession, setSelectedSession] = useState<any | null>(null);
+    const [selectedViewerDate, setSelectedViewerDate] = useState<Date>(new Date());
     const [feedback, setFeedback] = useState({ effort: 5, fatigue: 3, satisfaction: '😀', note: '' });
     const { notification, showNotification, hideNotification } = useNotification();
 
@@ -182,55 +183,84 @@ export const Schedule: React.FC = () => {
                         </Button>
                     </div>
 
-                    <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                    <Dialog open={isCreateOpen} onOpenChange={(open) => {
+                        setIsCreateOpen(open);
+                        if (open) setSelectedViewerDate(new Date());
+                    }}>
                         <DialogTrigger asChild>
                             <Button className="gap-2">
                                 <Plus className="h-4 w-4" /> {t('schedule.program_btn')}
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[700px] rounded-3xl border-white/10 glass">
+                        <DialogContent className="sm:max-w-[700px] rounded-3xl border-white/10 glass max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
                                 <DialogTitle className="text-3xl font-black italic uppercase tracking-tight text-primary">
                                     {t('schedule.programming_viewer', { defaultValue: 'PROGRAMMING VIEWER' })}
                                 </DialogTitle>
                                 <DialogDescription className="sr-only">
-                                    Display of programmed workouts for the different tracks today
+                                    Display of programmed workouts for the different tracks
                                 </DialogDescription>
                             </DialogHeader>
-                            <div className="py-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                            {/* Day Selector within Modal */}
+                            <div className="flex items-center justify-between bg-white/5 p-2 rounded-2xl border border-white/5 mb-6">
+                                {getDatesOfWeek().map((date, i) => {
+                                    const isSelected = selectedViewerDate.toDateString() === date.toDateString();
+                                    return (
+                                        <button
+                                            key={i}
+                                            onClick={() => setSelectedViewerDate(date)}
+                                            className={cn(
+                                                "flex-1 py-3 rounded-xl transition-all duration-300 flex flex-col items-center gap-1",
+                                                isSelected ? "bg-primary text-white shadow-lg shadow-primary/20 scale-105 z-10" : "hover:bg-white/5 text-muted-foreground"
+                                            )}
+                                        >
+                                            <span className="text-[8px] font-black uppercase tracking-widest">{weekDays[i]}</span>
+                                            <span className="text-sm font-black italic">{date.getDate()}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {['CrossFit', 'Novice', 'Bodybuilding', 'Engine'].map(track => {
-                                    const date = new Date();
-                                    const localDateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                                    const trackWod = wods.find(w => w.track === track && w.date?.split('T')[0] === localDateStr);
+                                    const targetDateStr = `${selectedViewerDate.getFullYear()}-${String(selectedViewerDate.getMonth() + 1).padStart(2, '0')}-${String(selectedViewerDate.getDate()).padStart(2, '0')}`;
+                                    const trackWod = wods.find(w =>
+                                        w.track?.toLowerCase().trim() === track.toLowerCase().trim() &&
+                                        w.date?.split('T')[0] === targetDateStr
+                                    );
 
                                     return (
-                                        <Card key={track} className="bg-white/5 border-white/5 overflow-hidden">
+                                        <Card key={track} className="bg-white/5 border-white/5 overflow-hidden group hover:border-primary/30 transition-all active:scale-[0.98]">
                                             <CardHeader className="p-4 border-b border-white/5 flex flex-row items-center justify-between">
                                                 <Badge className="font-black italic uppercase tracking-widest">{track}</Badge>
-                                                {trackWod && <Badge variant="outline" className="text-[8px] opacity-60">ACTIVE</Badge>}
+                                                {trackWod && <Badge variant="outline" className="text-[8px] opacity-60 bg-emerald-500/10 text-emerald-500 border-emerald-500/20">PROGRAMMED</Badge>}
                                             </CardHeader>
-                                            <CardContent className="p-4 min-h-[100px] flex flex-col justify-center">
+                                            <CardContent className="p-4 min-h-[120px] flex flex-col justify-center">
                                                 {trackWod ? (
-                                                    <div className="space-y-2">
-                                                        <p className="text-xs font-black uppercase text-white/90">{trackWod.title}</p>
+                                                    <div className="space-y-3">
+                                                        <p className="text-xs font-black uppercase text-white/90 leading-tight line-clamp-2">{trackWod.title}</p>
                                                         <Button
                                                             variant="link"
-                                                            className="p-0 h-auto text-[10px] text-primary font-bold uppercase tracking-widest"
+                                                            className="p-0 h-auto text-[10px] text-primary font-bold uppercase tracking-widest hover:no-underline hover:text-primary/80 transition-colors"
                                                             onClick={() => setSelectedWod(trackWod)}
                                                         >
                                                             View Details →
                                                         </Button>
                                                     </div>
                                                 ) : (
-                                                    <p className="text-[10px] text-muted-foreground uppercase font-bold italic opacity-40">No programming found for today</p>
+                                                    <div className="text-center space-y-2 opacity-30 group-hover:opacity-50 transition-opacity">
+                                                        <p className="text-[10px] text-muted-foreground uppercase font-black italic">No programming</p>
+                                                        <div className="h-px w-8 bg-muted-foreground/30 mx-auto" />
+                                                    </div>
                                                 )}
                                             </CardContent>
                                         </Card>
                                     );
                                 })}
                             </div>
-                            <DialogFooter>
-                                <Button variant="outline" className="rounded-xl border-white/10" onClick={() => setIsCreateOpen(false)}>{t('common.close', { defaultValue: 'CLOSE' })}</Button>
+                            <DialogFooter className="mt-6">
+                                <Button variant="outline" className="w-full rounded-2xl border-white/10 h-12 uppercase font-black tracking-widest text-[10px]" onClick={() => setIsCreateOpen(false)}>{t('common.close', { defaultValue: 'CLOSE' })}</Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>

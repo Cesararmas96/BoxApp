@@ -400,7 +400,14 @@
         "expense_logged": "Gasto registrado correctamente.",
         "expense_updated": "Registro de gasto actualizado correctamente.",
         "expense_deleted": "Registro de gasto eliminado correctamente.",
-        "membership_deleted": "Membresía eliminada correctamente."
+        "membership_deleted": "Membresía eliminada correctamente.",
+        "add_membership": "Añadir Membresía",
+        "assign_plan": "Asignar Plan",
+        "select_athlete": "Seleccionar Atleta",
+        "select_plan": "Seleccionar Plan",
+        "start_date": "Fecha de Inicio",
+        "unclear_start_date": "Fecha de inicio pendiente",
+        "status_pending_activation": "Activación Pendiente"
     },
     "analytics": {
         "title": "Panel de Analíticas",

@@ -112,11 +112,11 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
         setLoading(true);
         const { data, error } = await supabase
             .from('profiles')
-            .select('*')
+            .select('*, memberships(*)')
             .eq('box_id', currentBox?.id || '')
             .order('created_at', { ascending: false });
 
-        if (!error && data) setMembers(data as unknown as Profile[]);
+        if (!error && data) setMembers(data as any[]);
         setLoading(false);
     };
 
@@ -597,6 +597,49 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                 <p className="text-sm font-medium leading-relaxed opacity-70 italic">
                                     {selectedMember?.medical_history || t('members.no_medical')}
                                 </p>
+                            </div>
+
+                            {/* Membership Status Section */}
+                            <div className="p-5 rounded-2xl bg-gradient-to-br from-primary/5 to-transparent border border-primary/10 shadow-sm">
+                                <h3 className="text-[10px] font-black italic uppercase tracking-widest text-primary mb-3 flex items-center gap-2">
+                                    <ShieldCheck className="h-3.5 w-3.5" /> MEMBRESÍA
+                                </h3>
+                                {selectedMember?.memberships && selectedMember.memberships.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {selectedMember.memberships.map((m: any) => (
+                                            <div key={m.id} className="flex items-center justify-between p-3 rounded-xl bg-black/20 border border-white/5">
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs font-black uppercase italic tracking-tighter">Status: {m.status.toUpperCase()}</span>
+                                                    <span className="text-[10px] text-muted-foreground font-mono">
+                                                        {m.start_date ? new Date(m.start_date).toLocaleDateString() : 'SIN FECHA'} {'->'} {m.end_date ? new Date(m.end_date).toLocaleDateString() : 'SIN FECHA'}
+                                                    </span>
+                                                </div>
+                                                <Badge className={cn(
+                                                    "text-[8px] font-black italic uppercase",
+                                                    m.status === 'active' ? "bg-green-500" : "bg-amber-500"
+                                                )}>
+                                                    {m.status.toUpperCase()}
+                                                </Badge>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-4 text-center">
+                                        <p className="text-xs font-bold text-muted-foreground italic mb-3 opacity-60">
+                                            ESTE ATLETA NO TIENE NINGUNA MEMBRESÍA ACTIVA
+                                        </p>
+                                        <Button
+                                            size="sm"
+                                            className="h-9 px-6 bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 text-[10px] font-black uppercase italic tracking-tighter"
+                                            onClick={() => {
+                                                setDetailsOpen(false);
+                                                window.location.href = '/billing?tab=athletes';
+                                            }}
+                                        >
+                                            ASIGNAR PLAN EN FINANZAS
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Emergency Contact */}

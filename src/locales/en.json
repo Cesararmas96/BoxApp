@@ -418,7 +418,14 @@
         "expense_logged": "Expense recorded successfully.",
         "expense_updated": "Expense record updated successfully.",
         "expense_deleted": "Expense record deleted successfully.",
-        "membership_deleted": "Membership deleted successfully."
+        "membership_deleted": "Membership deleted successfully.",
+        "add_membership": "Add Membership",
+        "assign_plan": "Assign Plan",
+        "select_athlete": "Select Athlete",
+        "select_plan": "Select Plan",
+        "start_date": "Start Date",
+        "unclear_start_date": "Unclear start date (Pending)",
+        "status_pending_activation": "Pending Activation"
     },
     "analytics": {
         "title": "Analytics Dashboard",

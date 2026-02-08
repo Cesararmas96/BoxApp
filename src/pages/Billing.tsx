@@ -18,6 +18,8 @@ import {
     Users,
     ChevronLeft,
     ChevronRight,
+    Clock,
+    FileText
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -94,6 +96,16 @@ export const Billing: React.FC = () => {
     // Form states
     const [newPlan, setNewPlan] = useState({ name: '', price: '', interval: 'monthly', duration_days: 30, total_credits: 0 });
     const [newExpense, setNewExpense] = useState({ description: '', category: 'Rent', amount: '', date: new Date().toISOString().split('T')[0] });
+    const [newMembership, setNewMembership] = useState({
+        userId: '',
+        planId: '',
+        startDate: new Date().toISOString().split('T')[0],
+        isUnclear: false
+    });
+
+    // List states
+    const [allAthletes, setAllAthletes] = useState<any[]>([]);
+    const [isMembershipDialogOpen, setIsMembershipDialogOpen] = useState(false);
 
     // Pagination states
     const [plansPage] = useState(1);
@@ -133,12 +145,20 @@ export const Billing: React.FC = () => {
             addNotification('error', t('common.error_loading'));
         } finally {
             // Fetch Memberships for status overview
-            const { data: membershipData } = await supabase
-                .from('memberships')
-                .select('*, profiles(first_name, last_name, email)')
-                .eq('box_id', currentBox?.id || '');
+            const [membershipData, athletesData] = await Promise.all([
+                supabase
+                    .from('memberships')
+                    .select('*, profiles(first_name, last_name, email)')
+                    .eq('box_id', currentBox?.id || ''),
+                supabase
+                    .from('profiles')
+                    .select('id, first_name, last_name, email')
+                    .eq('box_id', currentBox?.id || '')
+                    .eq('role_id', 'athlete')
+            ]);
 
-            setMemberships(membershipData || []);
+            setMemberships(membershipData.data || []);
+            setAllAthletes(athletesData.data || []);
             setLoading(false);
         }
     };
@@ -300,6 +320,96 @@ export const Billing: React.FC = () => {
                 setLoading(false);
             }
         });
+    };
+
+    const handleActivateMembership = async (id: string, planId: string) => {
+        setLoading(true);
+        try {
+            const plan = plans.find(p => p.id === planId);
+            const startDate = new Date();
+            const endDate = new Date();
+            endDate.setDate(endDate.getDate() + (plan?.duration_days || 30));
+
+            const { error } = await supabase
+                .from('memberships')
+                .update({
+                    status: 'active',
+                    start_date: startDate.toISOString(),
+                    end_date: endDate.toISOString()
+                })
+                .eq('id', id);
+
+            if (error) throw error;
+            addNotification('success', 'Membresía activada con éxito');
+            fetchFinanceData();
+        } catch (error: any) {
+            console.error('Error activating membership:', error);
+            addNotification('error', 'Error al activar membresía: ' + error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCreateMembership = async () => {
+        if (!newMembership.userId || !newMembership.planId) {
+            addNotification('error', 'Por favor selecciona atleta y plan');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const plan = plans.find(p => p.id === newMembership.planId);
+            const startDate = newMembership.isUnclear ? null : new Date(newMembership.startDate + 'T12:00:00'); // Use noon to avoid timezone issues
+            let endDate = null;
+            let status = 'pending';
+
+            if (startDate) {
+                endDate = new Date(startDate);
+                endDate.setDate(endDate.getDate() + (plan?.duration_days || 30));
+
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                const compareDate = new Date(startDate);
+                compareDate.setHours(0, 0, 0, 0);
+
+                if (compareDate <= today) {
+                    status = 'active';
+                } else {
+                    status = 'pending';
+                }
+            } else {
+                status = 'pending'; // Unclear start date
+            }
+
+            const { error } = await supabase
+                .from('memberships')
+                .insert([{
+                    user_id: newMembership.userId,
+                    plan_id: newMembership.planId,
+                    box_id: currentBox?.id,
+                    start_date: startDate ? startDate.toISOString() : null,
+                    end_date: endDate ? endDate.toISOString() : null,
+                    status: status
+                }]);
+
+            if (error) throw error;
+
+            addNotification('success', t('billing.membership_created', { defaultValue: 'Membresía creada con éxito' }));
+            setIsMembershipDialogOpen(false);
+            setNewMembership({
+                userId: '',
+                planId: '',
+                startDate: new Date().toISOString().split('T')[0],
+                isUnclear: false
+            });
+            fetchFinanceData();
+        } catch (error: any) {
+            console.error('Error creating membership:', error);
+            addNotification('error', 'Error al crear membresía: ' + error.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const openEditPlan = (plan: Plan) => {
@@ -722,11 +832,98 @@ export const Billing: React.FC = () => {
 
                 <TabsContent value="athletes" className="m-0">
                     <Card>
-                        <CardHeader>
+                        <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle className="text-xl font-bold italic uppercase tracking-tight flex items-center gap-2">
                                 <Users className="h-5 w-5 text-primary" />
-                                Monthly Payments & Status
+                                {t('billing.athlete_status_title', { defaultValue: 'Monthly Payments & Status' })}
                             </CardTitle>
+
+                            <Dialog open={isMembershipDialogOpen} onOpenChange={setIsMembershipDialogOpen}>
+                                <DialogTrigger asChild>
+                                    <Button size="sm" className="h-10 gap-2 border-primary/20 bg-primary/10 text-primary hover:bg-primary/20">
+                                        <Plus className="h-4 w-4" />
+                                        {t('billing.add_membership')}
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-[425px] bg-zinc-900 border-zinc-800">
+                                    <DialogHeader>
+                                        <DialogTitle className="text-xl font-black italic uppercase tracking-tighter">{t('billing.add_membership')}</DialogTitle>
+                                        <DialogDescription className="text-xs uppercase tracking-widest font-bold opacity-60">
+                                            Asigna un plan y define la fecha de inicio del atleta.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="space-y-6 py-6">
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('billing.select_athlete')}</Label>
+                                            <Select
+                                                value={newMembership.userId}
+                                                onValueChange={(val) => setNewMembership({ ...newMembership, userId: val })}
+                                            >
+                                                <SelectTrigger className="h-12 bg-zinc-950 border-zinc-800">
+                                                    <SelectValue placeholder={t('billing.select_athlete')} />
+                                                </SelectTrigger>
+                                                <SelectContent className="bg-zinc-900 border-zinc-800 max-h-[200px]">
+                                                    {allAthletes.map(a => (
+                                                        <SelectItem key={a.id} value={a.id} className="focus:bg-zinc-800">
+                                                            {a.first_name} {a.last_name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('billing.select_plan')}</Label>
+                                            <Select
+                                                value={newMembership.planId}
+                                                onValueChange={(val) => setNewMembership({ ...newMembership, planId: val })}
+                                            >
+                                                <SelectTrigger className="h-12 bg-zinc-950 border-zinc-800">
+                                                    <SelectValue placeholder={t('billing.select_plan')} />
+                                                </SelectTrigger>
+                                                <SelectContent className="bg-zinc-900 border-zinc-800">
+                                                    {plans.map(p => (
+                                                        <SelectItem key={p.id} value={p.id} className="focus:bg-zinc-800">
+                                                            {p.name} - ${p.price}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="flex items-center space-x-3 p-4 rounded-2xl bg-zinc-950 border border-zinc-800/50 group cursor-pointer hover:border-primary/30 transition-colors" onClick={() => setNewMembership({ ...newMembership, isUnclear: !newMembership.isUnclear })}>
+                                            <div className={cn(
+                                                "h-5 w-5 rounded border-2 flex items-center justify-center transition-colors",
+                                                newMembership.isUnclear ? "bg-primary border-primary" : "border-zinc-700 bg-transparent"
+                                            )}>
+                                                {newMembership.isUnclear && <CheckCircle2 className="h-3 w-3 text-black" />}
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <Label className="text-[11px] font-black uppercase tracking-tight cursor-pointer">{t('billing.unclear_start_date')}</Label>
+                                                <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest opacity-60">La membresía quedará pendiente de activación manual</span>
+                                            </div>
+                                        </div>
+
+                                        {!newMembership.isUnclear && (
+                                            <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('billing.start_date')}</Label>
+                                                <div className="relative">
+                                                    <Input
+                                                        type="date"
+                                                        className="h-12 bg-zinc-950 border-zinc-800 pl-4"
+                                                        value={newMembership.startDate}
+                                                        onChange={(e) => setNewMembership({ ...newMembership, startDate: e.target.value })}
+                                                    />
+                                                    <Calendar className="absolute right-4 top-4 h-4 w-4 opacity-40" />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <Button onClick={handleCreateMembership} disabled={loading} className="h-14 w-full rounded-2xl shadow-xl shadow-primary/20">
+                                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <span className="font-black italic uppercase tracking-wider">{t('common.confirm', { defaultValue: 'CREAR MEMBRESÍA' })}</span>}
+                                    </Button>
+                                </DialogContent>
+                            </Dialog>
                         </CardHeader>
                         <CardContent>
                             <div className="rounded-md border">
@@ -807,6 +1004,13 @@ export const Billing: React.FC = () => {
                                                                         {t('billing.status_overdue')}
                                                                     </div>
                                                                 </div>
+                                                            ) : m.status === 'pending' ? (
+                                                                <div className="group relative">
+                                                                    <Clock className="h-5 w-5 text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.3)]" />
+                                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black text-[8px] text-white uppercase font-bold italic rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                                                        {t('billing.status_pending_activation')}
+                                                                    </div>
+                                                                </div>
                                                             ) : (
                                                                 <div className="group relative">
                                                                     <AlertCircle className="h-5 w-5 text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.3)]" />
@@ -837,6 +1041,14 @@ export const Billing: React.FC = () => {
                                                                 >
                                                                     <DollarSign className="mr-2 h-4 w-4" /> {t('billing.mark_paid')}
                                                                 </DropdownMenuItem>
+                                                                {m.status === 'pending' && (
+                                                                    <DropdownMenuItem
+                                                                        className="text-primary focus:text-white cursor-pointer"
+                                                                        onClick={() => handleActivateMembership(m.id, m.plan_id)}
+                                                                    >
+                                                                        <CheckCircle2 className="mr-2 h-4 w-4 text-primary" /> ACTIVAR AHORA
+                                                                    </DropdownMenuItem>
+                                                                )}
                                                                 <DropdownMenuItem className="text-zinc-400 focus:text-white cursor-pointer">
                                                                     <Calendar className="mr-2 h-4 w-4" /> {t('common.edit', { defaultValue: 'Extend' })}
                                                                 </DropdownMenuItem>

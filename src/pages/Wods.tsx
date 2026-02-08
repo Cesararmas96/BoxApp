@@ -336,6 +336,30 @@ export const Wods: React.FC = () => {
         return filteredWods.slice(startIndex, startIndex + itemsPerPage);
     }, [filteredWods, currentPage, itemsPerPage]);
 
+    const groupedByDate = useMemo(() => {
+        const groups: { [key: string]: WOD[] } = {};
+        paginatedWods.forEach(wod => {
+            const dateKey = wod.date;
+            if (!groups[dateKey]) groups[dateKey] = [];
+            groups[dateKey].push(wod);
+        });
+        return Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0]));
+    }, [paginatedWods]);
+
+    const getWeekRange = (dateStr: string) => {
+        const date = new Date(dateStr);
+        const day = date.getDay();
+        const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+        const monday = new Date(date.setDate(diff));
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        return {
+            start: monday.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
+            end: sunday.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
+            monday: monday.toISOString().split('T')[0]
+        };
+    };
+
     const totalPages = Math.ceil(filteredWods.length / itemsPerPage);
 
     const last7DaysBias = useMemo(() => {
@@ -533,17 +557,17 @@ export const Wods: React.FC = () => {
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent className="py-8">
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-10">
+                    <CardContent className="py-4">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                             {Object.entries(last7DaysBias).map(([key, count]) => (
-                                <div key={key} className="space-y-4">
+                                <div key={key} className="space-y-2">
                                     <div className="flex justify-between items-end">
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">{key}</span>
-                                        <span className="text-sm font-black italic text-primary">{count} <span className="text-[10px] opacity-40">/ 7</span></span>
+                                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">{key}</span>
+                                        <span className="text-xs font-black italic text-primary">{count} <span className="text-[9px] opacity-40">/ 7</span></span>
                                     </div>
-                                    <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
                                         <div
-                                            className="h-full bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)] transition-all duration-1000"
+                                            className="h-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)] transition-all duration-1000"
                                             style={{ width: `${(count / 7) * 100}%` }}
                                         />
                                     </div>
@@ -554,8 +578,8 @@ export const Wods: React.FC = () => {
                 </Card>
             )}
 
-            {/* Board Feed */}
-            <div className="grid gap-6">
+            {/* Board Feed - Grouped by Date */}
+            <div className="space-y-16">
                 {wods.length === 0 && !loading ? (
                     <Card className="border-dashed border-2 border-white/10 py-24 text-center glass rounded-[3rem]">
                         <div className="space-y-6">
@@ -569,157 +593,186 @@ export const Wods: React.FC = () => {
                         </div>
                     </Card>
                 ) : (
-                    paginatedWods.map(wod => (
-                        <Card key={wod.id} className="border-white/5 glass rounded-[2.5rem] overflow-hidden group hover:border-primary/30 transition-all duration-500 shadow-xl hover:shadow-primary/5">
-                            <CardHeader className="flex flex-col md:flex-row md:items-start justify-between gap-6 p-10 border-b border-white/5 bg-white/5">
-                                <div className="space-y-4">
-                                    <div className="flex flex-wrap items-center gap-3">
-                                        <Badge className={cn(
-                                            "text-[10px] h-6 px-3 font-black uppercase tracking-widest border-none shadow-lg",
-                                            wod.track === 'CrossFit' && "bg-primary text-primary-foreground shadow-primary/20",
-                                            wod.track === 'Novice' && "bg-emerald-500 text-white shadow-emerald-500/20",
-                                            wod.track === 'Bodybuilding' && "bg-blue-500 text-white shadow-blue-500/20",
-                                            wod.track === 'Engine' && "bg-orange-500 text-white shadow-orange-500/20"
-                                        )}>
-                                            {wod.track} TRACK
-                                        </Badge>
-                                        <Badge variant="outline" className="text-[10px] h-6 px-3 bg-white/5 font-black border-white/10 text-white/60 uppercase tracking-widest">
-                                            {new Date(wod.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }).toUpperCase()}
-                                        </Badge>
-                                    </div>
-                                    <CardTitle className="text-4xl md:text-5xl font-black uppercase tracking-tighter italic text-foreground group-hover:text-primary transition-all duration-500">
-                                        {wod.title}
-                                    </CardTitle>
-                                </div>
-                                <div className="flex items-center gap-2 bg-white/5 p-2 rounded-2xl border border-white/5">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-10 w-10 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
-                                        onClick={() => handleCopyWod(wod)}
-                                    >
-                                        {isCopying === wod.id ? <Check className="h-5 w-5 text-emerald-500" /> : <Copy className="h-5 w-5" />}
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-10 w-10 rounded-xl text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 transition-all"
-                                        onClick={() => handleEditWod(wod)}
-                                    >
-                                        <Pencil className="h-5 w-5" />
-                                    </Button>
-                                    <div className="w-px h-6 bg-white/5 mx-1" />
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-10 w-10 rounded-xl text-destructive hover:bg-destructive/10 transition-all"
-                                        onClick={() => showConfirm({
-                                            title: t('common.confirm_delete', { defaultValue: 'CONFIRMAR ELIMINACIÓN' }),
-                                            description: t('wods.delete_warning', { defaultValue: '¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR ESTE WOD? ESTA ACCIÓN NO SE PUEDE DESHACER.' }),
-                                            onConfirm: () => handleDeleteWod(wod.id),
-                                            variant: 'destructive',
-                                            icon: 'destructive'
-                                        })}
-                                    >
-                                        <Trash2 className="h-5 w-5" />
-                                    </Button>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="p-10">
-                                <div className="space-y-10">
-                                    <div className="space-y-6">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                                                    <Timer className="h-4 w-4 text-primary" />
-                                                </div>
-                                                <p className="text-sm font-black uppercase tracking-[0.2em] text-primary italic">{t('wods.routine_description')}</p>
-                                            </div>
-                                            <span className="text-[10px] font-bold uppercase tracking-widest text-white/20">STRUCTURED VIEW</span>
-                                        </div>
+                    groupedByDate.map(([date, dateWods], index) => {
+                        const week = getWeekRange(date);
+                        const prevDate = index > 0 ? groupedByDate[index - 1][0] : null;
+                        const prevWeek = prevDate ? getWeekRange(prevDate).monday : null;
+                        const showWeekHeader = index === 0 || week.monday !== prevWeek;
 
-                                        {wod.structure && wod.structure.length > 0 ? (
-                                            <div className="space-y-8 relative">
-                                                <div className="absolute left-6 top-0 bottom-0 w-px bg-white/5" />
-                                                {wod.structure.map((block) => (
-                                                    <div key={block.id} className="relative pl-14 group/block">
-                                                        <div className="absolute left-4 top-2 h-4 w-4 rounded-full border-2 border-primary bg-background z-10 shadow-[0_0_10px_rgba(var(--primary),0.3)]" />
-                                                        <div className="flex items-center justify-between mb-4">
-                                                            <h4 className="text-lg font-black uppercase italic text-foreground tracking-tight">{block.title}</h4>
-                                                            {block.sets && (
-                                                                <div className="px-3 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20">
-                                                                    {block.sets} SETS
+                        return (
+                            <div key={date} className="space-y-8">
+                                {showWeekHeader && (
+                                    <div className="flex items-center gap-6 px-4">
+                                        <div className="flex items-center gap-3">
+                                            <Calendar className="h-5 w-5 text-primary" />
+                                            <h3 className="text-sm font-black uppercase tracking-[0.3em] text-primary/80 italic">
+                                                WEEK: {week.start} - {week.end}
+                                            </h3>
+                                        </div>
+                                        <div className="h-px flex-1 bg-gradient-to-r from-primary/20 to-transparent" />
+                                    </div>
+                                )}
+
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-4 px-4">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-white/5 px-3 py-1 rounded-full border border-white/5">
+                                            {new Date(date).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase()}
+                                        </span>
+                                        <div className="h-px flex-1 bg-white/5" />
+                                    </div>
+
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                                        {dateWods.map(wod => (
+                                            <Card key={wod.id} className="border-white/5 glass rounded-[2rem] overflow-hidden group hover:border-primary/30 transition-all duration-500 shadow-xl hover:shadow-primary/5 h-full flex flex-col">
+                                                <CardHeader className="flex flex-col md:flex-row md:items-start justify-between gap-4 p-6 border-b border-white/5 bg-white/5 flex-shrink-0">
+                                                    <div className="space-y-4">
+                                                        <div className="flex flex-wrap items-center gap-3">
+                                                            <Badge className={cn(
+                                                                "text-[10px] h-6 px-3 font-black uppercase tracking-widest border-none shadow-lg",
+                                                                wod.track === 'CrossFit' && "bg-primary text-primary-foreground shadow-primary/20",
+                                                                wod.track === 'Novice' && "bg-emerald-500 text-white shadow-emerald-500/20",
+                                                                wod.track === 'Bodybuilding' && "bg-blue-500 text-white shadow-blue-500/20",
+                                                                wod.track === 'Engine' && "bg-orange-500 text-white shadow-orange-500/20"
+                                                            )}>
+                                                                {wod.track} TRACK
+                                                            </Badge>
+                                                        </div>
+                                                        <CardTitle className="text-2xl md:text-3xl font-black uppercase tracking-tighter italic text-foreground group-hover:text-primary transition-all duration-500 line-clamp-2">
+                                                            {wod.title}
+                                                        </CardTitle>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 bg-white/5 p-2 rounded-2xl border border-white/5">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-10 w-10 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
+                                                            onClick={() => handleCopyWod(wod)}
+                                                        >
+                                                            {isCopying === wod.id ? <Check className="h-5 w-5 text-emerald-500" /> : <Copy className="h-5 w-5" />}
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-10 w-10 rounded-xl text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 transition-all"
+                                                            onClick={() => handleEditWod(wod)}
+                                                        >
+                                                            <Pencil className="h-5 w-5" />
+                                                        </Button>
+                                                        <div className="w-px h-6 bg-white/5 mx-1" />
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-10 w-10 rounded-xl text-destructive hover:bg-destructive/10 transition-all"
+                                                            onClick={() => showConfirm({
+                                                                title: t('common.confirm_delete', { defaultValue: 'CONFIRMAR ELIMINACIÓN' }),
+                                                                description: t('wods.delete_warning', { defaultValue: '¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR ESTE WOD? ESTA ACCIÓN NO SE PUEDE DESHACER.' }),
+                                                                onConfirm: () => handleDeleteWod(wod.id),
+                                                                variant: 'destructive',
+                                                                icon: 'destructive'
+                                                            })}
+                                                        >
+                                                            <Trash2 className="h-5 w-5" />
+                                                        </Button>
+                                                    </div>
+                                                </CardHeader>
+                                                <CardContent className="p-6 flex-1">
+                                                    <div className="space-y-6">
+                                                        <div className="space-y-4">
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center">
+                                                                        <Timer className="h-3 w-3 text-primary" />
+                                                                    </div>
+                                                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary italic">{t('wods.routine_description')}</p>
+                                                                </div>
+                                                                <span className="text-[9px] font-bold uppercase tracking-widest text-white/20">STRUCTURED</span>
+                                                            </div>
+
+                                                            {wod.structure && wod.structure.length > 0 ? (
+                                                                <div className="space-y-4 relative">
+                                                                    <div className="absolute left-4 top-0 bottom-0 w-px bg-white/5" />
+                                                                    {wod.structure.map((block) => (
+                                                                        <div key={block.id} className="relative pl-10 group/block">
+                                                                            <div className="absolute left-2.5 top-1.5 h-3 w-3 rounded-full border-2 border-primary bg-background z-10 shadow-[0_0_8px_rgba(var(--primary),0.3)]" />
+                                                                            <div className="flex items-center justify-between mb-2">
+                                                                                <h4 className="text-sm font-black uppercase italic text-foreground tracking-tight">{block.title}</h4>
+                                                                                {block.sets && (
+                                                                                    <div className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[8px] font-black uppercase tracking-widest border border-primary/20">
+                                                                                        {block.sets} SETS
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
+                                                                            <div className="grid gap-2">
+                                                                                {block.items.map((item) => (
+                                                                                    <div key={item.id} className="flex items-center gap-4 p-3 rounded-xl bg-white/5 border border-white/5 hover:border-primary/20 hover:bg-primary/5 transition-all duration-300 group/movement">
+                                                                                        <div className="flex-1 space-y-0.5">
+                                                                                            <p className="text-[11px] font-black uppercase italic tracking-tight">{item.movementName}</p>
+                                                                                            {item.notes && <p className="text-[8px] text-muted-foreground uppercase font-bold tracking-widest opacity-60 line-clamp-1">{item.notes}</p>}
+                                                                                        </div>
+                                                                                        <div className="flex gap-4">
+                                                                                            {item.reps && (
+                                                                                                <div className="text-right min-w-[30px]">
+                                                                                                    <p className="text-[10px] font-black italic">{item.reps}</p>
+                                                                                                </div>
+                                                                                            )}
+                                                                                            {item.weight && (
+                                                                                                <div className="text-right min-w-[30px]">
+                                                                                                    <p className="text-[10px] font-black italic text-primary">{item.weight}</p>
+                                                                                                </div>
+                                                                                            )}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                ))}
+                                                                            </div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            ) : (
+                                                                <div className="p-6 rounded-2xl bg-white/5 border border-white/10 font-mono text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap shadow-inner relative overflow-hidden italic">
+                                                                    <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
+                                                                    {wod.metcon}
                                                                 </div>
                                                             )}
                                                         </div>
-                                                        <div className="grid gap-3">
-                                                            {block.items.map((item) => (
-                                                                <div key={item.id} className="flex items-center gap-6 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/20 hover:bg-primary/5 transition-all duration-300 group/movement">
-                                                                    <div className="flex-1 space-y-1">
-                                                                        <p className="text-sm font-black uppercase italic tracking-tight">{item.movementName}</p>
-                                                                        {item.notes && <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest opacity-60">{item.notes}</p>}
+
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div className="p-4 rounded-2xl border border-orange-500/20 bg-orange-500/5 space-y-2 relative overflow-hidden group/callout">
+                                                                <ZapIcon className="absolute -right-2 -top-2 h-16 w-16 text-orange-500/5 -rotate-12 group-hover:scale-110 transition-transform duration-700" />
+                                                                <p className="text-[9px] font-black uppercase text-orange-500 tracking-[0.2em]">{t('wods.stimulus')}</p>
+                                                                <p className="text-xs font-bold italic text-white/70 leading-relaxed relative z-10">{wod.stimulus || "Max effort within capacity."}</p>
+                                                            </div>
+                                                            <div className="p-4 rounded-2xl border border-blue-500/20 bg-blue-500/5 space-y-2 relative overflow-hidden group/callout">
+                                                                <Shield className="absolute -right-2 -top-2 h-16 w-16 text-blue-500/5 -rotate-12 group-hover:scale-110 transition-transform duration-700" />
+                                                                <p className="text-[9px] font-black uppercase text-blue-500 tracking-[0.2em]">{t('wods.scaling')}</p>
+                                                                <p className="text-xs font-bold italic text-white/70 leading-relaxed relative z-10">{wod.scaling_options || "Scale weight to maintain intensity."}</p>
+                                                            </div>
+                                                        </div>
+
+                                                        {calculateWeight(wod.metcon) && (
+                                                            <div className="p-4 rounded-xl border border-primary/20 bg-primary/[0.03] flex items-center justify-between shadow-sm">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                                                        <Dumbbell className="h-5 w-5 text-primary" />
                                                                     </div>
-                                                                    <div className="flex gap-6">
-                                                                        {item.reps && (
-                                                                            <div className="text-center min-w-[50px]">
-                                                                                <p className="text-[8px] font-black uppercase text-muted-foreground/40 mb-1 tracking-widest">REPS</p>
-                                                                                <p className="text-xs font-black italic">{item.reps}</p>
-                                                                            </div>
-                                                                        )}
-                                                                        {item.weight && (
-                                                                            <div className="text-center min-w-[50px]">
-                                                                                <p className="text-[8px] font-black uppercase text-primary/40 mb-1 tracking-widest">LOAD</p>
-                                                                                <p className="text-xs font-black italic text-primary">{item.weight}</p>
-                                                                            </div>
-                                                                        )}
+                                                                    <div>
+                                                                        <p className="text-[9px] font-black uppercase text-primary/60 mb-0.5 tracking-widest">{t('wods.calculated_loading')}</p>
+                                                                        <p className="text-sm font-black italic tracking-tight">{calculateWeight(wod.metcon)?.name} @ {calculateWeight(wod.metcon)?.percent}%</p>
                                                                     </div>
                                                                 </div>
-                                                            ))}
-                                                        </div>
+                                                                <div className="text-2xl font-black italic tracking-tighter text-primary">
+                                                                    {calculateWeight(wod.metcon)?.weight}<span className="text-[10px] ml-1 opacity-60 uppercase font-black">kg</span>
+                                                                </div>
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="p-8 rounded-3xl bg-white/5 border border-white/10 font-mono text-lg text-foreground/80 leading-relaxed whitespace-pre-wrap shadow-inner relative overflow-hidden italic">
-                                                <div className="absolute top-0 left-0 w-1.5 h-full bg-primary" />
-                                                {wod.metcon}
-                                            </div>
-                                        )}
+                                                </CardContent>
+                                            </Card>
+                                        ))}
                                     </div>
-
-                                    <div className="grid md:grid-cols-2 gap-6">
-                                        <div className="p-6 rounded-[2rem] border border-orange-500/20 bg-orange-500/5 space-y-3 relative overflow-hidden group/callout">
-                                            <ZapIcon className="absolute -right-4 -top-4 h-24 w-24 text-orange-500/5 -rotate-12 group-hover:scale-110 transition-transform duration-700" />
-                                            <p className="text-[10px] font-black uppercase text-orange-500 tracking-[0.2em]">{t('wods.stimulus')}</p>
-                                            <p className="text-sm font-bold italic text-white/70 leading-relaxed relative z-10">{wod.stimulus || "Max effort within capacity."}</p>
-                                        </div>
-                                        <div className="p-6 rounded-[2rem] border border-blue-500/20 bg-blue-500/5 space-y-3 relative overflow-hidden group/callout">
-                                            <Shield className="absolute -right-4 -top-4 h-24 w-24 text-blue-500/5 -rotate-12 group-hover:scale-110 transition-transform duration-700" />
-                                            <p className="text-[10px] font-black uppercase text-blue-500 tracking-[0.2em]">{t('wods.scaling')}</p>
-                                            <p className="text-sm font-bold italic text-white/70 leading-relaxed relative z-10">{wod.scaling_options || "Scale weight to maintain intensity."}</p>
-                                        </div>
-                                    </div>
-
-                                    {calculateWeight(wod.metcon) && (
-                                        <div className="p-6 rounded-2xl border-2 border-primary/20 bg-primary/[0.03] flex items-center justify-between shadow-sm">
-                                            <div className="flex items-center gap-4">
-                                                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                                                    <Dumbbell className="h-6 w-6 text-primary" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-[10px] font-black uppercase text-primary/60 mb-0.5 tracking-widest">{t('wods.calculated_loading')}</p>
-                                                    <p className="text-lg font-black italic tracking-tight">{calculateWeight(wod.metcon)?.name} @ {calculateWeight(wod.metcon)?.percent}%</p>
-                                                </div>
-                                            </div>
-                                            <div className="text-4xl font-black italic tracking-tighter text-primary">
-                                                {calculateWeight(wod.metcon)?.weight}<span className="text-xs ml-1 opacity-60">KG</span>
-                                            </div>
-                                        </div>
-                                    )}
                                 </div>
-                            </CardContent>
-                        </Card>
-                    ))
+                            </div>
+                        );
+                    })
                 )}
             </div>
 

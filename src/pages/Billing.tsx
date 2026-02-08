@@ -269,7 +269,7 @@ export const Billing: React.FC = () => {
             const { error: invoiceError } = await supabase
                 .from('invoices')
                 .insert([{
-                    profile_id: membership.profile_id,
+                    user_id: membership.user_id,
                     box_id: currentBox?.id,
                     amount: amount,
                     status: 'paid',
@@ -389,7 +389,7 @@ export const Billing: React.FC = () => {
             const { error } = await supabase
                 .from('memberships')
                 .insert([{
-                    profile_id: newMembership.userId,
+                    user_id: newMembership.userId,
                     plan_id: newMembership.planId,
                     box_id: currentBox?.id,
                     start_date: startDate ? startDate.toISOString() : null,
@@ -849,9 +849,9 @@ export const Billing: React.FC = () => {
                                         {t('billing.add_membership')}
                                     </Button>
                                 </DialogTrigger>
-                                <DialogContent className="sm:max-w-[425px] glass border-white/10 shadow-2xl p-0 overflow-hidden">
+                                <DialogContent className="sm:max-w-[425px] glass border-white/10 shadow-2xl p-0">
                                     <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent pointer-events-none" />
-                                    <DialogHeader className="p-6 pb-0 relative z-10">
+                                    <DialogHeader className="p-6 pb-0">
                                         <div className="flex items-center gap-3 mb-2">
                                             <div className="p-2 bg-primary/20 rounded-lg">
                                                 <Users className="h-5 w-5 text-primary" />
@@ -863,7 +863,7 @@ export const Billing: React.FC = () => {
                                         </DialogDescription>
                                     </DialogHeader>
 
-                                    <div className="space-y-5 p-6 relative z-10">
+                                    <div className="space-y-5 p-6 relative">
                                         <div className="space-y-2">
                                             <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/70 ml-1">{t('billing.select_athlete')}</Label>
                                             <Select
@@ -1021,7 +1021,7 @@ export const Billing: React.FC = () => {
                                                                 date.setMonth(date.getMonth() - (5 - i));
                                                                 const monthStr = date.toLocaleString('default', { month: 'short' });
                                                                 const hasPayment = invoices.some(inv =>
-                                                                    inv.profile_id === m.profile_id &&
+                                                                    inv.user_id === m.user_id &&
                                                                     new Date(inv.created_at).getMonth() === date.getMonth() &&
                                                                     new Date(inv.created_at).getFullYear() === date.getFullYear() &&
                                                                     inv.status === 'paid'

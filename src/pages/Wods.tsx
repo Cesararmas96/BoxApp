@@ -327,7 +327,8 @@ export const Wods: React.FC = () => {
     const availableMonths = useMemo(() => {
         const months = new Set<string>();
         wods.forEach(wod => {
-            const date = new Date(wod.date);
+            const dateStr = wod.date.split('T')[0].replace(/-/g, '/');
+            const date = new Date(dateStr);
             months.add(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`);
         });
         return Array.from(months).sort((a, b) => b.localeCompare(a));
@@ -374,7 +375,8 @@ export const Wods: React.FC = () => {
     }, [paginatedWods]);
 
     const getWeekRange = (dateStr: string) => {
-        const date = new Date(dateStr);
+        const dStr = dateStr.split('T')[0].replace(/-/g, '/');
+        const date = new Date(dStr);
         const day = date.getDay();
         const diff = date.getDate() - day + (day === 0 ? -6 : 1);
         const monday = new Date(date.setDate(diff));
@@ -741,7 +743,7 @@ export const Wods: React.FC = () => {
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-4 px-4">
                                         <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-black/[0.02] dark:bg-white/5 px-3 py-1 rounded-full border border-black/[0.05] dark:border-white/5">
-                                            {new Date(date).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase()}
+                                            {new Date(date.split('T')[0].replace(/-/g, '/')).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase()}
                                         </span>
                                         <div className="h-px flex-1 bg-black/[0.05] dark:bg-white/5" />
                                     </div>

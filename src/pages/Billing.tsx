@@ -403,6 +403,13 @@ export const Billing: React.FC = () => {
             return;
         }
 
+        // Check if athlete already has a membership
+        const existingMembership = memberships.find(m => m.athlete_id === newMembership.userId);
+        if (existingMembership) {
+            addNotification('error', 'Este atleta ya tiene una membresía registrada');
+            return;
+        }
+
         setLoading(true);
         try {
             const plan = plans.find(p => p.id === newMembership.planId);
@@ -1065,10 +1072,10 @@ export const Billing: React.FC = () => {
                                                         </Badge>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <div className="flex justify-center gap-1">
-                                                            {[...Array(6)].map((_, i) => {
+                                                        <div className="flex justify-center gap-4">
+                                                            {[0, 1].map((offset) => {
                                                                 const date = new Date();
-                                                                date.setMonth(date.getMonth() - (5 - i));
+                                                                date.setMonth(date.getMonth() + offset);
                                                                 const monthStr = date.toLocaleString('default', { month: 'short' });
                                                                 const hasPayment = invoices.some(inv =>
                                                                     (inv.athlete_id === m.athlete_id) &&
@@ -1078,12 +1085,19 @@ export const Billing: React.FC = () => {
                                                                 );
 
                                                                 return (
-                                                                    <div key={i} className="flex flex-col items-center gap-1">
+                                                                    <div key={offset} className="flex flex-col items-center gap-1">
                                                                         <div className={cn(
-                                                                            "h-2 w-2 rounded-full transition-all duration-300",
-                                                                            hasPayment ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" : "bg-zinc-800"
+                                                                            "h-3 w-3 rounded-full transition-all duration-300 border",
+                                                                            hasPayment
+                                                                                ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)] border-green-400"
+                                                                                : "bg-zinc-800 border-zinc-700"
                                                                         )} />
-                                                                        <span className="text-[7px] text-muted-foreground uppercase font-bold">{t(`billing.months.${monthStr}`, { defaultValue: monthStr })}</span>
+                                                                        <span className={cn(
+                                                                            "text-[8px] uppercase font-bold",
+                                                                            offset === 0 ? "text-primary" : "text-muted-foreground"
+                                                                        )}>
+                                                                            {offset === 0 ? 'ESTE' : 'SIGUIENTE'}
+                                                                        </span>
                                                                     </div>
                                                                 );
                                                             })}

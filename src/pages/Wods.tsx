@@ -561,10 +561,16 @@ export const Wods: React.FC = () => {
                         <Input
                             ref={dateInputRef}
                             type="date"
-                            placeholder="DD/MM/YYYY"
-                            className="px-4 h-11 rounded-xl border-black/5 dark:border-white/20 bg-black/[0.02] dark:bg-white/10 focus:ring-primary/20 focus:border-primary/50 transition-all text-[10px] font-black uppercase tracking-widest [appearance:none] [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-clear-button]:appearance-none cursor-pointer"
+                            className="px-4 h-11 rounded-xl border-black/5 dark:border-white/20 bg-black/[0.02] dark:bg-white/10 focus:ring-primary/20 focus:border-primary/50 transition-all text-[10px] font-black uppercase tracking-widest cursor-pointer [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-inner-spin-button]:hidden [&::-webkit-clear-button]:hidden"
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
+                            onClick={() => {
+                                try {
+                                    dateInputRef.current?.showPicker();
+                                } catch (e) {
+                                    // Fallback for older browsers
+                                }
+                            }}
                         />
                         {!selectedDate ? (
                             <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none group-focus-within:text-primary transition-colors" />

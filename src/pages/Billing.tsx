@@ -1113,7 +1113,7 @@ export const Billing: React.FC = () => {
                                                                             "h-3 w-3 rounded-full transition-all duration-300 border",
                                                                             hasPayment
                                                                                 ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)] border-green-400"
-                                                                                : "bg-zinc-800 border-zinc-700"
+                                                                                : "bg-muted border-border"
                                                                         )} />
                                                                         <span className={cn(
                                                                             "text-[7px] uppercase font-bold tracking-tighter",
@@ -1131,28 +1131,28 @@ export const Billing: React.FC = () => {
                                                             {m.status === 'active' ? (
                                                                 <div className="group relative">
                                                                     <CheckCircle2 className="h-5 w-5 text-green-500 drop-shadow-[0_0_8px_rgba(34,197,94,0.3)]" />
-                                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black text-[8px] text-white uppercase font-bold italic rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-popover text-[8px] text-popover-foreground border shadow-sm uppercase font-bold italic rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                                                                         {t('billing.status_paid')}
                                                                     </div>
                                                                 </div>
                                                             ) : m.status === 'expired' ? (
                                                                 <div className="group relative">
                                                                     <XCircle className="h-5 w-5 text-destructive drop-shadow-[0_0_8px_rgba(239,68,68,0.3)]" />
-                                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black text-[8px] text-white uppercase font-bold italic rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-popover text-[8px] text-popover-foreground border shadow-sm uppercase font-bold italic rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                                                                         {t('billing.status_overdue')}
                                                                     </div>
                                                                 </div>
                                                             ) : m.status === 'pending' ? (
                                                                 <div className="group relative">
                                                                     <Clock className="h-5 w-5 text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.3)]" />
-                                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black text-[8px] text-white uppercase font-bold italic rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-popover text-[8px] text-popover-foreground border shadow-sm uppercase font-bold italic rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                                                                         {t('billing.status_pending_activation')}
                                                                     </div>
                                                                 </div>
                                                             ) : (
                                                                 <div className="group relative">
                                                                     <AlertCircle className="h-5 w-5 text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.3)]" />
-                                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black text-[8px] text-white uppercase font-bold italic rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-popover text-[8px] text-popover-foreground border shadow-sm uppercase font-bold italic rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                                                                         {t('billing.status_pending')}
                                                                     </div>
                                                                 </div>
@@ -1168,43 +1168,43 @@ export const Billing: React.FC = () => {
                                                     <TableCell className="text-right">
                                                         <DropdownMenu>
                                                             <DropdownMenuTrigger asChild>
-                                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-zinc-800">
+                                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                                                                     <MoreVertical className="h-4 w-4" />
                                                                 </Button>
                                                             </DropdownMenuTrigger>
-                                                            <DropdownMenuContent align="end" className="w-40 bg-zinc-900 border-zinc-800">
+                                                            <DropdownMenuContent align="end" className="w-48">
                                                                 <DropdownMenuItem
-                                                                    className="text-primary focus:text-white cursor-pointer font-bold"
+                                                                    className="text-primary cursor-pointer font-bold"
                                                                     onClick={() => handleRenew(m)}
                                                                 >
                                                                     <Briefcase className="mr-2 h-4 w-4" /> {t('billing.renew', { defaultValue: 'RENEW' })}
                                                                 </DropdownMenuItem>
                                                                 <DropdownMenuItem
-                                                                    className="text-zinc-400 focus:text-white cursor-pointer"
+                                                                    className="cursor-pointer"
                                                                     onClick={() => handleMarkPaid(m)}
                                                                 >
                                                                     <DollarSign className="mr-2 h-4 w-4" /> {t('billing.mark_paid')}
                                                                 </DropdownMenuItem>
                                                                 {m.status === 'pending' && (
                                                                     <DropdownMenuItem
-                                                                        className="text-blue-500 focus:text-white cursor-pointer"
+                                                                        className="text-blue-500 cursor-pointer"
                                                                         onClick={() => handleActivateMembership(m.id, m.plan_id)}
                                                                     >
                                                                         <CheckCircle2 className="mr-2 h-4 w-4 text-blue-500" /> ACTIVAR AHORA
                                                                     </DropdownMenuItem>
                                                                 )}
                                                                 <DropdownMenuItem
-                                                                    className="text-zinc-400 focus:text-white cursor-pointer"
+                                                                    className="cursor-pointer"
                                                                     onClick={() => handleExtend(m)}
                                                                 >
-                                                                    <Calendar className="mr-2 h-4 w-4" /> {t('common.edit', { defaultValue: 'Extend (+7d)' })}
+                                                                    <Calendar className="mr-2 h-4 w-4" /> {t('billing.extend', { defaultValue: 'Extend (+7d)' })}
                                                                 </DropdownMenuItem>
-                                                                <DropdownMenuSeparator className="bg-zinc-800" />
+                                                                <DropdownMenuSeparator />
                                                                 <DropdownMenuItem
                                                                     className="text-destructive focus:text-destructive cursor-pointer"
                                                                     onClick={() => handleDeleteMembership(m.id)}
                                                                 >
-                                                                    <Trash2 className="mr-2 h-4 w-4" /> {t('common.delete')}
+                                                                    <Trash2 className="mr-2 h-4 w-4" /> {t('billing.delete', { defaultValue: 'Delete' })}
                                                                 </DropdownMenuItem>
                                                             </DropdownMenuContent>
                                                         </DropdownMenu>

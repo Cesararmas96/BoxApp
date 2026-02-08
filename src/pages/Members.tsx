@@ -52,6 +52,7 @@ interface Profile {
     emergency_contact_phone?: string;
     waiver_signed: boolean;
     location_id?: string;
+    memberships?: any[];
 }
 
 interface MembersProps {

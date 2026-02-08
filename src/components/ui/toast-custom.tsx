@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { CheckCircle2, AlertCircle, X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -36,9 +37,9 @@ export const Toast: React.FC<ToastProps> = ({ type, message, onClose, duration =
         loading: "border-primary/20 bg-primary/10 text-primary shadow-[0_0_20px_rgba(var(--primary),0.1)]"
     };
 
-    return (
+    const toastContent = (
         <div className={cn(
-            "fixed top-6 right-6 z-[9999] transition-all duration-300 ease-out",
+            "fixed top-6 right-6 z-[99999] transition-all duration-300 ease-out",
             isVisible ? "translate-x-0 opacity-100 scale-100" : "translate-x-4 opacity-0 scale-95"
         )}>
             <div className={cn(
@@ -61,6 +62,8 @@ export const Toast: React.FC<ToastProps> = ({ type, message, onClose, duration =
             </div>
         </div>
     );
+
+    return createPortal(toastContent, document.body);
 };
 
 // Global context/provider can be added later if needed, but for now we can use it per page or as a portal.

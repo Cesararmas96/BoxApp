@@ -7,7 +7,8 @@
         "actions": "Acciones",
         "loading": "Cargando...",
         "no_data": "Sin datos",
-        "back": "Volver"
+        "back": "Volver",
+        "close": "Cerrar"
     },
     "nav": {
         "dashboard": "Panel Principal",
@@ -431,7 +432,16 @@
         "error_duplicate_email": "Este correo electrónico ya está registrado en el sistema.",
         "error_generic": "Ocurrió un error al procesar el prospecto.",
         "success_add": "Nuevo prospecto añadido con éxito.",
-        "success_convert": "¡Prospecto convertido en miembro exitosamente!"
+        "success_convert": "¡Prospecto convertido en miembro exitosamente!",
+        "pipeline_title": "Pipeline de",
+        "pipeline_highlight": "Adquisición",
+        "header_identity": "Identidad del Prospecto",
+        "header_status": "Estado del Ciclo de Vida",
+        "header_date": "Fecha de Inicio",
+        "header_nav": "Navegación",
+        "syncing": "Sincronizando Pipeline...",
+        "empty_pipeline": "Pipeline Vacío. ¿Listos para Crecer?",
+        "add_prospect_description": "Inicia un nuevo viaje en tu box. Ingresa las coordenadas del atleta a continuación."
     },
     "analytics": {
         "title": "Panel de Analíticas",

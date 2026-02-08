@@ -7,7 +7,8 @@
         "actions": "Actions",
         "loading": "Loading...",
         "no_data": "No data found",
-        "back": "Back"
+        "back": "Back",
+        "close": "Close"
     },
     "nav": {
         "dashboard": "Dashboard",
@@ -449,7 +450,16 @@
         "error_duplicate_email": "This email is already registered in the pipeline.",
         "error_generic": "An error occurred while processing the lead.",
         "success_add": "New lead added to the pipeline.",
-        "success_convert": "Lead successfully converted to member!"
+        "success_convert": "Lead successfully converted to member!",
+        "pipeline_title": "Acquisition",
+        "pipeline_highlight": "Pipeline",
+        "header_identity": "Prospect Identity",
+        "header_status": "Lifecycle Status",
+        "header_date": "Inception Date",
+        "header_nav": "Navigation",
+        "syncing": "Synchronizing Pipeline...",
+        "empty_pipeline": "Pipeline Empty. Ready for Growth?",
+        "add_prospect_description": "Initiate a new journey in your box. Enter the athlete's coordinates below."
     },
     "analytics": {
         "title": "Analytics Dashboard",

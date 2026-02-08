@@ -196,15 +196,15 @@ export const Leads: React.FC = () => {
                             <div className="p-1 bg-white/20 rounded-lg group-hover:scale-110 transition-transform">
                                 <UserPlus className="h-5 w-5" />
                             </div>
-                            <span className="font-black italic uppercase tracking-widest text-xs">Acquire Lead</span>
+                            <span className="font-black italic uppercase tracking-widest text-xs">{t('leads.acquire_lead')}</span>
                         </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden border-white/10 glass rounded-[2.5rem]">
                         <div className="bg-primary/10 p-8 border-b border-white/5">
                             <DialogHeader>
-                                <DialogTitle className="text-3xl font-black italic uppercase tracking-tighter text-primary">Add Prospect</DialogTitle>
+                                <DialogTitle className="text-3xl font-black italic uppercase tracking-tighter text-primary">{t('leads.add_prospect')}</DialogTitle>
                                 <DialogDescription className="text-muted-foreground/70 font-medium">
-                                    Initiate a new journey in your box. Enter the athlete's coordinates below.
+                                    {t('leads.add_prospect_description', { defaultValue: 'Initiate a new journey in your box. Enter the athlete\'s coordinates below.' })}
                                 </DialogDescription>
                             </DialogHeader>
                         </div>
@@ -242,12 +242,20 @@ export const Leads: React.FC = () => {
                                     className="h-14 rounded-2xl bg-muted/20 border-border/20 focus:border-primary/50 transition-colors"
                                 />
                             </div>
-                            <DialogFooter className="pt-4">
+                            <DialogFooter className="pt-4 flex gap-3">
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={() => setOpen(false)}
+                                    className="flex-1 text-[10px] font-black italic uppercase tracking-widest opacity-60 hover:opacity-100"
+                                >
+                                    {t('common.close').toUpperCase()}
+                                </Button>
                                 <Button
                                     type="submit"
                                     disabled={loading || !newLead.firstName || !newLead.lastName || !newLead.email.includes('@')}
                                     size="lg"
-                                    className="w-full text-base py-7 rounded-2xl shadow-xl shadow-primary/20"
+                                    className="flex-[2] text-base py-7 rounded-2xl shadow-xl shadow-primary/20"
                                 >
                                     {loading ? t('common.saving') : t('leads.add_prospect')}
                                 </Button>
@@ -268,7 +276,7 @@ export const Leads: React.FC = () => {
                                 </div>
                             </div>
                             <div>
-                                <CardTitle className="text-xl font-black italic uppercase tracking-tighter">Acquisition <span className="text-primary">Pipeline</span></CardTitle>
+                                <CardTitle className="text-xl font-black italic uppercase tracking-tighter">{t('leads.pipeline_title', { defaultValue: 'Acquisition' })} <span className="text-primary">{t('leads.pipeline_highlight', { defaultValue: 'Pipeline' })}</span></CardTitle>
                                 <CardDescription className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">{t('leads.subtitle')}</CardDescription>
                             </div>
                         </div>
@@ -290,10 +298,10 @@ export const Leads: React.FC = () => {
                     <Table>
                         <TableHeader className="bg-primary/5">
                             <TableRow className="hover:bg-transparent border-white/5">
-                                <TableHead className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-primary/80 italic">Prospect Identity</TableHead>
-                                <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/80 italic">Lifecycle Status</TableHead>
-                                <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/80 italic text-center">Inception Date</TableHead>
-                                <TableHead className="text-right px-8 text-[10px] font-black uppercase tracking-[0.2em] text-primary/80 italic">Navigation</TableHead>
+                                <TableHead className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-primary/80 italic">{t('leads.header_identity', { defaultValue: 'Prospect Identity' })}</TableHead>
+                                <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/80 italic">{t('leads.header_status', { defaultValue: 'Lifecycle Status' })}</TableHead>
+                                <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/80 italic text-center">{t('leads.header_date', { defaultValue: 'Inception Date' })}</TableHead>
+                                <TableHead className="text-right px-8 text-[10px] font-black uppercase tracking-[0.2em] text-primary/80 italic">{t('leads.header_nav', { defaultValue: 'Navigation' })}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -302,7 +310,7 @@ export const Leads: React.FC = () => {
                                     <TableCell colSpan={4} className="text-center py-20">
                                         <div className="flex flex-col items-center gap-3">
                                             <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Synchronizing Pipeline...</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">{t('leads.syncing', { defaultValue: 'Synchronizing Pipeline...' })}</span>
                                         </div>
                                     </TableCell>
                                 </TableRow>
@@ -311,7 +319,7 @@ export const Leads: React.FC = () => {
                                     <TableCell colSpan={4} className="text-center py-24 opacity-20">
                                         <div className="flex flex-col items-center gap-4">
                                             <Inbox className="h-16 w-16" />
-                                            <p className="text-sm font-black italic uppercase tracking-widest">Pipeline Empty. Ready for Growth?</p>
+                                            <p className="text-sm font-black italic uppercase tracking-widest">{t('leads.empty_pipeline', { defaultValue: 'Pipeline Empty. Ready for Growth?' })}</p>
                                         </div>
                                     </TableCell>
                                 </TableRow>

@@ -120,6 +120,10 @@ export const Analytics: React.FC = () => {
                 type: type,
                 boxId: athlete.box_id,
                 details: message
+            },
+            headers: {
+                Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+                apikey: import.meta.env.VITE_SUPABASE_ANON_KEY
             }
         }).catch(err => console.error('Failed to trigger coach alert:', err));
 

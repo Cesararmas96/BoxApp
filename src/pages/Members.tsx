@@ -106,6 +106,10 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                 last_name: newMember.lastName,
                 role_id: newMember.roleId,
                 box_id: currentBox?.id
+            },
+            headers: {
+                Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+                apikey: import.meta.env.VITE_SUPABASE_ANON_KEY
             }
         });
 

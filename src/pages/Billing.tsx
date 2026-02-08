@@ -410,7 +410,7 @@ export const Billing: React.FC = () => {
             fetchFinanceData();
         } catch (error: any) {
             console.error('Error creating membership:', error);
-            addNotification('error', 'Error al crear membresía: ' + error.message);
+            addNotification('error', t('billing.error_creating_membership', { defaultValue: 'Error al crear membresía: ' }) + error.message);
         } finally {
             setLoading(false);
         }
@@ -859,27 +859,27 @@ export const Billing: React.FC = () => {
                                             <DialogTitle className="text-xl font-black italic uppercase tracking-tighter text-glow">{t('billing.add_membership')}</DialogTitle>
                                         </div>
                                         <DialogDescription className="text-[10px] uppercase tracking-widest font-bold opacity-60">
-                                            Configura la suscripción mensual del atleta.
+                                            {t('billing.add_membership_desc', { defaultValue: 'Configura la suscripción mensual del atleta.' })}
                                         </DialogDescription>
                                     </DialogHeader>
 
                                     <div className="space-y-5 p-6 relative z-10">
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">{t('billing.select_athlete')}</Label>
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/70 ml-1">{t('billing.select_athlete')}</Label>
                                             <Select
                                                 value={newMembership.userId}
                                                 onValueChange={(val) => setNewMembership({ ...newMembership, userId: val })}
                                             >
-                                                <SelectTrigger className="h-12 bg-white/[0.03] border-white/10 rounded-2xl focus:ring-primary/50 transition-all hover:bg-white/[0.05]">
+                                                <SelectTrigger className="h-12 bg-background border-border rounded-2xl focus:ring-primary/50 transition-all hover:bg-muted/50">
                                                     <SelectValue placeholder={t('billing.select_athlete')} />
                                                 </SelectTrigger>
-                                                <SelectContent className="glass-dark border-white/10 max-h-[300px] p-0 shadow-2xl">
-                                                    <div className="p-2 border-b border-white/5 sticky top-0 bg-[#0c0c0e]/80 backdrop-blur-md z-10">
+                                                <SelectContent className="glass border-border max-h-[300px] p-0 shadow-2xl">
+                                                    <div className="p-2 border-b border-border sticky top-0 bg-background/80 backdrop-blur-md z-10">
                                                         <div className="relative">
                                                             <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                                                             <Input
-                                                                placeholder="Buscar atleta..."
-                                                                className="h-9 pl-8 text-xs bg-white/5 border-white/10 rounded-xl"
+                                                                placeholder={t('billing.search_athlete_placeholder', { defaultValue: 'Buscar atleta...' })}
+                                                                className="h-9 pl-8 text-xs bg-muted/20 border-border rounded-xl"
                                                                 value={athleteSearch}
                                                                 onChange={(e) => setAthleteSearch(e.target.value)}
                                                                 onClick={(e) => e.stopPropagation()}
@@ -904,15 +904,15 @@ export const Billing: React.FC = () => {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">{t('billing.select_plan')}</Label>
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/70 ml-1">{t('billing.select_plan')}</Label>
                                             <Select
                                                 value={newMembership.planId}
                                                 onValueChange={(val) => setNewMembership({ ...newMembership, planId: val })}
                                             >
-                                                <SelectTrigger className="h-12 bg-white/[0.03] border-white/10 rounded-2xl focus:ring-primary/50 transition-all hover:bg-white/[0.05]">
+                                                <SelectTrigger className="h-12 bg-background border-border rounded-2xl focus:ring-primary/50 transition-all hover:bg-muted/50">
                                                     <SelectValue placeholder={t('billing.select_plan')} />
                                                 </SelectTrigger>
-                                                <SelectContent className="glass-dark border-white/10 p-1 shadow-2xl">
+                                                <SelectContent className="glass border-border p-1 shadow-2xl">
                                                     {plans.map(p => (
                                                         <SelectItem key={p.id} value={p.id} className="focus:bg-primary/20 focus:text-primary transition-colors cursor-pointer rounded-lg py-3">
                                                             <div className="flex justify-between items-center w-full min-w-[200px]">
@@ -929,8 +929,8 @@ export const Billing: React.FC = () => {
                                             className={cn(
                                                 "flex items-center space-x-3 p-4 rounded-2xl border transition-all duration-300 cursor-pointer group",
                                                 newMembership.isUnclear
-                                                    ? "bg-primary/10 border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.1)]"
-                                                    : "bg-white/[0.02] border-white/5 hover:border-white/10"
+                                                    ? "bg-primary/20 border-primary/40 shadow-[0_0_15px_rgba(var(--primary),0.15)]"
+                                                    : "bg-muted/30 border-border hover:border-primary/30"
                                             )}
                                             onClick={() => setNewMembership({ ...newMembership, isUnclear: !newMembership.isUnclear })}
                                         >
@@ -938,23 +938,23 @@ export const Billing: React.FC = () => {
                                                 "h-6 w-6 rounded-xl border-2 flex items-center justify-center transition-all duration-300",
                                                 newMembership.isUnclear
                                                     ? "bg-primary border-primary scale-110 shadow-lg shadow-primary/30"
-                                                    : "border-white/20 bg-transparent"
+                                                    : "border-muted-foreground/30 bg-muted/20"
                                             )}>
                                                 {newMembership.isUnclear && <CheckCircle2 className="h-4 w-4 text-white" strokeWidth={3} />}
                                             </div>
                                             <div className="flex flex-col">
                                                 <Label className="text-[11px] font-black uppercase tracking-tight cursor-pointer group-hover:text-primary transition-colors">{t('billing.unclear_start_date')}</Label>
-                                                <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest opacity-60">Activación diferida manualmente</span>
+                                                <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest opacity-60">{t('billing.manual_activation_desc', { defaultValue: 'Activación diferida manualmente' })}</span>
                                             </div>
                                         </div>
 
                                         {!newMembership.isUnclear && (
                                             <div className="space-y-2 animate-premium-in">
-                                                <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">{t('billing.start_date')}</Label>
+                                                <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/70 ml-1">{t('billing.start_date')}</Label>
                                                 <div className="relative group">
                                                     <Input
                                                         type="date"
-                                                        className="h-12 bg-white/[0.03] border-white/10 rounded-2xl pl-10 pr-4 focus:ring-primary/50 transition-all text-sm [color-scheme:dark]"
+                                                        className="h-12 bg-background border-border rounded-2xl pl-10 pr-4 focus:ring-primary/50 transition-all text-sm"
                                                         value={newMembership.startDate}
                                                         onChange={(e) => setNewMembership({ ...newMembership, startDate: e.target.value })}
                                                     />
@@ -966,7 +966,7 @@ export const Billing: React.FC = () => {
                                         <div className="pt-2">
                                             <Button
                                                 onClick={handleCreateMembership}
-                                                disabled={loading}
+                                                disabled={loading || !newMembership.userId || !newMembership.planId}
                                                 className="h-14 w-full rounded-2xl shadow-xl shadow-primary/30 font-black italic uppercase tracking-wider text-sm hover:scale-[1.02] active:scale-[0.98] transition-all bg-gradient-to-r from-primary to-primary/80"
                                             >
                                                 {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : t('common.confirm', { defaultValue: 'CREAR MEMBRESÍA' })}
@@ -1166,13 +1166,15 @@ export const Billing: React.FC = () => {
                 </TabsContent>
             </Tabs>
 
-            {notification && (
-                <Toast
-                    type={notification.type}
-                    message={notification.message}
-                    onClose={hideNotification}
-                />
-            )}
+            {
+                notification && (
+                    <Toast
+                        type={notification.type}
+                        message={notification.message}
+                        onClose={hideNotification}
+                    />
+                )
+            }
 
             <ConfirmationDialog
                 isOpen={confirmState.isOpen}
@@ -1183,6 +1185,6 @@ export const Billing: React.FC = () => {
                 variant={confirmState.variant}
                 icon={confirmState.icon}
             />
-        </div>
+        </div >
     );
 };

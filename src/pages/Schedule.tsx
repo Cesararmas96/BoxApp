@@ -175,11 +175,12 @@ export const Schedule: React.FC = () => {
     ];
 
     const getMatchedWod = (session: any, date: Date) => {
+        if (!session || !date || isNaN(date.getTime())) return null;
         const localDateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
         return wods.find(w => {
             if (!w.date || !w.track) return false;
             const wodDateStr = w.date.split('T')[0];
-            const sessionTypeName = session.session_types?.name?.toLowerCase() || '';
+            const sessionTypeName = (session.session_types?.name || '').toLowerCase();
             const trackName = w.track.toLowerCase();
 
             return wodDateStr === localDateStr && (
@@ -416,19 +417,19 @@ export const Schedule: React.FC = () => {
                                                     setSelectedSession(session);
                                                 }}
                                             >
-                                                <div className="absolute top-0 left-0 bottom-0 w-1" style={{ backgroundColor: session.session_types.color }} />
+                                                <div className="absolute top-0 left-0 bottom-0 w-1" style={{ backgroundColor: session.session_types?.color }} />
 
                                                 <div className="flex justify-between items-center mb-3">
                                                     <span className="text-[10px] font-black italic tracking-widest text-primary/80 uppercase">
                                                         {new Date(session.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                     </span>
                                                     <Badge variant="glow" className="text-[8px] h-4 px-2 tracking-widest leading-none bg-primary/20">
-                                                        {session.session_types.name}
+                                                        {session.session_types?.name}
                                                     </Badge>
                                                 </div>
 
                                                 <p className="text-sm font-black italic uppercase tracking-tight text-white mb-2 leading-none group-hover:text-primary transition-colors">
-                                                    {session.title || session.session_types.name}
+                                                    {session.title || session.session_types?.name}
                                                 </p>
 
                                                 {/* WOD Integration */}

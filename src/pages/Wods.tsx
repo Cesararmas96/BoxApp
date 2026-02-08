@@ -351,7 +351,7 @@ export const Wods: React.FC = () => {
             );
         }
         return items;
-    }, [wods, activeTrack, searchQuery, selectedMonth]);
+    }, [wods, activeTrack, searchQuery, selectedMonth, selectedDate]);
 
     const itemsPerPage = viewMode === 'compact' ? 50 : 12;
 
@@ -558,24 +558,22 @@ export const Wods: React.FC = () => {
 
                 <div className="flex items-center gap-3 w-full md:w-auto">
                     <div className="relative group flex-1 md:w-48">
-                        <Calendar
-                            className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors cursor-pointer z-10"
-                            onClick={() => dateInputRef.current?.showPicker()}
-                        />
                         <Input
                             ref={dateInputRef}
                             type="date"
-                            className="pl-12 h-11 rounded-xl border-black/5 dark:border-white/20 bg-black/[0.02] dark:bg-white/10 focus:ring-primary/20 focus:border-primary/50 transition-all text-[10px] font-black uppercase tracking-tighter"
-                            style={{ colorScheme: 'auto' }} // Ensure native picker icon is somewhat hidden if needed, or theme-aware
+                            placeholder="DD/MM/YYYY"
+                            className="px-4 h-11 rounded-xl border-black/5 dark:border-white/20 bg-black/[0.02] dark:bg-white/10 focus:ring-primary/20 focus:border-primary/50 transition-all text-[10px] font-black uppercase tracking-widest [appearance:none] [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-clear-button]:appearance-none cursor-pointer"
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
                         />
-                        {selectedDate && (
+                        {!selectedDate ? (
+                            <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none group-focus-within:text-primary transition-colors" />
+                        ) : (
                             <Button
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => setSelectedDate('')}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-foreground"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-foreground z-10"
                             >
                                 <X className="h-4 w-4" />
                             </Button>
@@ -583,13 +581,24 @@ export const Wods: React.FC = () => {
                     </div>
 
                     <div className="relative group flex-1 md:w-64">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                         <Input
                             placeholder={t('common.search')}
-                            className="pl-12 h-11 rounded-xl border-black/5 dark:border-white/20 bg-black/[0.02] dark:bg-white/10 focus:ring-primary/20 focus:border-primary/50 transition-all text-xs font-bold uppercase tracking-wider"
+                            className="px-4 h-11 rounded-xl border-black/5 dark:border-white/20 bg-black/[0.02] dark:bg-white/10 focus:ring-primary/20 focus:border-primary/50 transition-all text-xs font-bold uppercase tracking-wider [&::-webkit-search-cancel-button]:appearance-none"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
+                        {!searchQuery ? (
+                            <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none group-focus-within:text-primary transition-colors" />
+                        ) : (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setSearchQuery('')}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-foreground z-10"
+                            >
+                                <X className="h-4 w-4" />
+                            </Button>
+                        )}
                     </div>
 
                     <div className="flex bg-black/[0.02] dark:bg-white/10 p-1 rounded-xl border border-black/5 dark:border-white/20 shrink-0">

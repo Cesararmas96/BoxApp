@@ -124,8 +124,14 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
         e.preventDefault();
         setLoading(true);
 
+        if (!newMember.email) {
+            showNotification('error', 'EMAIL IS REQUIRED');
+            setLoading(false);
+            return;
+        }
+
         // Call the Edge Function to create member and auth account securely
-        const { error } = await supabase.functions.invoke('create-member', {
+        const { data, error } = await supabase.functions.invoke('create-member', {
             body: {
                 email: newMember.email,
                 password: 'BoxApp2026!',
@@ -138,7 +144,27 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
 
         if (error) {
             console.error('Edge Function error:', error);
-            showNotification('error', 'ERROR ADDING MEMBER: ' + (error.message || 'Error en el servidor al crear el miembro').toUpperCase());
+            let errorMessage = 'Error en el servidor al crear el miembro';
+
+            try {
+                // In Supabase v2, if it's a FunctionsHttpError, context is a Response object
+                if (error.name === 'FunctionsHttpError' && (error as any).context) {
+                    const errorData = await (error as any).context.json();
+                    if (errorData && errorData.error) {
+                        errorMessage = errorData.error;
+                    }
+                } else if (data && (data as any).error) {
+                    errorMessage = (data as any).error;
+                } else {
+                    errorMessage = error.message || errorMessage;
+                }
+            } catch (e) {
+                errorMessage = error.message || errorMessage;
+            }
+
+            showNotification('error', 'ERROR ADDING MEMBER: ' + errorMessage.toUpperCase());
+        } else if (data && (data as any).error) {
+            showNotification('error', 'ERROR ADDING MEMBER: ' + (data as any).error.toUpperCase());
         } else {
             showNotification('success', 'MEMBER ADDED SUCCESSFULLY');
             setOpen(false);
@@ -253,6 +279,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                         placeholder="john@example.com"
                                         value={newMember.email}
                                         onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
+                                        required
                                     />
                                 </div>
                                 <div className="space-y-2">

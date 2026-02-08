@@ -414,18 +414,25 @@ export const Schedule: React.FC = () => {
                                             const dayWods = wods.filter(w => w.date?.split('T')[0] === date.toISOString().split('T')[0]);
                                             if (dayWods.length > 0) {
                                                 return (
-                                                    <div className="mb-4 p-3 rounded-2xl bg-white/5 border border-white/5">
-                                                        <p className="text-[8px] font-black uppercase tracking-widest text-primary mb-2 italic">Daily Programming</p>
-                                                        <div className="space-y-2">
-                                                            {dayWods.slice(0, 2).map((wod, idx) => (
-                                                                <div key={idx} className="flex flex-col">
-                                                                    <span className="text-[7px] font-black text-zinc-500 uppercase tracking-tighter">{wod.track}</span>
-                                                                    <span className="text-[10px] font-bold text-white/90 truncate italic">{wod.title}</span>
+                                                    <div className="mb-4 p-3 rounded-2xl bg-primary/5 border border-primary/10">
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <p className="text-[8px] font-black uppercase tracking-widest text-primary italic">Daily Programming</p>
+                                                            <Trophy className="h-3 w-3 text-primary/40" />
+                                                        </div>
+                                                        <div className="space-y-1.5">
+                                                            {dayWods.slice(0, 3).map((wod, idx) => (
+                                                                <div
+                                                                    key={idx}
+                                                                    className="flex items-center justify-between group/wodlink cursor-pointer"
+                                                                    onClick={() => setSelectedWod(wod)}
+                                                                >
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-[7px] font-black text-zinc-500 uppercase tracking-tighter group-hover/wodlink:text-primary transition-colors">{wod.track}</span>
+                                                                        <span className="text-[10px] font-bold text-white/90 truncate italic leading-tight group-hover/wodlink:text-white transition-colors">{wod.title}</span>
+                                                                    </div>
+                                                                    <ChevronRight className="h-2.5 w-2.5 text-zinc-700 group-hover/wodlink:text-primary transition-colors" />
                                                                 </div>
                                                             ))}
-                                                            {dayWods.length > 2 && (
-                                                                <p className="text-[7px] font-black text-primary/60 uppercase">+{dayWods.length - 2} more tracks</p>
-                                                            )}
                                                         </div>
                                                     </div>
                                                 );
@@ -460,9 +467,40 @@ export const Schedule: React.FC = () => {
                                                                 </Badge>
                                                             </div>
 
-                                                            <p className="text-xs font-black italic uppercase tracking-tight text-white group-hover:text-primary transition-colors truncate">
+                                                            <p className="text-xs font-black italic uppercase tracking-tight text-white group-hover:text-primary transition-colors mb-2">
                                                                 {session.title || session.session_types?.name}
                                                             </p>
+
+                                                            {/* WOD Integration */}
+                                                            {(() => {
+                                                                const matchedWod = getMatchedWod(session, date);
+                                                                if (matchedWod) {
+                                                                    return (
+                                                                        <div
+                                                                            className="mt-2 p-2 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all group/swod"
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                setSelectedWod(matchedWod);
+                                                                            }}
+                                                                        >
+                                                                            <p className="text-[8px] font-black text-primary uppercase italic flex items-center gap-1 mb-0.5">
+                                                                                <Trophy className="h-2 w-2" /> Programmed
+                                                                            </p>
+                                                                            <p className="text-[9px] font-bold text-white/60 truncate uppercase">{matchedWod.title}</p>
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                                return null;
+                                                            })()}
+
+                                                            <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
+                                                                <div className="flex items-center gap-1.5 text-muted-foreground/40">
+                                                                    <Users className="h-3 w-3" />
+                                                                    <span className="text-[9px] font-black uppercase tracking-widest italic truncate max-w-[80px]">
+                                                                        {session.profiles ? `${session.profiles.first_name} ${session.profiles.last_name}` : 'Coach'}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -788,8 +826,28 @@ export const Schedule: React.FC = () => {
                                                 <Badge className="bg-primary text-white text-[9px] font-black uppercase tracking-widest">{matchedWod.track} TRACK</Badge>
                                                 <Trophy className="h-4 w-4 text-primary" />
                                             </div>
-                                            <h3 className="text-2xl font-black uppercase italic tracking-tight text-white group-hover:text-primary transition-colors">{matchedWod.title}</h3>
-                                            <p className="text-[10px] text-zinc-400 mt-2 uppercase font-bold tracking-widest">Click to view full workout details</p>
+                                            <h3 className="text-2xl font-black uppercase italic tracking-tight text-white group-hover:text-primary transition-colors mb-4">{matchedWod.title}</h3>
+
+                                            {/* Content Preview */}
+                                            <div className="space-y-3 bg-black/20 p-4 rounded-2xl border border-white/5 mb-4">
+                                                {matchedWod.metcon && (
+                                                    <div>
+                                                        <p className="text-[7px] font-black uppercase text-primary tracking-widest mb-1 italic">Workout</p>
+                                                        <p className="text-xs text-zinc-300 line-clamp-3 leading-relaxed">{matchedWod.metcon}</p>
+                                                    </div>
+                                                )}
+                                                {matchedWod.stimulus && !matchedWod.metcon && (
+                                                    <div>
+                                                        <p className="text-[7px] font-black uppercase text-primary tracking-widest mb-1 italic">Goal</p>
+                                                        <p className="text-xs text-zinc-300 line-clamp-3 leading-relaxed">{matchedWod.stimulus}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <p className="text-[10px] text-zinc-400 uppercase font-bold tracking-widest flex items-center gap-2">
+                                                <div className="h-1 w-1 bg-primary rounded-full animate-pulse" />
+                                                Click for full modality & scaling details
+                                            </p>
                                         </div>
                                     </div>
                                 );

@@ -393,8 +393,19 @@ export const Wods: React.FC = () => {
 
     const last7DaysBias = useMemo(() => {
         const counts = { weightlifting: 0, gymnastics: 0, mono: 0, metcon: 0 };
-        const cf = wods.filter(w => w.track === 'CrossFit').slice(0, 7);
-        cf.forEach(w => {
+        // Si estamos editando, filtramos el WOD actual del historial para no duplicar
+        const historicalWods = wods
+            .filter(w => w.track === 'CrossFit' && w.id !== editingWodId)
+            .slice(0, 6); // Tomamos 6 para dejar espacio al actual
+
+        const allWodsForAnalysis = [...historicalWods];
+
+        // Solo incluimos el actual si el track es CrossFit
+        if (newWOD.track === 'CrossFit') {
+            allWodsForAnalysis.push({ ...newWOD, id: 'current' } as any);
+        }
+
+        allWodsForAnalysis.forEach(w => {
             (w.modalities || []).forEach(m => {
                 const lower = m.toLowerCase();
                 if (lower.includes('weightlifting')) counts.weightlifting++;
@@ -404,7 +415,7 @@ export const Wods: React.FC = () => {
             });
         });
         return counts;
-    }, [wods]);
+    }, [wods, newWOD.modalities, newWOD.track, editingWodId]);
 
     return (
         <div className="space-y-6 text-left">
@@ -525,6 +536,37 @@ export const Wods: React.FC = () => {
                                     </div>
                                 </div>
 
+                                <div className="space-y-4">
+                                    <Label className="uppercase text-[10px] font-black tracking-widest text-primary px-1">SESSION STIMULUS MODALITIES</Label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {['Weightlifting', 'Gymnastics', 'Mono', 'Metcon'].map((m) => {
+                                            const isSelected = (newWOD.modalities || []).includes(m);
+                                            return (
+                                                <Button
+                                                    key={m}
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        const next = isSelected
+                                                            ? (newWOD.modalities || []).filter(curr => curr !== m)
+                                                            : [...(newWOD.modalities || []), m];
+                                                        setNewWOD({ ...newWOD, modalities: next });
+                                                    }}
+                                                    className={cn(
+                                                        "h-9 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all",
+                                                        isSelected
+                                                            ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20"
+                                                            : "bg-black/[0.02] dark:bg-white/5 border-black/5 dark:border-white/10 hover:border-primary/30"
+                                                    )}
+                                                >
+                                                    {m}
+                                                </Button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
                                 <div className="space-y-6">
                                     <div className="flex items-center justify-between">
                                         <div className="space-y-1">
@@ -567,7 +609,7 @@ export const Wods: React.FC = () => {
             </header>
 
             {/* Quick Actions & Filters Bar */}
-            <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between bg-white/5 p-2 rounded-[2rem] border border-white/5">
+            <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between bg-white/5 p-2 rounded-[2rem] border border-white/5" >
                 <div className="flex flex-wrap gap-2">
                     <Button
                         variant={activeTrack === 'all' ? "default" : "ghost"}

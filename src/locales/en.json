@@ -430,6 +430,27 @@
         "unclear_start_date": "Activation Pending",
         "status_pending_activation": "Pending Activation"
     },
+    "leads": {
+        "title": "Prospects",
+        "subtitle": "Accelerate your box growth. Track every prospect through a high-fidelity conversion funnel.",
+        "add_prospect": "Add Prospect",
+        "acquire_lead": "Acquire Lead",
+        "convert_to_member": "Convert to Member",
+        "confirm_conversion_title": "Convert Prospect",
+        "confirm_conversion_description": "Are you sure you want to convert this prospect into a member? This will create an athlete profile and cannot be undone.",
+        "first_name": "First Name",
+        "last_name": "Last Name",
+        "email": "Email Address",
+        "phone": "Phone Number",
+        "notes": "Notes and Intent",
+        "status_new": "New Entry",
+        "status_contacted": "In Contact",
+        "status_converted": "Converted",
+        "error_duplicate_email": "This email is already registered in the pipeline.",
+        "error_generic": "An error occurred while processing the lead.",
+        "success_add": "New lead added to the pipeline.",
+        "success_convert": "Lead successfully converted to member!"
+    },
     "analytics": {
         "title": "Analytics Dashboard",
         "subtitle": "Real-time performance metrics for your community.",

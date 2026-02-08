@@ -96,9 +96,13 @@ export const Leads: React.FC = () => {
             }]);
 
         if (error) {
-            showNotification('error', 'ERROR ADDING LEAD: ' + error.message.toUpperCase());
+            let errorMessage = t('leads.error_generic');
+            if (error.code === '23505') {
+                errorMessage = t('leads.error_duplicate_email');
+            }
+            showNotification('error', errorMessage.toUpperCase());
         } else {
-            showNotification('success', 'NEW LEAD ADDED SUCCESSFULLY');
+            showNotification('success', t('leads.success_add').toUpperCase());
             setOpen(false);
             setNewLead({ firstName: '', lastName: '', email: '' });
             fetchLeads();
@@ -115,7 +119,7 @@ export const Leads: React.FC = () => {
                 .eq('id', lead.id);
 
             if (error) {
-                showNotification('error', 'ERROR UPDATING STATUS: ' + error.message.toUpperCase());
+                showNotification('error', t('leads.error_generic').toUpperCase());
             } else {
                 if (newStatus === 'converted') {
                     await supabase
@@ -127,9 +131,9 @@ export const Leads: React.FC = () => {
                             role: 'athlete',
                             status: 'active'
                         }]);
-                    showNotification('success', 'LEAD CONVERTED TO MEMBER!');
+                    showNotification('success', t('leads.success_convert').toUpperCase());
                 } else {
-                    showNotification('success', 'STATUS UPDATED');
+                    showNotification('success', t('common.success_update', { defaultValue: 'STATUS UPDATED' }).toUpperCase());
                 }
                 fetchLeads();
             }
@@ -138,8 +142,8 @@ export const Leads: React.FC = () => {
 
         if (newStatus === 'converted') {
             showConfirm({
-                title: t('leads.confirm_conversion_title', { defaultValue: 'CONVERTIR PROSPECTO' }),
-                description: t('leads.confirm_conversion_desc', { defaultValue: '¿ESTÁS SEGURO DE QUE DESEAS CONVERTIR ESTE PROSPECTO EN MIEMBRO? ESTA ACCIÓN CREARÁ UN PERFIL DE ATLETA Y NO SE PUEDE DESHACER.' }),
+                title: t('leads.confirm_conversion_title'),
+                description: t('leads.confirm_conversion_description'),
                 onConfirm: executeUpdate,
                 variant: 'default',
                 icon: 'warning'
@@ -179,10 +183,10 @@ export const Leads: React.FC = () => {
             <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between px-6 md:px-0">
                 <div className="space-y-1">
                     <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase text-glow">
-                        Growth <span className="text-primary italic-none not-italic">Pipeline</span>
+                        Growth <span className="text-primary not-italic">Pipeline</span>
                     </h1>
                     <p className="text-muted-foreground/80 text-sm font-medium tracking-wide max-w-lg">
-                        Accelerate your box growth. Track every prospect through a high-fidelity conversion funnel.
+                        {t('leads.subtitle')}
                     </p>
                 </div>
 
@@ -207,40 +211,45 @@ export const Leads: React.FC = () => {
                         <form onSubmit={handleAddLead} className="p-8 space-y-6">
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1 italic">First Name</label>
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1 italic">{t('leads.first_name')}</label>
                                     <Input
                                         placeholder="Jane"
                                         value={newLead.firstName}
                                         onChange={(e) => setNewLead({ ...newLead, firstName: e.target.value })}
                                         required
-                                        className="h-14 rounded-2xl bg-zinc-950/40 border-white/10"
+                                        className="h-14 rounded-2xl bg-muted/20 border-border/20 focus:border-primary/50 transition-colors"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1 italic">Last Name</label>
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1 italic">{t('leads.last_name')}</label>
                                     <Input
                                         placeholder="Smith"
                                         value={newLead.lastName}
                                         onChange={(e) => setNewLead({ ...newLead, lastName: e.target.value })}
                                         required
-                                        className="h-14 rounded-2xl bg-zinc-950/40 border-white/10"
+                                        className="h-14 rounded-2xl bg-muted/20 border-border/20 focus:border-primary/50 transition-colors"
                                     />
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1 italic">Electronic Mail</label>
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1 italic">{t('leads.email')}</label>
                                 <Input
                                     type="email"
                                     placeholder="jane@example.com"
                                     value={newLead.email}
                                     onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
                                     required
-                                    className="h-14 rounded-2xl bg-zinc-950/40 border-white/10"
+                                    className="h-14 rounded-2xl bg-muted/20 border-border/20 focus:border-primary/50 transition-colors"
                                 />
                             </div>
                             <DialogFooter className="pt-4">
-                                <Button type="submit" disabled={loading} size="lg" className="w-full text-base py-7 rounded-2xl">
-                                    {loading ? "Syncing..." : "Launch Prospect"}
+                                <Button
+                                    type="submit"
+                                    disabled={loading || !newLead.firstName || !newLead.lastName || !newLead.email.includes('@')}
+                                    size="lg"
+                                    className="w-full text-base py-7 rounded-2xl shadow-xl shadow-primary/20"
+                                >
+                                    {loading ? t('common.saving') : t('leads.add_prospect')}
                                 </Button>
                             </DialogFooter>
                         </form>
@@ -248,8 +257,8 @@ export const Leads: React.FC = () => {
                 </Dialog>
             </div>
 
-            <Card className="glass overflow-hidden border-white/10 shadow-premium">
-                <CardHeader className="border-b border-white/5 bg-zinc-950/20 px-8 py-8">
+            <Card className="glass overflow-hidden border-border/40 shadow-premium">
+                <CardHeader className="border-b border-border/10 bg-muted/5 px-8 py-8">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div className="flex items-center gap-4">
                             <div className="relative">
@@ -260,14 +269,14 @@ export const Leads: React.FC = () => {
                             </div>
                             <div>
                                 <CardTitle className="text-xl font-black italic uppercase tracking-tighter">Acquisition <span className="text-primary">Pipeline</span></CardTitle>
-                                <CardDescription className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Live feed of box prospects</CardDescription>
+                                <CardDescription className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">{t('leads.subtitle')}</CardDescription>
                             </div>
                         </div>
                         <div className="relative w-full md:w-80 group">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
                             <Input
-                                placeholder="Search prospects..."
-                                className="pl-12 bg-zinc-950/40 border-white/5 focus:border-primary/50 h-11"
+                                placeholder={t('common.search', { defaultValue: 'Search prospects...' })}
+                                className="pl-12 bg-muted/20 border-border/10 focus:border-primary/50 h-11"
                                 value={searchTerm}
                                 onChange={(e) => {
                                     setSearchTerm(e.target.value);
@@ -318,7 +327,7 @@ export const Leads: React.FC = () => {
                                     >
                                         <TableCell className="px-8 py-5">
                                             <div className="flex items-center gap-4">
-                                                <div className="h-10 w-10 rounded-xl bg-zinc-900 border border-white/10 flex items-center justify-center font-black italic text-primary group-hover:scale-110 transition-transform">
+                                                <div className="h-10 w-10 rounded-xl bg-muted border border-border/40 flex items-center justify-center font-black italic text-primary group-hover:scale-110 transition-transform">
                                                     {lead.first_name?.[0] || ''}{lead.last_name?.[0] || ''}
                                                 </div>
                                                 <div className="flex flex-col">
@@ -353,15 +362,15 @@ export const Leads: React.FC = () => {
                                                 onValueChange={(val) => updateStatus(lead, val)}
                                             >
                                                 <SelectTrigger
-                                                    className="w-[130px] h-9 bg-zinc-950/60 border-white/5 hover:border-primary/50 text-[10px] font-black uppercase tracking-widest ml-auto transition-all"
+                                                    className="w-[130px] h-9 bg-muted/40 border-border/10 hover:border-primary/50 text-[10px] font-black uppercase tracking-widest ml-auto transition-all"
                                                     onClick={(e) => e.stopPropagation()}
                                                 >
                                                     <SelectValue placeholder="STATUS" />
                                                 </SelectTrigger>
-                                                <SelectContent className="glass border-white/10">
-                                                    <SelectItem value="new" className="text-[10px] font-black uppercase tracking-widest italic">New Entry</SelectItem>
-                                                    <SelectItem value="contacted" className="text-[10px] font-black uppercase tracking-widest italic">In Contact</SelectItem>
-                                                    <SelectItem value="converted" className="text-[10px] font-black uppercase tracking-widest italic">Converted</SelectItem>
+                                                <SelectContent className="glass border-border/40">
+                                                    <SelectItem value="new" className="text-[10px] font-black uppercase tracking-widest italic">{t('leads.status_new')}</SelectItem>
+                                                    <SelectItem value="contacted" className="text-[10px] font-black uppercase tracking-widest italic">{t('leads.status_contacted')}</SelectItem>
+                                                    <SelectItem value="converted" className="text-[10px] font-black uppercase tracking-widest italic">{t('leads.status_converted')}</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </TableCell>
@@ -428,7 +437,7 @@ export const Leads: React.FC = () => {
                     </div>
                     <div className="hidden sm:block">
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 italic">
-                            {t('common.showing', { defaultValue: 'SHOWING' })} <span className="text-primary">{Math.min(filteredLeads.length, (currentPage - 1) * itemsPerPage + 1)}-{Math.min(filteredLeads.length, currentPage * itemsPerPage)}</span> {t('common.of', { defaultValue: 'OF' })} {filteredLeads.length} {t('leads.title', { defaultValue: 'LEADS' })}
+                            {t('common.showing', { defaultValue: 'SHOWING' })} <span className="text-primary">{Math.min(filteredLeads.length, (currentPage - 1) * itemsPerPage + 1)}-{Math.min(filteredLeads.length, currentPage * itemsPerPage)}</span> {t('common.of', { defaultValue: 'OF' })} {filteredLeads.length} {t('leads.title')}
                         </p>
                     </div>
                 </div>
@@ -442,7 +451,7 @@ export const Leads: React.FC = () => {
 
                         <DialogHeader className="p-8 pb-4 relative z-10">
                             <div className="flex items-end gap-6">
-                                <div className="h-20 w-20 rounded-2xl border-2 border-white/10 shadow-2xl bg-background p-1 flex items-center justify-center font-black italic text-primary text-2xl">
+                                <div className="h-20 w-20 rounded-2xl border-2 border-border/20 shadow-2xl bg-muted p-1 flex items-center justify-center font-black italic text-primary text-2xl uppercase">
                                     {selectedLead?.first_name?.[0]}{selectedLead?.last_name?.[0]}
                                 </div>
                                 <div className="flex-1 pb-2">
@@ -456,7 +465,9 @@ export const Leads: React.FC = () => {
                                             selectedLead?.status === 'contacted' && "bg-amber-500/10 text-amber-400 border-amber-500/20",
                                             selectedLead?.status === 'converted' && "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                                         )}>
-                                            {selectedLead?.status}
+                                            {selectedLead?.status === 'new' ? t('leads.status_new') :
+                                                selectedLead?.status === 'contacted' ? t('leads.status_contacted') :
+                                                    selectedLead?.status === 'converted' ? t('leads.status_converted') : selectedLead?.status}
                                         </Badge>
                                     </div>
                                 </div>
@@ -465,44 +476,44 @@ export const Leads: React.FC = () => {
 
                         <div className="px-8 pb-8 space-y-6 relative z-10">
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1 p-4 rounded-2xl bg-white/[0.03] border border-white/5 shadow-inner">
+                                <div className="space-y-1 p-4 rounded-2xl bg-muted/20 border border-border/10 shadow-inner">
                                     <p className="text-[10px] font-black italic text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
-                                        <Inbox className="h-3 w-3 text-primary/50" /> CONTACT
+                                        <Inbox className="h-3 w-3 text-primary/50" /> {t('leads.email').toUpperCase()}
                                     </p>
                                     <p className="text-xs font-bold truncate opacity-80">{selectedLead?.email || 'N/A'}</p>
                                     <p className="text-[10px] font-medium text-muted-foreground italic">
-                                        {selectedLead?.phone || 'No phone provided'}
+                                        {selectedLead?.phone || t('leads.phone_none', { defaultValue: 'No phone provided' })}
                                     </p>
                                 </div>
-                                <div className="space-y-1 p-4 rounded-2xl bg-white/[0.03] border border-white/5 shadow-inner">
+                                <div className="space-y-1 p-4 rounded-2xl bg-muted/20 border border-border/10 shadow-inner">
                                     <p className="text-[10px] font-black italic text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
-                                        <Clock className="h-3 w-3 text-primary/50" /> ORIGIN
+                                        <Clock className="h-3 w-3 text-primary/50" /> {t('leads.origin', { defaultValue: 'ORIGIN' }).toUpperCase()}
                                     </p>
                                     <p className="text-xs font-bold truncate opacity-80 capitalize">{selectedLead?.source || 'Organic'}</p>
                                     <p className="text-[10px] font-medium text-muted-foreground italic">
-                                        Observed: {selectedLead?.created_at ? new Date(selectedLead.created_at).toLocaleDateString() : '...'}
+                                        {t('leads.last_update', { defaultValue: 'Observed' })}: {selectedLead?.created_at ? new Date(selectedLead.created_at).toLocaleDateString() : '...'}
                                     </p>
                                 </div>
                             </div>
 
                             <div className="p-5 rounded-2xl bg-gradient-to-br from-primary/[0.05] to-transparent border border-primary/10 shadow-sm">
                                 <h3 className="text-[10px] font-black italic uppercase tracking-widest text-primary/80 mb-3 flex items-center gap-2">
-                                    <Inbox className="h-3.5 w-3.5" /> NOTES & INTENT
+                                    <Inbox className="h-3.5 w-3.5" /> {t('leads.notes').toUpperCase()}
                                 </h3>
                                 <p className="text-sm font-medium leading-relaxed opacity-70 italic whitespace-pre-wrap">
-                                    {selectedLead?.notes || 'No notes yet. Ready for outreach.'}
+                                    {selectedLead?.notes || t('leads.no_notes', { defaultValue: 'No notes yet. Ready for outreach.' })}
                                 </p>
                             </div>
                         </div>
 
-                        <DialogFooter className="bg-muted/30 p-6 flex flex-row items-center justify-between border-t border-white/5">
+                        <DialogFooter className="bg-muted/50 p-6 flex flex-row items-center justify-between border-t border-border/10">
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setDetailsOpen(false)}
                                 className="text-[10px] font-black italic uppercase tracking-widest opacity-60 hover:opacity-100"
                             >
-                                CLOSE
+                                {t('common.close').toUpperCase()}
                             </Button>
                             {selectedLead?.status !== 'converted' && (
                                 <Button
@@ -516,7 +527,7 @@ export const Leads: React.FC = () => {
                                         }
                                     }}
                                 >
-                                    CONVERT TO MEMBER
+                                    {t('leads.convert_to_member')}
                                 </Button>
                             )}
                         </DialogFooter>

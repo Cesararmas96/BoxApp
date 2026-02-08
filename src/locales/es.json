@@ -412,6 +412,27 @@
         "unclear_start_date": "Pendiente de Activación",
         "status_pending_activation": "Activación Pendiente"
     },
+    "leads": {
+        "title": "Prospectos",
+        "subtitle": "Impulsa el crecimiento de tu box. Gestiona cada prospecto a través de un embudo de conversión de alta fidelidad.",
+        "add_prospect": "Añadir Prospecto",
+        "acquire_lead": "Adquirir Lead",
+        "convert_to_member": "Convertir en Miembro",
+        "confirm_conversion_title": "Convertir Prospecto",
+        "confirm_conversion_description": "¿Estás seguro de que deseas convertir este prospecto en miembro? Esta acción creará un perfil de atleta y no se puede deshacer.",
+        "first_name": "Nombre",
+        "last_name": "Apellido",
+        "email": "Correo Electrónico",
+        "phone": "Teléfono",
+        "notes": "Notas e Intención",
+        "status_new": "Nuevo Ingreso",
+        "status_contacted": "En Contacto",
+        "status_converted": "Convertido",
+        "error_duplicate_email": "Este correo electrónico ya está registrado en el sistema.",
+        "error_generic": "Ocurrió un error al procesar el prospecto.",
+        "success_add": "Nuevo prospecto añadido con éxito.",
+        "success_convert": "¡Prospecto convertido en miembro exitosamente!"
+    },
     "analytics": {
         "title": "Panel de Analíticas",
         "subtitle": "Métricas de rendimiento en tiempo real para tu comunidad.",

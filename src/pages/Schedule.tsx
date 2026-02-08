@@ -6,7 +6,7 @@ import {
     ChevronLeft,
     ChevronRight,
     Trophy,
-    Star,
+    RefreshCw,
     Users,
     Trash2
 } from 'lucide-react';
@@ -229,18 +229,18 @@ export const Schedule: React.FC = () => {
                                 <Plus className="h-4 w-4" /> {t('schedule.program_btn')}
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[700px] rounded-3xl border-white/10 glass max-h-[90vh] overflow-y-auto">
-                            <DialogHeader>
-                                <DialogTitle className="text-3xl font-black italic uppercase tracking-tight text-primary">
+                        <DialogContent className="sm:max-w-[700px] rounded-3xl border-white/5 bg-zinc-950/90 backdrop-blur-2xl shadow-2xl p-6">
+                            <DialogHeader className="mb-6">
+                                <DialogTitle className="text-3xl font-black italic uppercase tracking-tighter text-white">
                                     {t('schedule.programming_viewer', { defaultValue: 'PROGRAMMING VIEWER' })}
                                 </DialogTitle>
-                                <DialogDescription className="sr-only">
-                                    Display of programmed workouts for the different tracks
+                                <DialogDescription className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mt-1">
+                                    Manage and assign WODs to specific tracks
                                 </DialogDescription>
                             </DialogHeader>
 
                             {/* Day Selector within Modal */}
-                            <div className="flex items-center justify-between bg-white/5 p-2 rounded-2xl border border-white/5 mb-6">
+                            <div className="flex items-center justify-between bg-zinc-900/50 p-1.5 rounded-2xl border border-white/5 mb-8 shadow-inner">
                                 {getDatesOfWeek().map((date, i) => {
                                     const isSelected = selectedViewerDate.toDateString() === date.toDateString();
                                     return (
@@ -248,12 +248,17 @@ export const Schedule: React.FC = () => {
                                             key={i}
                                             onClick={() => setSelectedViewerDate(date)}
                                             className={cn(
-                                                "flex-1 py-3 rounded-xl transition-all duration-300 flex flex-col items-center gap-1",
-                                                isSelected ? "bg-primary text-white shadow-lg shadow-primary/20 scale-105 z-10" : "hover:bg-white/5 text-muted-foreground"
+                                                "flex-1 py-3 rounded-xl transition-all duration-500 flex flex-col items-center gap-1.5 relative overflow-hidden",
+                                                isSelected
+                                                    ? "bg-primary text-white shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] scale-105 z-10 font-bold"
+                                                    : "hover:bg-white/5 text-zinc-500 hover:text-zinc-300"
                                             )}
                                         >
-                                            <span className="text-[8px] font-black uppercase tracking-widest">{weekDays[i]}</span>
-                                            <span className="text-sm font-black italic">{date.getDate()}</span>
+                                            {isSelected && (
+                                                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
+                                            )}
+                                            <span className="text-[7px] font-black uppercase tracking-[0.2em]">{weekDays[i]}</span>
+                                            <span className="text-sm font-black italic tracking-tighter">{date.getDate()}</span>
                                         </button>
                                     );
                                 })}
@@ -268,15 +273,17 @@ export const Schedule: React.FC = () => {
                                     );
 
                                     return (
-                                        <Card key={track} className="bg-zinc-900/60 border-white/5 overflow-hidden group hover:border-primary/30 transition-all active:scale-[0.98] shadow-2xl relative">
-                                            <div className="absolute top-0 left-0 w-1 h-full bg-primary/40 group-hover:bg-primary transition-colors" />
-                                            <CardHeader className="p-4 border-b border-white/5 flex flex-row items-center justify-between bg-white/5">
-                                                <Badge className="font-black italic uppercase tracking-widest bg-primary text-white border-none">{track}</Badge>
+                                        <Card key={track} className="bg-zinc-900/40 border-white/5 overflow-hidden group hover:border-primary/50 transition-all duration-500 shadow-2xl relative">
+                                            <CardHeader className="p-4 border-b border-white/5 flex flex-row items-center justify-between bg-zinc-900/60">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                                    <span className="font-black italic uppercase tracking-widest text-[10px] text-zinc-300">{track}</span>
+                                                </div>
                                                 <div className="flex items-center gap-2">
                                                     {trackWod ? (
-                                                        <Badge variant="outline" className="text-[8px] font-black bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-2">PROGRAMMED</Badge>
+                                                        <Badge variant="outline" className="text-[7px] font-black bg-emerald-500/5 text-emerald-400 border-emerald-500/20 px-1.5 py-0 uppercase tracking-widest">ACTIVE</Badge>
                                                     ) : (
-                                                        <Badge variant="outline" className="text-[8px] font-black opacity-30 px-2 uppercase italic tracking-tighter">Empty</Badge>
+                                                        <Badge variant="outline" className="text-[7px] font-black text-zinc-600 border-zinc-800 px-1.5 py-0 uppercase tracking-widest italic">Wait</Badge>
                                                     )}
                                                 </div>
                                             </CardHeader>
@@ -299,13 +306,13 @@ export const Schedule: React.FC = () => {
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="icon"
-                                                                    className="h-8 w-8 rounded-xl bg-white/5 hover:bg-white/10 text-primary border border-white/5"
+                                                                    className="h-8 w-8 rounded-xl bg-white/5 hover:bg-primary/20 hover:text-primary text-zinc-400 border border-white/5 transition-all"
                                                                     onClick={() => {
                                                                         fetchRecentWods();
                                                                         setIsAssigningWod({ track, date: selectedViewerDate });
                                                                     }}
                                                                 >
-                                                                    <Star className="h-3.5 w-3.5" />
+                                                                    <RefreshCw className="h-3.5 w-3.5" />
                                                                 </Button>
 
                                                                 {isUnlinkingWod === trackWod.id ? (

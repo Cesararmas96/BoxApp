@@ -7,7 +7,8 @@ import {
     ChevronRight,
     Trophy,
     Star,
-    Users
+    Users,
+    Trash2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,6 +59,7 @@ export const Schedule: React.FC = () => {
     const [feedback, setFeedback] = useState({ effort: 5, fatigue: 3, satisfaction: '😀', note: '' });
     const [isAssigningWod, setIsAssigningWod] = useState<{ track: string, date: Date } | null>(null);
     const [recentWods, setRecentWods] = useState<WODSummary[]>([]);
+    const [isUnlinkingWod, setIsUnlinkingWod] = useState<string | null>(null);
     const { notification, showNotification, hideNotification } = useNotification();
 
     useEffect(() => {
@@ -131,6 +133,21 @@ export const Schedule: React.FC = () => {
 
         if (!error && data) {
             setRecentWods(data as any);
+        }
+    };
+
+    const handleUnlinkWod = async (wodId: string) => {
+        const { error } = await supabase
+            .from('wods')
+            .update({ date: null, track: null })
+            .eq('id', wodId);
+
+        if (!error) {
+            showNotification('success', 'PROGRAMMING UNLINKED');
+            fetchWods();
+            setIsUnlinkingWod(null);
+        } else {
+            showNotification('error', 'FAILED TO UNLINK: ' + error.message);
         }
     };
 
@@ -255,11 +272,13 @@ export const Schedule: React.FC = () => {
                                             <div className="absolute top-0 left-0 w-1 h-full bg-primary/40 group-hover:bg-primary transition-colors" />
                                             <CardHeader className="p-4 border-b border-white/5 flex flex-row items-center justify-between bg-white/5">
                                                 <Badge className="font-black italic uppercase tracking-widest bg-primary text-white border-none">{track}</Badge>
-                                                {trackWod ? (
-                                                    <Badge variant="outline" className="text-[8px] font-black bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-2">PROGRAMMED</Badge>
-                                                ) : (
-                                                    <Badge variant="outline" className="text-[8px] font-black opacity-30 px-2 uppercase italic tracking-tighter">Empty</Badge>
-                                                )}
+                                                <div className="flex items-center gap-2">
+                                                    {trackWod ? (
+                                                        <Badge variant="outline" className="text-[8px] font-black bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-2">PROGRAMMED</Badge>
+                                                    ) : (
+                                                        <Badge variant="outline" className="text-[8px] font-black opacity-30 px-2 uppercase italic tracking-tighter">Empty</Badge>
+                                                    )}
+                                                </div>
                                             </CardHeader>
                                             <CardContent className="p-5 min-h-[140px] flex flex-col justify-center">
                                                 {trackWod ? (
@@ -267,13 +286,59 @@ export const Schedule: React.FC = () => {
                                                         <h3 className="text-sm font-black uppercase text-white leading-tight line-clamp-2 tracking-tight italic">
                                                             {trackWod.title}
                                                         </h3>
-                                                        <Button
-                                                            variant="link"
-                                                            className="p-0 h-auto text-[10px] text-primary font-black uppercase tracking-widest hover:no-underline hover:text-primary/80 transition-colors flex items-center gap-1"
-                                                            onClick={() => setSelectedWod(trackWod)}
-                                                        >
-                                                            Open Full Workout <ChevronRight className="h-3 w-3" />
-                                                        </Button>
+                                                        <div className="flex items-center justify-between pt-2">
+                                                            <Button
+                                                                variant="link"
+                                                                className="p-0 h-auto text-[10px] text-primary font-black uppercase tracking-widest hover:no-underline hover:text-primary/80 transition-colors flex items-center gap-1"
+                                                                onClick={() => setSelectedWod(trackWod)}
+                                                            >
+                                                                View Workout <ChevronRight className="h-3 w-3" />
+                                                            </Button>
+
+                                                            <div className="flex items-center gap-2">
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-8 w-8 rounded-xl bg-white/5 hover:bg-white/10 text-primary border border-white/5"
+                                                                    onClick={() => {
+                                                                        fetchRecentWods();
+                                                                        setIsAssigningWod({ track, date: selectedViewerDate });
+                                                                    }}
+                                                                >
+                                                                    <Star className="h-3.5 w-3.5" />
+                                                                </Button>
+
+                                                                {isUnlinkingWod === trackWod.id ? (
+                                                                    <div className="flex items-center gap-1">
+                                                                        <Button
+                                                                            variant="destructive"
+                                                                            size="sm"
+                                                                            className="h-8 px-2 text-[8px] font-black uppercase"
+                                                                            onClick={() => handleUnlinkWod(trackWod.id)}
+                                                                        >
+                                                                            CONFIRM
+                                                                        </Button>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="h-8 w-8 rounded-xl"
+                                                                            onClick={() => setIsUnlinkingWod(null)}
+                                                                        >
+                                                                            <Plus className="h-3 w-3 rotate-45" />
+                                                                        </Button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-8 w-8 rounded-xl bg-white/5 hover:bg-red-500/20 hover:text-red-500 text-muted-foreground border border-white/5"
+                                                                        onClick={() => setIsUnlinkingWod(trackWod.id)}
+                                                                    >
+                                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                                    </Button>
+                                                                )}
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 ) : (
                                                     <div className="text-center space-y-4">

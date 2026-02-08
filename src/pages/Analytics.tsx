@@ -105,7 +105,7 @@ export const Analytics: React.FC = () => {
         });
     };
 
-    const handleAlertCoach = (athlete: any, type: 'inactivity' | 'payment') => {
+    const handleAlertCoach = async (athlete: any, type: 'inactivity' | 'payment') => {
         const message = type === 'inactivity'
             ? t('analytics.alert_message_inactivity', { name: athlete.first_name, defaultValue: `Coach alert sent for ${athlete.first_name}: Inactive for +10 days.` })
             : t('analytics.alert_message_payment', { name: athlete.first_name, amount: athlete.totalDebt, defaultValue: `Coach alert sent for ${athlete.first_name}: Outstanding debt of $${athlete.totalDebt}.` });

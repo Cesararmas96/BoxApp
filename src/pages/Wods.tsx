@@ -421,14 +421,23 @@ export const Wods: React.FC = () => {
 
                 <div className="flex gap-2">
                     <Dialog open={showEditor} onOpenChange={(open) => {
+                        if (open && !editingWodId) {
+                            const now = new Date();
+                            const defaultDate = new Date(now);
+                            if (now.getHours() >= 16) defaultDate.setDate(now.getDate() + 1);
+                            setNewWOD(prev => ({ ...prev, date: defaultDate.toISOString().split('T')[0] }));
+                        }
                         setShowEditor(open);
                         if (!open) {
                             setEditingWodId(null);
+                            const now = new Date();
+                            const defaultDate = new Date(now);
+                            if (now.getHours() >= 16) defaultDate.setDate(now.getDate() + 1);
                             setNewWOD({
                                 title: '', metcon: '', stimulus: '', scaling_options: '',
                                 scaling_beginner: '', scaling_intermediate: '', scaling_advanced: '',
                                 scaling_injured: '', modalities: [], lesson_plan: [], track: 'CrossFit',
-                                date: new Date().toISOString().split('T')[0]
+                                date: defaultDate.toISOString().split('T')[0]
                             });
                             setSessionBlocks([]);
                         }
@@ -454,6 +463,34 @@ export const Wods: React.FC = () => {
                             </div>
 
                             <div className="flex-1 overflow-y-auto p-10 space-y-12">
+                                {/* Analyzer inside Editor */}
+                                {newWOD.track === 'CrossFit' && (
+                                    <div className="p-6 rounded-[2rem] bg-primary/[0.03] border border-primary/10 space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Target className="h-4 w-4 text-primary" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-primary">{t('wods.bias_checker')}</span>
+                                            </div>
+                                            <span className="text-[9px] font-bold text-muted-foreground uppercase">{t('wods.bias_subtitle')}</span>
+                                        </div>
+                                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                            {Object.entries(last7DaysBias).map(([key, count]) => (
+                                                <div key={key} className="space-y-1.5">
+                                                    <div className="flex justify-between items-end">
+                                                        <span className="text-[8px] font-black uppercase tracking-widest opacity-50">{key}</span>
+                                                        <span className="text-[10px] font-black italic">{count}/7</span>
+                                                    </div>
+                                                    <div className="h-1 w-full bg-black/5 dark:bg-white/5 rounded-full overflow-hidden">
+                                                        <div
+                                                            className="h-full bg-primary transition-all duration-1000"
+                                                            style={{ width: `${(count / 7) * 100}%` }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="space-y-3">
                                         <Label className="uppercase text-[10px] font-black tracking-widest text-primary px-1">{t('wods.track')}</Label>
@@ -634,76 +671,80 @@ export const Wods: React.FC = () => {
                         </Button>
                     </div>
                 </div>
-            </div>
+            </div >
 
             {/* Month Navigator */}
-            {availableMonths.length > 1 && (
-                <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-hide">
-                    <Button
-                        variant={selectedMonth === 'all' ? "secondary" : "ghost"}
-                        onClick={() => {
-                            setSelectedMonth('all');
-                            setSelectedDate('');
-                        }}
-                        className="h-8 rounded-full px-5 text-[9px] font-black uppercase tracking-widest whitespace-nowrap border border-white/5"
-                    >
-                        {t('common.all')}
-                    </Button>
-                    {availableMonths.map(month => {
-                        const [year, monthNum] = month.split('-');
-                        const date = new Date(parseInt(year), parseInt(monthNum) - 1);
-                        const monthName = date.toLocaleDateString(undefined, { month: 'short' });
-                        return (
-                            <Button
-                                key={month}
-                                variant={selectedMonth === month ? "secondary" : "ghost"}
-                                onClick={() => {
-                                    setSelectedMonth(month);
-                                    setSelectedDate('');
-                                }}
-                                className="h-8 rounded-full px-5 text-[9px] font-black uppercase tracking-widest whitespace-nowrap border border-white/5"
-                            >
-                                {monthName} {year}
-                            </Button>
-                        );
-                    })}
-                </div>
-            )}
+            {
+                availableMonths.length > 1 && (
+                    <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-hide">
+                        <Button
+                            variant={selectedMonth === 'all' ? "secondary" : "ghost"}
+                            onClick={() => {
+                                setSelectedMonth('all');
+                                setSelectedDate('');
+                            }}
+                            className="h-8 rounded-full px-5 text-[9px] font-black uppercase tracking-widest whitespace-nowrap border border-white/5"
+                        >
+                            {t('common.all')}
+                        </Button>
+                        {availableMonths.map(month => {
+                            const [year, monthNum] = month.split('-');
+                            const date = new Date(parseInt(year), parseInt(monthNum) - 1);
+                            const monthName = date.toLocaleDateString(undefined, { month: 'short' });
+                            return (
+                                <Button
+                                    key={month}
+                                    variant={selectedMonth === month ? "secondary" : "ghost"}
+                                    onClick={() => {
+                                        setSelectedMonth(month);
+                                        setSelectedDate('');
+                                    }}
+                                    className="h-8 rounded-full px-5 text-[9px] font-black uppercase tracking-widest whitespace-nowrap border border-white/5"
+                                >
+                                    {monthName} {year}
+                                </Button>
+                            );
+                        })}
+                    </div>
+                )
+            }
 
             {/* Bias Dashboard */}
-            {(activeTrack === 'all' || activeTrack === 'CrossFit') && (
-                <Card className="border-white/10 glass rounded-[2rem] overflow-hidden shadow-2xl">
-                    <CardHeader className="py-6 border-b border-white/5 bg-primary/10">
-                        <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-                                <Target className="h-6 w-6 text-primary-foreground" />
-                            </div>
-                            <div>
-                                <CardTitle className="text-xl font-black italic uppercase tracking-tighter">{t('wods.bias_checker')}</CardTitle>
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-primary/60">{t('wods.bias_subtitle', { defaultValue: '7-DAY PROGRAMMING ANALYSIS' })}</p>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="py-4">
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                            {Object.entries(last7DaysBias).map(([key, count]) => (
-                                <div key={key} className="space-y-2">
-                                    <div className="flex justify-between items-end">
-                                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">{key}</span>
-                                        <span className="text-xs font-black italic text-primary">{count} <span className="text-[9px] opacity-40">/ 7</span></span>
-                                    </div>
-                                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
-                                        <div
-                                            className="h-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)] transition-all duration-1000"
-                                            style={{ width: `${(count / 7) * 100}%` }}
-                                        />
-                                    </div>
+            {
+                (activeTrack === 'all' || activeTrack === 'CrossFit') && (
+                    <Card className="border-white/10 glass rounded-[2rem] overflow-hidden shadow-2xl">
+                        <CardHeader className="py-6 border-b border-white/5 bg-primary/10">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                                    <Target className="h-6 w-6 text-primary-foreground" />
                                 </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
+                                <div>
+                                    <CardTitle className="text-xl font-black italic uppercase tracking-tighter">{t('wods.bias_checker')}</CardTitle>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-primary/60">{t('wods.bias_subtitle', { defaultValue: '7-DAY PROGRAMMING ANALYSIS' })}</p>
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="py-4">
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                                {Object.entries(last7DaysBias).map(([key, count]) => (
+                                    <div key={key} className="space-y-2">
+                                        <div className="flex justify-between items-end">
+                                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">{key}</span>
+                                            <span className="text-xs font-black italic text-primary">{count} <span className="text-[9px] opacity-40">/ 7</span></span>
+                                        </div>
+                                        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                                            <div
+                                                className="h-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)] transition-all duration-1000"
+                                                style={{ width: `${(count / 7) * 100}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )
+            }
 
             {/* Board Feed - Grouped by Date */}
             <div className="space-y-16">
@@ -947,73 +988,77 @@ export const Wods: React.FC = () => {
             </div>
 
             {/* Pagination Controls */}
-            {totalPages > 1 && (
-                <div className="flex items-center justify-between gap-4 mt-12 bg-white/5 p-4 rounded-[2rem] border border-white/5">
-                    <div className="flex items-center gap-4">
-                        <Button
-                            variant="ghost"
-                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                            disabled={currentPage === 1}
-                            className="h-12 w-12 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 disabled:opacity-20 flex items-center justify-center p-0"
-                        >
-                            <ChevronLeft className="h-6 w-6" />
-                        </Button>
-                        <div className="flex items-center gap-2">
-                            {[...Array(totalPages)].map((_, i) => {
-                                const pageNumber = i + 1;
-                                // Simple logic to show current, first, last, and pages around current
-                                if (
-                                    pageNumber === 1 ||
-                                    pageNumber === totalPages ||
-                                    Math.abs(pageNumber - currentPage) <= 1
-                                ) {
-                                    return (
-                                        <Button
-                                            key={pageNumber}
-                                            variant={currentPage === pageNumber ? "default" : "ghost"}
-                                            onClick={() => setCurrentPage(pageNumber)}
-                                            className={cn(
-                                                "h-12 w-12 rounded-2xl font-black italic",
-                                                currentPage === pageNumber ? "shadow-lg shadow-primary/20" : "bg-white/5 hover:bg-white/10"
-                                            )}
-                                        >
-                                            {pageNumber}
-                                        </Button>
-                                    );
-                                } else if (
-                                    pageNumber === currentPage - 2 ||
-                                    pageNumber === currentPage + 2
-                                ) {
-                                    return <span key={pageNumber} className="text-muted-foreground">...</span>;
-                                }
-                                return null;
-                            })}
+            {
+                totalPages > 1 && (
+                    <div className="flex items-center justify-between gap-4 mt-12 bg-white/5 p-4 rounded-[2rem] border border-white/5">
+                        <div className="flex items-center gap-4">
+                            <Button
+                                variant="ghost"
+                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                disabled={currentPage === 1}
+                                className="h-12 w-12 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 disabled:opacity-20 flex items-center justify-center p-0"
+                            >
+                                <ChevronLeft className="h-6 w-6" />
+                            </Button>
+                            <div className="flex items-center gap-2">
+                                {[...Array(totalPages)].map((_, i) => {
+                                    const pageNumber = i + 1;
+                                    // Simple logic to show current, first, last, and pages around current
+                                    if (
+                                        pageNumber === 1 ||
+                                        pageNumber === totalPages ||
+                                        Math.abs(pageNumber - currentPage) <= 1
+                                    ) {
+                                        return (
+                                            <Button
+                                                key={pageNumber}
+                                                variant={currentPage === pageNumber ? "default" : "ghost"}
+                                                onClick={() => setCurrentPage(pageNumber)}
+                                                className={cn(
+                                                    "h-12 w-12 rounded-2xl font-black italic",
+                                                    currentPage === pageNumber ? "shadow-lg shadow-primary/20" : "bg-white/5 hover:bg-white/10"
+                                                )}
+                                            >
+                                                {pageNumber}
+                                            </Button>
+                                        );
+                                    } else if (
+                                        pageNumber === currentPage - 2 ||
+                                        pageNumber === currentPage + 2
+                                    ) {
+                                        return <span key={pageNumber} className="text-muted-foreground">...</span>;
+                                    }
+                                    return null;
+                                })}
+                            </div>
+                            <Button
+                                variant="ghost"
+                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                disabled={currentPage === totalPages}
+                                className="h-12 w-12 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 disabled:opacity-20 flex items-center justify-center p-0"
+                            >
+                                <ChevronRight className="h-6 w-6" />
+                            </Button>
                         </div>
-                        <Button
-                            variant="ghost"
-                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                            disabled={currentPage === totalPages}
-                            className="h-12 w-12 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 disabled:opacity-20 flex items-center justify-center p-0"
-                        >
-                            <ChevronRight className="h-6 w-6" />
-                        </Button>
+                        <div className="hidden md:block px-6">
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">
+                                Showing <span className="text-primary">{Math.min(filteredWods.length, (currentPage - 1) * itemsPerPage + 1)}-{Math.min(filteredWods.length, currentPage * itemsPerPage)}</span> of {filteredWods.length} sessions
+                            </p>
+                        </div>
                     </div>
-                    <div className="hidden md:block px-6">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">
-                            Showing <span className="text-primary">{Math.min(filteredWods.length, (currentPage - 1) * itemsPerPage + 1)}-{Math.min(filteredWods.length, currentPage * itemsPerPage)}</span> of {filteredWods.length} sessions
-                        </p>
-                    </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Premium Toast Notification System */}
-            {notification && (
-                <Toast
-                    type={notification.type}
-                    message={notification.message}
-                    onClose={hideNotification}
-                />
-            )}
+            {
+                notification && (
+                    <Toast
+                        type={notification.type}
+                        message={notification.message}
+                        onClose={hideNotification}
+                    />
+                )
+            }
 
             {/* Premium Confirmation Dialog */}
             <ConfirmationDialog
@@ -1025,6 +1070,6 @@ export const Wods: React.FC = () => {
                 variant={confirmState.variant}
                 icon={confirmState.icon}
             />
-        </div>
+        </div >
     );
 };

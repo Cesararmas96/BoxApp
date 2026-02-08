@@ -34,6 +34,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from '@/lib/utils';
 import { useNotification, useLanguage } from '@/hooks';
 import { Toast } from '@/components/ui/toast-custom';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';

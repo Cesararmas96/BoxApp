@@ -27,7 +27,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export const Dashboard: React.FC = () => {
     const { t } = useLanguage();
-    const { userProfile } = useAuth();
+    const { userProfile, currentBox } = useAuth();
     const [stats, setStats] = useState({
         members: 0,
         activeWOD: null as any,
@@ -48,18 +48,21 @@ export const Dashboard: React.FC = () => {
             // 1. Members Count
             const { count: membersCount } = await supabase
                 .from('profiles')
-                .select('*', { count: 'exact', head: true });
+                .select('*', { count: 'exact', head: true })
+                .eq('box_id', currentBox?.id || '');
 
             // 2. Pending Leads Count
             const { count: leadsCount } = await supabase
                 .from('leads')
                 .select('*', { count: 'exact', head: true })
+                .eq('box_id', currentBox?.id || '')
                 .eq('status', 'new');
 
             // 3. Today's WOD (CrossFit track preferred)
             const { data: wodData } = await supabase
                 .from('wods')
                 .select('*')
+                .eq('box_id', currentBox?.id || '')
                 .eq('date', today)
                 .order('track', { ascending: true })
                 .limit(1);
@@ -71,6 +74,7 @@ export const Dashboard: React.FC = () => {
             const { data: bookingsData } = await supabase
                 .from('bookings')
                 .select('status')
+                .eq('box_id', currentBox?.id || '')
                 .gt('created_at', thirtyDaysAgo.toISOString());
 
             const totalBookings = bookingsData?.length || 0;
@@ -80,7 +84,14 @@ export const Dashboard: React.FC = () => {
             // 5. Recent Results
             const { data: resultsData } = await supabase
                 .from('results')
-                .select('id, result, rx, wods!wod_id(title), profiles!athlete_id(first_name, last_name)')
+                .select(`
+                    id, 
+                    result, 
+                    rx, 
+                    wods (title), 
+                    profiles (first_name, last_name)
+                `)
+                .eq('box_id', currentBox?.id || '')
                 .order('created_at', { ascending: false })
                 .limit(3);
 

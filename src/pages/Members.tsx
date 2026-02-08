@@ -96,6 +96,14 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
         e.preventDefault();
         setLoading(true);
 
+        // Verify session before invoking
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            alert('Sesión expirada. Por favor, inicia sesión de nuevo.');
+            setLoading(false);
+            return;
+        }
+
         // Call the Edge Function to create member and auth account securely
         const { data, error } = await supabase.functions.invoke('create-member', {
             body: {
@@ -105,15 +113,12 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                 last_name: newMember.lastName,
                 role_id: newMember.roleId,
                 box_id: currentBox?.id
-            },
-            headers: {
-                Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-                apikey: import.meta.env.VITE_SUPABASE_ANON_KEY
             }
         });
 
         if (error) {
-            showNotification('error', 'ERROR ADDING MEMBER: ' + error.message.toUpperCase());
+            console.error('Edge Function error:', error);
+            showNotification('error', 'ERROR ADDING MEMBER: ' + (error.message || 'Error en el servidor al crear el miembro').toUpperCase());
         } else {
             showNotification('success', 'MEMBER ADDED SUCCESSFULLY');
             setOpen(false);

@@ -106,28 +106,24 @@ export const Analytics: React.FC = () => {
     };
 
     const handleAlertCoach = async (athlete: any, type: 'inactivity' | 'payment') => {
-        const message = type === 'inactivity'
-            ? t('analytics.alert_message_inactivity', { name: athlete.first_name, defaultValue: `Coach alert sent for ${athlete.first_name}: Inactive for +10 days.` })
-            : t('analytics.alert_message_payment', { name: athlete.first_name, amount: athlete.totalDebt, defaultValue: `Coach alert sent for ${athlete.first_name}: Outstanding debt of $${athlete.totalDebt}.` });
+        // Verify session before invoking
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            console.error('Cant trigger coach alert: No active session');
+            showNotification('error', 'Failed to send alert: No active session.');
+            return;
+        }
 
-        showNotification('success', message);
-
-        // Send real alert via Supabase Edge Function
         supabase.functions.invoke('coach-alerts', {
             body: {
-                athleteId: athlete.id,
-                athleteName: athlete.first_name,
-                type: type,
-                boxId: athlete.box_id,
-                details: message
-            },
-            headers: {
-                Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-                apikey: import.meta.env.VITE_SUPABASE_ANON_KEY
+                athlete_id: athlete.id,
+                athlete_name: `${athlete.first_name} ${athlete.last_name}`,
+                alert_type: type,
+                box_id: currentBox?.id
             }
         }).catch(err => console.error('Failed to trigger coach alert:', err));
 
-        console.log(`[AUTOMATION] Alerting coach about ${athlete.id} (${type})`);
+        showNotification('success', 'COACH ALERTED SUCCESSFULLY');
     };
 
     const PerformanceCard = ({ title, value, label, trend, icon: Icon, color }: any) => (

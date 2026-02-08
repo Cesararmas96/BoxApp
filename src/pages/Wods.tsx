@@ -16,7 +16,9 @@ import {
     Shield,
     Copy,
     Pencil,
-    Check
+    Check,
+    ChevronLeft,
+    ChevronRight,
 } from 'lucide-react';
 import { WODDesigner, SessionBlock, LessonBlock } from '@/components/WODDesigner';
 import { Button } from '@/components/ui/button';
@@ -81,6 +83,8 @@ export const Wods: React.FC = () => {
     const [editingWodId, setEditingWodId] = useState<string | null>(null);
     const [isCopying, setIsCopying] = useState<string | null>(null);
     const [activeTrack, setActiveTrack] = useState<string>('all');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 6;
 
     // UI State for Editor
     const [newWOD, setNewWOD] = useState({
@@ -327,6 +331,13 @@ export const Wods: React.FC = () => {
         return items;
     }, [wods, activeTrack, searchQuery]);
 
+    const paginatedWods = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return filteredWods.slice(startIndex, startIndex + itemsPerPage);
+    }, [filteredWods, currentPage, itemsPerPage]);
+
+    const totalPages = Math.ceil(filteredWods.length / itemsPerPage);
+
     const last7DaysBias = useMemo(() => {
         const counts = { weightlifting: 0, gymnastics: 0, mono: 0, metcon: 0 };
         const cf = wods.filter(w => w.track === 'CrossFit').slice(0, 7);
@@ -558,7 +569,7 @@ export const Wods: React.FC = () => {
                         </div>
                     </Card>
                 ) : (
-                    filteredWods.map(wod => (
+                    paginatedWods.map(wod => (
                         <Card key={wod.id} className="border-white/5 glass rounded-[2.5rem] overflow-hidden group hover:border-primary/30 transition-all duration-500 shadow-xl hover:shadow-primary/5">
                             <CardHeader className="flex flex-col md:flex-row md:items-start justify-between gap-6 p-10 border-b border-white/5 bg-white/5">
                                 <div className="space-y-4">
@@ -711,6 +722,66 @@ export const Wods: React.FC = () => {
                     ))
                 )}
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between gap-4 mt-12 bg-white/5 p-4 rounded-[2rem] border border-white/5">
+                    <div className="flex items-center gap-4">
+                        <Button
+                            variant="ghost"
+                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            disabled={currentPage === 1}
+                            className="h-12 w-12 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 disabled:opacity-20 flex items-center justify-center p-0"
+                        >
+                            <ChevronLeft className="h-6 w-6" />
+                        </Button>
+                        <div className="flex items-center gap-2">
+                            {[...Array(totalPages)].map((_, i) => {
+                                const pageNumber = i + 1;
+                                // Simple logic to show current, first, last, and pages around current
+                                if (
+                                    pageNumber === 1 ||
+                                    pageNumber === totalPages ||
+                                    Math.abs(pageNumber - currentPage) <= 1
+                                ) {
+                                    return (
+                                        <Button
+                                            key={pageNumber}
+                                            variant={currentPage === pageNumber ? "default" : "ghost"}
+                                            onClick={() => setCurrentPage(pageNumber)}
+                                            className={cn(
+                                                "h-12 w-12 rounded-2xl font-black italic",
+                                                currentPage === pageNumber ? "shadow-lg shadow-primary/20" : "bg-white/5 hover:bg-white/10"
+                                            )}
+                                        >
+                                            {pageNumber}
+                                        </Button>
+                                    );
+                                } else if (
+                                    pageNumber === currentPage - 2 ||
+                                    pageNumber === currentPage + 2
+                                ) {
+                                    return <span key={pageNumber} className="text-muted-foreground">...</span>;
+                                }
+                                return null;
+                            })}
+                        </div>
+                        <Button
+                            variant="ghost"
+                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            disabled={currentPage === totalPages}
+                            className="h-12 w-12 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 disabled:opacity-20 flex items-center justify-center p-0"
+                        >
+                            <ChevronRight className="h-6 w-6" />
+                        </Button>
+                    </div>
+                    <div className="hidden md:block px-6">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">
+                            Showing <span className="text-primary">{Math.min(filteredWods.length, (currentPage - 1) * itemsPerPage + 1)}-{Math.min(filteredWods.length, currentPage * itemsPerPage)}</span> of {filteredWods.length} sessions
+                        </p>
+                    </div>
+                </div>
+            )}
 
             {/* Premium Toast Notification System */}
             {notification && (

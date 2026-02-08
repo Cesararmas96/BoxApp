@@ -8,11 +8,6 @@ import {
     Clock,
     Flame,
     Calendar,
-    Award,
-    ChevronRight,
-    Search,
-    Dumbbell,
-    Target
 } from 'lucide-react';
 import {
     Card,
@@ -30,10 +25,6 @@ import { CoachDashboard } from '@/components/CoachDashboard';
 import { useLanguage } from '@/hooks';
 import { useAuth } from '@/contexts/AuthContext';
 
-interface DashboardProps {
-
-}
-
 export const Dashboard: React.FC = () => {
     const { t } = useLanguage();
     const { userProfile } = useAuth();
@@ -45,14 +36,12 @@ export const Dashboard: React.FC = () => {
         totalBookings: 0,
         recentResults: [] as any[]
     });
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchStats();
     }, []);
 
     const fetchStats = async () => {
-        setLoading(true);
         try {
             const today = new Date().toISOString().split('T')[0];
 
@@ -105,8 +94,6 @@ export const Dashboard: React.FC = () => {
             });
         } catch (error) {
             console.error('Error fetching dashboard stats:', error);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -116,7 +103,7 @@ export const Dashboard: React.FC = () => {
             <div className="space-y-8 animate-premium-in">
                 <div className="flex flex-col gap-1">
                     <h1 className="text-5xl font-black italic tracking-tighter uppercase text-primary text-glow leading-none">{t('dashboard.athlete_hub')}</h1>
-                    <p className="text-muted-foreground font-medium uppercase text-[10px] tracking-[0.3em] opacity-60">{t('dashboard.welcome_back', { name: userProfile.full_name || t('dashboard.athlete_generic') })}</p>
+                    <p className="text-muted-foreground font-medium uppercase text-[10px] tracking-[0.3em] opacity-60">{t('dashboard.welcome_back', { name: `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim() || t('dashboard.athlete_generic') })}</p>
                 </div>
                 <AthleteDashboard />
             </div>
@@ -234,13 +221,13 @@ export const Dashboard: React.FC = () => {
                         {stats.recentResults?.map((res, i) => (
                             <div key={res.id || i} className="flex items-center justify-between group p-6 border-b border-primary/5 last:border-0 hover:bg-primary/[0.02] transition-colors">
                                 <div className="flex items-center gap-5">
-                                    <div className="h-12 w-12 rounded-2xl glass flex items-center justify-center font-black italic group-hover:border-primary/40 transition-all group-hover:scale-110">
+                                    <div className="h-12 w-12 rounded-2xl glass flex items-center justify-center font-black italic group-hover:border-primary/40 transition-all">
                                         <Trophy className="h-5 w-5 group-hover:text-primary transition-colors" />
                                     </div>
                                     <div className="space-y-1">
                                         <p className="font-black text-base uppercase tracking-tight">{res.wods?.title || 'Unknown WOD'} <span className="text-primary italic ml-2">{res.result}</span></p>
                                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">
-                                            {res.profiles?.first_name} {res.profiles?.last_name} • <span className="text-primary/70">{res.rx ? t('dashboard.rx') : 'Scaled'}</span>
+                                            {res.profiles?.first_name || ''} {res.profiles?.last_name || ''} • <span className="text-primary/70">{res.rx ? t('dashboard.rx') : 'Scaled'}</span>
                                         </p>
                                     </div>
                                 </div>

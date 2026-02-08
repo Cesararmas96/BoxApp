@@ -39,7 +39,7 @@ export const Analytics: React.FC = () => {
 
     const [atRiskAthletes, setAtRiskAthletes] = useState<any[]>([]);
     const [unpaidAthletes, setUnpaidAthletes] = useState<any[]>([]);
-    const { showNotification } = useNotification();
+    const { notification, showNotification, hideNotification } = useNotification();
 
     useEffect(() => {
         fetchStats();

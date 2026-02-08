@@ -74,7 +74,7 @@ export const Profile: React.FC = () => {
                     last_name: profile.last_name,
                     avatar_url: profile.avatar_url
                 })
-                .eq('id', user?.id);
+                .eq('id', user?.id || '');
 
             if (errorResult) throw errorResult;
 

@@ -60,6 +60,8 @@ export const AuditLogs: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     useEffect(() => {
         fetchLogs();
@@ -75,7 +77,7 @@ export const AuditLogs: React.FC = () => {
             .limit(100);
 
         if (!error && data) {
-            setLogs(data);
+            setLogs(data as unknown as AuditLog[]);
         }
         setLoading(false);
     };
@@ -98,6 +100,13 @@ export const AuditLogs: React.FC = () => {
         log.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (log.profiles?.first_name + ' ' + log.profiles?.last_name).toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    const paginatedLogs = filteredLogs.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
+    const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
 
     return (
         <div className="space-y-6">
@@ -158,7 +167,7 @@ export const AuditLogs: React.FC = () => {
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                filteredLogs.map((log) => (
+                                paginatedLogs.map((log) => (
                                     <React.Fragment key={log.id}>
                                         <TableRow
                                             className="hover:bg-muted/30 transition-colors cursor-pointer"
@@ -227,6 +236,63 @@ export const AuditLogs: React.FC = () => {
                         </TableBody>
                     </Table>
                 </CardContent>
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-between gap-4 p-4 border-t bg-muted/10">
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                disabled={currentPage === 1}
+                                className="h-9 px-3 font-bold uppercase text-[10px] tracking-widest gap-2"
+                            >
+                                <ChevronDown className="h-4 w-4 rotate-90" />
+                                {t('common.previous', { defaultValue: 'PREVIOUS' })}
+                            </Button>
+                            <div className="flex items-center gap-1">
+                                {[...Array(totalPages)].map((_, i) => {
+                                    const pageNumber = i + 1;
+                                    if (
+                                        pageNumber === 1 ||
+                                        pageNumber === totalPages ||
+                                        Math.abs(pageNumber - currentPage) <= 1
+                                    ) {
+                                        return (
+                                            <Button
+                                                key={pageNumber}
+                                                variant={currentPage === pageNumber ? "default" : "outline"}
+                                                size="sm"
+                                                onClick={() => setCurrentPage(pageNumber)}
+                                                className="h-9 w-9 font-bold text-[10px]"
+                                            >
+                                                {pageNumber}
+                                            </Button>
+                                        );
+                                    } else if (
+                                        pageNumber === currentPage - 2 ||
+                                        pageNumber === currentPage + 2
+                                    ) {
+                                        return <span key={pageNumber} className="text-muted-foreground">...</span>;
+                                    }
+                                    return null;
+                                })}
+                            </div>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                disabled={currentPage === totalPages}
+                                className="h-9 px-3 font-bold uppercase text-[10px] tracking-widest gap-2"
+                            >
+                                {t('common.next', { defaultValue: 'NEXT' })}
+                                <ChevronDown className="h-4 w-4 -rotate-90" />
+                            </Button>
+                        </div>
+                        <div className="hidden sm:block text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                            {t('common.showing', { defaultValue: 'SHOWING' })} <span className="text-primary">{Math.min(filteredLogs.length, (currentPage - 1) * itemsPerPage + 1)}-{Math.min(filteredLogs.length, currentPage * itemsPerPage)}</span> {t('common.of', { defaultValue: 'OF' })} {filteredLogs.length} {t('audit.events', { defaultValue: 'EVENTS' })}
+                        </div>
+                    </div>
+                )}
             </Card>
         </div>
     );

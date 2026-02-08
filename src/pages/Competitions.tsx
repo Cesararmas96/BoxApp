@@ -14,7 +14,8 @@ import {
     Users,
     BarChart,
     ListChecks,
-    Search
+    Search,
+    ChevronLeft
 } from 'lucide-react';
 import {
     Select,
@@ -53,6 +54,42 @@ interface Competition {
     created_at?: string | null;
 }
 
+interface Participant {
+    id: string;
+    competition_id: string | null;
+    user_id: string | null;
+    status: string | null;
+    division: string | null;
+    athlete?: {
+        first_name: string | null;
+        last_name: string | null;
+        email: string | null;
+        avatar_url: string | null;
+    };
+}
+
+interface CompetitionEvent {
+    id: string;
+    competition_id: string | null;
+    name: string;
+    description: string | null;
+    scoring_type: string | null;
+    order_index: number | null;
+}
+
+interface CompetitionJudge {
+    id: string;
+    competition_id: string | null;
+    user_id: string | null;
+    profile?: {
+        id: string;
+        first_name: string | null;
+        last_name: string | null;
+        email: string | null;
+        avatar_url: string | null;
+    };
+}
+
 export const Competitions: React.FC = () => {
     const { t } = useLanguage();
     const { currentBox } = useAuth();
@@ -69,16 +106,18 @@ export const Competitions: React.FC = () => {
 
     const [selectedComp, setSelectedComp] = useState<Competition | null>(null);
     const [athletes, setAthletes] = useState<any[]>([]);
-    const [participants, setParticipants] = useState<any[]>([]);
-    const [events, setEvents] = useState<any[]>([]);
+    const [participants, setParticipants] = useState<Participant[]>([]);
+    const [events, setEvents] = useState<CompetitionEvent[]>([]);
     const [availableWods, setAvailableWods] = useState<any[]>([]);
     const [searchAthlete, setSearchAthlete] = useState('');
     const [isManageOpen, setIsManageOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('participants');
-    const [judges, setJudges] = useState<any[]>([]);
+    const [judges, setJudges] = useState<CompetitionJudge[]>([]);
     const [staffMembers, setStaffMembers] = useState<any[]>([]);
     const [newEventName, setNewEventName] = useState('');
     const [selectedWodId, setSelectedWodId] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 6;
 
     useEffect(() => {
         fetchCompetitions();
@@ -123,7 +162,7 @@ export const Competitions: React.FC = () => {
             .select('*, athlete:profiles(*)')
             .eq('competition_id', compId);
 
-        if (!error && data) setParticipants(data);
+        if (!error && data) setParticipants(data as unknown as Participant[]);
     };
 
     const fetchEvents = async (compId: string) => {
@@ -133,7 +172,7 @@ export const Competitions: React.FC = () => {
             .eq('competition_id', compId)
             .order('order_index', { ascending: true });
 
-        if (!error && data) setEvents(data);
+        if (!error && data) setEvents(data as unknown as CompetitionEvent[]);
     };
 
     const fetchJudges = async (compId: string) => {
@@ -142,7 +181,7 @@ export const Competitions: React.FC = () => {
             .select('*, profile:profiles(*)')
             .eq('competition_id', compId);
 
-        if (!error && data) setJudges(data);
+        if (!error && data) setJudges(data as unknown as CompetitionJudge[]);
     };
 
     const handleManageCompetition = (comp: Competition, tab: string = 'participants') => {
@@ -279,6 +318,18 @@ export const Competitions: React.FC = () => {
         });
     };
 
+    const filteredCompetitions = (status: string) =>
+        competitions.filter(c => c.status === status);
+
+    const getPaginatedCompetitions = (status: string) => {
+        const filtered = filteredCompetitions(status);
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return filtered.slice(startIndex, startIndex + itemsPerPage);
+    };
+
+    const getTotalPages = (status: string) =>
+        Math.ceil(filteredCompetitions(status).length / itemsPerPage);
+
     const fetchCompetitions = async () => {
         setLoading(true);
         const { data, error } = await supabase
@@ -393,87 +444,115 @@ export const Competitions: React.FC = () => {
                 </Dialog>
             </header>
 
-            <Tabs defaultValue="active" className="w-full">
+            <Tabs defaultValue="active" className="w-full" onValueChange={() => setCurrentPage(1)}>
                 <TabsList className="bg-transparent border-b rounded-none h-12 p-0 gap-8">
                     <TabsTrigger value="active" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none h-full px-0 font-black uppercase text-[10px] tracking-widest">{t('competitions.active_tab')}</TabsTrigger>
-                    <TabsTrigger value="past" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none h-full px-0 font-black uppercase text-[10px] tracking-widest">{t('competitions.past_tab')}</TabsTrigger>
+                    <TabsTrigger value="scheduled" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none h-full px-0 font-black uppercase text-[10px] tracking-widest">{t('competitions.scheduled_tab', { defaultValue: 'Scheduled' })}</TabsTrigger>
+                    <TabsTrigger value="finished" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none h-full px-0 font-black uppercase text-[10px] tracking-widest">{t('competitions.past_tab')}</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="active" className="mt-10">
-                    {loading && competitions.length === 0 ? (
-                        <div className="py-20 text-center text-muted-foreground animate-pulse font-black uppercase tracking-widest text-xs">{t('common.loading')}</div>
-                    ) : competitions.length === 0 ? (
-                        <Card className="border-dashed border-2 bg-primary/5 rounded-[2.5rem]">
-                            <CardContent className="py-24 text-center">
-                                <Trophy className="h-20 w-20 mx-auto text-primary/20 mb-6" />
-                                <h3 className="text-2xl font-black italic uppercase tracking-tighter mb-2">{t('competitions.no_active')}</h3>
-                                <p className="text-muted-foreground text-sm mb-8 max-w-xs mx-auto">{t('competitions.start_first')}</p>
-                                <Button onClick={() => setIsCreateOpen(true)} className="rounded-xl px-8 h-12 font-black uppercase tracking-widest text-xs">{t('competitions.create_first')}</Button>
-                            </CardContent>
-                        </Card>
-                    ) : (
-                        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                            {competitions.map((comp) => (
-                                <Card key={comp.id} className="overflow-hidden group hover:border-primary/30 transition-all duration-500 shadow-xl hover:shadow-primary/5 border-white/5 glass rounded-[2rem] flex flex-col">
-                                    <CardHeader className="pb-4 pt-8 px-8">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <Badge variant="glow" className="uppercase text-[10px] font-black px-3 py-1 rounded-full border-primary/20">
-                                                {comp.status}
-                                            </Badge>
-                                            <div className="flex -space-x-3">
-                                                {[1, 2, 3].map(i => (
-                                                    <div key={i} className="h-8 w-8 rounded-full border-2 border-zinc-900 bg-zinc-800 flex items-center justify-center text-[8px] font-black text-white shadow-lg overflow-hidden relative">
-                                                        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent" />
-                                                        A{i}
+                {['active', 'scheduled', 'finished'].map((status) => (
+                    <TabsContent key={status} value={status} className="mt-10">
+                        {loading && competitions.length === 0 ? (
+                            <div className="py-20 text-center text-muted-foreground animate-pulse font-black uppercase tracking-widest text-xs">{t('common.loading')}</div>
+                        ) : filteredCompetitions(status).length === 0 ? (
+                            <Card className="border-dashed border-2 bg-primary/5 rounded-[2.5rem]">
+                                <CardContent className="py-24 text-center">
+                                    <Trophy className="h-20 w-20 mx-auto text-primary/20 mb-6" />
+                                    <h3 className="text-2xl font-black italic uppercase tracking-tighter mb-2">{t('competitions.no_' + status, { defaultValue: 'No ' + status + ' competitions' })}</h3>
+                                    <p className="text-muted-foreground text-sm mb-8 max-w-xs mx-auto">{t('competitions.start_first')}</p>
+                                    <Button onClick={() => setIsCreateOpen(true)} className="rounded-xl px-8 h-12 font-black uppercase tracking-widest text-xs">{t('competitions.create_first')}</Button>
+                                </CardContent>
+                            </Card>
+                        ) : (
+                            <>
+                                <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                                    {getPaginatedCompetitions(status).map((comp) => (
+                                        <Card key={comp.id} className="overflow-hidden group hover:border-primary/30 transition-all duration-500 shadow-xl hover:shadow-primary/5 border-white/5 glass rounded-[2rem] flex flex-col">
+                                            <CardHeader className="pb-4 pt-8 px-8">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <Badge variant="glow" className="uppercase text-[10px] font-black px-3 py-1 rounded-full border-primary/20">
+                                                        {comp.status}
+                                                    </Badge>
+                                                    <div className="flex -space-x-3">
+                                                        {[1, 2, 3].map(i => (
+                                                            <div key={i} className="h-8 w-8 rounded-full border-2 border-zinc-900 bg-zinc-800 flex items-center justify-center text-[8px] font-black text-white shadow-lg overflow-hidden relative">
+                                                                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent" />
+                                                                A{i}
+                                                            </div>
+                                                        ))}
+                                                        <div className="h-8 w-8 rounded-full border-2 border-zinc-900 bg-zinc-900/50 backdrop-blur-md flex items-center justify-center text-[8px] font-black text-primary shadow-lg">+12</div>
                                                     </div>
-                                                ))}
-                                                <div className="h-8 w-8 rounded-full border-2 border-zinc-900 bg-zinc-900/50 backdrop-blur-md flex items-center justify-center text-[8px] font-black text-primary shadow-lg">+12</div>
-                                            </div>
-                                        </div>
-                                        <CardTitle className="text-3xl font-black italic uppercase tracking-tighter mb-2 group-hover:text-primary transition-colors">{comp.name}</CardTitle>
-                                        <CardDescription className="line-clamp-2 text-xs font-medium text-muted-foreground/70 leading-relaxed uppercase tracking-wide">
-                                            {comp.description}
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="px-8 pb-8 flex-1">
-                                        <div className="space-y-6">
-                                            <div className="flex items-center gap-2.5 text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">
-                                                <Calendar className="h-4 w-4 text-primary/40" />
-                                                {new Date(comp.start_date).toLocaleDateString()} - {new Date(comp.end_date).toLocaleDateString()}
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <div className="bg-primary/5 p-4 rounded-2xl border border-primary/10 text-center transition-transform group-hover:scale-[1.02]">
-                                                    <p className="text-[10px] font-black text-primary/60 uppercase leading-none mb-2 tracking-widest">{t('competitions.athletes')}</p>
-                                                    <p className="font-black italic text-2xl tracking-tighter">15</p>
                                                 </div>
-                                                <div className="bg-primary/5 p-4 rounded-2xl border border-primary/10 text-center transition-transform group-hover:scale-[1.02]">
-                                                    <p className="text-[10px] font-black text-primary/60 uppercase leading-none mb-2 tracking-widest">{t('competitions.events')}</p>
-                                                    <p className="font-black italic text-2xl tracking-tighter">4</p>
+                                                <CardTitle className="text-3xl font-black italic uppercase tracking-tighter mb-2 group-hover:text-primary transition-colors">{comp.name}</CardTitle>
+                                                <CardDescription className="line-clamp-2 text-xs font-medium text-muted-foreground/70 leading-relaxed uppercase tracking-wide">
+                                                    {comp.description}
+                                                </CardDescription>
+                                            </CardHeader>
+                                            <CardContent className="px-8 pb-8 flex-1">
+                                                <div className="space-y-6">
+                                                    <div className="flex items-center gap-2.5 text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">
+                                                        <Calendar className="h-4 w-4 text-primary/40" />
+                                                        {new Date(comp.start_date || '').toLocaleDateString()} - {new Date(comp.end_date || '').toLocaleDateString()}
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        <div className="bg-primary/5 p-4 rounded-2xl border border-primary/10 text-center transition-transform group-hover:scale-[1.02]">
+                                                            <p className="text-[10px] font-black text-primary/60 uppercase leading-none mb-2 tracking-widest">{t('competitions.athletes')}</p>
+                                                            <p className="font-black italic text-2xl tracking-tighter">15</p>
+                                                        </div>
+                                                        <div className="bg-primary/5 p-4 rounded-2xl border border-primary/10 text-center transition-transform group-hover:scale-[1.02]">
+                                                            <p className="text-[10px] font-black text-primary/60 uppercase leading-none mb-2 tracking-widest">{t('competitions.events')}</p>
+                                                            <p className="font-black italic text-2xl tracking-tighter">4</p>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                    <CardFooter className="bg-white/5 border-t border-white/5 grid grid-cols-2 gap-3 p-6 mt-auto">
-                                        <Button variant="ghost" size="sm" className="h-10 text-[10px] uppercase font-black tracking-widest gap-2 bg-white/5 hover:bg-white/10 rounded-xl" onClick={() => handleManageCompetition(comp, 'participants')}>
-                                            <Users className="h-4 w-4 text-primary" /> {t('competitions.athletes')}
+                                            </CardContent>
+                                            <CardFooter className="bg-white/5 border-t border-white/5 grid grid-cols-2 gap-3 p-6 mt-auto">
+                                                <Button variant="ghost" size="sm" className="h-10 text-[10px] uppercase font-black tracking-widest gap-2 bg-white/5 hover:bg-white/10 rounded-xl" onClick={() => handleManageCompetition(comp, 'participants')}>
+                                                    <Users className="h-4 w-4 text-primary" /> {t('competitions.athletes')}
+                                                </Button>
+                                                <Button variant="ghost" size="sm" className="h-10 text-[10px] uppercase font-black tracking-widest gap-2 bg-white/5 hover:bg-white/10 rounded-xl" onClick={() => handleManageCompetition(comp, 'events')}>
+                                                    <ListChecks className="h-4 w-4 text-primary" /> {t('competitions.events')}
+                                                </Button>
+                                                <Button className="col-span-2 h-12 text-[10px] uppercase font-black tracking-widest gap-2 rounded-xl shadow-lg shadow-primary/10 group/btn" onClick={() => handleManageCompetition(comp, 'leaderboard')}>
+                                                    <BarChart className="h-4 w-4" /> {t('competitions.view_brackets')}
+                                                    <ChevronRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+                                                </Button>
+                                            </CardFooter>
+                                        </Card>
+                                    ))}
+                                </div>
+                                {getTotalPages(status) > 1 && (
+                                    <div className="flex items-center justify-center gap-2 mt-12">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                            disabled={currentPage === 1}
+                                            className="h-10 px-4 rounded-xl font-bold uppercase tracking-widest text-[10px]"
+                                        >
+                                            <ChevronLeft className="h-4 w-4 mr-2" />
+                                            {t('common.previous')}
                                         </Button>
-                                        <Button variant="ghost" size="sm" className="h-10 text-[10px] uppercase font-black tracking-widest gap-2 bg-white/5 hover:bg-white/10 rounded-xl" onClick={() => handleManageCompetition(comp, 'events')}>
-                                            <ListChecks className="h-4 w-4 text-primary" /> {t('competitions.events')}
+                                        <span className="text-xs font-black italic px-4 py-2 bg-white/5 rounded-lg border border-white/5">
+                                            {currentPage} / {getTotalPages(status)}
+                                        </span>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setCurrentPage(p => Math.min(getTotalPages(status), p + 1))}
+                                            disabled={currentPage === getTotalPages(status)}
+                                            className="h-10 px-4 rounded-xl font-bold uppercase tracking-widest text-[10px]"
+                                        >
+                                            {t('common.next')}
+                                            <ChevronRight className="h-4 w-4 ml-2" />
                                         </Button>
-                                        <Button className="col-span-2 h-12 text-[10px] uppercase font-black tracking-widest gap-2 rounded-xl shadow-lg shadow-primary/10 group/btn" onClick={() => handleManageCompetition(comp, 'leaderboard')}>
-                                            <BarChart className="h-4 w-4" /> {t('competitions.view_brackets')}
-                                            <ChevronRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
-                                        </Button>
-                                    </CardFooter>
-                                </Card>
-                            ))}
-                        </div>
-                    )}
-                </TabsContent>
-
-                <TabsContent value="past">
-                    <div className="py-20 text-center text-muted-foreground italic">{t('competitions.no_history')}</div>
-                </TabsContent>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </TabsContent>
+                ))}
             </Tabs>
 
             {/* Consolidated Management Dialog */}
@@ -536,7 +615,7 @@ export const Competitions: React.FC = () => {
                                         <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-none">
                                             {athletes
                                                 .filter(a =>
-                                                    !participants.some(p => p.athlete_id === a.id) &&
+                                                    !participants.some(p => p.user_id === a.id) &&
                                                     (`${a.first_name || ''} ${a.last_name || ''}`).toLowerCase().includes(searchAthlete.toLowerCase())
                                                 )
                                                 .map(athlete => (
@@ -590,7 +669,7 @@ export const Competitions: React.FC = () => {
                                                         <div className="space-y-1">
                                                             <p className="text-sm font-black uppercase tracking-tight">{p.athlete?.first_name} {p.athlete?.last_name}</p>
                                                             <div className="flex items-center gap-2">
-                                                                <Badge className="bg-primary/20 text-primary text-[8px] h-4 px-1.5 border-none font-black uppercase tracking-widest">{p.category}</Badge>
+                                                                <Badge className="bg-primary/20 text-primary text-[8px] h-4 px-1.5 border-none font-black uppercase tracking-widest">{p.division}</Badge>
                                                                 <span className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">#{p.id.slice(0, 4)}</span>
                                                             </div>
                                                         </div>
@@ -713,7 +792,7 @@ export const Competitions: React.FC = () => {
                                         </div>
                                         <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 scrollbar-none">
                                             {staffMembers
-                                                .filter(s => !judges.some(j => j.profile_id === s.id))
+                                                .filter(s => !judges.some(j => j.user_id === s.id))
                                                 .map(staff => (
                                                     <div
                                                         key={staff.id}

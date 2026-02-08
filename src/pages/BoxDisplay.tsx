@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 interface WOD {
     id: string;
@@ -84,7 +85,7 @@ export const BoxDisplay: React.FC = () => {
             .single();
 
         if (!error && data) {
-            setCurrentWod(data);
+            setCurrentWod(data as unknown as WOD);
         }
     };
 

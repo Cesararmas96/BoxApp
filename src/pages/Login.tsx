@@ -99,7 +99,7 @@ export const Login: React.FC = () => {
                     .single();
 
                 if (profile?.force_password_change) {
-                    showNotification('info', t('auth.force_change_msg'));
+                    showNotification('success', t('auth.force_change_msg'));
                     setIsForcedReset(true);
                 }
             }

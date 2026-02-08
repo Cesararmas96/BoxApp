@@ -6,7 +6,8 @@ import {
     ChevronLeft,
     ChevronRight,
     Trophy,
-    Star
+    Star,
+    Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +17,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
     DialogTrigger,
     DialogFooter
 } from '@/components/ui/dialog';

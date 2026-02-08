@@ -21,6 +21,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
     DialogTrigger,
     DialogFooter
 } from '@/components/ui/dialog';
@@ -52,6 +53,8 @@ export const Benchmarks: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [open, setOpen] = useState(false);
     const [newPR, setNewPR] = useState({ benchmarkId: '', value: '', notes: '' });
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     useEffect(() => {
         fetchPRData();
@@ -62,17 +65,24 @@ export const Benchmarks: React.FC = () => {
         if (!user) return;
 
         const [benchRes, prRes] = await Promise.all([
-            supabase.from('benchmark_types').select('*'),
-            supabase.from('personal_records')
+            supabase.from('benchmark_types' as any).select('*'),
+            supabase.from('personal_records' as any)
                 .select('*, benchmark_types(name)')
                 .eq('athlete_id', user.id)
                 .order('date', { ascending: false })
         ]);
 
-        if (!benchRes.error) setBenchmarks(benchRes.data || []);
-        if (!prRes.error) setPrs(prRes.data || []);
+        if (!benchRes.error) setBenchmarks(benchRes.data as unknown as Benchmark[] || []);
+        if (!prRes.error) setPrs(prRes.data as unknown as PR[] || []);
         setLoading(false);
     };
+
+    const paginatedPrs = prs.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
+    const totalPages = Math.ceil(prs.length / itemsPerPage);
 
     const handleAddPR = async () => {
         if (!user) return;
@@ -188,7 +198,7 @@ export const Benchmarks: React.FC = () => {
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    prs.map((pr) => (
+                                    paginatedPrs.map((pr) => (
                                         <TableRow key={pr.id}>
                                             <TableCell className="font-bold">{pr.benchmark_types.name}</TableCell>
                                             <TableCell>
@@ -208,6 +218,61 @@ export const Benchmarks: React.FC = () => {
                             </TableBody>
                         </Table>
                     </CardContent>
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-between gap-4 p-4 border-t bg-muted/5 rounded-b-[2.5rem]">
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                    disabled={currentPage === 1}
+                                    className="h-8 px-2 font-bold uppercase text-[9px] tracking-widest gap-1"
+                                >
+                                    Prev
+                                </Button>
+                                <div className="flex items-center gap-1">
+                                    {[...Array(totalPages)].map((_, i) => {
+                                        const pageNumber = i + 1;
+                                        if (
+                                            pageNumber === 1 ||
+                                            pageNumber === totalPages ||
+                                            Math.abs(pageNumber - currentPage) <= 1
+                                        ) {
+                                            return (
+                                                <Button
+                                                    key={pageNumber}
+                                                    variant={currentPage === pageNumber ? "default" : "outline"}
+                                                    size="sm"
+                                                    onClick={() => setCurrentPage(pageNumber)}
+                                                    className="h-8 w-8 font-bold text-[9px]"
+                                                >
+                                                    {pageNumber}
+                                                </Button>
+                                            );
+                                        } else if (
+                                            pageNumber === currentPage - 2 ||
+                                            pageNumber === currentPage + 2
+                                        ) {
+                                            return <span key={pageNumber} className="text-muted-foreground text-xs">...</span>;
+                                        }
+                                        return null;
+                                    })}
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="h-8 px-2 font-bold uppercase text-[9px] tracking-widest gap-1"
+                                >
+                                    Next
+                                </Button>
+                            </div>
+                            <div className="hidden sm:block text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">
+                                Showing <span className="text-primary">{Math.min(prs.length, (currentPage - 1) * itemsPerPage + 1)}-{Math.min(prs.length, currentPage * itemsPerPage)}</span> of {prs.length} records
+                            </div>
+                        </div>
+                    )}
                 </Card>
 
                 {/* Categories / Quick Stats */}

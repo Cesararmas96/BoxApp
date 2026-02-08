@@ -85,7 +85,22 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
         role_id: '',
         status: ''
     });
-    const { notification, showNotification, hideNotification, confirmState, showConfirm, hideConfirm } = useNotification();
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 8;
+    const { notification, showNotification, hideNotification, confirmState, hideConfirm } = useNotification();
+
+    const filteredMembers = members.filter(member =>
+        member.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentMembers = filteredMembers.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(filteredMembers.length / itemsPerPage);
+    const handlePageChange = (page: number) => setCurrentPage(page);
 
     useEffect(() => {
         fetchMembers();
@@ -107,16 +122,8 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
         e.preventDefault();
         setLoading(true);
 
-        // Verify session before invoking
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-            alert('Sesión expirada. Por favor, inicia sesión de nuevo.');
-            setLoading(false);
-            return;
-        }
-
         // Call the Edge Function to create member and auth account securely
-        const { data, error } = await supabase.functions.invoke('create-member', {
+        const { error } = await supabase.functions.invoke('create-member', {
             body: {
                 email: newMember.email,
                 password: 'BoxApp2026!',
@@ -182,32 +189,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
         setLoading(false);
     };
 
-    const toggleMemberStatus = async (id: string, currentStatus: string) => {
-        const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
 
-        showConfirm({
-            title: t('common.confirm_action', { defaultValue: 'CONFIRMAR ACCIÓN' }),
-            description: t('members.toggle_status_confirm', {
-                defaultValue: `¿ESTÁS SEGURO DE QUE DESEAS ${newStatus === 'inactive' ? 'DESACTIVAR' : 'ACTIVAR'} A ESTE MIEMBRO?`
-            }),
-            onConfirm: async () => {
-                const { error } = await supabase
-                    .from('profiles')
-                    .update({ status: newStatus })
-                    .eq('id', id);
-
-                if (error) {
-                    showNotification('error', 'ERROR UPDATING STATUS: ' + error.message.toUpperCase());
-                } else {
-                    showNotification('success', 'MEMBER STATUS UPDATED');
-                    fetchMembers();
-                    setDetailsOpen(false);
-                }
-            },
-            variant: newStatus === 'inactive' ? 'destructive' : 'default',
-            icon: newStatus === 'inactive' ? 'destructive' : 'default'
-        });
-    };
 
     const getStatusVariant = (status: string) => {
         switch (status) {
@@ -359,6 +341,11 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                     type="search"
                                     placeholder={t('members.search_placeholder')}
                                     className="pl-12 w-full sm:w-[320px] bg-zinc-950/20 border-white/5 h-12 rounded-2xl"
+                                    value={searchTerm}
+                                    onChange={(e) => {
+                                        setSearchTerm(e.target.value);
+                                        setCurrentPage(1); // Reset to first page on search
+                                    }}
                                 />
                             </div>
                             <Button variant="outline" size="icon" className="h-12 w-12 rounded-2xl border-white/10 bg-zinc-950/20 hover:bg-primary/10">
@@ -382,19 +369,19 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                         <TableBody>
                             {loading ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                                         {t('common.loading')}
                                     </TableCell>
                                 </TableRow>
-                            ) : members.length === 0 ? (
+                            ) : currentMembers.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                                    <TableCell colSpan={6} className="h-40 text-center text-muted-foreground italic uppercase tracking-widest text-[10px]">
                                         {t('common.no_data')}
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                members.map((member) => (
-                                    <TableRow key={member.id} className="group hover:bg-primary/5 border-white/5 transition-colors">
+                                currentMembers.map((member) => (
+                                    <TableRow key={member.id} className="group hover:bg-primary/[0.02] transition-colors">
                                         <TableCell className="py-4">
                                             <div className="flex items-center gap-4">
                                                 <Avatar className="h-12 w-12 rounded-2xl glass border-white/10 shadow-lg">
@@ -453,99 +440,169 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                 </CardContent>
             </Card>
 
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between px-2 py-4">
+                    <p className="text-[10px] uppercase font-black italic text-muted-foreground tracking-widest">
+                        Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredMembers.length)} of {filteredMembers.length}
+                    </p>
+                    <div className="flex items-center gap-1">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="h-8 w-8 p-0 rounded-lg border border-white/5 hover:bg-primary/10"
+                        >
+                            <span className="sr-only">Previous Page</span>
+                            &lt;
+                        </Button>
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                            <Button
+                                key={page}
+                                variant={currentPage === page ? "default" : "ghost"}
+                                size="sm"
+                                onClick={() => handlePageChange(page)}
+                                className={`h-8 w-8 p-0 rounded-lg text-[10px] font-black italic ${currentPage === page ? "shadow-lg shadow-primary/20" : "border border-white/5 hover:bg-primary/10"}`}
+                            >
+                                {page}
+                            </Button>
+                        ))}
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className="h-8 w-8 p-0 rounded-lg border border-white/5 hover:bg-primary/10"
+                        >
+                            <span className="sr-only">Next Page</span>
+                            &gt;
+                        </Button>
+                    </div>
+                </div>
+            )}
+
             {/* Member Details Dialog */}
             <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-                <DialogContent className="sm:max-w-[500px]">
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10">
-                                <AvatarFallback className="bg-primary/20 text-primary">
-                                    {selectedMember?.first_name?.[0]}{selectedMember?.last_name?.[0]}
-                                </AvatarFallback>
-                            </Avatar>
-                            <span>{selectedMember?.first_name} {selectedMember?.last_name}</span>
-                        </DialogTitle>
-                        <DialogDescription className="sr-only">
-                            {t('members.member_details_desc') || `Information for ${selectedMember?.first_name} ${selectedMember?.last_name}`}
-                        </DialogDescription>
-                    </DialogHeader>
+                <DialogContent className="sm:max-w-[500px] border-none glass-morphism p-0 overflow-hidden shadow-2xl">
+                    <div className="relative">
+                        {/* Header Background Gradient */}
+                        <div className="absolute inset-0 h-32 bg-gradient-to-br from-primary/20 via-primary/5 to-transparent pointer-events-none" />
 
-                    <div className="grid gap-6 py-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                                <p className="text-xs font-medium text-muted-foreground uppercase">{t('members.table_role')}</p>
-                                <p className="text-sm font-semibold capitalize">{selectedMember?.role_id ? t(`roles.role_${selectedMember.role_id}`) : '...'}</p>
+                        <DialogHeader className="p-8 pb-4 relative z-10">
+                            <div className="flex items-end gap-6">
+                                <Avatar className="h-20 w-20 rounded-2xl border-2 border-white/10 shadow-2xl bg-background p-1">
+                                    <AvatarFallback className="rounded-xl bg-gradient-to-br from-primary/30 to-primary/10 text-primary text-xl font-black italic">
+                                        {selectedMember?.first_name?.[0]}{selectedMember?.last_name?.[0]}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 pb-2">
+                                    <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter leading-none mb-1">
+                                        {selectedMember?.first_name} {selectedMember?.last_name}
+                                    </DialogTitle>
+                                    <div className="flex items-center gap-2">
+                                        <Badge variant="outline" className="text-[9px] font-black italic uppercase tracking-widest border-primary/20 bg-primary/5 text-primary py-0 px-2">
+                                            {selectedMember?.role_id ? t(`roles.role_${selectedMember.role_id}`) : '...'}
+                                        </Badge>
+                                        <Badge variant={getStatusVariant(selectedMember?.status || 'active')} className="text-[9px] font-black italic uppercase tracking-widest py-0 px-2 shadow-sm">
+                                            {selectedMember?.status ? t(`members.status_${selectedMember.status}`) : '...'}
+                                        </Badge>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="space-y-1">
-                                <p className="text-xs font-medium text-muted-foreground uppercase">{t('members.table_status')}</p>
-                                <Badge variant={getStatusVariant(selectedMember?.status || 'active')} className="capitalize">
-                                    {selectedMember?.status ? t(`members.status_${selectedMember.status}`) : '...'}
-                                </Badge>
+                            <DialogDescription className="sr-only">
+                                {t('members.member_details_desc') || `Information for ${selectedMember?.first_name} {selectedMember?.last_name}`}
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="px-8 pb-8 space-y-6 relative z-10">
+                            {/* Contact & Bio Info */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1 p-4 rounded-2xl bg-white/[0.03] border border-white/5 shadow-inner">
+                                    <p className="text-[10px] font-black italic text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
+                                        <Search className="h-3 w-3 text-primary/50" /> INFO
+                                    </p>
+                                    <p className="text-xs font-bold truncate opacity-80">{selectedMember?.email || t('members.no_email')}</p>
+                                    <p className="text-[10px] font-medium text-muted-foreground italic">
+                                        Joined: {selectedMember?.created_at ? new Date(selectedMember.created_at).toLocaleDateString() : '...'}
+                                    </p>
+                                </div>
+                                <div className="space-y-1 p-4 rounded-2xl bg-white/[0.03] border border-white/5 shadow-inner">
+                                    <p className="text-[10px] font-black italic text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
+                                        <ShieldCheck className="h-3 w-3 text-primary/50" /> {t('members.waiver_status')}
+                                    </p>
+                                    <div className={`text-xs font-black italic uppercase flex items-center gap-2 ${selectedMember?.waiver_signed ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                        {selectedMember?.waiver_signed ? (
+                                            <><ShieldCheck className="h-4 w-4" /> {t('members.waiver_signed')}</>
+                                        ) : (
+                                            <><ShieldAlert className="h-4 w-4" /> {t('members.waiver_pending')}</>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="space-y-2 border-t pt-4">
-                            <h3 className="text-sm font-bold flex items-center gap-2">
-                                <Stethoscope className="h-4 w-4 text-primary" /> {t('members.medical_background')}
-                            </h3>
-                            <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md min-h-[60px]">
-                                {selectedMember?.medical_history || t('members.no_medical')}
-                            </p>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4 border-t pt-4">
-                            <div className="space-y-1">
-                                <h3 className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2">
-                                    <Phone className="h-3 w-3" /> {t('members.emergency')}
+                            {/* Medical Background */}
+                            <div className="p-5 rounded-2xl bg-gradient-to-br from-rose-500/[0.05] to-transparent border border-rose-500/10 shadow-sm">
+                                <h3 className="text-[10px] font-black italic uppercase tracking-widest text-rose-500/80 mb-3 flex items-center gap-2">
+                                    <Stethoscope className="h-3.5 w-3.5" /> {t('members.medical_background')}
                                 </h3>
-                                <p className="text-sm font-semibold">{selectedMember?.emergency_contact_name || "N/A"}</p>
-                                <p className="text-xs text-muted-foreground">{selectedMember?.emergency_contact_phone || t('members.no_email')}</p>
+                                <p className="text-sm font-medium leading-relaxed opacity-70 italic">
+                                    {selectedMember?.medical_history || t('members.no_medical')}
+                                </p>
                             </div>
-                            <div className="space-y-1">
-                                <h3 className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2">
-                                    <ShieldCheck className="h-3 w-3" /> {t('members.waiver_status')}
+
+                            {/* Emergency Contact */}
+                            <div className="p-5 rounded-2xl bg-gradient-to-br from-primary/[0.05] to-transparent border border-primary/10 shadow-sm">
+                                <h3 className="text-[10px] font-black italic uppercase tracking-widest text-primary/80 mb-3 flex items-center gap-2">
+                                    <Phone className="h-3.5 w-3.5" /> {t('members.emergency')}
                                 </h3>
-                                {selectedMember?.waiver_signed ? (
-                                    <Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/10 border-green-200">{t('members.waiver_legal')}</Badge>
-                                ) : (
-                                    <Badge variant="destructive">{t('members.waiver_pending')}</Badge>
-                                )}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p className="text-[9px] font-black italic uppercase text-muted-foreground/50 tracking-widest leading-none mb-1">Contact Name</p>
+                                        <p className="text-xs font-bold italic uppercase">{selectedMember?.emergency_contact_name || '---'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[9px] font-black italic uppercase text-muted-foreground/50 tracking-widest leading-none mb-1">Phone Number</p>
+                                        <p className="text-xs font-bold italic tracking-wider">{selectedMember?.emergency_contact_phone || '---'}</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
+                        <DialogFooter className="bg-muted/30 p-6 flex flex-row items-center justify-between border-t border-white/5">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setDetailsOpen(false)}
+                                className="text-[10px] font-black italic uppercase tracking-widest opacity-60 hover:opacity-100"
+                            >
+                                {t('common.cancel')}
+                            </Button>
+                            <Button
+                                variant="default"
+                                size="sm"
+                                className="h-10 px-6 rounded-xl shadow-xl shadow-primary/20 text-[10px] font-black italic uppercase tracking-widest"
+                                onClick={() => {
+                                    if (selectedMember) {
+                                        setEditForm({
+                                            id: selectedMember.id,
+                                            first_name: selectedMember.first_name,
+                                            last_name: selectedMember.last_name,
+                                            medical_history: selectedMember.medical_history || '',
+                                            emergency_contact_name: selectedMember.emergency_contact_name || '',
+                                            emergency_contact_phone: selectedMember.emergency_contact_phone || '',
+                                            role_id: selectedMember.role_id,
+                                            status: selectedMember.status
+                                        });
+                                        setDetailsOpen(false);
+                                        setEditOpen(true);
+                                    }
+                                }}
+                            >
+                                {t('members.edit_profile')}
+                            </Button>
+                        </DialogFooter>
                     </div>
-
-                    <DialogFooter className="flex flex-col sm:flex-row gap-2">
-                        <Button
-                            variant={selectedMember?.status === 'active' ? "destructive" : "default"}
-                            className="w-full sm:w-auto font-bold uppercase"
-                            onClick={() => selectedMember && toggleMemberStatus(selectedMember.id, selectedMember.status)}
-                        >
-                            {selectedMember?.status === 'active' ? t('members.deactivate_btn') : t('members.activate_btn')}
-                        </Button>
-                        <div className="flex-1" />
-                        <Button variant="outline" onClick={() => setDetailsOpen(false)}>{t('common.cancel')}</Button>
-                        <Button
-                            variant="default"
-                            onClick={() => {
-                                if (selectedMember) {
-                                    setEditForm({
-                                        id: selectedMember.id,
-                                        first_name: selectedMember.first_name,
-                                        last_name: selectedMember.last_name,
-                                        medical_history: selectedMember.medical_history || '',
-                                        emergency_contact_name: selectedMember.emergency_contact_name || '',
-                                        emergency_contact_phone: selectedMember.emergency_contact_phone || '',
-                                        role_id: selectedMember.role_id,
-                                        status: selectedMember.status
-                                    });
-                                    setDetailsOpen(false);
-                                    setEditOpen(true);
-                                }
-                            }}
-                        >
-                            {t('members.edit_profile')}
-                        </Button>
-                    </DialogFooter>
                 </DialogContent>
             </Dialog>
 

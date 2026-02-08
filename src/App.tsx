@@ -67,7 +67,7 @@ function AppContent() {
 
       {/* Layout wrapper pages */}
       <Route element={<MainLayout userProfile={userProfile} />}>
-        <Route path="/dashboard" element={<Dashboard userProfile={userProfile} />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/schedule" element={<Schedule />} />
         <Route
           path="/members"

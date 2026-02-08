@@ -82,12 +82,12 @@ export const Roles: React.FC = () => {
     const fetchMatrix = async () => {
         setMatrixLoading(true);
         const { data, error } = await supabase
-            .from('role_permissions')
+            .from('role_permissions' as any)
             .select('*')
             .order('page_key');
 
         if (!error && data) {
-            setMatrixData(data);
+            setMatrixData(data as unknown as PermissionMatrixItem[]);
         }
         setMatrixLoading(false);
     };
@@ -100,7 +100,7 @@ export const Roles: React.FC = () => {
             .order('created_at', { ascending: false });
 
         if (!error && data) {
-            setUsers(data);
+            setUsers(data as unknown as Profile[]);
         }
         setLoading(false);
     };
@@ -182,8 +182,8 @@ export const Roles: React.FC = () => {
             // Update each row in role_permissions
             for (const item of matrixData) {
                 const { error } = await supabase
-                    .from('role_permissions')
-                    .update({ roles: item.roles, updated_at: new Promise(resolve => resolve(new Date().toISOString())) as any })
+                    .from('role_permissions' as any)
+                    .update({ roles: item.roles, updated_at: new Date().toISOString() as any })
                     .eq('page_key', item.page_key);
 
                 if (error) throw error;
@@ -277,7 +277,7 @@ export const Roles: React.FC = () => {
                                                         <div className="flex items-center gap-3">
                                                             <Avatar className="h-9 w-9 border-2 border-primary/20">
                                                                 <AvatarFallback className="bg-primary/10 text-primary text-xs font-black italic">
-                                                                    {user.first_name?.[0]}{user.last_name?.[0]}
+                                                                    {user.first_name?.[0] || '?'}{user.last_name?.[0] || '?'}
                                                                 </AvatarFallback>
                                                             </Avatar>
                                                             <div className="flex flex-col">

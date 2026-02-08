@@ -11,7 +11,9 @@ import {
     Zap,
     Trophy,
     Pencil,
-    Loader2
+    Loader2,
+    ChevronLeft,
+    ChevronRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,6 +27,7 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
+    DialogDescription,
 } from "@/components/ui/dialog";
 import {
     Select,
@@ -36,6 +39,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { useNotification, useLanguage } from '@/hooks';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { Toast } from '@/components/ui/toast-custom';
 
 interface Movement {
     id: string;
@@ -64,9 +68,11 @@ export const Movements: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [showEditor, setShowEditor] = useState(false);
     const [editingMovement, setEditingMovement] = useState<Movement | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 8;
     const [formData, setFormData] = useState({
         name: '',
-        category: 'Weightlifting' as Movement['category'],
+        category: 'Weightlifting' as string,
         demo_url: ''
     });
     const { notification, showNotification, hideNotification, confirmState, showConfirm, hideConfirm } = useNotification();
@@ -80,11 +86,11 @@ export const Movements: React.FC = () => {
         const { data, error } = await supabase
             .from('movements')
             .select('*')
-            .eq('box_id', currentBox?.id)
+            .eq('box_id', currentBox?.id || '')
             .order('name', { ascending: true });
 
         if (!error && data) {
-            setMovements(data);
+            setMovements(data as unknown as Movement[]);
         }
         setLoading(false);
     };
@@ -144,9 +150,16 @@ export const Movements: React.FC = () => {
     const filteredMovements = useMemo(() => {
         return movements.filter(m =>
             m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            m.category.toLowerCase().includes(searchQuery.toLowerCase())
+            (m.category || '').toLowerCase().includes(searchQuery.toLowerCase())
         );
     }, [movements, searchQuery]);
+
+    const paginatedMovements = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return filteredMovements.slice(startIndex, startIndex + itemsPerPage);
+    }, [filteredMovements, currentPage, itemsPerPage]);
+
+    const totalPages = Math.ceil(filteredMovements.length / itemsPerPage);
 
     return (
         <div className="space-y-6 text-left">
@@ -240,12 +253,12 @@ export const Movements: React.FC = () => {
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] italic">Accessing Library...</p>
                     </div>
                 ) : (
-                    filteredMovements.map(m => (
+                    paginatedMovements.map(m => (
                         <Card key={m.id} className="group hover:border-primary/40 transition-all shadow-md bg-background/50 backdrop-blur-sm overflow-hidden">
                             <CardContent className="p-4 flex items-center justify-between relative">
                                 <div className="flex items-center gap-3">
                                     <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-inner">
-                                        {CATEGORY_ICONS[m.category] || <Activity className="h-6 w-6" />}
+                                        {CATEGORY_ICONS[m.category || 'Other'] || <Activity className="h-6 w-6" />}
                                     </div>
                                     <div>
                                         <p className="font-black uppercase italic text-sm tracking-tight leading-none mb-1">{m.name}</p>
@@ -262,7 +275,7 @@ export const Movements: React.FC = () => {
                                         className="h-9 w-9 text-blue-500 hover:bg-blue-500/10 border border-transparent hover:border-blue-500/20"
                                         onClick={() => {
                                             setEditingMovement(m);
-                                            setFormData({ name: m.name, category: m.category, demo_url: m.demo_url || '' });
+                                            setFormData({ name: m.name, category: m.category || 'Other', demo_url: m.demo_url || '' });
                                             setShowEditor(true);
                                         }}
                                     >
@@ -295,6 +308,67 @@ export const Movements: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between gap-4 mt-8 bg-muted/20 p-4 rounded-2xl border border-muted-foreground/10">
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            disabled={currentPage === 1}
+                            className="h-9 px-3 font-bold uppercase text-[10px] tracking-widest gap-2 italic"
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                            {t('common.previous', { defaultValue: 'PREVIOUS' })}
+                        </Button>
+                        <div className="flex items-center gap-1">
+                            {[...Array(totalPages)].map((_, i) => {
+                                const pageNumber = i + 1;
+                                if (
+                                    pageNumber === 1 ||
+                                    pageNumber === totalPages ||
+                                    Math.abs(pageNumber - currentPage) <= 1
+                                ) {
+                                    return (
+                                        <Button
+                                            key={pageNumber}
+                                            variant={currentPage === pageNumber ? "default" : "outline"}
+                                            size="sm"
+                                            onClick={() => setCurrentPage(pageNumber)}
+                                            className="h-9 w-9 font-bold text-[10px] italic shadow-lg shadow-primary/10"
+                                        >
+                                            {pageNumber}
+                                        </Button>
+                                    );
+                                } else if (
+                                    pageNumber === currentPage - 2 ||
+                                    pageNumber === currentPage + 2
+                                ) {
+                                    return <span key={pageNumber} className="text-muted-foreground text-xs">...</span>;
+                                }
+                                return null;
+                            })}
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            disabled={currentPage === totalPages}
+                            className="h-9 px-3 font-bold uppercase text-[10px] tracking-widest gap-2 italic"
+                        >
+                            {t('common.next', { defaultValue: 'NEXT' })}
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
+                    </div>
+                    <div className="hidden sm:block">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 italic">
+                            {t('common.showing', { defaultValue: 'SHOWING' })} <span className="text-primary">{Math.min(filteredMovements.length, (currentPage - 1) * itemsPerPage + 1)}-{Math.min(filteredMovements.length, currentPage * itemsPerPage)}</span> {t('common.of', { defaultValue: 'OF' })} {filteredMovements.length} {t('movements.title', { defaultValue: 'MOVEMENTS' })}
+                        </p>
+                    </div>
+                </div>
+            )}
 
             {/* Premium Toast Notification System */}
             {notification && (

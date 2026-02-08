@@ -8,7 +8,6 @@ import {
     DollarSign,
     Loader2,
     Calendar,
-    Tag,
     Briefcase,
     Pencil,
     Trash2,
@@ -16,7 +15,9 @@ import {
     CheckCircle2,
     XCircle,
     AlertCircle,
-    Users
+    Users,
+    ChevronLeft,
+    ChevronRight,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -39,6 +40,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
     DialogTrigger
 } from '@/components/ui/dialog';
 import {
@@ -62,6 +64,7 @@ interface Plan {
     duration_days: number;
     sessions_count?: number;
     has_limit?: boolean;
+    total_credits?: number;
 }
 
 interface Expense {
@@ -83,21 +86,20 @@ export const Billing: React.FC = () => {
     const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
     const [estimatedIncome, setEstimatedIncome] = useState(0);
     const { currentBox } = useAuth();
-    const {
-        notification,
-        showNotification: addNotification,
-        hideNotification,
-        confirmState,
-        showConfirm,
-        hideConfirm
-    } = useNotification();
+    const { notification, showNotification: addNotification, hideNotification, confirmState, showConfirm, hideConfirm } = useNotification();
 
     const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
     const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
     // Form states
-    const [newPlan, setNewPlan] = useState({ name: '', price: '', interval: 'monthly', duration_days: 30, sessions_count: 0, has_limit: false });
+    const [newPlan, setNewPlan] = useState({ name: '', price: '', interval: 'monthly', duration_days: 30, total_credits: 0 });
     const [newExpense, setNewExpense] = useState({ description: '', category: 'Rent', amount: '', date: new Date().toISOString().split('T')[0] });
+
+    // Pagination states
+    const [plansPage] = useState(1);
+    const [expensesPage] = useState(1);
+    const [membershipsPage, setMembershipsPage] = useState(1);
+    const itemsPerPage = 6;
 
     useEffect(() => {
         fetchFinanceData();
@@ -116,7 +118,7 @@ export const Billing: React.FC = () => {
             if (plansRes.error) throw plansRes.error;
             if (expensesRes.error) throw expensesRes.error;
 
-            setPlans(plansRes.data || []);
+            setPlans(plansRes.data as unknown as Plan[] || []);
             setExpenses((expensesRes.data as any) || []);
             setInvoices(invoicesRes.data || []);
 
@@ -134,7 +136,7 @@ export const Billing: React.FC = () => {
             const { data: membershipData } = await supabase
                 .from('memberships')
                 .select('*, profiles(first_name, last_name, email)')
-                .eq('box_id', currentBox?.id);
+                .eq('box_id', currentBox?.id || '');
 
             setMemberships(membershipData || []);
             setLoading(false);
@@ -144,12 +146,13 @@ export const Billing: React.FC = () => {
     const handleCreatePlan = async () => {
         if (!newPlan.name || !newPlan.price) return;
         setLoading(true);
-        const { type, ...restOfPlan } = newPlan;
         const planData = {
-            ...restOfPlan,
-            interval: type,
+            name: newPlan.name,
+            interval: newPlan.interval,
+            duration_days: Number(newPlan.duration_days),
             price: parseFloat(newPlan.price as string),
-            box_id: currentBox?.id
+            box_id: currentBox?.id,
+            total_credits: newPlan.interval === 'credits' ? newPlan.total_credits : 0
         };
 
         const { error } = editingPlan
@@ -162,7 +165,7 @@ export const Billing: React.FC = () => {
             addNotification('success', editingPlan ? t('billing.plan_updated') : t('billing.plan_created'));
             setIsPlanDialogOpen(false);
             setEditingPlan(null);
-            setNewPlan({ name: '', price: '', type: 'monthly', duration_days: 30, total_credits: 0 });
+            setNewPlan({ name: '', price: '', interval: 'monthly', duration_days: 30, total_credits: 0 });
             fetchFinanceData();
         }
         setLoading(false);
@@ -304,10 +307,9 @@ export const Billing: React.FC = () => {
         setNewPlan({
             name: plan.name,
             price: plan.price.toString(),
-            duration_days: plan.duration_days.toString(),
+            duration_days: plan.duration_days,
             interval: plan.interval,
-            sessions_count: plan.sessions_count || 0,
-            has_limit: plan.has_limit || false
+            total_credits: (plan as any).total_credits || 0
         });
         setIsPlanDialogOpen(true);
     };
@@ -324,6 +326,18 @@ export const Billing: React.FC = () => {
     };
 
     const totalExpenses = expenses.reduce((acc, curr) => acc + Number(curr.amount), 0);
+
+    // Total items after filtering
+    const indexOfLastPlan = plansPage * itemsPerPage;
+    const indexOfFirstPlan = indexOfLastPlan - itemsPerPage;
+    const currentPlans = (plans || []).slice(indexOfFirstPlan, indexOfLastPlan);
+
+    const indexOfLastExpense = expensesPage * itemsPerPage;
+    const indexOfFirstExpense = indexOfLastExpense - itemsPerPage;
+    const currentExpenses = (expenses || []).slice(indexOfFirstExpense, indexOfLastExpense);
+    const paginatedMemberships = memberships.slice((membershipsPage - 1) * itemsPerPage, membershipsPage * itemsPerPage);
+
+    const membershipsTotalPages = Math.ceil(memberships.length / itemsPerPage);
 
     return (
         <div className="space-y-6">
@@ -398,7 +412,7 @@ export const Billing: React.FC = () => {
                                     setIsPlanDialogOpen(open);
                                     if (!open) {
                                         setEditingPlan(null);
-                                        setNewPlan({ name: '', price: '', type: 'monthly', duration_days: 30, total_credits: 0 });
+                                        setNewPlan({ name: '', price: '', interval: 'monthly', duration_days: 30, total_credits: 0 });
                                     }
                                 }}>
                                     <DialogTrigger asChild>
@@ -409,9 +423,14 @@ export const Billing: React.FC = () => {
                                     <DialogContent className="sm:max-w-[425px]">
                                         <DialogHeader>
                                             <DialogTitle className="flex items-center gap-2">
-                                                <Tag className="h-5 w-5 text-primary" />
-                                                {editingPlan ? t('billing.edit_plan') : t('billing.new_plan')}
+                                                <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                                                    <Briefcase className="h-5 w-5" />
+                                                </div>
+                                                {editingPlan ? t('billing.edit_plan') : t('billing.create_plan')}
                                             </DialogTitle>
+                                            <DialogDescription>
+                                                {t('billing.plan_desc', { defaultValue: 'Manage your box subscription plans here.' })}
+                                            </DialogDescription>
                                             <DialogDescription className="sr-only">
                                                 Configure plan details including name, price, and duration.
                                             </DialogDescription>
@@ -440,8 +459,8 @@ export const Billing: React.FC = () => {
                                                 <div className="grid gap-2">
                                                     <Label htmlFor="plan-type">{t('billing.type')}</Label>
                                                     <Select
-                                                        value={newPlan.type}
-                                                        onValueChange={(val) => setNewPlan({ ...newPlan, type: val })}
+                                                        value={newPlan.interval}
+                                                        onValueChange={(val) => setNewPlan({ ...newPlan, interval: val })}
                                                     >
                                                         <SelectTrigger>
                                                             <SelectValue />
@@ -454,7 +473,7 @@ export const Billing: React.FC = () => {
                                                     </Select>
                                                 </div>
                                             </div>
-                                            {newPlan.type === 'credits' && (
+                                            {newPlan.interval === 'credits' && (
                                                 <div className="grid gap-2">
                                                     <Label htmlFor="plan-credits">{t('billing.credits')}</Label>
                                                     <Input
@@ -499,12 +518,12 @@ export const Billing: React.FC = () => {
                                                 </TableCell>
                                             </TableRow>
                                         ) : (
-                                            plans.map((plan) => (
+                                            currentPlans.map((plan: Plan) => (
                                                 <TableRow key={plan.id}>
                                                     <TableCell className="font-medium">{plan.name}</TableCell>
                                                     <TableCell>
                                                         <Badge variant="secondary" className="capitalize text-[10px]">
-                                                            {plan.type}
+                                                            {plan.interval}
                                                         </Badge>
                                                     </TableCell>
                                                     <TableCell className="text-right font-mono text-primary">${plan.price}</TableCell>
@@ -556,9 +575,14 @@ export const Billing: React.FC = () => {
                                     <DialogContent className="sm:max-w-[425px]">
                                         <DialogHeader>
                                             <DialogTitle className="flex items-center gap-2">
-                                                <Briefcase className="h-5 w-5 text-destructive" />
-                                                {editingExpense ? t('billing.edit_expense') : t('billing.new_expense')}
+                                                <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                                                    <DollarSign className="h-5 w-5" />
+                                                </div>
+                                                {editingExpense ? t('billing.edit_expense') : t('billing.add_expense')}
                                             </DialogTitle>
+                                            <DialogDescription>
+                                                {t('billing.expense_desc', { defaultValue: 'Track your box expenses and categories.' })}
+                                            </DialogDescription>
                                             <DialogDescription className="sr-only">
                                                 Register or edit business expenses to track your box finances.
                                             </DialogDescription>
@@ -650,7 +674,7 @@ export const Billing: React.FC = () => {
                                                 </TableCell>
                                             </TableRow>
                                         ) : (
-                                            expenses.map((expense) => (
+                                            currentExpenses.map((expense: Expense) => (
                                                 <TableRow key={expense.id}>
                                                     <TableCell className="text-sm">
                                                         <p className="font-medium lead-none">{expense.description}</p>
@@ -725,7 +749,7 @@ export const Billing: React.FC = () => {
                                                 </TableCell>
                                             </TableRow>
                                         ) : (
-                                            memberships.map((m) => (
+                                            paginatedMemberships.map((m) => (
                                                 <TableRow key={m.id} className="hover:bg-muted/30 transition-colors">
                                                     <TableCell>
                                                         <div className="flex flex-col">
@@ -831,6 +855,48 @@ export const Billing: React.FC = () => {
                                         )}
                                     </TableBody>
                                 </Table>
+                                {membershipsTotalPages > 1 && (
+                                    <div className="flex items-center justify-between gap-4 p-4 border-t bg-muted/5">
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => setMembershipsPage(p => Math.max(1, p - 1))}
+                                                disabled={membershipsPage === 1}
+                                                className="h-8 text-[10px] font-bold uppercase tracking-widest gap-2"
+                                            >
+                                                <ChevronLeft className="h-3 w-3" />
+                                                Prev
+                                            </Button>
+                                            <div className="flex items-center gap-1">
+                                                {[...Array(membershipsTotalPages)].map((_, i) => (
+                                                    <Button
+                                                        key={i}
+                                                        variant={membershipsPage === i + 1 ? "default" : "ghost"}
+                                                        size="sm"
+                                                        onClick={() => setMembershipsPage(i + 1)}
+                                                        className="h-8 w-8 text-[10px] font-bold"
+                                                    >
+                                                        {i + 1}
+                                                    </Button>
+                                                ))}
+                                            </div>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => setMembershipsPage(p => Math.min(membershipsTotalPages, p + 1))}
+                                                disabled={membershipsPage === membershipsTotalPages}
+                                                className="h-8 text-[10px] font-bold uppercase tracking-widest gap-2"
+                                            >
+                                                Next
+                                                <ChevronRight className="h-3 w-3" />
+                                            </Button>
+                                        </div>
+                                        <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                                            Showing {Math.min(memberships.length, (membershipsPage - 1) * itemsPerPage + 1)}-{Math.min(memberships.length, membershipsPage * itemsPerPage)} of {memberships.length} athletes
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </CardContent>
                     </Card>

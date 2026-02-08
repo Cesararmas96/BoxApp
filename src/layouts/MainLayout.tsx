@@ -19,7 +19,7 @@ interface LayoutProps {
     userProfile?: any;
 }
 
-const getNavItems = (t: any) => [
+const getNavItems = (t: any): any[] => [
     { id: 'dashboard', path: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
     { id: 'schedule', path: '/schedule', label: t('nav.schedule'), icon: CalendarIcon },
     { id: 'members', path: '/members', label: t('nav.members'), icon: Users, roles: ['admin', 'receptionist', 'coach'] },
@@ -43,7 +43,6 @@ export const MainLayout: React.FC<LayoutProps> = ({ userProfile }) => {
     const location = useLocation();
 
     const navItems = getNavItems(t);
-    const currentNavItem = navItems.find(item => item.path === location.pathname);
 
     useEffect(() => {
         // Update Favicon based on current box

@@ -269,7 +269,7 @@ export const Billing: React.FC = () => {
             const { error: invoiceError } = await supabase
                 .from('invoices')
                 .insert([{
-                    user_id: membership.user_id,
+                    athlete_id: membership.athlete_id,
                     box_id: currentBox?.id,
                     amount: amount,
                     status: 'paid',
@@ -389,7 +389,7 @@ export const Billing: React.FC = () => {
             const { error } = await supabase
                 .from('memberships')
                 .insert([{
-                    user_id: newMembership.userId,
+                    athlete_id: newMembership.userId,
                     plan_id: newMembership.planId,
                     box_id: currentBox?.id,
                     start_date: startDate ? startDate.toISOString() : null,
@@ -849,9 +849,9 @@ export const Billing: React.FC = () => {
                                         {t('billing.add_membership')}
                                     </Button>
                                 </DialogTrigger>
-                                <DialogContent className="sm:max-w-[425px] glass border-white/10 shadow-2xl p-0">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent pointer-events-none" />
-                                    <DialogHeader className="p-6 pb-0">
+                                <DialogContent className="sm:max-w-[425px] glass border-white/10 shadow-2xl p-0 overflow-visible">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent pointer-events-none rounded-lg" />
+                                    <DialogHeader className="p-6 pb-0 relative z-0">
                                         <div className="flex items-center gap-3 mb-2">
                                             <div className="p-2 bg-primary/20 rounded-lg">
                                                 <Users className="h-5 w-5 text-primary" />
@@ -963,11 +963,18 @@ export const Billing: React.FC = () => {
                                             </div>
                                         )}
 
-                                        <div className="pt-2">
+                                        <div className="pt-2 flex gap-3">
+                                            <Button
+                                                variant="outline"
+                                                onClick={() => setIsMembershipDialogOpen(false)}
+                                                className="h-14 flex-1 rounded-2xl border-white/10 hover:bg-white/5 font-black italic uppercase tracking-wider text-sm transition-all"
+                                            >
+                                                {t('common.cancel', { defaultValue: 'CANCELAR' })}
+                                            </Button>
                                             <Button
                                                 onClick={handleCreateMembership}
                                                 disabled={loading || !newMembership.userId || !newMembership.planId}
-                                                className="h-14 w-full rounded-2xl shadow-xl shadow-primary/30 font-black italic uppercase tracking-wider text-sm hover:scale-[1.02] active:scale-[0.98] transition-all bg-gradient-to-r from-primary to-primary/80"
+                                                className="h-14 flex-[2] rounded-2xl shadow-xl shadow-primary/30 font-black italic uppercase tracking-wider text-sm hover:scale-[1.02] active:scale-[0.98] transition-all bg-gradient-to-r from-primary to-primary/80"
                                             >
                                                 {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : t('common.confirm', { defaultValue: 'CREAR MEMBRESÍA' })}
                                             </Button>
@@ -1021,7 +1028,7 @@ export const Billing: React.FC = () => {
                                                                 date.setMonth(date.getMonth() - (5 - i));
                                                                 const monthStr = date.toLocaleString('default', { month: 'short' });
                                                                 const hasPayment = invoices.some(inv =>
-                                                                    inv.user_id === m.user_id &&
+                                                                    (inv.athlete_id === m.athlete_id) &&
                                                                     new Date(inv.created_at).getMonth() === date.getMonth() &&
                                                                     new Date(inv.created_at).getFullYear() === date.getFullYear() &&
                                                                     inv.status === 'paid'

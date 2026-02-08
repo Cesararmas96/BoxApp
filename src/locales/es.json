@@ -215,6 +215,9 @@
         "waiver_status": "Estado Legal",
         "waiver_legal": "Deslinde Legal Firmado",
         "edit_profile": "Editar Perfil",
+        "edit_title": "EDITAR MIEMBRO",
+        "edit_desc": "Actualiza la información del perfil del miembro.",
+        "status_label": "ESTADO",
         "no_email": "Sin email"
     },
     "schedule": {

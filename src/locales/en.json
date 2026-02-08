@@ -234,6 +234,9 @@
         "waiver_status": "Legal Status",
         "waiver_legal": "Legal Waiver Signed",
         "edit_profile": "Edit Profile",
+        "edit_title": "EDIT MEMBER",
+        "edit_desc": "Update member profile information.",
+        "status_label": "STATUS",
         "no_email": "No email"
     },
     "schedule": {

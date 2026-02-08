@@ -74,6 +74,17 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
         createAccount: true
     });
     const [selectedMember, setSelectedMember] = useState<Profile | null>(null);
+    const [editOpen, setEditOpen] = useState(false);
+    const [editForm, setEditForm] = useState({
+        id: '',
+        first_name: '',
+        last_name: '',
+        medical_history: '',
+        emergency_contact_name: '',
+        emergency_contact_phone: '',
+        role_id: '',
+        status: ''
+    });
     const { notification, showNotification, hideNotification, confirmState, showConfirm, hideConfirm } = useNotification();
 
     useEffect(() => {
@@ -134,6 +145,39 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                 createAccount: true
             });
             fetchMembers();
+        }
+        setLoading(false);
+    };
+
+    const handleUpdateMember = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+
+        const { error } = await supabase
+            .from('profiles')
+            .update({
+                first_name: editForm.first_name,
+                last_name: editForm.last_name,
+                medical_history: editForm.medical_history,
+                emergency_contact_name: editForm.emergency_contact_name,
+                emergency_contact_phone: editForm.emergency_contact_phone,
+                role_id: editForm.role_id,
+                status: editForm.status
+            })
+            .eq('id', editForm.id);
+
+        if (error) {
+            console.error('Update error:', error);
+            showNotification('error', 'ERROR UPDATING MEMBER: ' + error.message.toUpperCase());
+        } else {
+            showNotification('success', 'MEMBER UPDATED SUCCESSFULLY');
+            setEditOpen(false);
+            fetchMembers();
+            // Update selectedMember for the details view if it's the same one
+            if (selectedMember?.id === editForm.id) {
+                const refreshedMember = { ...selectedMember, ...editForm };
+                setSelectedMember(refreshedMember as Profile);
+            }
         }
         setLoading(false);
     };
@@ -480,7 +524,27 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                         </Button>
                         <div className="flex-1" />
                         <Button variant="outline" onClick={() => setDetailsOpen(false)}>{t('common.cancel')}</Button>
-                        <Button variant="default">{t('members.edit_profile')}</Button>
+                        <Button
+                            variant="default"
+                            onClick={() => {
+                                if (selectedMember) {
+                                    setEditForm({
+                                        id: selectedMember.id,
+                                        first_name: selectedMember.first_name,
+                                        last_name: selectedMember.last_name,
+                                        medical_history: selectedMember.medical_history || '',
+                                        emergency_contact_name: selectedMember.emergency_contact_name || '',
+                                        emergency_contact_phone: selectedMember.emergency_contact_phone || '',
+                                        role_id: selectedMember.role_id,
+                                        status: selectedMember.status
+                                    });
+                                    setDetailsOpen(false);
+                                    setEditOpen(true);
+                                }
+                            }}
+                        >
+                            {t('members.edit_profile')}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -502,6 +566,89 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                 variant={confirmState.variant}
                 icon={confirmState.icon}
             />
+
+            {/* Edit Member Dialog */}
+            <Dialog open={editOpen} onOpenChange={setEditOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>{t('members.edit_title') || 'EDIT MEMBER'}</DialogTitle>
+                        <DialogDescription>
+                            {t('members.edit_desc') || 'Update member profile information.'}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleUpdateMember} className="space-y-4 py-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">{t('members.first_name')}</label>
+                                <Input
+                                    value={editForm.first_name}
+                                    onChange={(e) => setEditForm({ ...editForm, first_name: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">{t('members.last_name')}</label>
+                                <Input
+                                    value={editForm.last_name}
+                                    onChange={(e) => setEditForm({ ...editForm, last_name: e.target.value })}
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">{t('members.status_label') || 'STATUS'}</label>
+                            <select
+                                className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                                value={editForm.status}
+                                onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                            >
+                                <option value="active">{t('members.status_active')}</option>
+                                <option value="inactive">{t('members.status_inactive')}</option>
+                                <option value="on_hold">{t('members.status_on_hold')}</option>
+                            </select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium italic text-muted-foreground flex items-center gap-2">
+                                <Stethoscope className="h-3 w-3" /> {t('members.medical_history')}
+                            </label>
+                            <Input
+                                value={editForm.medical_history}
+                                onChange={(e) => setEditForm({ ...editForm, medical_history: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium flex items-center gap-2">
+                                    <Phone className="h-3 w-3" /> {t('members.emergency_contact')}
+                                </label>
+                                <Input
+                                    value={editForm.emergency_contact_name}
+                                    onChange={(e) => setEditForm({ ...editForm, emergency_contact_name: e.target.value })}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">{t('members.phone')}</label>
+                                <Input
+                                    value={editForm.emergency_contact_phone}
+                                    onChange={(e) => setEditForm({ ...editForm, emergency_contact_phone: e.target.value })}
+                                />
+                            </div>
+                        </div>
+
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>
+                                {t('common.cancel')}
+                            </Button>
+                            <Button type="submit" disabled={loading}>
+                                {loading ? t('common.loading') : t('common.save') || 'SAVE CHANGES'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

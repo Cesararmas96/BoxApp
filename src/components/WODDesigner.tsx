@@ -10,7 +10,9 @@ import {
     Activity,
     Flame as FlameIcon,
     Dumbbell,
-    Search
+    Search,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Button } from '@/components/ui/button';
@@ -58,6 +60,8 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
     const { t } = useLanguage();
     const [searchQuery, setSearchQuery] = useState('');
     const [activeSearchBlockId, setActiveSearchBlockId] = useState<string | null>(null);
+    const [searchPage, setSearchPage] = useState(1);
+    const searchItemsPerPage = 5;
 
     const BLOCK_TEMPLATES: Record<string, { title: string; icon: any; color: string }> = {
         warmup: { title: t('wods.block_warmup'), icon: <FlameIcon className="h-4 w-4" />, color: 'bg-orange-500/10 text-orange-500' },
@@ -133,9 +137,16 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
         setSessionBlocks(items);
     };
 
-    const filteredMovements = movements.filter(m =>
+    const allFilteredMovements = movements.filter(m =>
         m.name.toLowerCase().includes(searchQuery.toLowerCase())
-    ).slice(0, 5);
+    );
+
+    const filteredMovements = allFilteredMovements.slice(
+        (searchPage - 1) * searchItemsPerPage,
+        searchPage * searchItemsPerPage
+    );
+
+    const totalSearchPages = Math.ceil(allFilteredMovements.length / searchItemsPerPage);
 
     return (
         <div className="space-y-6">
@@ -164,7 +175,7 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
                                         <Card
                                             ref={provided.innerRef}
                                             {...provided.draggableProps}
-                                            className="border-l-4"
+                                            className="border-l-4 overflow-visible"
                                             style={{
                                                 borderLeftColor: `var(--${block.type}-color)`,
                                                 ...provided.draggableProps.style
@@ -260,38 +271,65 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
                                                     />
                                                     {activeSearchBlockId === block.id && searchQuery && (
                                                         <div className="absolute top-full left-0 right-0 mt-2 bg-background border border-primary/20 rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                                                            <div className="max-h-[200px] overflow-y-auto">
+                                                            <div className="max-h-[300px] overflow-y-auto">
                                                                 {filteredMovements.map((m) => (
                                                                     <button
                                                                         key={m.id}
-                                                                        className="w-full text-left px-3 py-2 text-xs hover:bg-primary/10 flex items-center justify-between group transition-colors border-b last:border-0"
+                                                                        className="w-full text-left px-3 py-3 text-xs hover:bg-primary/10 flex items-center justify-between group transition-colors border-b last:border-0"
                                                                         onClick={() => {
                                                                             addMovementToBlock(block.id, m);
                                                                             setSearchQuery('');
                                                                             setActiveSearchBlockId(null);
+                                                                            setSearchPage(1);
                                                                         }}
                                                                     >
                                                                         <div className="flex flex-col">
-                                                                            <span className="font-bold uppercase italic tracking-tighter">{m.name}</span>
-                                                                            {m.category && <span className="text-[8px] text-muted-foreground uppercase">{m.category}</span>}
+                                                                            <span className="font-bold uppercase italic tracking-tighter text-sm">{m.name}</span>
+                                                                            {m.category && <span className="text-[9px] text-muted-foreground uppercase font-black">{m.category}</span>}
                                                                         </div>
-                                                                        <Plus className="h-3 w-3 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                                        <Plus className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                                                                     </button>
                                                                 ))}
-                                                                {filteredMovements.length === 0 && (
-                                                                    <div className="px-3 py-4 text-center">
-                                                                        <p className="text-[10px] text-muted-foreground italic uppercase tracking-widest">
+                                                                {allFilteredMovements.length === 0 && (
+                                                                    <div className="px-3 py-6 text-center">
+                                                                        <p className="text-[10px] text-muted-foreground italic uppercase tracking-widest font-black">
                                                                             {t('common.no_data')}
                                                                         </p>
                                                                     </div>
                                                                 )}
                                                             </div>
-                                                            <div className="bg-muted/50 p-1 flex justify-center border-t">
+
+                                                            {totalSearchPages > 1 && (
+                                                                <div className="flex items-center justify-between p-2 bg-muted/20 border-t">
+                                                                    <button
+                                                                        disabled={searchPage === 1}
+                                                                        onClick={() => setSearchPage(p => Math.max(1, p - 1))}
+                                                                        className="p-1 hover:text-primary disabled:opacity-30 transition-colors"
+                                                                    >
+                                                                        <ChevronLeft className="h-4 w-4" />
+                                                                    </button>
+                                                                    <span className="text-[9px] font-black uppercase tracking-widest opacity-60">
+                                                                        {searchPage} / {totalSearchPages}
+                                                                    </span>
+                                                                    <button
+                                                                        disabled={searchPage === totalSearchPages}
+                                                                        onClick={() => setSearchPage(p => Math.min(totalSearchPages, p + 1))}
+                                                                        className="p-1 hover:text-primary disabled:opacity-30 transition-colors"
+                                                                    >
+                                                                        <ChevronRight className="h-4 w-4" />
+                                                                    </button>
+                                                                </div>
+                                                            )}
+
+                                                            <div className="bg-muted/50 p-2 flex justify-center border-t">
                                                                 <button
-                                                                    className="text-[8px] uppercase font-bold text-muted-foreground hover:text-primary transition-colors"
-                                                                    onClick={() => setActiveSearchBlockId(null)}
+                                                                    className="text-[9px] uppercase font-black tracking-widest text-muted-foreground hover:text-primary transition-colors"
+                                                                    onClick={() => {
+                                                                        setActiveSearchBlockId(null);
+                                                                        setSearchPage(1);
+                                                                    }}
                                                                 >
-                                                                    Close Search
+                                                                    {t('common.close').toUpperCase()}
                                                                 </button>
                                                             </div>
                                                         </div>

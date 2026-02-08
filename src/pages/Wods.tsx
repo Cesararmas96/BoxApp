@@ -84,7 +84,7 @@ export const Wods: React.FC = () => {
     const [isCopying, setIsCopying] = useState<string | null>(null);
     const [activeTrack, setActiveTrack] = useState<string>('all');
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 6;
+    const itemsPerPage = 12;
 
     // UI State for Editor
     const [newWOD, setNewWOD] = useState({

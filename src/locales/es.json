@@ -477,5 +477,29 @@
         "starts_in": "Comienza en {{count}} días",
         "athletes_registered": "{{count}} atletas registrados",
         "stable": "Estable"
+    },
+    "benchmarks": {
+        "title": "Benchmarks y Récords",
+        "subtitle": "Trackea tus hitos de rendimiento y récords históricos.",
+        "log_new": "Registrar Nuevo PR",
+        "register_title": "Registrar Récord Personal",
+        "register_desc": "Registra tu progreso y mantén un seguimiento de tus hitos de rendimiento.",
+        "select_benchmark": "Seleccionar Benchmark",
+        "search_placeholder": "Buscar movimiento...",
+        "value_placeholder": "Resultado (ej. 100kg, 10:00, 50 reps)",
+        "notes_placeholder": "Notas (Opcional)",
+        "notes_hint": "Sensaciones, contexto...",
+        "save_btn": "Guardar PR",
+        "top_lifts": "Levantamientos Top",
+        "consistency_score": "Puntaje de Consistencia",
+        "consistency_desc": "Seguimiento activo últimos 30 días",
+        "history_title": "Historial de Récords Personales",
+        "table_movement": "Movimiento",
+        "table_value": "Valor",
+        "table_date": "Fecha",
+        "table_notes": "Notas",
+        "no_movements": "No se encontraron movimientos. Prueba otro término.",
+        "target_benchmark": "Benchmark Objetivo",
+        "change": "Cambiar"
     }
 }

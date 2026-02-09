@@ -493,5 +493,29 @@
         "debt_label": "Debt: ${{amount}}",
         "days_inactive": "{{count}} Days Inactive",
         "stable": "Stable"
+    },
+    "benchmarks": {
+        "title": "Benchmarks & PRs",
+        "subtitle": "Track your performance milestones and all-time records.",
+        "log_new": "Log New PR",
+        "register_title": "Register Personal Record",
+        "register_desc": "Log your progress and keep track of your performance milestones.",
+        "select_benchmark": "Select Benchmark",
+        "search_placeholder": "Search movement...",
+        "value_placeholder": "Result (e.g. 100kg, 10:00, 50 reps)",
+        "notes_placeholder": "Notes (Optional)",
+        "notes_hint": "Feelings, context...",
+        "save_btn": "Save PR",
+        "top_lifts": "Top Lifts",
+        "consistency_score": "Consistency Score",
+        "consistency_desc": "Last 30 days active track",
+        "history_title": "Personal Records History",
+        "table_movement": "Movement",
+        "table_value": "Value",
+        "table_date": "Date",
+        "table_notes": "Notes",
+        "no_movements": "No movements found. Try another term.",
+        "target_benchmark": "Target Benchmark",
+        "change": "Change"
     }
 }

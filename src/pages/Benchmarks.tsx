@@ -132,32 +132,32 @@ export const Benchmarks: React.FC = () => {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Benchmarks & PRs</h1>
-                    <p className="text-muted-foreground text-sm">Track your performance milestones and all-time records.</p>
+                    <h1 className="text-4xl font-black italic uppercase tracking-tighter">{t('benchmarks.title')}</h1>
+                    <p className="text-muted-foreground text-xs font-medium uppercase tracking-widest opacity-70">{t('benchmarks.subtitle')}</p>
                 </div>
 
                 <Dialog open={open} onOpenChange={setOpen}>
                     <DialogTrigger asChild>
-                        <Button className="gap-2">
-                            <Plus className="h-4 w-4" /> Log New PR
+                        <Button className="gap-2 font-black uppercase tracking-widest text-[10px] py-6 px-8 rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 transition-all">
+                            <Plus className="h-4 w-4" /> {t('benchmarks.log_new')}
                         </Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Register Personal Record</DialogTitle>
+                            <DialogTitle>{t('benchmarks.register_title')}</DialogTitle>
                             <DialogDescription className="sr-only">
-                                Log your progress and keep track of your performance milestones.
+                                {t('benchmarks.register_desc')}
                             </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-muted-foreground">Select Benchmark</label>
+                                <label className="text-sm font-medium text-muted-foreground">{t('benchmarks.select_benchmark')}</label>
                                 {!newPR.benchmarkId ? (
                                     <div className="space-y-2">
                                         <div className="relative">
                                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                             <Input
-                                                placeholder="Search movement..."
+                                                placeholder={t('benchmarks.search_placeholder')}
                                                 className="pl-9"
                                                 value={searchTerm}
                                                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -186,14 +186,14 @@ export const Benchmarks: React.FC = () => {
                                                     </button>
                                                 ))}
                                             {benchmarks.length === 0 && (
-                                                <p className="text-center py-8 text-xs text-muted-foreground italic">No movements found. Try another term.</p>
+                                                <p className="text-center py-8 text-xs text-muted-foreground italic">{t('benchmarks.no_movements')}</p>
                                             )}
                                         </div>
                                     </div>
                                 ) : (
                                     <div className="flex items-center justify-between p-4 rounded-2xl bg-primary/10 border border-primary/20 animate-in fade-in zoom-in duration-300">
                                         <div className="flex flex-col">
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-primary leading-none mb-1">Target Benchmark</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-primary leading-none mb-1">{t('benchmarks.target_benchmark')}</span>
                                             <span className="text-sm font-black uppercase italic tracking-tight">
                                                 {benchmarks.find(b => b.id === newPR.benchmarkId)?.name}
                                             </span>
@@ -204,31 +204,31 @@ export const Benchmarks: React.FC = () => {
                                             onClick={() => setNewPR({ ...newPR, benchmarkId: '' })}
                                             className="text-[9px] font-black uppercase tracking-widest hover:bg-primary/20"
                                         >
-                                            Change
+                                            {t('benchmarks.change')}
                                         </Button>
                                     </div>
                                 )}
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-muted-foreground">Result (e.g. 100kg, 10:00, 50 reps)</label>
+                                <label className="text-sm font-medium text-muted-foreground">{t('benchmarks.value_placeholder')}</label>
                                 <Input
-                                    placeholder="Value"
+                                    placeholder={t('common.search')}
                                     value={newPR.value}
                                     onChange={(e) => setNewPR({ ...newPR, value: e.target.value })}
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-muted-foreground">Notes (Optional)</label>
+                                <label className="text-sm font-medium text-muted-foreground">{t('benchmarks.notes_placeholder')}</label>
                                 <Input
-                                    placeholder="Feelings, context..."
+                                    placeholder={t('benchmarks.notes_hint')}
                                     value={newPR.notes}
                                     onChange={(e) => setNewPR({ ...newPR, notes: e.target.value })}
                                 />
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                            <Button onClick={handleAddPR} disabled={!newPR.benchmarkId || !newPR.value}>Save PR</Button>
+                            <Button variant="outline" onClick={() => setOpen(false)}>{t('common.cancel')}</Button>
+                            <Button onClick={handleAddPR} disabled={!newPR.benchmarkId || !newPR.value}>{t('benchmarks.save_btn')}</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
@@ -236,20 +236,20 @@ export const Benchmarks: React.FC = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* PR History */}
-                <Card className="lg:col-span-2">
+                <Card className="lg:col-span-2 shadow-2xl shadow-primary/5">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <History className="h-5 w-5 text-primary" /> History of PRs
+                        <CardTitle className="flex items-center gap-2 text-xl font-black italic uppercase tracking-tight">
+                            <History className="h-5 w-5 text-primary" /> {t('benchmarks.history_title')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <Table>
                             <TableHeader>
-                                <TableRow>
-                                    <TableHead>Benchmark</TableHead>
-                                    <TableHead>Record</TableHead>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead>Notes</TableHead>
+                                <TableRow className="hover:bg-transparent border-primary/10">
+                                    <TableHead className="text-[10px] font-black uppercase tracking-widest">{t('benchmarks.table_movement')}</TableHead>
+                                    <TableHead className="text-[10px] font-black uppercase tracking-widest">{t('benchmarks.table_value')}</TableHead>
+                                    <TableHead className="text-[10px] font-black uppercase tracking-widest">{t('benchmarks.table_date')}</TableHead>
+                                    <TableHead className="text-[10px] font-black uppercase tracking-widest">{t('benchmarks.table_notes')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -340,7 +340,7 @@ export const Benchmarks: React.FC = () => {
                                 </Button>
                             </div>
                             <div className="hidden sm:block text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">
-                                Showing <span className="text-primary">{Math.min(prs.length, (currentPage - 1) * itemsPerPage + 1)}-{Math.min(prs.length, currentPage * itemsPerPage)}</span> of {prs.length} records
+                                Showing <span className="text-primary">{Math.min(prs.length, (currentPage - 1) * itemsPerPage + 1)}-{Math.min(prs.length, currentPage * itemsPerPage)}</span> of {prs.length} {t('benchmarks.history_title').toLowerCase()}
                             </div>
                         </div>
                     )}
@@ -348,9 +348,9 @@ export const Benchmarks: React.FC = () => {
 
                 {/* Categories / Quick Stats */}
                 <div className="space-y-6">
-                    <Card>
+                    <Card className="shadow-2xl shadow-primary/5">
                         <CardHeader>
-                            <CardTitle className="text-sm font-bold uppercase tracking-tight text-muted-foreground">Top Lifts</CardTitle>
+                            <CardTitle className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60">{t('benchmarks.top_lifts')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {(() => {
@@ -387,9 +387,9 @@ export const Benchmarks: React.FC = () => {
                         <CardContent className="pt-6">
                             <div className="flex flex-col items-center text-center space-y-2">
                                 <Activity className="h-10 w-10 text-primary animate-pulse" />
-                                <h3 className="text-xs font-black uppercase tracking-[0.2em]">{t('analytics.attendance')} Score</h3>
+                                <h3 className="text-xs font-black uppercase tracking-[0.2em]">{t('benchmarks.consistency_score')}</h3>
                                 <div className="text-4xl font-black italic italic tracking-tighter text-primary">{consistencyScore}%</div>
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 leading-none">Last 30 days active track</p>
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 leading-none">{t('benchmarks.consistency_desc')}</p>
                                 <div className="h-1.5 w-full bg-primary/10 rounded-full mt-4 overflow-hidden border border-primary/5">
                                     <div
                                         className="h-full bg-primary transition-all duration-1000 shadow-[0_0_15px_rgba(var(--primary),0.5)]"

@@ -93,6 +93,19 @@ export const Profile: React.FC = () => {
         fileInputRef.current?.click();
     };
 
+    const getFileNameFromUrl = (url: string) => {
+        if (!url) return '';
+        if (url.includes('avatars/')) {
+            const parts = url.split('_');
+            if (parts.length > 1) {
+                return parts.slice(1).join('_');
+            }
+            const pathParts = url.split('/');
+            return pathParts[pathParts.length - 1];
+        }
+        return url;
+    };
+
     const compressImage = (file: File, maxWidth = 800, maxHeight = 800, quality = 0.8): Promise<Blob> => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -154,8 +167,9 @@ export const Profile: React.FC = () => {
             // Compress image if it's an image
             const compressedBlob = await compressImage(file);
             const fileExt = 'jpg'; // We compress to jpeg
-            const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-            const filePath = `${fileName}`;
+            const cleanFileName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+            const storageFileName = `${user.id}/${Date.now()}_${cleanFileName}`;
+            const filePath = `${storageFileName}`;
 
             const { error: uploadError } = await supabase.storage
                 .from('avatars')
@@ -352,16 +366,17 @@ export const Profile: React.FC = () => {
                                     <Input
                                         id="avatar_url"
                                         placeholder={t('profile.avatar_url_placeholder')}
-                                        value={profile.avatar_url}
+                                        value={getFileNameFromUrl(profile.avatar_url)}
                                         onChange={(e) => setProfile({ ...profile, avatar_url: e.target.value })}
                                         className="bg-muted/50 border-border/50 h-12 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all text-foreground font-medium italic flex-1"
                                     />
                                     <Button
                                         variant="outline"
-                                        className="h-12 w-12 rounded-xl border-border/50 bg-muted/50 hover:bg-muted"
+                                        className="h-12 px-4 rounded-xl border-border/50 bg-muted/50 hover:bg-muted gap-2"
                                         onClick={handleAvatarClick}
                                     >
                                         <Camera className="h-4 w-4 text-muted-foreground" />
+                                        <span className="text-xs font-bold uppercase tracking-widest">{t('profile.upload_photo')}</span>
                                     </Button>
                                 </div>
                             </div>

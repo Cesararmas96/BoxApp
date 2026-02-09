@@ -66,6 +66,64 @@ export const Settings: React.FC = () => {
         }
     }, [currentBox]);
 
+    const getFileNameFromUrl = (url: string) => {
+        if (!url) return '';
+        if (url.includes('brand/')) {
+            const parts = url.split('_');
+            if (parts.length > 1) {
+                // Return original name (skip type and timestamp)
+                return parts.slice(2).join('_');
+            }
+            const pathParts = url.split('/');
+            return pathParts[pathParts.length - 1];
+        }
+        return url;
+    };
+
+    const compressImage = (file: File, maxWidth = 800, maxHeight = 800, quality = 0.8): Promise<Blob> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target?.result as string;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height *= maxWidth / width;
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width *= maxHeight / height;
+                            height = maxHeight;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx?.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob(
+                        (blob) => {
+                            if (blob) resolve(blob);
+                            else reject(new Error('Canvas to Blob failed'));
+                        },
+                        'image/jpeg',
+                        quality
+                    );
+                };
+                img.onerror = (err) => reject(err);
+            };
+            reader.onerror = (err) => reject(err);
+        });
+    };
+
     const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'favicon') => {
         const file = event.target.files?.[0];
         if (!file || !currentBox?.id) return;
@@ -74,13 +132,19 @@ export const Settings: React.FC = () => {
         setMessage(null);
 
         try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${type}_${Date.now()}.${fileExt}`;
+            // Compress if it's an image
+            const compressedBlob = await compressImage(file, type === 'logo' ? 800 : 128, type === 'logo' ? 800 : 128);
+
+            const cleanFileName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+            const fileName = `${type}_${Date.now()}_${cleanFileName}`;
             const filePath = `brand/${currentBox.id}/${fileName}`;
 
             const { error: uploadError } = await supabase.storage
                 .from('branding')
-                .upload(filePath, file);
+                .upload(filePath, compressedBlob, {
+                    contentType: 'image/jpeg',
+                    upsert: true
+                });
 
             if (uploadError) throw uploadError;
 
@@ -208,17 +272,18 @@ export const Settings: React.FC = () => {
                                                 <Input
                                                     id="logo-url"
                                                     placeholder="https://example.com/logo.png"
-                                                    value={boxSettings.logo_url}
+                                                    value={getFileNameFromUrl(boxSettings.logo_url)}
                                                     onChange={(e) => setBoxSettings({ ...boxSettings, logo_url: e.target.value })}
                                                     className="rounded-xl h-11 flex-1"
                                                 />
                                                 <Button
                                                     variant="outline"
-                                                    className="rounded-xl h-11 flex-shrink-0"
+                                                    className="rounded-xl h-11 flex-shrink-0 gap-2 px-4"
                                                     onClick={() => logoInputRef.current?.click()}
                                                     disabled={isUploading === 'logo'}
                                                 >
                                                     {isUploading === 'logo' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                                                    <span className="text-xs font-bold uppercase tracking-widest">{t('settings.branding.upload')}</span>
                                                 </Button>
                                             </div>
                                             <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'logo')} />
@@ -230,17 +295,18 @@ export const Settings: React.FC = () => {
                                                 <Input
                                                     id="favicon-url"
                                                     placeholder="https://example.com/favicon.ico"
-                                                    value={boxSettings.favicon_url}
+                                                    value={getFileNameFromUrl(boxSettings.favicon_url)}
                                                     onChange={(e) => setBoxSettings({ ...boxSettings, favicon_url: e.target.value })}
                                                     className="rounded-xl h-11 flex-1"
                                                 />
                                                 <Button
                                                     variant="outline"
-                                                    className="rounded-xl h-11 flex-shrink-0"
+                                                    className="rounded-xl h-11 flex-shrink-0 gap-2 px-4"
                                                     onClick={() => faviconInputRef.current?.click()}
                                                     disabled={isUploading === 'favicon'}
                                                 >
                                                     {isUploading === 'favicon' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                                                    <span className="text-xs font-bold uppercase tracking-widest">{t('settings.branding.upload')}</span>
                                                 </Button>
                                             </div>
                                             <input type="file" ref={faviconInputRef} className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'favicon')} />

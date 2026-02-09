@@ -397,8 +397,14 @@ export const Competitions: React.FC = () => {
         });
     };
 
-    const filteredCompetitions = (status: string) =>
-        competitions.filter(c => c.status === status);
+    const filteredCompetitions = (status: string) => {
+        return competitions.filter(c => {
+            const s = c.status?.toLowerCase() || 'upcoming';
+            if (status === 'active') return s === 'active' || s === 'upcoming' || s === 'scheduled';
+            if (status === 'finished') return s === 'finished' || s === 'completed';
+            return s === status;
+        });
+    };
 
     const getPaginatedCompetitions = (status: string) => {
         const filtered = filteredCompetitions(status);
@@ -428,7 +434,8 @@ export const Competitions: React.FC = () => {
             .from('competitions')
             .insert([{
                 ...newComp,
-                box_id: currentBox?.id
+                box_id: currentBox?.id,
+                status: 'upcoming'
             }]);
 
         if (error) {
@@ -526,11 +533,10 @@ export const Competitions: React.FC = () => {
             <Tabs defaultValue="active" className="w-full" onValueChange={() => setCurrentPage(1)}>
                 <TabsList className="bg-transparent border-b rounded-none h-12 p-0 gap-8">
                     <TabsTrigger value="active" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none h-full px-0 font-black uppercase text-[10px] tracking-widest">{t('competitions.active_tab')}</TabsTrigger>
-                    <TabsTrigger value="scheduled" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none h-full px-0 font-black uppercase text-[10px] tracking-widest">{t('competitions.scheduled_tab', { defaultValue: 'Scheduled' })}</TabsTrigger>
                     <TabsTrigger value="finished" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none h-full px-0 font-black uppercase text-[10px] tracking-widest">{t('competitions.past_tab')}</TabsTrigger>
                 </TabsList>
 
-                {['active', 'scheduled', 'finished'].map((status) => (
+                {['active', 'finished'].map((status) => (
                     <TabsContent key={status} value={status} className="mt-10">
                         {loading && competitions.length === 0 ? (
                             <div className="py-20 text-center text-muted-foreground animate-pulse font-black uppercase tracking-widest text-xs">{t('common.loading')}</div>

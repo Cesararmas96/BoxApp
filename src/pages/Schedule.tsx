@@ -411,8 +411,13 @@ export const Schedule: React.FC = () => {
                                     <>
                                         {/* General Day Programming Summary */}
                                         {(() => {
-                                            const dayWods = wods.filter(w => w.date?.split('T')[0] === date.toISOString().split('T')[0]);
-                                            if (dayWods.length > 0) {
+                                            const localDateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                                            const dayWods = wods.filter(w => w.date?.split('T')[0] === localDateStr);
+
+                                            // Store it in a variable for later use in the empty state check
+                                            const hasProgramming = dayWods.length > 0;
+
+                                            if (hasProgramming) {
                                                 return (
                                                     <div className="mb-4 p-3 rounded-2xl bg-primary/5 border border-primary/10">
                                                         <div className="flex items-center justify-between mb-2">
@@ -440,7 +445,7 @@ export const Schedule: React.FC = () => {
                                             return null;
                                         })()}
 
-                                        {daySessions.length > 0 ? (
+                                        {daySessions.length > 0 && (
                                             <div className="space-y-4">
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <span className="h-px flex-1 bg-white/5" />
@@ -505,12 +510,22 @@ export const Schedule: React.FC = () => {
                                                     ))}
                                                 </div>
                                             </div>
-                                        ) : (
-                                            <div className="flex-1 flex flex-col items-center justify-center opacity-10 py-8">
-                                                <CalendarIcon className="h-8 w-8 mb-2" />
-                                                <p className="text-[8px] font-black uppercase tracking-[0.2em] text-center">No Sessions</p>
-                                            </div>
                                         )}
+
+                                        {(() => {
+                                            const localDateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                                            const hasProgramming = wods.some(w => w.date?.split('T')[0] === localDateStr);
+
+                                            if (daySessions.length === 0 && !hasProgramming) {
+                                                return (
+                                                    <div className="flex-1 flex flex-col items-center justify-center opacity-10 py-8">
+                                                        <CalendarIcon className="h-8 w-8 mb-2" />
+                                                        <p className="text-[8px] font-black uppercase tracking-[0.2em] text-center">No Activity</p>
+                                                    </div>
+                                                );
+                                            }
+                                            return null;
+                                        })()}
                                     </>
                                 )}
                             </CardContent>

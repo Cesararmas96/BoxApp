@@ -71,22 +71,43 @@ export const MainLayout: React.FC<LayoutProps> = ({ userProfile }) => {
         } else {
             document.title = "BOX MANAGER";
         }
-    }, [currentBox, location.pathname, t]);
+    }, [currentBox, location.pathname, t, navItems]);
 
     const changeLanguage = (lng: string) => {
         i18n.changeLanguage(lng);
     };
-
-
 
     const handleLogout = async () => {
         await signOut();
         navigate('/login');
     };
 
-    const filteredNavItems = navItems.filter(item =>
-        !item.roles || (userProfile?.role_id && item.roles.includes(userProfile.role_id))
-    );
+    const customNavConfig = (currentBox?.theme_config as any)?.navigation;
+
+    const filteredNavItems = navItems
+        .filter(item => {
+            // Role access check (existing logic)
+            const hasRoleAccess = !item.roles || (userProfile?.role_id && item.roles.includes(userProfile.role_id));
+            if (!hasRoleAccess) return false;
+
+            // Custom visibility check
+            if (customNavConfig && Array.isArray(customNavConfig)) {
+                const config = customNavConfig.find(c => c.id === item.id);
+                if (config && config.visible === false) return false;
+            }
+            return true;
+        })
+        .sort((a, b) => {
+            // Custom order check
+            if (customNavConfig && Array.isArray(customNavConfig)) {
+                const configA = customNavConfig.find(c => c.id === a.id);
+                const configB = customNavConfig.find(c => c.id === b.id);
+                if (configA && configB && typeof configA.order === 'number' && typeof configB.order === 'number') {
+                    return configA.order - configB.order;
+                }
+            }
+            return 0;
+        });
 
     const navigateTo = (path: string) => {
         navigate(path);

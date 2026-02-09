@@ -22,6 +22,7 @@ interface AuthContextType {
     updateUser: (attributes: any) => Promise<{ data: any; error: any }>;
     signOut: () => Promise<void>;
     refreshProfile: () => Promise<void>;
+    setCurrentBox: (box: Box | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -191,7 +192,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         resetPassword,
         updateUser,
         signOut,
-        refreshProfile
+        refreshProfile,
+        setCurrentBox
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -17,6 +17,7 @@ export type Database = {
             audit_logs: {
                 Row: {
                     action: string
+                    box_id: string | null
                     changed_by: string | null
                     created_at: string | null
                     id: string
@@ -24,9 +25,11 @@ export type Database = {
                     old_data: Json | null
                     record_id: string
                     table_name: string
+                    user_id: string | null
                 }
                 Insert: {
                     action: string
+                    box_id?: string | null
                     changed_by?: string | null
                     created_at?: string | null
                     id?: string
@@ -34,9 +37,11 @@ export type Database = {
                     old_data?: Json | null
                     record_id: string
                     table_name: string
+                    user_id?: string | null
                 }
                 Update: {
                     action?: string
+                    box_id?: string | null
                     changed_by?: string | null
                     created_at?: string | null
                     id?: string
@@ -44,8 +49,17 @@ export type Database = {
                     old_data?: Json | null
                     record_id?: string
                     table_name?: string
+                    user_id?: string | null
                 }
-                Relationships: []
+                Relationships: [
+                    {
+                        foreignKeyName: "audit_logs_changed_by_fkey"
+                        columns: ["changed_by"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    },
+                ]
             }
             automation_logs: {
                 Row: {
@@ -78,135 +92,146 @@ export type Database = {
                     status?: string | null
                     target_user_id?: string | null
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "automation_logs_box_id_fkey"
-                        columns: ["box_id"]
-                        isOneToOne: false
-                        referencedRelation: "boxes"
-                        referencedColumns: ["id"]
-                    },
-                    {
-                        foreignKeyName: "automation_logs_performed_by_fkey"
-                        columns: ["performed_by"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["id"]
-                    },
-                    {
-                        foreignKeyName: "automation_logs_target_user_id_fkey"
-                        columns: ["target_user_id"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["id"]
-                    },
-                ]
-            }
-            bookings: {
-                Row: {
-                    box_id: string | null
-                    created_at: string | null
-                    id: string
-                    session_id: string | null
-                    status: string | null
-                    user_id: string | null
-                }
-                Insert: {
-                    box_id?: string | null
-                    created_at?: string | null
-                    id?: string
-                    session_id?: string | null
-                    status?: string | null
-                    user_id?: string | null
-                }
-                Update: {
-                    box_id?: string | null
-                    created_at?: string | null
-                    id?: string
-                    session_id?: string | null
-                    status?: string | null
-                    user_id?: string | null
-                }
-                Relationships: [
-                    {
-                        foreignKeyName: "bookings_box_id_fkey"
-                        columns: ["box_id"]
-                        isOneToOne: false
-                        referencedRelation: "boxes"
-                        referencedColumns: ["id"]
-                    },
-                    {
-                        foreignKeyName: "bookings_session_id_fkey"
-                        columns: ["session_id"]
-                        isOneToOne: false
-                        referencedRelation: "sessions"
-                        referencedColumns: ["id"]
-                    },
-                    {
-                        foreignKeyName: "bookings_user_id_fkey"
-                        columns: ["user_id"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["id"]
-                    },
-                ]
-            }
-            box_settings: {
-                Row: {
-                    box_name: string | null
-                    favicon_url: string | null
-                    id: number
-                    logo_url: string | null
-                    updated_at: string | null
-                }
-                Insert: {
-                    box_name?: string | null
-                    favicon_url?: string | null
-                    id: number
-                    logo_url?: string | null
-                    updated_at?: string | null
-                }
-                Update: {
-                    box_name?: string | null
-                    favicon_url?: string | null
-                    id?: number
-                    logo_url?: string | null
-                    updated_at?: string | null
-                }
                 Relationships: []
             }
             boxes: {
                 Row: {
+                    address: string | null
                     created_at: string | null
-                    favicon_url: string | null
+                    feature_flags: Json | null
                     id: string
                     logo_url: string | null
                     name: string
-                    slug: string
+                    owner_id: string | null
+                    phone: string | null
+                    subscription_plan: string | null
+                    subscription_status: string | null
                     theme_config: Json | null
-                    updated_at: string | null
+                    timezone: string | null
                 }
                 Insert: {
+                    address?: string | null
                     created_at?: string | null
-                    favicon_url?: string | null
+                    feature_flags?: Json | null
                     id?: string
                     logo_url?: string | null
                     name: string
-                    slug: string
+                    owner_id?: string | null
+                    phone?: string | null
+                    subscription_plan?: string | null
+                    subscription_status?: string | null
                     theme_config?: Json | null
-                    updated_at?: string | null
+                    timezone?: string | null
                 }
                 Update: {
+                    address?: string | null
                     created_at?: string | null
-                    favicon_url?: string | null
+                    feature_flags?: Json | null
                     id?: string
                     logo_url?: string | null
                     name?: string
-                    slug?: string
+                    owner_id?: string | null
+                    phone?: string | null
+                    subscription_plan?: string | null
+                    subscription_status?: string | null
                     theme_config?: Json | null
-                    updated_at?: string | null
+                    timezone?: string | null
                 }
                 Relationships: []
+            }
+            classes: {
+                Row: {
+                    box_id: string | null
+                    capacity: number
+                    coach_id: string | null
+                    created_at: string | null
+                    description: string | null
+                    duration_minutes: number
+                    end_time: string
+                    id: string
+                    is_canceled: boolean | null
+                    name: string
+                    program_id: string | null
+                    recurrence_rule: string | null
+                    start_time: string
+                }
+                Insert: {
+                    box_id?: string | null
+                    capacity: number
+                    coach_id?: string | null
+                    created_at?: string | null
+                    description?: string | null
+                    duration_minutes: number
+                    end_time: string
+                    id?: string
+                    is_canceled?: boolean | null
+                    name: string
+                    program_id?: string | null
+                    recurrence_rule?: string | null
+                    start_time: string
+                }
+                Update: {
+                    box_id?: string | null
+                    capacity?: number
+                    coach_id?: string | null
+                    created_at?: string | null
+                    description?: string | null
+                    duration_minutes?: number
+                    end_time?: string
+                    id?: string
+                    is_canceled?: boolean | null
+                    name?: string
+                    program_id?: string | null
+                    recurrence_rule?: string | null
+                    start_time?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "classes_coach_id_fkey"
+                        columns: ["coach_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
+            competition_divisions: {
+                Row: {
+                    competition_id: string | null
+                    created_at: string | null
+                    description: string | null
+                    gender: string | null
+                    id: string
+                    name: string
+                    updated_at: string | null
+                }
+                Insert: {
+                    competition_id?: string | null
+                    created_at?: string | null
+                    description?: string | null
+                    gender?: string | null
+                    id?: string
+                    name: string
+                    updated_at?: string | null
+                }
+                Update: {
+                    competition_id?: string | null
+                    created_at?: string | null
+                    description?: string | null
+                    gender?: string | null
+                    id?: string
+                    name?: string
+                    updated_at?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "competition_divisions_competition_id_fkey"
+                        columns: ["competition_id"]
+                        isOneToOne: false
+                        referencedRelation: "competitions"
+                        referencedColumns: ["id"]
+                    },
+                ]
             }
             competition_events: {
                 Row: {
@@ -218,6 +243,13 @@ export type Database = {
                     name: string
                     order_index: number | null
                     scoring_type: string | null
+                    standards_text: string | null
+                    standards_video_url: string | null
+                    tie_break_strategy: string | null
+                    time_cap_seconds: number | null
+                    title: string
+                    wod_id: string | null
+                    wod_type: Database["public"]["Enums"]["wod_type"] | null
                 }
                 Insert: {
                     box_id?: string | null
@@ -225,9 +257,16 @@ export type Database = {
                     created_at?: string | null
                     description?: string | null
                     id?: string
-                    name: string
+                    name?: string
                     order_index?: number | null
                     scoring_type?: string | null
+                    standards_text?: string | null
+                    standards_video_url?: string | null
+                    tie_break_strategy?: string | null
+                    time_cap_seconds?: number | null
+                    title: string
+                    wod_id?: string | null
+                    wod_type?: Database["public"]["Enums"]["wod_type"] | null
                 }
                 Update: {
                     box_id?: string | null
@@ -238,15 +277,15 @@ export type Database = {
                     name?: string
                     order_index?: number | null
                     scoring_type?: string | null
+                    standards_text?: string | null
+                    standards_video_url?: string | null
+                    tie_break_strategy?: string | null
+                    time_cap_seconds?: number | null
+                    title?: string
+                    wod_id?: string | null
+                    wod_type?: Database["public"]["Enums"]["wod_type"] | null
                 }
                 Relationships: [
-                    {
-                        foreignKeyName: "competition_events_box_id_fkey"
-                        columns: ["box_id"]
-                        isOneToOne: false
-                        referencedRelation: "boxes"
-                        referencedColumns: ["id"]
-                    },
                     {
                         foreignKeyName: "competition_events_competition_id_fkey"
                         columns: ["competition_id"]
@@ -254,38 +293,80 @@ export type Database = {
                         referencedRelation: "competitions"
                         referencedColumns: ["id"]
                     },
+                    {
+                        foreignKeyName: "competition_events_wod_id_fkey"
+                        columns: ["wod_id"]
+                        isOneToOne: false
+                        referencedRelation: "wods"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
+            competition_heats: {
+                Row: {
+                    competition_id: string | null
+                    created_at: string | null
+                    event_id: string | null
+                    id: string
+                    name: string
+                    start_time: string | null
+                    status: string | null
+                }
+                Insert: {
+                    competition_id?: string | null
+                    created_at?: string | null
+                    event_id?: string | null
+                    id?: string
+                    name: string
+                    start_time?: string | null
+                    status?: string | null
+                }
+                Update: {
+                    competition_id?: string | null
+                    created_at?: string | null
+                    event_id?: string | null
+                    id?: string
+                    name?: string
+                    start_time?: string | null
+                    status?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "competition_heats_competition_id_fkey"
+                        columns: ["competition_id"]
+                        isOneToOne: false
+                        referencedRelation: "competitions"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "competition_heats_event_id_fkey"
+                        columns: ["event_id"]
+                        isOneToOne: false
+                        referencedRelation: "competition_events"
+                        referencedColumns: ["id"]
+                    },
                 ]
             }
             competition_judges: {
                 Row: {
-                    box_id: string | null
                     competition_id: string | null
                     created_at: string | null
                     id: string
                     user_id: string | null
                 }
                 Insert: {
-                    box_id?: string | null
                     competition_id?: string | null
                     created_at?: string | null
                     id?: string
                     user_id?: string | null
                 }
                 Update: {
-                    box_id?: string | null
                     competition_id?: string | null
                     created_at?: string | null
                     id?: string
                     user_id?: string | null
                 }
                 Relationships: [
-                    {
-                        foreignKeyName: "competition_judges_box_id_fkey"
-                        columns: ["box_id"]
-                        isOneToOne: false
-                        referencedRelation: "boxes"
-                        referencedColumns: ["id"]
-                    },
                     {
                         foreignKeyName: "competition_judges_competition_id_fkey"
                         columns: ["competition_id"]
@@ -305,44 +386,63 @@ export type Database = {
             competition_participants: {
                 Row: {
                     box_id: string | null
+                    checked_in: boolean | null
                     competition_id: string | null
                     created_at: string | null
                     division: string | null
+                    division_id: string | null
                     id: string
                     status: string | null
+                    team_id: string | null
                     user_id: string | null
+                    waiver_signed: boolean | null
                 }
                 Insert: {
                     box_id?: string | null
+                    checked_in?: boolean | null
                     competition_id?: string | null
                     created_at?: string | null
                     division?: string | null
+                    division_id?: string | null
                     id?: string
                     status?: string | null
+                    team_id?: string | null
                     user_id?: string | null
+                    waiver_signed?: boolean | null
                 }
                 Update: {
                     box_id?: string | null
+                    checked_in?: boolean | null
                     competition_id?: string | null
                     created_at?: string | null
                     division?: string | null
+                    division_id?: string | null
                     id?: string
                     status?: string | null
+                    team_id?: string | null
                     user_id?: string | null
+                    waiver_signed?: boolean | null
                 }
                 Relationships: [
-                    {
-                        foreignKeyName: "competition_participants_box_id_fkey"
-                        columns: ["box_id"]
-                        isOneToOne: false
-                        referencedRelation: "boxes"
-                        referencedColumns: ["id"]
-                    },
                     {
                         foreignKeyName: "competition_participants_competition_id_fkey"
                         columns: ["competition_id"]
                         isOneToOne: false
                         referencedRelation: "competitions"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "competition_participants_division_id_fkey"
+                        columns: ["division_id"]
+                        isOneToOne: false
+                        referencedRelation: "competition_divisions"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "competition_participants_team_id_fkey"
+                        columns: ["team_id"]
+                        isOneToOne: false
+                        referencedRelation: "competition_teams"
                         referencedColumns: ["id"]
                     },
                     {
@@ -354,91 +454,71 @@ export type Database = {
                     },
                 ]
             }
-            expenses: {
-                Row: {
-                    amount: number | null
-                    box_id: string | null
-                    category: string | null
-                    created_at: string | null
-                    date: string | null
-                    description: string | null
-                    id: string
-                    updated_at: string | null
-                }
-                Insert: {
-                    amount?: number | null
-                    box_id?: string | null
-                    category?: string | null
-                    created_at?: string | null
-                    date?: string | null
-                    description?: string | null
-                    id?: string
-                    updated_at?: string | null
-                }
-                Update: {
-                    amount?: number | null
-                    box_id?: string | null
-                    category?: string | null
-                    created_at?: string | null
-                    date?: string | null
-                    description?: string | null
-                    id?: string
-                    updated_at?: string | null
-                }
-                Relationships: [
-                    {
-                        foreignKeyName: "expenses_box_id_fkey"
-                        columns: ["box_id"]
-                        isOneToOne: false
-                        referencedRelation: "boxes"
-                        referencedColumns: ["id"]
-                    },
-                ]
-            }
             competition_scores: {
                 Row: {
+                    athlete_signature: boolean | null
                     box_id: string | null
                     created_at: string | null
-                    event_id: string | null
+                    event_id: string
                     id: string
                     is_validated: boolean | null
-                    participant_id: string | null
-                    score_value: number | null
+                    judge_signature: string | null
+                    judge_user_id: string | null
+                    notes: string | null
+                    participant_id: string
+                    score_display: string
+                    score_value: number
+                    status: Database["public"]["Enums"]["score_status"] | null
+                    tie_break_value: number | null
                     validated_by: string | null
                 }
                 Insert: {
+                    athlete_signature?: boolean | null
                     box_id?: string | null
                     created_at?: string | null
-                    event_id?: string | null
+                    event_id: string
                     id?: string
                     is_validated?: boolean | null
-                    participant_id?: string | null
-                    score_value?: number | null
+                    judge_signature?: string | null
+                    judge_user_id?: string | null
+                    notes?: string | null
+                    participant_id: string
+                    score_display: string
+                    score_value: number
+                    status?: Database["public"]["Enums"]["score_status"] | null
+                    tie_break_value?: number | null
                     validated_by?: string | null
                 }
                 Update: {
+                    athlete_signature?: boolean | null
                     box_id?: string | null
                     created_at?: string | null
-                    event_id?: string | null
+                    event_id?: string
                     id?: string
                     is_validated?: boolean | null
-                    participant_id?: string | null
-                    score_value?: number | null
+                    judge_signature?: string | null
+                    judge_user_id?: string | null
+                    notes?: string | null
+                    participant_id?: string
+                    score_display?: string
+                    score_value?: number
+                    status?: Database["public"]["Enums"]["score_status"] | null
+                    tie_break_value?: number | null
                     validated_by?: string | null
                 }
                 Relationships: [
-                    {
-                        foreignKeyName: "competition_scores_box_id_fkey"
-                        columns: ["box_id"]
-                        isOneToOne: false
-                        referencedRelation: "boxes"
-                        referencedColumns: ["id"]
-                    },
                     {
                         foreignKeyName: "competition_scores_event_id_fkey"
                         columns: ["event_id"]
                         isOneToOne: false
                         referencedRelation: "competition_events"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "competition_scores_judge_user_id_fkey"
+                        columns: ["judge_user_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
                         referencedColumns: ["id"]
                     },
                     {
@@ -448,11 +528,59 @@ export type Database = {
                         referencedRelation: "competition_participants"
                         referencedColumns: ["id"]
                     },
+                ]
+            }
+            competition_teams: {
+                Row: {
+                    captain_user_id: string | null
+                    competition_id: string | null
+                    created_at: string | null
+                    division_id: string | null
+                    id: string
+                    join_code: string | null
+                    name: string
+                    updated_at: string | null
+                }
+                Insert: {
+                    captain_user_id?: string | null
+                    competition_id?: string | null
+                    created_at?: string | null
+                    division_id?: string | null
+                    id?: string
+                    join_code?: string | null
+                    name: string
+                    updated_at?: string | null
+                }
+                Update: {
+                    captain_user_id?: string | null
+                    competition_id?: string | null
+                    created_at?: string | null
+                    division_id?: string | null
+                    id?: string
+                    join_code?: string | null
+                    name?: string
+                    updated_at?: string | null
+                }
+                Relationships: [
                     {
-                        foreignKeyName: "competition_scores_validated_by_fkey"
-                        columns: ["validated_by"]
+                        foreignKeyName: "competition_teams_captain_user_id_fkey"
+                        columns: ["captain_user_id"]
                         isOneToOne: false
                         referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "competition_teams_competition_id_fkey"
+                        columns: ["competition_id"]
+                        isOneToOne: false
+                        referencedRelation: "competitions"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "competition_teams_division_id_fkey"
+                        columns: ["division_id"]
+                        isOneToOne: false
+                        referencedRelation: "competition_divisions"
                         referencedColumns: ["id"]
                     },
                 ]
@@ -461,328 +589,172 @@ export type Database = {
                 Row: {
                     box_id: string | null
                     created_at: string | null
+                    cuts_config: Json | null
                     description: string | null
                     end_date: string | null
                     id: string
+                    is_team_event: boolean | null
                     name: string
+                    scoring_system: Database["public"]["Enums"]["competition_scoring_system"] | null
                     start_date: string | null
                     status: string | null
+                    team_size: number | null
                     type: string | null
                 }
                 Insert: {
                     box_id?: string | null
                     created_at?: string | null
+                    cuts_config?: Json | null
                     description?: string | null
                     end_date?: string | null
                     id?: string
+                    is_team_event?: boolean | null
                     name: string
+                    scoring_system?: Database["public"]["Enums"]["competition_scoring_system"] | null
                     start_date?: string | null
                     status?: string | null
+                    team_size?: number | null
                     type?: string | null
                 }
                 Update: {
                     box_id?: string | null
                     created_at?: string | null
+                    cuts_config?: Json | null
                     description?: string | null
                     end_date?: string | null
                     id?: string
+                    is_team_event?: boolean | null
                     name?: string
+                    scoring_system?: Database["public"]["Enums"]["competition_scoring_system"] | null
                     start_date?: string | null
                     status?: string | null
+                    team_size?: number | null
                     type?: string | null
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "competitions_box_id_fkey"
-                        columns: ["box_id"]
-                        isOneToOne: false
-                        referencedRelation: "boxes"
-                        referencedColumns: ["id"]
-                    },
-                ]
+                Relationships: []
             }
-            functional_feedback: {
+            item_history: {
                 Row: {
-                    athlete_id: string | null
-                    coach_private_note: string | null
+                    action: string | null
+                    changed_by: string | null
                     created_at: string | null
-                    effort_score: number | null
-                    fatigue_level: number | null
+                    details: string | null
                     id: string
-                    satisfaction: string | null
-                    session_id: string | null
+                    item_id: string | null
                 }
                 Insert: {
-                    athlete_id?: string | null
-                    coach_private_note?: string | null
+                    action?: string | null
+                    changed_by?: string | null
                     created_at?: string | null
-                    effort_score?: number | null
-                    fatigue_level?: number | null
+                    details?: string | null
                     id?: string
-                    satisfaction?: string | null
-                    session_id?: string | null
+                    item_id?: string | null
                 }
                 Update: {
-                    athlete_id?: string | null
-                    coach_private_note?: string | null
+                    action?: string | null
+                    changed_by?: string | null
                     created_at?: string | null
-                    effort_score?: number | null
-                    fatigue_level?: number | null
+                    details?: string | null
                     id?: string
-                    satisfaction?: string | null
-                    session_id?: string | null
+                    item_id?: string | null
                 }
                 Relationships: [
                     {
-                        foreignKeyName: "functional_feedback_athlete_id_fkey"
-                        columns: ["athlete_id"]
+                        foreignKeyName: "item_history_changed_by_fkey"
+                        columns: ["changed_by"]
                         isOneToOne: false
                         referencedRelation: "profiles"
                         referencedColumns: ["id"]
                     },
                     {
-                        foreignKeyName: "functional_feedback_session_id_fkey"
-                        columns: ["session_id"]
+                        foreignKeyName: "item_history_item_id_fkey"
+                        columns: ["item_id"]
                         isOneToOne: false
-                        referencedRelation: "sessions"
-                        referencedColumns: ["id"]
-                    }
-                ]
-            }
-            invoices: {
-                Row: {
-                    amount: number | null
-                    box_id: string | null
-                    created_at: string | null
-                    due_date: string | null
-                    id: string
-                    status: string | null
-                    user_id: string | null
-                }
-                Insert: {
-                    amount?: number | null
-                    box_id?: string | null
-                    created_at?: string | null
-                    due_date?: string | null
-                    id?: string
-                    status?: string | null
-                    user_id?: string | null
-                }
-                Update: {
-                    amount?: number | null
-                    box_id?: string | null
-                    created_at?: string | null
-                    due_date?: string | null
-                    id?: string
-                    status?: string | null
-                    user_id?: string | null
-                }
-                Relationships: [
-                    {
-                        foreignKeyName: "invoices_box_id_fkey"
-                        columns: ["box_id"]
-                        isOneToOne: false
-                        referencedRelation: "boxes"
-                        referencedColumns: ["id"]
-                    },
-                    {
-                        foreignKeyName: "invoices_user_id_fkey"
-                        columns: ["user_id"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
+                        referencedRelation: "items"
                         referencedColumns: ["id"]
                     },
                 ]
             }
-            leads: {
+            items: {
                 Row: {
                     box_id: string | null
+                    category: string
                     created_at: string | null
-                    email: string | null
-                    first_name: string | null
+                    description: string | null
                     id: string
-                    last_name: string | null
-                    notes: string | null
-                    phone: string | null
-                    source: string | null
-                    status: string | null
-                }
-                Insert: {
-                    box_id?: string | null
-                    created_at?: string | null
-                    email?: string | null
-                    first_name?: string | null
-                    id?: string
-                    last_name?: string | null
-                    notes?: string | null
-                    phone?: string | null
-                    source?: string | null
-                    status?: string | null
-                }
-                Update: {
-                    box_id?: string | null
-                    created_at?: string | null
-                    email?: string | null
-                    first_name?: string | null
-                    id?: string
-                    last_name?: string | null
-                    notes?: string | null
-                    phone?: string | null
-                    source?: string | null
-                    status?: string | null
-                }
-                Relationships: [
-                    {
-                        foreignKeyName: "leads_box_id_fkey"
-                        columns: ["box_id"]
-                        isOneToOne: false
-                        referencedRelation: "boxes"
-                        referencedColumns: ["id"]
-                    },
-                ]
-            }
-            movements: {
-                Row: {
-                    box_id: string | null
-                    category: string | null
-                    created_at: string | null
-                    demo_url: string | null
-                    id: string
+                    location: string | null
+                    min_quantity: number
                     name: string
+                    quantity: number
+                    status: string
+                    sku: string | null
+                    image_url: string | null
                 }
                 Insert: {
                     box_id?: string | null
-                    category?: string | null
+                    category: string
                     created_at?: string | null
-                    demo_url?: string | null
+                    description?: string | null
                     id?: string
+                    location?: string | null
+                    min_quantity?: number
                     name: string
+                    quantity?: number
+                    status?: string
+                    sku?: string | null
+                    image_url?: string | null
                 }
                 Update: {
                     box_id?: string | null
-                    category?: string | null
+                    category?: string
                     created_at?: string | null
-                    demo_url?: string | null
+                    description?: string | null
                     id?: string
+                    location?: string | null
+                    min_quantity?: number
                     name?: string
+                    quantity?: number
+                    status?: string
+                    sku?: string | null
+                    image_url?: string | null
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "movements_box_id_fkey"
-                        columns: ["box_id"]
-                        isOneToOne: false
-                        referencedRelation: "boxes"
-                        referencedColumns: ["id"]
-                    },
-                ]
+                Relationships: []
             }
-            memberships: {
+            lane_assignments: {
                 Row: {
-                    box_id: string | null
                     created_at: string | null
-                    end_date: string | null
+                    heat_id: string | null
                     id: string
-                    plan_id: string | null
-                    start_date: string | null
-                    status: string | null
-                    user_id: string | null
+                    lane_number: number
+                    participant_id: string | null
                 }
                 Insert: {
-                    box_id?: string | null
                     created_at?: string | null
-                    end_date?: string | null
+                    heat_id?: string | null
                     id?: string
-                    plan_id?: string | null
-                    start_date?: string | null
-                    status?: string | null
-                    user_id?: string | null
+                    lane_number: number
+                    participant_id?: string | null
                 }
                 Update: {
-                    box_id?: string | null
                     created_at?: string | null
-                    end_date?: string | null
+                    heat_id?: string | null
                     id?: string
-                    plan_id?: string | null
-                    start_date?: string | null
-                    status?: string | null
-                    user_id?: string | null
+                    lane_number?: number
+                    participant_id?: string | null
                 }
                 Relationships: [
                     {
-                        foreignKeyName: "memberships_box_id_fkey"
-                        columns: ["box_id"]
+                        foreignKeyName: "lane_assignments_heat_id_fkey"
+                        columns: ["heat_id"]
                         isOneToOne: false
-                        referencedRelation: "boxes"
+                        referencedRelation: "competition_heats"
                         referencedColumns: ["id"]
                     },
                     {
-                        foreignKeyName: "memberships_plan_id_fkey"
-                        columns: ["plan_id"]
+                        foreignKeyName: "lane_assignments_participant_id_fkey"
+                        columns: ["participant_id"]
                         isOneToOne: false
-                        referencedRelation: "plans"
-                        referencedColumns: ["id"]
-                    },
-                    {
-                        foreignKeyName: "memberships_user_id_fkey"
-                        columns: ["user_id"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["id"]
-                    },
-                ]
-            }
-            plans: {
-                Row: {
-                    duration_days: number | null
-                    total_credits: number | null
-                    box_id: string | null
-                    button_text: string | null
-                    created_at: string | null
-                    features: string[] | null
-                    id: string
-                    interval: string | null
-                    is_featured: boolean | null
-                    name: string | null
-                    popular_tag: string | null
-                    price: number | null
-                    updated_at: string | null
-                }
-                Insert: {
-                    duration_days?: number | null
-                    total_credits?: number | null
-                    box_id?: string | null
-                    button_text?: string | null
-                    created_at?: string | null
-                    features?: string[] | null
-                    id?: string
-                    interval?: string | null
-                    is_featured?: boolean | null
-                    name?: string | null
-                    popular_tag?: string | null
-                    price?: number | null
-                    updated_at?: string | null
-                }
-                Update: {
-                    duration_days?: number | null
-                    total_credits?: number | null
-                    box_id?: string | null
-                    button_text?: string | null
-                    created_at?: string | null
-                    features?: string[] | null
-                    id?: string
-                    interval?: string | null
-                    is_featured?: boolean | null
-                    name?: string | null
-                    popular_tag?: string | null
-                    price?: number | null
-                    updated_at?: string | null
-                }
-                Relationships: [
-                    {
-                        foreignKeyName: "plans_box_id_fkey"
-                        columns: ["box_id"]
-                        isOneToOne: false
-                        referencedRelation: "boxes"
+                        referencedRelation: "competition_participants"
                         referencedColumns: ["id"]
                     },
                 ]
@@ -792,88 +764,95 @@ export type Database = {
                     avatar_url: string | null
                     box_id: string | null
                     created_at: string | null
+                    email: string | null
                     first_name: string | null
                     id: string
                     last_name: string | null
-                    role_id: string | null
-                    status: string | null
-                    force_password_change: boolean | null
+                    role_id: string
+                    updated_at: string | null
                 }
                 Insert: {
                     avatar_url?: string | null
                     box_id?: string | null
                     created_at?: string | null
+                    email?: string | null
                     first_name?: string | null
-                    id?: string
+                    id: string
                     last_name?: string | null
-                    role_id?: string | null
-                    status?: string | null
-                    force_password_change?: boolean | null
+                    role_id?: string
+                    updated_at?: string | null
                 }
                 Update: {
                     avatar_url?: string | null
                     box_id?: string | null
                     created_at?: string | null
+                    email?: string | null
                     first_name?: string | null
                     id?: string
                     last_name?: string | null
-                    role_id?: string | null
-                    status?: string | null
-                    force_password_change?: boolean | null
+                    role_id?: string
+                    updated_at?: string | null
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "profiles_box_id_fkey"
-                        columns: ["box_id"]
-                        isOneToOne: false
-                        referencedRelation: "boxes"
-                        referencedColumns: ["id"]
-                    },
-                ]
+                Relationships: []
+            }
+            roles: {
+                Row: {
+                    description: string | null
+                    id: string
+                    name: string
+                    permissions: Json | null
+                }
+                Insert: {
+                    description?: string | null
+                    id: string
+                    name: string
+                    permissions?: Json | null
+                }
+                Update: {
+                    description?: string | null
+                    id?: string
+                    name?: string
+                    permissions?: Json | null
+                }
+                Relationships: []
             }
             sessions: {
                 Row: {
-                    box_id: string | null
-                    capacity: number | null
+                    attendees_count: number | null
+                    class_id: string | null
                     coach_id: string | null
                     created_at: string | null
-                    date: string | null
-                    end_time: string | null
+                    date: string
+                    end_time: string
                     id: string
-                    name: string | null
-                    start_time: string | null
-                    type: string | null
+                    start_time: string
                 }
                 Insert: {
-                    box_id?: string | null
-                    capacity?: number | null
+                    attendees_count?: number | null
+                    class_id?: string | null
                     coach_id?: string | null
                     created_at?: string | null
-                    date?: string | null
-                    end_time?: string | null
+                    date: string
+                    end_time: string
                     id?: string
-                    name?: string | null
-                    start_time?: string | null
-                    type?: string | null
+                    start_time: string
                 }
                 Update: {
-                    box_id?: string | null
-                    capacity?: number | null
+                    attendees_count?: number | null
+                    class_id?: string | null
                     coach_id?: string | null
                     created_at?: string | null
-                    date?: string | null
-                    end_time?: string | null
+                    date?: string
+                    end_time?: string
                     id?: string
-                    name?: string | null
-                    start_time?: string | null
-                    type?: string | null
+                    start_time?: string
                 }
                 Relationships: [
                     {
-                        foreignKeyName: "sessions_box_id_fkey"
-                        columns: ["box_id"]
+                        foreignKeyName: "sessions_class_id_fkey"
+                        columns: ["class_id"]
                         isOneToOne: false
-                        referencedRelation: "boxes"
+                        referencedRelation: "classes"
                         referencedColumns: ["id"]
                     },
                     {
@@ -885,100 +864,41 @@ export type Database = {
                     },
                 ]
             }
-            results: {
+            user_sessions: {
                 Row: {
-                    athlete_id: string | null
-                    box_id: string | null
+                    checked_in: boolean | null
                     created_at: string | null
                     id: string
-                    result: string | null
-                    rx: boolean | null
-                    wod_id: string | null
-                }
-                Insert: {
-                    athlete_id?: string | null
-                    box_id?: string | null
-                    created_at?: string | null
-                    id?: string
-                    result?: string | null
-                    rx?: boolean | null
-                    wod_id?: string | null
-                }
-                Update: {
-                    athlete_id?: string | null
-                    box_id?: string | null
-                    created_at?: string | null
-                    id?: string
-                    result?: string | null
-                    rx?: boolean | null
-                    wod_id?: string | null
-                }
-                Relationships: [
-                    {
-                        foreignKeyName: "results_athlete_id_fkey"
-                        columns: ["athlete_id"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["id"]
-                    },
-                    {
-                        foreignKeyName: "results_box_id_fkey"
-                        columns: ["box_id"]
-                        isOneToOne: false
-                        referencedRelation: "boxes"
-                        referencedColumns: ["id"]
-                    },
-                    {
-                        foreignKeyName: "results_wod_id_fkey"
-                        columns: ["wod_id"]
-                        isOneToOne: false
-                        referencedRelation: "wods"
-                        referencedColumns: ["id"]
-                    },
-                ]
-            }
-            personal_records: {
-                Row: {
-                    box_id: string | null
-                    id: string
-                    movement_id: string | null
-                    performed_at: string | null
+                    session_id: string | null
+                    status: string
                     user_id: string | null
-                    value: string | null
                 }
                 Insert: {
-                    box_id?: string | null
+                    checked_in?: boolean | null
+                    created_at?: string | null
                     id?: string
-                    movement_id?: string | null
-                    performed_at?: string | null
+                    session_id?: string | null
+                    status?: string
                     user_id?: string | null
-                    value?: string | null
                 }
                 Update: {
-                    box_id?: string | null
+                    checked_in?: boolean | null
+                    created_at?: string | null
                     id?: string
-                    movement_id?: string | null
-                    performed_at?: string | null
+                    session_id?: string | null
+                    status?: string
                     user_id?: string | null
-                    value?: string | null
                 }
                 Relationships: [
                     {
-                        foreignKeyName: "personal_records_box_id_fkey"
-                        columns: ["box_id"]
+                        foreignKeyName: "user_sessions_session_id_fkey"
+                        columns: ["session_id"]
                         isOneToOne: false
-                        referencedRelation: "boxes"
+                        referencedRelation: "sessions"
                         referencedColumns: ["id"]
                     },
                     {
-                        foreignKeyName: "personal_records_movement_id_fkey"
-                        columns: ["movement_id"]
-                        isOneToOne: false
-                        referencedRelation: "movements"
-                        referencedColumns: ["id"]
-                    },
-                    {
-                        foreignKeyName: "personal_records_user_id_fkey"
+                        foreignKeyName: "user_sessions_user_id_fkey"
                         columns: ["user_id"]
                         isOneToOne: false
                         referencedRelation: "profiles"
@@ -986,105 +906,38 @@ export type Database = {
                     },
                 ]
             }
-            session_types: {
-                Row: {
-                    box_id: string | null
-                    color: string | null
-                    created_at: string | null
-                    id: string
-                    name: string
-                }
-                Insert: {
-                    box_id?: string | null
-                    color?: string | null
-                    created_at?: string | null
-                    id?: string
-                    name: string
-                }
-                Update: {
-                    box_id?: string | null
-                    color?: string | null
-                    created_at?: string | null
-                    id?: string
-                    name?: string
-                }
-                Relationships: [
-                    {
-                        foreignKeyName: "session_types_box_id_fkey"
-                        columns: ["box_id"]
-                        isOneToOne: false
-                        referencedRelation: "boxes"
-                        referencedColumns: ["id"]
-                    },
-                ]
-            }
             wods: {
                 Row: {
+                    blocks: Json | null
                     box_id: string | null
                     created_at: string | null
-                    date: string | null
+                    date: string
+                    description: string | null
                     id: string
-                    lesson_plan: Json[] | null
-                    metcon: string | null
-                    modalities: string[] | null
-                    scaling_advanced: string | null
-                    scaling_beginner: string | null
-                    scaling_injured: string | null
-                    scaling_intermediate: string | null
-                    scaling_options: string | null
-                    status: string | null
-                    stimulus: string | null
-                    structure: Json[] | null
-                    title: string | null
-                    track: string | null
+                    program_id: string | null
+                    title: string
                 }
                 Insert: {
+                    blocks?: Json | null
                     box_id?: string | null
                     created_at?: string | null
-                    date?: string | null
+                    date: string
+                    description?: string | null
                     id?: string
-                    lesson_plan?: Json[] | null
-                    metcon?: string | null
-                    modalities?: string[] | null
-                    scaling_advanced?: string | null
-                    scaling_beginner?: string | null
-                    scaling_injured?: string | null
-                    scaling_intermediate?: string | null
-                    scaling_options?: string | null
-                    status?: string | null
-                    stimulus?: string | null
-                    structure?: Json[] | null
-                    title?: string | null
-                    track?: string | null
+                    program_id?: string | null
+                    title: string
                 }
                 Update: {
+                    blocks?: Json | null
                     box_id?: string | null
                     created_at?: string | null
-                    date?: string | null
+                    date?: string
+                    description?: string | null
                     id?: string
-                    lesson_plan?: Json[] | null
-                    metcon?: string | null
-                    modalities?: string[] | null
-                    scaling_advanced?: string | null
-                    scaling_beginner?: string | null
-                    scaling_injured?: string | null
-                    scaling_intermediate?: string | null
-                    scaling_options?: string | null
-                    status?: string | null
-                    stimulus?: string | null
-                    structure?: Json[] | null
-                    title?: string | null
-                    track?: string | null
+                    program_id?: string | null
+                    title?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "wods_box_id_fkey"
-                        columns: ["box_id"]
-                        isOneToOne: false
-                        referencedRelation: "boxes"
-                        referencedColumns: ["id"]
-                    },
-                ]
+                Relationships: []
             }
         }
         Views: {
@@ -1094,114 +947,12 @@ export type Database = {
             [_ in never]: never
         }
         Enums: {
-            [_ in never]: never
+            competition_scoring_system: "low_point" | "table_point"
+            score_status: "valid" | "dns" | "dnf" | "calibrated"
+            wod_type: "for_time" | "amrap" | "rm" | "complex"
         }
         CompositeTypes: {
             [_ in never]: never
         }
     }
 }
-
-type PublicSchema = Database["public"]
-
-export type Tables<
-    PublicTableNameOrOptions extends
-    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
-    | { schema: keyof Database },
-    TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions["schema"]] extends {
-        Tables: any
-        Views: any
-    }
-        ? Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-        Database[PublicTableNameOrOptions["schema"]]["Views"]
-        : never)
-    : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-    ? (Database[PublicTableNameOrOptions["schema"]] extends {
-        Tables: any
-        Views: any
-    }
-        ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-            Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-                Row: infer R
-            }
-        ? R
-        : never
-        : never)
-    : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
-        PublicSchema["Views"])
-    ? (PublicSchema["Tables"] &
-        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
-            Row: infer R
-        }
-    ? R
-    : never
-    : never
-
-export type TablesInsert<
-    PublicTableNameOrOptions extends
-    | keyof PublicSchema["Tables"]
-    | { schema: keyof Database },
-    TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions["schema"]] extends { Tables: any }
-        ? Database[PublicTableNameOrOptions["schema"]]["Tables"]
-        : never)
-    : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-    ? (Database[PublicTableNameOrOptions["schema"]] extends { Tables: any }
-        ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-            Insert: infer I
-        }
-        ? I
-        : never
-        : never)
-    : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-        Insert: infer I
-    }
-    ? I
-    : never
-    : never
-
-export type TablesUpdate<
-    PublicTableNameOrOptions extends
-    | keyof PublicSchema["Tables"]
-    | { schema: keyof Database },
-    TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions["schema"]] extends { Tables: any }
-        ? Database[PublicTableNameOrOptions["schema"]]["Tables"]
-        : never)
-    : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-    ? (Database[PublicTableNameOrOptions["schema"]] extends { Tables: any }
-        ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-            Update: infer U
-        }
-        ? U
-        : never
-        : never)
-    : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-        Update: infer U
-    }
-    ? U
-    : never
-    : never
-
-export type Enums<
-    PublicEnumNameOrOptions extends
-    | keyof PublicSchema["Enums"]
-    | { schema: keyof Database },
-    EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicEnumNameOrOptions["schema"]] extends { Enums: any }
-        ? Database[PublicEnumNameOrOptions["schema"]]["Enums"]
-        : never)
-    : never = never,
-> = PublicEnumNameOrOptions extends { schema: keyof Database }
-    ? (Database[PublicEnumNameOrOptions["schema"]] extends { Enums: any }
-        ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
-        : never)
-    : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
-    ? PublicSchema["Enums"][PublicEnumNameOrOptions]
-    : never

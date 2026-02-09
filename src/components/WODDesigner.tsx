@@ -37,6 +37,11 @@ export interface SessionBlock {
     items: BlockItem[];
     sets?: string;
     duration?: string;
+    // New fields for WOD types
+    format?: 'for_time' | 'amrap' | 'emom' | 'rm' | 'complex' | 'tabata';
+    timeCap?: string;
+    tieBreak?: string;
+    rounds?: string;
     [key: string]: any;
 }
 
@@ -190,23 +195,96 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
                                                 ...provided.draggableProps.style
                                             }}
                                         >
-                                            <div className="flex items-center gap-3 p-3 bg-black/[0.02] dark:bg-white/10 border-b border-black/5 dark:border-white/20">
-                                                <div {...provided.dragHandleProps}>
-                                                    <GripVertical className="h-4 w-4 text-muted-foreground/50" />
+                                            <div className="flex flex-col gap-3 p-3 bg-black/[0.02] dark:bg-white/10 border-b border-black/5 dark:border-white/20">
+                                                <div className="flex items-center gap-3">
+                                                    <div {...provided.dragHandleProps}>
+                                                        <GripVertical className="h-4 w-4 text-muted-foreground/50" />
+                                                    </div>
+                                                    <Badge className={BLOCK_TEMPLATES[block.type].color}>
+                                                        {BLOCK_TEMPLATES[block.type].icon}
+                                                        <span className="ml-1 uppercase text-[10px] font-bold tracking-tighter">
+                                                            {block.type}
+                                                        </span>
+                                                    </Badge>
+                                                    <Input
+                                                        value={block.title}
+                                                        onChange={(e) => updateBlock(block.id, { title: e.target.value })}
+                                                        className="h-8 bg-transparent border-none font-bold text-sm focus-visible:ring-0 px-0 min-w-[100px]"
+                                                    />
+                                                    <div className="flex items-center gap-2 ml-auto">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                            onClick={() => removeBlock(block.id)}
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
                                                 </div>
-                                                <Badge className={BLOCK_TEMPLATES[block.type].color}>
-                                                    {BLOCK_TEMPLATES[block.type].icon}
-                                                    <span className="ml-1 uppercase text-[10px] font-bold tracking-tighter">
-                                                        {block.type}
-                                                    </span>
-                                                </Badge>
-                                                <Input
-                                                    value={block.title}
-                                                    onChange={(e) => updateBlock(block.id, { title: e.target.value })}
-                                                    className="h-8 bg-transparent border-none font-bold text-sm focus-visible:ring-0 px-0"
-                                                />
-                                                <div className="flex items-center gap-2 ml-auto">
-                                                    <div className="flex items-center gap-1 bg-black/[0.03] dark:bg-white/10 rounded-lg px-3 py-1.5 border border-black/5 dark:border-white/20 text-[10px] font-semibold">
+
+                                                {/* Expanded Controls for WOD/Conditioning/Strength */}
+                                                {(block.type === 'wod' || block.type === 'conditioning' || block.type === 'strength') && (
+                                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-1 border-t border-black/5 dark:border-white/5">
+                                                        <div className="space-y-1">
+                                                            <label className="text-[9px] font-black uppercase text-muted-foreground">Format</label>
+                                                            <select
+                                                                value={block.format || ''}
+                                                                onChange={(e) => updateBlock(block.id, { format: e.target.value as any })}
+                                                                className="w-full h-7 text-[10px] font-bold uppercase bg-background/50 border border-black/5 dark:border-white/10 rounded-md"
+                                                            >
+                                                                <option value="">Select Format</option>
+                                                                <option value="for_time">For Time</option>
+                                                                <option value="amrap">AMRAP</option>
+                                                                <option value="emom">EMOM</option>
+                                                                <option value="tabata">Tabata</option>
+                                                                <option value="rm">Max Weight (RM)</option>
+                                                                <option value="complex">Complex</option>
+                                                            </select>
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <label className="text-[9px] font-black uppercase text-muted-foreground">
+                                                                {block.format === 'amrap' || block.format === 'emom' ? 'Duration (min)' : 'Time Cap'}
+                                                            </label>
+                                                            <Input
+                                                                value={block.timeCap || block.duration || ''}
+                                                                onChange={(e) => updateBlock(block.id, {
+                                                                    timeCap: e.target.value,
+                                                                    duration: e.target.value
+                                                                })}
+                                                                placeholder={block.format === 'amrap' ? "e.g. 12:00" : "e.g. 15:00"}
+                                                                className="h-7 text-[10px] font-bold"
+                                                            />
+                                                        </div>
+                                                        {block.format === 'for_time' && (
+                                                            <div className="space-y-1">
+                                                                <label className="text-[9px] font-black uppercase text-muted-foreground">Rounds/Sets</label>
+                                                                <Input
+                                                                    value={block.rounds || block.sets || ''}
+                                                                    onChange={(e) => updateBlock(block.id, {
+                                                                        rounds: e.target.value,
+                                                                        sets: e.target.value
+                                                                    })}
+                                                                    placeholder="e.g. 5 or 21-15-9"
+                                                                    className="h-7 text-[10px] font-bold"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        <div className="space-y-1">
+                                                            <label className="text-[9px] font-black uppercase text-muted-foreground">Tie Break</label>
+                                                            <Input
+                                                                value={block.tieBreak || ''}
+                                                                onChange={(e) => updateBlock(block.id, { tieBreak: e.target.value })}
+                                                                placeholder="e.g. Time after 1st round"
+                                                                className="h-7 text-[10px] font-bold"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Fallback Sets input for other types or if not covered above */}
+                                                {!['wod', 'conditioning', 'strength'].includes(block.type) && (
+                                                    <div className="flex items-center gap-1 bg-black/[0.03] dark:bg-white/10 rounded-lg px-3 py-1.5 border border-black/5 dark:border-white/20 text-[10px] font-semibold w-fit">
                                                         <span className="text-muted-foreground uppercase opacity-70">Sets:</span>
                                                         <input
                                                             type="text"
@@ -216,15 +294,7 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
                                                             className="w-8 bg-transparent border-none text-center focus:outline-none font-black text-primary"
                                                         />
                                                     </div>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                                        onClick={() => removeBlock(block.id)}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
+                                                )}
                                             </div>
 
                                             <CardContent className="p-4 space-y-4">

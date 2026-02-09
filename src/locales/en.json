@@ -220,7 +220,8 @@
             "branding": "Branding",
             "appearance": "Appearance",
             "localization": "Localization",
-            "notifications": "Notifications"
+            "notifications": "Notifications",
+            "navigation": "Navigation"
         },
         "branding": {
             "title": "Global Branding",
@@ -296,6 +297,15 @@
             "title": "Global Notifications",
             "desc": "Configure system-wide notifications and alerts.",
             "coming_soon": "Notification settings coming soon..."
+        },
+        "navigation": {
+            "title": "Menu Configuration",
+            "desc": "Customize the visibility and order of sidebar menu items.",
+            "item_name": "Item",
+            "visible": "Visible",
+            "order": "Order",
+            "save_success": "Navigation settings saved successfully",
+            "save": "Save Navigation"
         },
         "syncing": "Syncing..."
     },

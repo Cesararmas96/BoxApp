@@ -11,7 +11,10 @@ import {
     Square,
     Settings as SettingsIcon,
     Upload,
-    Loader2
+    Loader2,
+    Menu,
+    ArrowUp,
+    ArrowDown
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,7 +45,7 @@ export const Settings: React.FC = () => {
     } = useTheme();
 
     const { t } = useTranslation();
-    const { currentBox } = useAuth();
+    const { currentBox, setCurrentBox } = useAuth();
 
     const logoInputRef = useRef<HTMLInputElement>(null);
     const faviconInputRef = useRef<HTMLInputElement>(null);
@@ -53,8 +56,26 @@ export const Settings: React.FC = () => {
         favicon_url: ''
     });
     const [isSaving, setIsSaving] = useState(false);
-    const [isUploading, setIsUploading] = useState<'logo' | 'favicon' | null>(null);
+    const [isUploading, setIsUploading] = useState<'logo' | null | 'favicon'>(null);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+    const [navigationConfig, setNavigationConfig] = useState<any[]>([]);
+
+    const defaultNavItems = [
+        { id: 'dashboard', visible: true, order: 0 },
+        { id: 'schedule', visible: true, order: 1 },
+        { id: 'members', visible: true, order: 2 },
+        { id: 'roles', visible: true, order: 3 },
+        { id: 'audit-logs', visible: true, order: 4 },
+        { id: 'leads', visible: true, order: 5 },
+        { id: 'billing', visible: true, order: 6 },
+        { id: 'wods', visible: true, order: 7 },
+        { id: 'movements', visible: true, order: 8 },
+        { id: 'benchmarks', visible: true, order: 9 },
+        { id: 'competitions', visible: true, order: 10 },
+        { id: 'box-display', visible: true, order: 11 },
+        { id: 'analytics', visible: true, order: 12 },
+    ];
 
     useEffect(() => {
         if (currentBox) {
@@ -63,6 +84,14 @@ export const Settings: React.FC = () => {
                 logo_url: currentBox.logo_url || '',
                 favicon_url: currentBox.favicon_url || ''
             });
+
+            // Initialize navigation config
+            const themeConfig = currentBox.theme_config as any;
+            if (themeConfig?.navigation && Array.isArray(themeConfig.navigation)) {
+                setNavigationConfig(themeConfig.navigation);
+            } else {
+                setNavigationConfig(defaultNavItems);
+            }
         }
     }, [currentBox]);
 
@@ -191,9 +220,18 @@ export const Settings: React.FC = () => {
                 .eq('id', currentBox.id);
 
             if (error) throw error;
+
+            // Update context immediately
+            if (currentBox) {
+                setCurrentBox({
+                    ...currentBox,
+                    name: boxSettings.name,
+                    logo_url: boxSettings.logo_url,
+                    favicon_url: boxSettings.favicon_url
+                });
+            }
+
             setMessage({ type: 'success', text: t('settings.branding.success') });
-            // Reload page or refresh context to apply changes
-            setTimeout(() => window.location.reload(), 1500);
         } catch (err: any) {
             setMessage({ type: 'error', text: err.message });
         } finally {
@@ -206,7 +244,9 @@ export const Settings: React.FC = () => {
         setIsSaving(true);
         setMessage(null);
         try {
+            const currentThemeConfig = (currentBox.theme_config as any) || {};
             const themeConfig = {
+                ...currentThemeConfig,
                 primaryColor,
                 radius,
                 designStyle
@@ -221,14 +261,82 @@ export const Settings: React.FC = () => {
                 .eq('id', currentBox.id);
 
             if (error) throw error;
+
+            // Update context immediately
+            if (currentBox) {
+                setCurrentBox({
+                    ...currentBox,
+                    theme_config: themeConfig
+                });
+            }
+
             setMessage({ type: 'success', text: t('settings.appearance.success') });
-            // Reload page to refresh context
-            setTimeout(() => window.location.reload(), 1500);
         } catch (err: any) {
             setMessage({ type: 'error', text: err.message });
         } finally {
             setIsSaving(false);
         }
+    };
+
+    const handleSaveNavigation = async () => {
+        if (!currentBox?.id) return;
+
+        setIsSaving(true);
+        setMessage(null);
+
+        try {
+            const currentThemeConfig = (currentBox.theme_config as any) || {};
+            const newThemeConfig = {
+                ...currentThemeConfig,
+                navigation: navigationConfig
+            };
+
+            const { error } = await supabase
+                .from('boxes')
+                .update({
+                    theme_config: newThemeConfig,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', currentBox.id);
+
+            if (error) throw error;
+
+            // Update context immediately
+            if (currentBox) {
+                setCurrentBox({
+                    ...currentBox,
+                    theme_config: newThemeConfig
+                });
+            }
+
+            setMessage({ type: 'success', text: t('settings.navigation.save_success') });
+        } catch (error: any) {
+            console.error('Error saving navigation:', error);
+            setMessage({ type: 'error', text: error.message });
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const toggleNavItem = (id: string) => {
+        setNavigationConfig(prev => prev.map(item =>
+            item.id === id ? { ...item, visible: !item.visible } : item
+        ));
+    };
+
+    const moveItem = (id: string, direction: 'up' | 'down') => {
+        const index = navigationConfig.findIndex(item => item.id === id);
+        if (index === -1) return;
+        if (direction === 'up' && index === 0) return;
+        if (direction === 'down' && index === navigationConfig.length - 1) return;
+
+        const newConfig = [...navigationConfig];
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        [newConfig[index], newConfig[targetIndex]] = [newConfig[targetIndex], newConfig[index]];
+
+        // Update orders
+        const finalConfig = newConfig.map((item, idx) => ({ ...item, order: idx }));
+        setNavigationConfig(finalConfig);
     };
 
     return (
@@ -244,11 +352,12 @@ export const Settings: React.FC = () => {
             </div>
 
             <Tabs defaultValue="branding" className="w-full">
-                <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent space-x-6">
-                    <TabsTrigger value="branding" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2">{t('settings.tabs.branding')}</TabsTrigger>
-                    <TabsTrigger value="appearance" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2">{t('settings.tabs.appearance')}</TabsTrigger>
-                    <TabsTrigger value="localization" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2">{t('settings.tabs.localization')}</TabsTrigger>
-                    <TabsTrigger value="notifications" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2">{t('settings.tabs.notifications')}</TabsTrigger>
+                <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent space-x-6 overflow-x-auto overflow-y-hidden scrollbar-none">
+                    <TabsTrigger value="branding" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 shrink-0">{t('settings.tabs.branding')}</TabsTrigger>
+                    <TabsTrigger value="appearance" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 shrink-0">{t('settings.tabs.appearance')}</TabsTrigger>
+                    <TabsTrigger value="navigation" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 shrink-0">{t('settings.tabs.navigation')}</TabsTrigger>
+                    <TabsTrigger value="localization" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 shrink-0">{t('settings.tabs.localization')}</TabsTrigger>
+                    <TabsTrigger value="notifications" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 shrink-0">{t('settings.tabs.notifications')}</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="branding" className="py-6">
@@ -545,13 +654,17 @@ export const Settings: React.FC = () => {
                                 </div>
                             </CardContent>
                             <CardFooter className="bg-primary/5 pt-6 pb-6 border-t border-primary/10 flex flex-col gap-4">
-                                {message && (
-                                    <div className={`p-3 rounded-xl text-xs font-bold text-center border ${message.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-destructive/10 border-destructive/20 text-destructive'
-                                        }`}>
+                                {message && message.type === 'success' && (
+                                    <div className="p-3 rounded-xl text-xs font-bold text-center border bg-emerald-500/10 border-emerald-500/20 text-emerald-500">
                                         {message.text}
                                     </div>
                                 )}
-                                <div className="flex gap-4">
+                                {message && message.type === 'error' && (
+                                    <div className="p-3 rounded-xl text-xs font-bold text-center border bg-destructive/10 border-destructive/20 text-destructive">
+                                        {message.text}
+                                    </div>
+                                )}
+                                <div className="flex gap-4 w-full">
                                     <Button
                                         variant="ghost"
                                         className="flex-1 gap-2 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-300 rounded-xl"
@@ -560,7 +673,7 @@ export const Settings: React.FC = () => {
                                         <RefreshCcw className="h-4 w-4" /> {t('settings.appearance.reset')}
                                     </Button>
                                     <Button
-                                        className="flex-2 gap-2 rounded-xl"
+                                        className="flex-[2] gap-2 rounded-xl"
                                         onClick={handleSaveAppearance}
                                         disabled={isSaving}
                                     >
@@ -568,6 +681,91 @@ export const Settings: React.FC = () => {
                                         {t('settings.appearance.save')}
                                     </Button>
                                 </div>
+                            </CardFooter>
+                        </Card>
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="navigation" className="py-6">
+                    <div className="grid gap-6">
+                        <Card className="border-none shadow-premium bg-card/50 backdrop-blur-xl overflow-hidden">
+                            <CardHeader className="pb-4">
+                                <div className="flex items-center gap-2">
+                                    <Menu className="h-5 w-5 text-primary" />
+                                    <CardTitle>{t('settings.navigation.title')}</CardTitle>
+                                </div>
+                                <CardDescription>{t('settings.navigation.desc')}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                <div className="divide-y divide-primary/5">
+                                    {navigationConfig.map((item, index) => (
+                                        <div key={item.id} className="flex items-center justify-between p-4 hover:bg-primary/5 transition-colors group">
+                                            <div className="flex items-center gap-4">
+                                                <div className="flex flex-col gap-1">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-6 w-6 hover:bg-primary/20 disabled:opacity-30"
+                                                        onClick={() => moveItem(item.id, 'up')}
+                                                        disabled={index === 0}
+                                                    >
+                                                        <ArrowUp className="h-3 w-3" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-6 w-6 hover:bg-primary/20 disabled:opacity-30"
+                                                        onClick={() => moveItem(item.id, 'down')}
+                                                        disabled={index === navigationConfig.length - 1}
+                                                    >
+                                                        <ArrowDown className="h-3 w-3" />
+                                                    </Button>
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-medium uppercase tracking-tight">
+                                                        {t(`nav.${item.id.replace('-', '_')}`)}
+                                                    </span>
+                                                    <span className="text-[10px] text-muted-foreground font-light uppercase tracking-widest">
+                                                        {t('settings.navigation.item_name')}: {item.id}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-6">
+                                                <div className="flex items-center gap-2">
+                                                    <Label htmlFor={`visible-${item.id}`} className="text-xs text-muted-foreground cursor-pointer">
+                                                        {t('settings.navigation.visible')}
+                                                    </Label>
+                                                    <Switch
+                                                        id={`visible-${item.id}`}
+                                                        checked={item.visible !== false}
+                                                        onCheckedChange={() => toggleNavItem(item.id)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                            <CardFooter className="border-t border-primary/5 bg-primary/5 p-4 flex flex-col items-stretch gap-4">
+                                {message && message.type === 'success' && (
+                                    <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-sm text-center animate-in fade-in slide-in-from-top-2">
+                                        {message.text}
+                                    </div>
+                                )}
+                                {message && message.type === 'error' && (
+                                    <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm text-center animate-in fade-in slide-in-from-top-2">
+                                        {message.text}
+                                    </div>
+                                )}
+                                <Button
+                                    className="w-full gap-2 rounded-xl"
+                                    onClick={handleSaveNavigation}
+                                    disabled={isSaving}
+                                >
+                                    {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                                    {t('settings.navigation.save')}
+                                </Button>
                             </CardFooter>
                         </Card>
                     </div>

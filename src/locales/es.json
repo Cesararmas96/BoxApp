@@ -216,7 +216,8 @@
             "branding": "Identidad Visual",
             "appearance": "Apariencia",
             "localization": "Localización",
-            "notifications": "Notificaciones"
+            "notifications": "Notificaciones",
+            "navigation": "Navegación"
         },
         "branding": {
             "title": "Branding Global",
@@ -292,6 +293,15 @@
             "title": "Notificaciones Globales",
             "desc": "Configura notificaciones y alertas de todo el sistema.",
             "coming_soon": "Los ajustes de notificaciones estarán disponibles pronto..."
+        },
+        "navigation": {
+            "title": "Configuración del Menú",
+            "desc": "Personaliza la visibilidad y el orden de los elementos en el menú lateral.",
+            "item_name": "Elemento",
+            "visible": "Visible",
+            "order": "Orden",
+            "save_success": "Configuración de navegación guardada con éxito",
+            "save": "Guardar Navegación"
         },
         "syncing": "Sincronizando..."
     },

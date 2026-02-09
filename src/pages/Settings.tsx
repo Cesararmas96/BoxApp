@@ -30,6 +30,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/components/theme-provider';
 import { supabase } from '@/lib/supabaseClient';
+import { useTranslation } from 'react-i18next';
 
 export const Settings: React.FC = () => {
     const {
@@ -40,6 +41,7 @@ export const Settings: React.FC = () => {
         resetTheme
     } = useTheme();
 
+    const { t } = useTranslation();
     const { currentBox } = useAuth();
 
     const logoInputRef = useRef<HTMLInputElement>(null);
@@ -91,7 +93,10 @@ export const Settings: React.FC = () => {
                 [type === 'logo' ? 'logo_url' : 'favicon_url']: publicUrl
             }));
 
-            setMessage({ type: 'success', text: `${type === 'logo' ? 'Logo' : 'Favicon'} uploaded! Don't forget to save changes.` });
+            setMessage({
+                type: 'success',
+                text: t(`settings.branding.${type}_uploaded`)
+            });
         } catch (err: any) {
             setMessage({ type: 'error', text: err.message });
         } finally {
@@ -115,7 +120,7 @@ export const Settings: React.FC = () => {
                 .eq('id', currentBox.id);
 
             if (error) throw error;
-            setMessage({ type: 'success', text: 'Branding settings saved successfully!' });
+            setMessage({ type: 'success', text: t('settings.branding.success') });
             // Reload page or refresh context to apply changes
             setTimeout(() => window.location.reload(), 1500);
         } catch (err: any) {
@@ -145,7 +150,7 @@ export const Settings: React.FC = () => {
                 .eq('id', currentBox.id);
 
             if (error) throw error;
-            setMessage({ type: 'success', text: 'Appearance settings saved successfully!' });
+            setMessage({ type: 'success', text: t('settings.appearance.success') });
             // Reload page to refresh context
             setTimeout(() => window.location.reload(), 1500);
         } catch (err: any) {
@@ -162,17 +167,17 @@ export const Settings: React.FC = () => {
                     <SettingsIcon className="h-8 w-8 text-primary" />
                 </div>
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">System Settings</h1>
-                    <p className="text-muted-foreground text-sm">Manage box branding, appearance and global configuration.</p>
+                    <h1 className="text-3xl font-bold tracking-tight">{t('settings.title')}</h1>
+                    <p className="text-muted-foreground text-sm">{t('settings.subtitle')}</p>
                 </div>
             </div>
 
             <Tabs defaultValue="branding" className="w-full">
                 <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent space-x-6">
-                    <TabsTrigger value="branding" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2">Branding</TabsTrigger>
-                    <TabsTrigger value="appearance" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2">Appearance</TabsTrigger>
-                    <TabsTrigger value="localization" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2">Localization</TabsTrigger>
-                    <TabsTrigger value="notifications" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2">Notifications</TabsTrigger>
+                    <TabsTrigger value="branding" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2">{t('settings.tabs.branding')}</TabsTrigger>
+                    <TabsTrigger value="appearance" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2">{t('settings.tabs.appearance')}</TabsTrigger>
+                    <TabsTrigger value="localization" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2">{t('settings.tabs.localization')}</TabsTrigger>
+                    <TabsTrigger value="notifications" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2">{t('settings.tabs.notifications')}</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="branding" className="py-6">
@@ -181,15 +186,15 @@ export const Settings: React.FC = () => {
                             <CardHeader className="pb-4">
                                 <div className="flex items-center gap-2">
                                     <ImageIcon className="h-5 w-5 text-primary" />
-                                    <CardTitle>Global Branding</CardTitle>
+                                    <CardTitle>{t('settings.branding.title')}</CardTitle>
                                 </div>
-                                <CardDescription>Customize how your Box appears to members and the public.</CardDescription>
+                                <CardDescription>{t('settings.branding.desc')}</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="box-name">Box Name</Label>
+                                            <Label htmlFor="box-name">{t('settings.branding.box_name')}</Label>
                                             <Input
                                                 id="box-name"
                                                 value={boxSettings.name}
@@ -198,7 +203,7 @@ export const Settings: React.FC = () => {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="logo-url">Logo URL</Label>
+                                            <Label htmlFor="logo-url">{t('settings.branding.logo_url')}</Label>
                                             <div className="flex gap-2">
                                                 <Input
                                                     id="logo-url"
@@ -217,10 +222,10 @@ export const Settings: React.FC = () => {
                                                 </Button>
                                             </div>
                                             <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'logo')} />
-                                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Recommended: 512x512px Transparent PNG</p>
+                                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">{t('settings.branding.logo_hint')}</p>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="favicon-url">Favicon URL</Label>
+                                            <Label htmlFor="favicon-url">{t('settings.branding.favicon_url')}</Label>
                                             <div className="flex gap-2">
                                                 <Input
                                                     id="favicon-url"
@@ -239,13 +244,13 @@ export const Settings: React.FC = () => {
                                                 </Button>
                                             </div>
                                             <input type="file" ref={faviconInputRef} className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'favicon')} />
-                                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Format: .ico or .png (32x32px)</p>
+                                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">{t('settings.branding.favicon_hint')}</p>
                                         </div>
                                     </div>
 
                                     <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-primary/10 rounded-3xl bg-primary/5">
                                         <div className="mb-4 text-center">
-                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 mb-2 block">Live Preview</span>
+                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 mb-2 block">{t('settings.branding.live_preview')}</span>
                                             <div className="bg-card w-48 h-12 rounded-2xl shadow-xl flex items-center px-4 gap-3 border border-white/5 overflow-hidden">
                                                 {boxSettings.logo_url ? (
                                                     <img src={boxSettings.logo_url} alt="Preview" className="h-6 w-6 object-contain" />
@@ -254,14 +259,14 @@ export const Settings: React.FC = () => {
                                                         <span className="text-[10px] text-primary font-black italic">B</span>
                                                     </div>
                                                 )}
-                                                <span className="font-black italic uppercase text-primary text-xs truncate">{boxSettings.name || 'Box Name'}</span>
+                                                <span className="font-black italic uppercase text-primary text-xs truncate">{boxSettings.name || t('settings.branding.box_name')}</span>
                                             </div>
                                         </div>
                                         <div className="mt-4 flex gap-2">
                                             {boxSettings.favicon_url && (
                                                 <div className="p-2 bg-card rounded-lg border border-white/5 flex items-center gap-2">
                                                     <img src={boxSettings.favicon_url} alt="Favicon" className="h-4 w-4" />
-                                                    <span className="text-[8px] font-bold uppercase text-muted-foreground">Favicon.ico</span>
+                                                    <span className="text-[8px] font-bold uppercase text-muted-foreground">{t('settings.branding.favicon_label')}</span>
                                                 </div>
                                             )}
                                         </div>
@@ -285,7 +290,7 @@ export const Settings: React.FC = () => {
                                     ) : (
                                         <Save className="h-4 w-4" />
                                     )}
-                                    {isSaving ? 'Saving Changes...' : 'Sync Branding'}
+                                    {isSaving ? t('settings.saving') : t('settings.branding.save')}
                                 </Button>
                             </CardFooter>
                         </Card>
@@ -296,30 +301,15 @@ export const Settings: React.FC = () => {
                     <div className="grid gap-6">
                         <Card className="overflow-hidden border-none shadow-premium bg-card/50 backdrop-blur-xl">
                             <CardHeader className="pb-4">
-                                <CardTitle className="text-2xl">Design Philosophy</CardTitle>
-                                <CardDescription>Switch between distinct visual languages for the platform.</CardDescription>
+                                <CardTitle className="text-2xl">{t('settings.appearance.title')}</CardTitle>
+                                <CardDescription>{t('settings.appearance.desc')}</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     {[
-                                        {
-                                            id: 'cyber',
-                                            label: 'Cyber Tech',
-                                            description: 'Glows, glassmorphism, and high-tech aesthetics.',
-                                            icon: <Zap className="h-6 w-6" />
-                                        },
-                                        {
-                                            id: 'minimal',
-                                            label: 'Minimalist',
-                                            description: 'Clean, flat, and focused on pure functionality.',
-                                            icon: <Feather className="h-6 w-6" />
-                                        },
-                                        {
-                                            id: 'brutalist',
-                                            label: 'Brutalist',
-                                            description: 'Sharp, industrial, and high-impact design.',
-                                            icon: <Square className="h-6 w-6" />
-                                        },
+                                        { id: 'cyber', icon: <Zap className="h-6 w-6" /> },
+                                        { id: 'minimal', icon: <Feather className="h-6 w-6" /> },
+                                        { id: 'brutalist', icon: <Square className="h-6 w-6" /> },
                                     ].map((style) => (
                                         <button
                                             key={style.id}
@@ -334,10 +324,10 @@ export const Settings: React.FC = () => {
                                             </div>
                                             <div>
                                                 <h4 className={`text-sm font-bold uppercase tracking-widest ${designStyle === style.id ? 'text-primary' : 'text-foreground'}`}>
-                                                    {style.label}
+                                                    {t(`settings.appearance.styles.${style.id}`)}
                                                 </h4>
                                                 <p className="text-xs text-muted-foreground mt-1 font-medium leading-relaxed">
-                                                    {style.description}
+                                                    {t(`settings.appearance.styles.${style.id}_desc`)}
                                                 </p>
                                             </div>
                                             {designStyle === style.id && (
@@ -351,15 +341,15 @@ export const Settings: React.FC = () => {
 
                         <Card className="overflow-hidden border-none shadow-premium bg-card/50 backdrop-blur-xl">
                             <CardHeader className="pb-4">
-                                <CardTitle className="text-2xl">Theme Mode</CardTitle>
-                                <CardDescription>Select your preferred interface style.</CardDescription>
+                                <CardTitle className="text-2xl">{t('settings.appearance.mode_title')}</CardTitle>
+                                <CardDescription>{t('settings.appearance.mode_desc')}</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="grid grid-cols-3 gap-4">
                                     {[
-                                        { id: 'light', label: 'Light', icon: <Sun className="h-5 w-5" /> },
-                                        { id: 'dark', label: 'Dark', icon: <Moon className="h-5 w-5" /> },
-                                        { id: 'system', label: 'System', icon: <Monitor className="h-5 w-5" /> },
+                                        { id: 'light', icon: <Sun className="h-5 w-5" /> },
+                                        { id: 'dark', icon: <Moon className="h-5 w-5" /> },
+                                        { id: 'system', icon: <Monitor className="h-5 w-5" /> },
                                     ].map((item) => (
                                         <button
                                             key={item.id}
@@ -373,7 +363,7 @@ export const Settings: React.FC = () => {
                                                 {item.icon}
                                             </div>
                                             <span className={`text-xs font-bold uppercase tracking-wider ${theme === item.id ? 'text-primary' : 'text-muted-foreground'}`}>
-                                                {item.label}
+                                                {t(`settings.appearance.modes.${item.id}`)}
                                             </span>
                                         </button>
                                     ))}
@@ -383,22 +373,22 @@ export const Settings: React.FC = () => {
 
                         <Card className="overflow-hidden border-none shadow-premium bg-card/50 backdrop-blur-xl">
                             <CardHeader>
-                                <CardTitle className="text-2xl">Brand Identity</CardTitle>
-                                <CardDescription>Customize the primary color of your Box's ecosystem.</CardDescription>
+                                <CardTitle className="text-2xl">{t('settings.appearance.brand_title')}</CardTitle>
+                                <CardDescription>{t('settings.appearance.brand_desc')}</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-6">
                                 <div className="space-y-4">
-                                    <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Preset Colors</Label>
+                                    <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{t('settings.appearance.presets')}</Label>
                                     <div className="flex flex-wrap gap-3">
                                         {[
-                                            { name: 'Scarlet', hex: '#FF3B30' },
-                                            { name: 'Azure', hex: '#007AFF' },
-                                            { name: 'Emerald', hex: '#34C759' },
-                                            { name: 'Gold', hex: '#FFD700' },
-                                            { name: 'Purple', hex: '#AF52DE' },
-                                            { name: 'Orange', hex: '#FF9500' },
-                                            { name: 'Pink', hex: '#FF2D55' },
-                                            { name: 'Teal', hex: '#5AC8FA' },
+                                            { id: 'scarlet', hex: '#FF3B30' },
+                                            { id: 'azure', hex: '#007AFF' },
+                                            { id: 'emerald', hex: '#34C759' },
+                                            { id: 'gold', hex: '#FFD700' },
+                                            { id: 'purple', hex: '#AF52DE' },
+                                            { id: 'orange', hex: '#FF9500' },
+                                            { id: 'pink', hex: '#FF2D55' },
+                                            { id: 'teal', hex: '#5AC8FA' },
                                         ].map((color) => (
                                             <button
                                                 key={color.hex}
@@ -408,14 +398,14 @@ export const Settings: React.FC = () => {
                                                     : 'border-transparent shadow-sm'
                                                     }`}
                                                 style={{ backgroundColor: color.hex }}
-                                                title={color.name}
+                                                title={t(`settings.appearance.colors.${color.id}`)}
                                             />
                                         ))}
                                     </div>
                                 </div>
 
                                 <div className="space-y-4 pt-4 border-t border-primary/5">
-                                    <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Custom Color</Label>
+                                    <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{t('settings.appearance.custom_color')}</Label>
                                     <div className="flex gap-4 items-center">
                                         <div className="relative group">
                                             <div
@@ -437,7 +427,7 @@ export const Settings: React.FC = () => {
                                                 className="font-mono text-sm tracking-wider h-12 rounded-xl"
                                                 placeholder="#HEXCODE"
                                             />
-                                            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">This color affects buttons, links, and system accents.</p>
+                                            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">{t('settings.appearance.color_hint')}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -446,17 +436,17 @@ export const Settings: React.FC = () => {
 
                         <Card className="overflow-hidden border-none shadow-premium bg-card/50 backdrop-blur-xl">
                             <CardHeader>
-                                <CardTitle className="text-2xl">Interface Style</CardTitle>
-                                <CardDescription>Fine-tune the geometry and feel of the UI.</CardDescription>
+                                <CardTitle className="text-2xl">{t('settings.appearance.interface_title')}</CardTitle>
+                                <CardDescription>{t('settings.appearance.interface_desc')}</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-6">
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center">
-                                        <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Border Radius</Label>
+                                        <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{t('settings.appearance.border_radius')}</Label>
                                         <span className="text-xs font-mono bg-primary/20 text-primary px-2 py-1 rounded-md">{radius}rem</span>
                                     </div>
                                     <div className="flex items-center gap-6">
-                                        <span className="text-[10px] font-black uppercase text-muted-foreground italic tracking-tighter">Sharp</span>
+                                        <span className="text-[10px] font-black uppercase text-muted-foreground italic tracking-tighter">{t('settings.appearance.sharp')}</span>
                                         <input
                                             type="range"
                                             min="0"
@@ -466,14 +456,14 @@ export const Settings: React.FC = () => {
                                             onChange={(e) => setRadius(parseFloat(e.target.value))}
                                             className="flex-1 accent-primary h-1.5 bg-muted rounded-full appearance-none cursor-pointer"
                                         />
-                                        <span className="text-[10px] font-black uppercase text-muted-foreground italic tracking-tighter">Rounded</span>
+                                        <span className="text-[10px] font-black uppercase text-muted-foreground italic tracking-tighter">{t('settings.appearance.rounded')}</span>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4 pt-2">
                                         <div className="p-3 bg-muted/50 rounded-[var(--radius)] border border-border flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">
-                                            Preview Card
+                                            {t('settings.appearance.preview_card')}
                                         </div>
                                         <Button size="sm" className="pointer-events-none rounded-[var(--radius)]">
-                                            Preview Button
+                                            {t('settings.appearance.preview_button')}
                                         </Button>
                                     </div>
                                 </div>
@@ -491,7 +481,7 @@ export const Settings: React.FC = () => {
                                         className="flex-1 gap-2 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-300 rounded-xl"
                                         onClick={resetTheme}
                                     >
-                                        <RefreshCcw className="h-4 w-4" /> Reset
+                                        <RefreshCcw className="h-4 w-4" /> {t('settings.appearance.reset')}
                                     </Button>
                                     <Button
                                         className="flex-2 gap-2 rounded-xl"
@@ -499,7 +489,7 @@ export const Settings: React.FC = () => {
                                         disabled={isSaving}
                                     >
                                         {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                                        Save Appearance
+                                        {t('settings.appearance.save')}
                                     </Button>
                                 </div>
                             </CardFooter>
@@ -510,22 +500,22 @@ export const Settings: React.FC = () => {
                 <TabsContent value="localization" className="py-6">
                     <Card className="border-none shadow-premium bg-card/50 backdrop-blur-xl">
                         <CardHeader>
-                            <CardTitle>Regional & Localization</CardTitle>
-                            <CardDescription>Configure timezones and units of measurement.</CardDescription>
+                            <CardTitle>{t('settings.localization.title')}</CardTitle>
+                            <CardDescription>{t('settings.localization.desc')}</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <div className="space-y-0.5">
-                                    <Label className="text-base">Metric System</Label>
-                                    <p className="text-sm text-muted-foreground font-light">Use kilograms and centimeters instead of imperial.</p>
+                                    <Label className="text-base">{t('settings.localization.metric')}</Label>
+                                    <p className="text-sm text-muted-foreground font-light">{t('settings.localization.metric_desc')}</p>
                                 </div>
                                 <Switch defaultChecked />
                             </div>
                             <Separator className="bg-primary/5" />
                             <div className="flex items-center justify-between">
                                 <div className="space-y-0.5">
-                                    <Label className="text-base">Public Profile</Label>
-                                    <p className="text-sm text-muted-foreground font-light">Allow non-members to see basic box info.</p>
+                                    <Label className="text-base">{t('settings.localization.public')}</Label>
+                                    <p className="text-sm text-muted-foreground font-light">{t('settings.localization.public_desc')}</p>
                                 </div>
                                 <Switch />
                             </div>
@@ -536,15 +526,15 @@ export const Settings: React.FC = () => {
                 <TabsContent value="notifications" className="py-6">
                     <Card className="border-none shadow-premium bg-card/50 backdrop-blur-xl">
                         <CardHeader>
-                            <CardTitle>Global Notifications</CardTitle>
-                            <CardDescription>Configure system-wide notifications and alerts.</CardDescription>
+                            <CardTitle>{t('settings.notifications.title')}</CardTitle>
+                            <CardDescription>{t('settings.notifications.desc')}</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <p className="text-sm text-muted-foreground">Notification settings coming soon...</p>
+                            <p className="text-sm text-muted-foreground">{t('settings.notifications.coming_soon')}</p>
                         </CardContent>
                     </Card>
                 </TabsContent>
             </Tabs>
-        </div>
+        </div >
     );
 };

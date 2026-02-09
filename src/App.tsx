@@ -28,11 +28,29 @@ function AppContent() {
   const { setPrimaryColor, setRadius, setDesignStyle } = useTheme();
 
   useEffect(() => {
-    if (currentBox?.theme_config) {
-      const config = currentBox.theme_config as any;
-      if (config.primaryColor) setPrimaryColor(config.primaryColor);
-      if (config.radius) setRadius(config.radius);
-      if (config.designStyle) setDesignStyle(config.designStyle);
+    if (currentBox) {
+      // Update Branding (Title & Favicon)
+      const baseTitle = 'BoxApp';
+      const boxName = currentBox.name || 'CrossFit Management';
+      document.title = `${boxName} | ${baseTitle}`;
+
+      if (currentBox.favicon_url) {
+        let link: HTMLLinkElement | null = document.querySelector("link[rel~='icon']");
+        if (!link) {
+          link = document.createElement('link');
+          link.rel = 'icon';
+          document.getElementsByTagName('head')[0].appendChild(link);
+        }
+        link.href = currentBox.favicon_url;
+      }
+
+      // Update Theme Config
+      if (currentBox.theme_config) {
+        const config = currentBox.theme_config as any;
+        if (config.primaryColor) setPrimaryColor(config.primaryColor);
+        if (config.radius) setRadius(config.radius);
+        if (config.designStyle) setDesignStyle(config.designStyle);
+      }
     }
   }, [currentBox, setPrimaryColor, setRadius, setDesignStyle]);
 

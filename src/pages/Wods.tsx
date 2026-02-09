@@ -340,9 +340,11 @@ export const Wods: React.FC = () => {
     const availableMonths = useMemo(() => {
         const months = new Set<string>();
         wods.forEach(wod => {
-            const dateStr = wod.date.split('T')[0].replace(/-/g, '/');
-            const date = new Date(dateStr);
-            months.add(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`);
+            if (wod.date) {
+                const dateStr = wod.date.split('T')[0].replace(/-/g, '/');
+                const date = new Date(dateStr);
+                months.add(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`);
+            }
         });
         return Array.from(months).sort((a, b) => b.localeCompare(a));
     }, [wods]);
@@ -353,10 +355,11 @@ export const Wods: React.FC = () => {
             items = items.filter(w => w.track === activeTrack);
         }
         if (selectedMonth !== 'all') {
-            items = items.filter(w => w.date.startsWith(selectedMonth));
+            items = items.filter(w => w.date && w.date.startsWith(selectedMonth));
         }
         if (selectedDate) {
             items = items.filter(w => {
+                if (!w.date) return false;
                 const wodDate = w.date.includes('T') ? w.date.split('T')[0] : w.date;
                 return wodDate === selectedDate;
             });
@@ -388,6 +391,7 @@ export const Wods: React.FC = () => {
     }, [paginatedWods]);
 
     const getWeekRange = (dateStr: string) => {
+        if (!dateStr) return { start: '---', end: '---', monday: '' };
         const dStr = dateStr.split('T')[0].replace(/-/g, '/');
         const date = new Date(dStr);
         const day = date.getDay();
@@ -851,7 +855,7 @@ export const Wods: React.FC = () => {
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-4 px-4">
                                         <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-black/[0.02] dark:bg-white/5 px-3 py-1 rounded-full border border-black/[0.05] dark:border-white/5">
-                                            {new Date(date.split('T')[0].replace(/-/g, '/')).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase()}
+                                            {date ? new Date(date.split('T')[0].replace(/-/g, '/')).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase() : '---'}
                                         </span>
                                         <div className="h-px flex-1 bg-black/[0.05] dark:bg-white/5" />
                                     </div>

@@ -74,7 +74,7 @@ export const AuditLogs: React.FC = () => {
         // Joining with profiles to get the name of the person who made the change
         const { data, error } = await supabase
             .from('audit_logs')
-            .select('*, profiles!changed_by(first_name, last_name, email)')
+            .select('*, profiles(first_name, last_name, email)')
             .order('created_at', { ascending: false })
             .limit(100);
 

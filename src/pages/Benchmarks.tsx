@@ -56,6 +56,7 @@ export const Benchmarks: React.FC = () => {
     const [prs, setPrs] = useState<PR[]>([]);
     const [loading, setLoading] = useState(true);
     const [open, setOpen] = useState(false);
+    const [newPR, setNewPR] = useState({ benchmarkId: '', value: '', notes: '' });
     const [searchTerm, setSearchTerm] = useState('');
     const [consistencyScore, setConsistencyScore] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);

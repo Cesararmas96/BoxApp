@@ -93,6 +93,50 @@ export const Profile: React.FC = () => {
         fileInputRef.current?.click();
     };
 
+    const compressImage = (file: File, maxWidth = 800, maxHeight = 800, quality = 0.8): Promise<Blob> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target?.result as string;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height *= maxWidth / width;
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width *= maxHeight / height;
+                            height = maxHeight;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx?.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob(
+                        (blob) => {
+                            if (blob) resolve(blob);
+                            else reject(new Error('Canvas to Blob failed'));
+                        },
+                        'image/jpeg',
+                        quality
+                    );
+                };
+                img.onerror = (err) => reject(err);
+            };
+            reader.onerror = (err) => reject(err);
+        });
+    };
+
     const handleAvatarFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file || !user) return;
@@ -103,22 +147,22 @@ export const Profile: React.FC = () => {
             return;
         }
 
-        if (file.size > 2 * 1024 * 1024) { // 2MB
-            showNotification('error', t('profile.image_size_error'));
-            return;
-        }
-
         setIsUploadingAvatar(true);
         setProfileError(null);
 
         try {
-            const fileExt = file.name.split('.').pop();
+            // Compress image if it's an image
+            const compressedBlob = await compressImage(file);
+            const fileExt = 'jpg'; // We compress to jpeg
             const fileName = `${user.id}/${Date.now()}.${fileExt}`;
             const filePath = `${fileName}`;
 
             const { error: uploadError } = await supabase.storage
                 .from('avatars')
-                .upload(filePath, file);
+                .upload(filePath, compressedBlob, {
+                    contentType: 'image/jpeg',
+                    upsert: true
+                });
 
             if (uploadError) throw uploadError;
 
@@ -156,6 +200,7 @@ export const Profile: React.FC = () => {
             showNotification('error', err.message);
         } finally {
             setIsUploadingAvatar(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
 
@@ -201,8 +246,8 @@ export const Profile: React.FC = () => {
                         <UserIcon className="h-8 w-8 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase">{t('profile.title')}</h1>
-                        <p className="text-zinc-500 text-sm font-bold uppercase tracking-widest">{t('profile.subtitle')}</p>
+                        <h1 className="text-4xl font-black italic tracking-tighter text-foreground uppercase">{t('profile.title')}</h1>
+                        <p className="text-muted-foreground text-sm font-bold uppercase tracking-widest">{t('profile.subtitle')}</p>
                     </div>
                 </div>
             </div>
@@ -210,29 +255,29 @@ export const Profile: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Left Column: Profile Card */}
                 <div className="lg:col-span-4 space-y-6">
-                    <Card className="border-none shadow-2xl bg-zinc-900/50 backdrop-blur-xl overflow-hidden ring-1 ring-white/10">
+                    <Card className="border-none shadow-2xl bg-card/50 backdrop-blur-xl overflow-hidden ring-1 ring-border">
                         <div className="h-24 bg-gradient-to-r from-primary/20 to-primary/5" />
                         <CardHeader className="text-center -mt-12 relative pb-8">
                             <div className="mx-auto relative group w-32 h-32 mb-4">
                                 {isUploadingAvatar ? (
-                                    <div className="w-full h-full rounded-full bg-zinc-950 flex items-center justify-center border-4 border-zinc-900 ring-2 ring-primary/20 animate-pulse">
+                                    <div className="w-full h-full rounded-full bg-muted flex items-center justify-center border-4 border-card ring-2 ring-primary/20 animate-pulse">
                                         <Loader2 className="h-10 w-10 text-primary animate-spin" />
                                     </div>
                                 ) : profile.avatar_url && (profile.avatar_url.startsWith('http') || profile.avatar_url.startsWith('/')) ? (
                                     <img
                                         src={profile.avatar_url}
-                                        alt="Avatar"
-                                        className="w-full h-full rounded-full object-cover border-4 border-zinc-900 ring-2 ring-primary/20 group-hover:ring-primary/50 transition-all duration-300"
+                                        alt={t('profile.avatar')}
+                                        className="w-full h-full rounded-full object-cover border-4 border-card ring-2 ring-primary/20 group-hover:ring-primary/50 transition-all duration-300"
                                     />
                                 ) : (
-                                    <div className="w-full h-full rounded-full bg-zinc-950 flex items-center justify-center border-4 border-zinc-900 ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all duration-300">
-                                        <UserCircle className="h-16 w-16 text-zinc-800" />
+                                    <div className="w-full h-full rounded-full bg-muted flex items-center justify-center border-4 border-card ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all duration-300">
+                                        <UserCircle className="h-16 w-16 text-muted-foreground/30" />
                                     </div>
                                 )}
                                 <button
                                     onClick={handleAvatarClick}
                                     disabled={isUploadingAvatar}
-                                    className="absolute bottom-1 right-1 p-2.5 bg-primary text-white rounded-full shadow-lg hover:scale-110 active:scale-95 transition-all disabled:opacity-50 ring-4 ring-zinc-900"
+                                    className="absolute bottom-1 right-1 p-2.5 bg-primary text-white rounded-full shadow-lg hover:scale-110 active:scale-95 transition-all disabled:opacity-50 ring-4 border-4 border-card"
                                 >
                                     <Camera className="h-4 w-4" />
                                 </button>
@@ -244,20 +289,20 @@ export const Profile: React.FC = () => {
                                     onChange={handleAvatarFileChange}
                                 />
                             </div>
-                            <CardTitle className="text-2xl font-black italic tracking-tighter text-white uppercase">
+                            <CardTitle className="text-2xl font-black italic tracking-tighter text-foreground uppercase">
                                 {profile.first_name} {profile.last_name}
                             </CardTitle>
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mt-2">
                                 <Shield className="h-3 w-3 text-primary" />
                                 <span className="text-[10px] font-black uppercase tracking-widest text-primary">
-                                    {userProfile?.role_id || 'Member'}
+                                    {userProfile?.role_id ? t(`roles.role_${userProfile.role_id.toLowerCase()}`) : t('roles.role_athlete')}
                                 </span>
                             </div>
                         </CardHeader>
                         <CardContent className="px-6 pb-8">
-                            <div className="p-4 rounded-xl bg-zinc-950/50 border border-white/5 text-center">
-                                <span className="text-[10px] font-bold uppercase text-zinc-500 tracking-widest block mb-1">{t('auth.email')}</span>
-                                <span className="text-sm font-medium text-zinc-300 italic">{user?.email}</span>
+                            <div className="p-4 rounded-xl bg-muted/50 border border-border/50 text-center">
+                                <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest block mb-1">{t('auth.email')}</span>
+                                <span className="text-sm font-medium text-foreground italic">{user?.email}</span>
                             </div>
                         </CardContent>
                     </Card>
@@ -266,57 +311,57 @@ export const Profile: React.FC = () => {
                 {/* Right Column: Form Sections */}
                 <div className="lg:col-span-8 space-y-8">
                     {/* Personal Information */}
-                    <Card className="border-none shadow-2xl bg-zinc-900/50 backdrop-blur-xl ring-1 ring-white/10 overflow-hidden">
-                        <CardHeader className="border-b border-white/5 bg-white/[0.02]">
+                    <Card className="border-none shadow-2xl bg-card/50 backdrop-blur-xl ring-1 ring-border overflow-hidden">
+                        <CardHeader className="border-b border-border/50 bg-muted/20">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-primary/10 rounded-lg">
                                     <UserIcon className="h-5 w-5 text-primary" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-xl font-black italic tracking-tight text-white uppercase leading-none">{t('profile.personal_info')}</CardTitle>
-                                    <CardDescription className="text-zinc-500 text-xs font-bold uppercase tracking-wider mt-1">{t('profile.personal_info_desc')}</CardDescription>
+                                    <CardTitle className="text-xl font-black italic tracking-tight text-foreground uppercase leading-none">{t('profile.personal_info')}</CardTitle>
+                                    <CardDescription className="text-muted-foreground text-xs font-bold uppercase tracking-wider mt-1">{t('profile.personal_info_desc')}</CardDescription>
                                 </div>
                             </div>
                         </CardHeader>
                         <CardContent className="p-8 space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <Label htmlFor="first_name" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">{t('profile.first_name')}</Label>
+                                    <Label htmlFor="first_name" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">{t('profile.first_name')}</Label>
                                     <Input
                                         id="first_name"
-                                        placeholder="John"
+                                        placeholder={t('profile.first_name_placeholder')}
                                         value={profile.first_name}
                                         onChange={(e) => setProfile({ ...profile, first_name: e.target.value })}
-                                        className="bg-zinc-950/50 border-white/5 h-12 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all text-white font-medium italic"
+                                        className="bg-muted/50 border-border/50 h-12 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all text-foreground font-medium italic"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="last_name" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">{t('profile.last_name')}</Label>
+                                    <Label htmlFor="last_name" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">{t('profile.last_name')}</Label>
                                     <Input
                                         id="last_name"
-                                        placeholder="Doe"
+                                        placeholder={t('profile.last_name_placeholder')}
                                         value={profile.last_name}
                                         onChange={(e) => setProfile({ ...profile, last_name: e.target.value })}
-                                        className="bg-zinc-950/50 border-white/5 h-12 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all text-white font-medium italic"
+                                        className="bg-muted/50 border-border/50 h-12 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all text-foreground font-medium italic"
                                     />
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="avatar_url" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">{t('profile.avatar_url')}</Label>
+                                <Label htmlFor="avatar_url" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">{t('profile.avatar_url')}</Label>
                                 <div className="flex gap-3">
                                     <Input
                                         id="avatar_url"
-                                        placeholder="https://example.com/photo.jpg"
+                                        placeholder={t('profile.avatar_url_placeholder')}
                                         value={profile.avatar_url}
                                         onChange={(e) => setProfile({ ...profile, avatar_url: e.target.value })}
-                                        className="bg-zinc-950/50 border-white/5 h-12 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all text-white font-medium italic flex-1"
+                                        className="bg-muted/50 border-border/50 h-12 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all text-foreground font-medium italic flex-1"
                                     />
                                     <Button
                                         variant="outline"
-                                        className="h-12 w-12 rounded-xl border-white/5 bg-zinc-950/50 hover:bg-zinc-900"
+                                        className="h-12 w-12 rounded-xl border-border/50 bg-muted/50 hover:bg-muted"
                                         onClick={handleAvatarClick}
                                     >
-                                        <Camera className="h-4 w-4 text-zinc-400" />
+                                        <Camera className="h-4 w-4 text-muted-foreground" />
                                     </Button>
                                 </div>
                             </div>
@@ -328,7 +373,7 @@ export const Profile: React.FC = () => {
                                 </Alert>
                             )}
                         </CardContent>
-                        <CardFooter className="border-t border-white/5 bg-white/[0.01] p-6 flex justify-end">
+                        <CardFooter className="border-t border-border/50 bg-muted/10 p-6 flex justify-end">
                             <Button
                                 className="h-12 px-8 rounded-xl group gap-2"
                                 variant="premium"
@@ -350,40 +395,40 @@ export const Profile: React.FC = () => {
                     </Card>
 
                     {/* Security & Password */}
-                    <Card className="border-none shadow-2xl bg-zinc-900/50 backdrop-blur-xl ring-1 ring-white/10 overflow-hidden">
-                        <CardHeader className="border-b border-white/5 bg-white/[0.02]">
+                    <Card className="border-none shadow-2xl bg-card/50 backdrop-blur-xl ring-1 ring-border overflow-hidden">
+                        <CardHeader className="border-b border-border/50 bg-muted/20">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-primary/10 rounded-lg">
                                     <Key className="h-5 w-5 text-primary" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-xl font-black italic tracking-tight text-white uppercase leading-none">{t('profile.security')}</CardTitle>
-                                    <CardDescription className="text-zinc-500 text-xs font-bold uppercase tracking-wider mt-1">{t('profile.security_desc')}</CardDescription>
+                                    <CardTitle className="text-xl font-black italic tracking-tight text-foreground uppercase leading-none">{t('profile.security')}</CardTitle>
+                                    <CardDescription className="text-muted-foreground text-xs font-bold uppercase tracking-wider mt-1">{t('profile.security_desc')}</CardDescription>
                                 </div>
                             </div>
                         </CardHeader>
                         <CardContent className="p-8 space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <Label htmlFor="new-password" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">{t('profile.new_password')}</Label>
+                                    <Label htmlFor="new-password" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">{t('profile.new_password')}</Label>
                                     <Input
                                         id="new-password"
                                         type="password"
                                         placeholder="••••••••"
                                         value={passwords.new}
                                         onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
-                                        className="bg-zinc-950/50 border-white/5 h-12 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all text-white font-mono italic"
+                                        className="bg-muted/50 border-border/50 h-12 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all text-foreground font-mono italic"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="confirm-password" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">{t('profile.confirm_password')}</Label>
+                                    <Label htmlFor="confirm-password" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">{t('profile.confirm_password')}</Label>
                                     <Input
                                         id="confirm-password"
                                         type="password"
                                         placeholder="••••••••"
                                         value={passwords.confirm}
                                         onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
-                                        className="bg-zinc-950/50 border-white/5 h-12 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all text-white font-mono italic"
+                                        className="bg-muted/50 border-border/50 h-12 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all text-foreground font-mono italic"
                                     />
                                 </div>
                             </div>
@@ -395,7 +440,7 @@ export const Profile: React.FC = () => {
                                 </Alert>
                             )}
                         </CardContent>
-                        <CardFooter className="border-t border-white/5 bg-white/[0.01] p-6 flex justify-end">
+                        <CardFooter className="border-t border-border/50 bg-muted/10 p-6 flex justify-end">
                             <Button
                                 className="h-12 px-8 rounded-xl group gap-2"
                                 variant="premium"

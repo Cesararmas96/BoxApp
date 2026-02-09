@@ -369,8 +369,9 @@
         "logout": "Cerrar Sesión"
     },
     "profile": {
-        "title": "Configuración de Cuenta",
-        "subtitle": "Gestiona tu información personal y seguridad.",
+        "title": "Ajustes de Cuenta",
+        "subtitle": "GESTIONA TU IDENTIDAD",
+        "avatar": "Foto de perfil",
         "personal_info": "Información Personal",
         "personal_info_desc": "Actualiza tu nombre y detalles de perfil.",
         "security": "Seguridad y Contraseña",
@@ -380,6 +381,9 @@
         "avatar_url": "URL del Avatar",
         "new_password": "Nueva Contraseña",
         "confirm_password": "Confirmar Nueva Contraseña",
+        "first_name_placeholder": "ej. Juan",
+        "last_name_placeholder": "ej. Pérez",
+        "avatar_url_placeholder": "https://ejemplo.com/foto.jpg",
         "save_changes": "Guardar Cambios",
         "update_password": "Actualizar Contraseña",
         "success_profile": "¡Perfil actualizado con éxito!",

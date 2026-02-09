@@ -178,7 +178,7 @@ export const DivisionsTab: React.FC<DivisionsTabProps> = ({ competition }) => {
                     <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">{t('competitions.manage_divisions', { defaultValue: 'MANAGE DIVISIONS' })}</p>
                 </div>
 
-                <div className="space-y-3 max-h-[500px] overflow-y-auto scrollbar-none pr-2">
+                <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
                     {divisions.map((division) => (
                         <div key={division.id} className="p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/30 transition-all group relative overflow-hidden flex justify-between items-center">
                             <div className="space-y-1">

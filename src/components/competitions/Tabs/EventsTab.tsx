@@ -320,7 +320,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({ competition }) => {
                     <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">{t('competitions.manage_events')}</p>
                 </div>
 
-                <div className="space-y-3 max-h-[500px] overflow-y-auto scrollbar-none pr-2">
+                <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
                     {events.map((event, index) => (
                         <div key={event.id} className="p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/30 transition-all group relative overflow-hidden">
                             <div className="absolute top-0 left-0 w-1 h-full bg-primary/20 group-hover:bg-primary transition-colors" />

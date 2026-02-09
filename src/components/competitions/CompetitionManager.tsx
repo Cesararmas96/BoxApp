@@ -66,7 +66,7 @@ export const CompetitionManager: React.FC<CompetitionManagerProps> = ({ competit
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col h-[calc(90vh-160px)] overflow-hidden">
-                <div className="px-6 md:px-10 border-b bg-white/5 flex-shrink-0 overflow-x-auto scrollbar-hide">
+                <div className="px-6 md:px-10 border-b bg-white/5 flex-shrink-0 overflow-x-auto">
                     <TabsList className="h-16 bg-transparent gap-8 p-0 flex-nowrap justify-start">
                         <TabsTrigger value="overview" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none h-full px-0 gap-2.5 uppercase text-[10px] font-black tracking-[0.15em] transition-all hover:text-primary/70">
                             <LayoutDashboard className="h-4 w-4" /> {t('common.overview', { defaultValue: 'OVERVIEW' })}

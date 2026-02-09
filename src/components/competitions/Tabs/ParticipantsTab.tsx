@@ -146,7 +146,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ competition })
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-none">
+                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
                     {athletes
                         .filter(a =>
                             !participants.some(p => p.user_id === a.id) &&
@@ -197,7 +197,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ competition })
                         <div className="col-span-3 text-center">{t('common.status')}</div>
                         <div className="col-span-1"></div>
                     </div>
-                    <div className="max-h-[400px] overflow-y-auto scrollbar-none p-2 space-y-1">
+                    <div className="max-h-[400px] overflow-y-auto p-2 space-y-1">
                         {participants.map((participant) => (
                             <div key={participant.id} className="grid grid-cols-12 gap-4 items-center p-3 rounded-xl hover:bg-white/5 transition-colors group">
                                 <div className="col-span-5 flex items-center gap-3">

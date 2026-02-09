@@ -9,26 +9,26 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { CheckCircle2, XCircle, Timer, Dumbbell, Repeat, AlertTriangle } from 'lucide-react';
+import { Timer, Dumbbell, Repeat } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { useLanguage, useNotification } from '@/hooks';
 import { SignaturePad } from '@/components/ui/signature-pad';
+
+import { CompetitionEvent } from '@/types/competitions';
 
 interface ScoreEntryProps {
     isOpen: boolean;
     onClose: () => void;
     assignment: any; // Lane Assignment with participant details
-    event: any; // Event details including WOD type
+    event: CompetitionEvent;
     heatId: string;
     onScoreSubmitted: () => void;
 }
 
-export const ScoreEntry: React.FC<ScoreEntryProps> = ({ isOpen, onClose, assignment, event, heatId, onScoreSubmitted }) => {
-    const { t } = useLanguage();
+export const ScoreEntry: React.FC<ScoreEntryProps> = ({ isOpen, onClose, assignment, event, onScoreSubmitted }) => {
     const { showNotification } = useNotification();
     const [score, setScore] = useState<string>('');
     const [tieBreak, setTieBreak] = useState<string>('');
-    const [status, setStatus] = useState<string>('submitting');
     const [loading, setLoading] = useState(false);
     const [judgeSignature, setJudgeSignature] = useState<string | null>(null);
     const [athleteSignature, setAthleteSignature] = useState<string | null>(null);
@@ -45,15 +45,16 @@ export const ScoreEntry: React.FC<ScoreEntryProps> = ({ isOpen, onClose, assignm
                     .single();
 
                 if (data) {
+                    const scoreRecord = data as any;
                     // Pre-fill existing score
                     if (event.wod_type === 'for_time') {
-                        setScore(data.score_data.time || '');
+                        setScore(scoreRecord.score_data?.time || '');
                     } else if (event.wod_type === 'amrap') {
-                        setScore(data.score_data.reps || '');
+                        setScore(scoreRecord.score_data?.reps || '');
                     } else if (event.wod_type === 'rm') {
-                        setScore(data.score_data.weight || '');
+                        setScore(scoreRecord.score_data?.weight || '');
                     }
-                    setTieBreak(data.tie_break_data?.time || '');
+                    setTieBreak(scoreRecord.tie_break_data?.time || '');
                 } else {
                     setScore('');
                     setTieBreak('');
@@ -88,7 +89,7 @@ export const ScoreEntry: React.FC<ScoreEntryProps> = ({ isOpen, onClose, assignm
                 athlete_signature: athleteSignature,
                 status: 'submitted',
                 updated_at: new Date().toISOString()
-            }, {
+            } as any, {
                 onConflict: 'competition_id,event_id,participant_id'
             });
 
@@ -118,7 +119,7 @@ export const ScoreEntry: React.FC<ScoreEntryProps> = ({ isOpen, onClose, assignm
                             LANE {assignment.lane_number}
                         </span>
                         <span className="bg-white/5 text-muted-foreground text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded">
-                            {event.name}
+                            {event.title}
                         </span>
                     </div>
                 </DialogHeader>

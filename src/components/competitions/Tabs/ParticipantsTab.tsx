@@ -7,12 +7,10 @@ import {
     Search,
     Plus,
     Trash2,
-    Users,
-    ShieldCheck
+    Users
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
     Select,
@@ -21,8 +19,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Competition, CompetitionParticipant } from '@/types/supabase';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { Competition, CompetitionParticipant } from '@/types/competitions';
 
 interface ParticipantsTabProps {
     competition: Competition;
@@ -37,7 +34,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ competition })
     const [athletes, setAthletes] = useState<any[]>([]);
     const [searchAthlete, setSearchAthlete] = useState('');
     const [participantDivision, setParticipantDivision] = useState('RX');
-    const [loading, setLoading] = useState(false);
+
 
     useEffect(() => {
         if (currentBox && competition) {

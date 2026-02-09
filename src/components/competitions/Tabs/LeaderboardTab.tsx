@@ -14,40 +14,26 @@ import { Database } from '@/types/supabase';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-type Competition = Database['public']['Tables']['competitions']['Row'];
+import { Competition, CompetitionParticipant, CompetitionEvent, CompetitionScore } from '@/types/competitions';
 
 interface LeaderboardTabProps {
     competition: Competition;
 }
 
-interface Participant {
-    id: string;
-    division: string;
+// Local wrapper for calculation convenience
+interface ParticipantWithAthlete extends CompetitionParticipant {
     athlete: {
         first_name: string;
         last_name: string;
     };
 }
 
-interface Event {
-    id: string;
-    name: string;
-    scoring_type: 'time' | 'reps' | 'weight' | 'points';
-    wod_type?: 'for_time' | 'amrap' | 'rm' | 'complex';
-}
-
-interface Score {
-    event_id: string;
-    participant_id: string;
-    score_data: any;
-}
-
 export const LeaderboardTab: React.FC<LeaderboardTabProps> = ({ competition }) => {
     const { t } = useLanguage();
 
-    const [participants, setParticipants] = useState<Participant[]>([]);
-    const [events, setEvents] = useState<Event[]>([]);
-    const [scores, setScores] = useState<Score[]>([]);
+    const [participants, setParticipants] = useState<ParticipantWithAthlete[]>([]);
+    const [events, setEvents] = useState<CompetitionEvent[]>([]);
+    const [scores, setScores] = useState<CompetitionScore[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedDivision, setSelectedDivision] = useState<string>('all');
 
@@ -64,30 +50,28 @@ export const LeaderboardTab: React.FC<LeaderboardTabProps> = ({ competition }) =
             // Fetch Events
             const { data: eventData } = await supabase
                 .from('competition_events')
-                .select('id, name, scoring_type, wod_type')
+                .select('*')
                 .eq('competition_id', competition.id)
                 .order('order_index');
 
             // Fetch Scores
             // We need event IDs first
             const eventIds = eventData?.map(e => e.id) || [];
-            let scoreData: any[] = [];
+            let scoreData: CompetitionScore[] = [];
 
             if (eventIds.length > 0) {
                 const { data: sData } = await supabase
                     .from('competition_scores')
-                    .select('event_id, participant_id, score_data')
+                    .select('*')
                     .in('event_id', eventIds)
                     .in('status', ['submitted', 'verified']); // Only count valid scores
 
-                scoreData = sData || [];
+                scoreData = (sData || []) as CompetitionScore[];
             }
 
-            // @ts-ignore
-            if (partData) setParticipants(partData);
-            // @ts-ignore
-            if (eventData) setEvents(eventData);
-            setScores(scoreData);
+            if (partData) setParticipants(partData as unknown as ParticipantWithAthlete[]);
+            if (eventData) setEvents(eventData as unknown as CompetitionEvent[]);
+            setScores(scoreData as CompetitionScore[]);
             setLoading(false);
         };
         fetchData();
@@ -129,8 +113,7 @@ export const LeaderboardTab: React.FC<LeaderboardTabProps> = ({ competition }) =
                 const eventResults = events.map(event => {
                     const pScore = scores.find(s => s.participant_id === p.id && s.event_id === event.id);
 
-                    // @ts-ignore
-                    const { value, display } = parseScore(pScore?.score_data, event.wod_type || 'for_time'); // Default to for_time if undefined
+                    const { value, display } = parseScore(pScore?.score_data, event.wod_type || 'for_time');
 
                     // Ranking Logic (Low Point System)
                     // Get all valid scores for this event and division
@@ -138,7 +121,6 @@ export const LeaderboardTab: React.FC<LeaderboardTabProps> = ({ competition }) =
                         s.event_id === event.id &&
                         participants.some(part => part.id === s.participant_id && part.division === div)
                     ).map(s => {
-                        // @ts-ignore
                         const parsed = parseScore(s.score_data, event.wod_type || 'for_time');
                         return { ...s, value: parsed.value };
                     });
@@ -159,7 +141,6 @@ export const LeaderboardTab: React.FC<LeaderboardTabProps> = ({ competition }) =
                     }
 
                     const sortedScores = [...eventScoresInDiv].sort((a, b) => {
-                        // @ts-ignore - wod_type needs to be on event interface
                         if ((event.wod_type || 'for_time') === 'for_time') return a.value - b.value; // Lower time is better
                         return b.value - a.value; // Higher is better
                     });
@@ -263,7 +244,7 @@ export const LeaderboardTab: React.FC<LeaderboardTabProps> = ({ competition }) =
                                                 <th className="p-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Athlete</th>
                                                 {events.map((event, idx) => (
                                                     <th key={event.id} className="p-6 text-[10px] font-black uppercase tracking-widest text-center text-primary/60 min-w-[100px]">
-                                                        EV {idx + 1}
+                                                        {event.title || event.name || `EV ${idx + 1}`}
                                                     </th>
                                                 ))}
                                                 <th className="p-6 text-[10px] font-black uppercase tracking-widest text-right text-primary w-32">Total</th>

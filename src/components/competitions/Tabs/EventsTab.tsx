@@ -24,7 +24,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Competition, CompetitionEvent } from '@/types/supabase';
+import { Competition, CompetitionEvent } from '@/types/competitions';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Switch } from '@/components/ui/switch';
 

@@ -33,27 +33,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Competition } from '@/types/supabase';
+import { Competition, CompetitionEvent as Event, CompetitionHeat as Heat } from '@/types/competitions';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { generateLinearHeats, Participant } from '@/utils/heatGenerator';
 import { HeatSchedule } from '../HeatSchedule';
 
 interface LogisticsTabProps {
     competition: Competition;
-}
-
-interface Event {
-    id: string;
-    name: string;
-    wod_type: string;
-}
-
-interface Heat {
-    id: string;
-    name: string;
-    start_time: string | null;
-    status: string;
-    event_id: string;
 }
 
 export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
@@ -65,39 +51,41 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
     const [heats, setHeats] = useState<Heat[]>([]);
     const [loading, setLoading] = useState(false);
 
+    const fetchEvents = async () => {
+        const { data, error } = await supabase
+            .from('competition_events')
+            .select('*')
+            .eq('competition_id', competition.id)
+            .order('order_index', { ascending: true });
+
+        if (data) {
+            setEvents(data as any);
+            if (data.length > 0 && !selectedEventId) {
+                setSelectedEventId(data[0].id);
+            }
+        }
+    };
+
+    const fetchHeats = async () => {
+        if (!selectedEventId) return;
+        setLoading(true);
+        const { data, error } = await supabase
+            .from('competition_heats')
+            .select('*')
+            .eq('event_id', selectedEventId)
+            .order('start_time', { ascending: true });
+
+        if (data) setHeats(data as any);
+        setLoading(false);
+    };
+
     // Fetch events for the competition
     useEffect(() => {
-        const fetchEvents = async () => {
-            const { data, error } = await supabase
-                .from('competition_events')
-                .select('id, name, wod_type')
-                .eq('competition_id', competition.id)
-                .order('order_index', { ascending: true });
-
-            if (data) {
-                setEvents(data);
-                if (data.length > 0 && !selectedEventId) {
-                    setSelectedEventId(data[0].id);
-                }
-            }
-        };
         fetchEvents();
     }, [competition.id]);
 
     // Fetch heats for the selected event
     useEffect(() => {
-        const fetchHeats = async () => {
-            if (!selectedEventId) return;
-            setLoading(true);
-            const { data, error } = await supabase
-                .from('competition_heats')
-                .select('*')
-                .eq('event_id', selectedEventId)
-                .order('start_time', { ascending: true });
-
-            if (data) setHeats(data);
-            setLoading(false);
-        };
         fetchHeats();
     }, [selectedEventId]);
 
@@ -137,7 +125,7 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
 
             // 2. Generate Heats Locally
             // Map to generic Participant interface if needed, here just passed directly as they have ID
-            const generatedHeats = generateLinearHeats(participants, lanesPerHeat, heats.length + 1);
+            const generatedHeats = generateLinearHeats(participants as any, lanesPerHeat, heats.length + 1);
 
             // 3. Save to Supabase
             for (const heat of generatedHeats) {
@@ -172,12 +160,7 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
             showNotification('success', `GENERATED ${generatedHeats.length} HEATS`);
             setIsGeneratorOpen(false);
             // Refresh heats list
-            const { data: newHeats } = await supabase
-                .from('competition_heats')
-                .select('*')
-                .eq('event_id', selectedEventId)
-                .order('start_time', { ascending: true });
-            if (newHeats) setHeats(newHeats);
+            fetchHeats();
 
         } catch (error: any) {
             console.error(error);
@@ -210,8 +193,8 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
                                     }`}
                             >
                                 <div className="space-y-1">
-                                    <span className="font-black italic uppercase tracking-tight text-sm block">{event.name}</span>
-                                    <span className={`text-[10px] font-bold uppercase tracking-wider block ${selectedEventId === event.id ? 'text-primary-foreground/70' : 'text-muted-foreground/50'}`}>{event.wod_type.replace('_', ' ')}</span>
+                                    <span className="font-black italic uppercase tracking-tight text-sm block">{event.title || (event as any).name}</span>
+                                    <span className={`text-[10px] font-bold uppercase tracking-wider block ${selectedEventId === event.id ? 'text-primary-foreground/70' : 'text-muted-foreground/50'}`}>{event.wod_type?.replace('_', ' ')}</span>
                                 </div>
                                 {selectedEventId === event.id && <ChevronRight className="h-4 w-4 animate-in slide-in-from-left-2" />}
                             </button>
@@ -231,7 +214,7 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
                     <div className="space-y-1">
                         <h3 className="text-xl font-black italic uppercase tracking-tight flex items-center gap-3">
                             <Clock className="h-5 w-5 text-primary" />
-                            {events.find(e => e.id === selectedEventId)?.name || 'SELECT EVENT'} - HEATS
+                            {events.find(e => e.id === selectedEventId)?.title || (events.find(e => e.id === selectedEventId) as any)?.name || 'SELECT EVENT'} - HEATS
                         </h3>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
                             MANAGE HEATS AND LANE ASSIGNMENTS
@@ -295,10 +278,7 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
                                 status: 'pending'
                             }]);
                             if (error) showNotification('error', 'ERROR CREATING HEAT');
-                            else {
-                                const { data } = await supabase.from('competition_heats').select('*').eq('event_id', selectedEventId).order('start_time', { ascending: true });
-                                if (data) setHeats(data);
-                            }
+                            else fetchHeats();
                         }} disabled={!selectedEventId} className="uppercase font-black text-xs tracking-widest gap-2 bg-white/5 hover:bg-primary hover:text-primary-foreground border border-white/10">
                             <Plus className="h-4 w-4" /> ADD HEAT
                         </Button>

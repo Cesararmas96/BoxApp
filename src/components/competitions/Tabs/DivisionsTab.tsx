@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage, useNotification } from '@/hooks';
 import {
     Dumbbell,
@@ -19,29 +18,17 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Competition } from '@/types/supabase';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { Competition, CompetitionDivision as Division } from '@/types/competitions';
 
 interface DivisionsTabProps {
     competition: Competition;
 }
 
-interface Division {
-    id: string;
-    competition_id: string;
-    name: string;
-    gender: 'male' | 'female' | 'mixed' | 'any';
-    description: string | null;
-    created_at?: string;
-}
-
 export const DivisionsTab: React.FC<DivisionsTabProps> = ({ competition }) => {
     const { t } = useLanguage();
-    const { currentBox } = useAuth();
     const { showNotification, showConfirm } = useNotification();
 
     const [divisions, setDivisions] = useState<Division[]>([]);
-    const [loading, setLoading] = useState(false);
 
     // Form State
     const [newDivision, setNewDivision] = useState({

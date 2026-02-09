@@ -21,26 +21,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Competition } from '@/types/supabase';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { Competition, CompetitionTeam as Team } from '@/types/competitions';
 
 interface TeamsTabProps {
     competition: Competition;
-}
-
-interface Team {
-    id: string;
-    competition_id: string;
-    name: string;
-    captain_user_id: string | null;
-    join_code: string | null;
-    created_at?: string;
-    captain?: {
-        first_name: string;
-        last_name: string;
-        email: string;
-    };
-    members?: any[];
 }
 
 export const TeamsTab: React.FC<TeamsTabProps> = ({ competition }) => {

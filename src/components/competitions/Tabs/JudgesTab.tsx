@@ -13,7 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Competition } from '@/types/supabase';
+import { Competition } from '@/types/competitions';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 
 interface TooltipProps {

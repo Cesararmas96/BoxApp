@@ -5,14 +5,11 @@ import { useLanguage, useNotification } from '@/hooks';
 import {
     Settings,
     Save,
-    Calendar,
-    Trophy,
-    Users
+    Trophy
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import {
     Select,
@@ -21,7 +18,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Competition } from '@/types/supabase';
+import { Competition } from '@/types/competitions';
 import { Switch } from '@/components/ui/switch';
 
 interface SettingsTabProps {
@@ -31,7 +28,6 @@ interface SettingsTabProps {
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({ competition, onUpdate }) => {
     const { t } = useLanguage();
-    const { currentBox } = useAuth();
     const { showNotification } = useNotification();
 
     const [loading, setLoading] = useState(false);

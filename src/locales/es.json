@@ -226,7 +226,7 @@
     },
     "schedule": {
         "title": "Horarios",
-        "subtitle": "Programación dinámica de clases y reservas de atletas.",
+        "subtitle": "Programación dinámica de clases.",
         "program_btn": "Programar Sesión",
         "new_title": "Programar Nueva Sesión",
         "coming_soon": "Interfaz para crear clases recurrentes próximamente.",

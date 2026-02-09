@@ -45,7 +45,7 @@ interface PR {
 }
 
 export const Benchmarks: React.FC = () => {
-    const { user } = useAuth();
+    const { user, currentBox } = useAuth();
     const [benchmarks, setBenchmarks] = useState<Benchmark[]>([]);
     const [prs, setPrs] = useState<PR[]>([]);
     const [loading, setLoading] = useState(true);
@@ -63,10 +63,11 @@ export const Benchmarks: React.FC = () => {
         if (!user) return;
 
         const [benchRes, prRes] = await Promise.all([
-            supabase.from('movements').select('*'),
+            supabase.from('movements').select('*').eq('box_id', currentBox?.id || ''),
             supabase.from('personal_records')
                 .select('*, movements(name)')
                 .eq('user_id', user.id)
+                .eq('box_id', currentBox?.id || '')
                 .order('performed_at', { ascending: false })
         ]);
 
@@ -83,14 +84,16 @@ export const Benchmarks: React.FC = () => {
     const totalPages = Math.ceil(prs.length / itemsPerPage);
 
     const handleAddPR = async () => {
-        if (!user) return;
+        if (!user || !currentBox) return;
 
         const { error } = await supabase
             .from('personal_records')
             .insert([{
                 user_id: user.id,
+                box_id: currentBox.id,
                 movement_id: newPR.benchmarkId,
                 value: newPR.value,
+                notes: newPR.notes,
                 performed_at: new Date().toISOString()
             }]);
 
@@ -98,6 +101,8 @@ export const Benchmarks: React.FC = () => {
             setOpen(false);
             setNewPR({ benchmarkId: '', value: '', notes: '' });
             fetchPRData();
+        } else {
+            console.error('Error logging PR:', error);
         }
     };
 

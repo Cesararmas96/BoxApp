@@ -245,7 +245,7 @@
     },
     "schedule": {
         "title": "Schedule",
-        "subtitle": "Dynamic class programming and athlete bookings.",
+        "subtitle": "Dynamic class programming.",
         "program_btn": "Program Session",
         "new_title": "Program New Session",
         "coming_soon": "Interface for creating recurring classes coming soon.",

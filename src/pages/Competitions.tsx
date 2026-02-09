@@ -134,7 +134,6 @@ export const Competitions: React.FC = () => {
     const [staffMembers, setStaffMembers] = useState<any[]>([]);
     const [newEventName, setNewEventName] = useState('');
     const [selectedWodId, setSelectedWodId] = useState('');
-    const [eventScoringType, setEventScoringType] = useState<'time' | 'reps' | 'weight' | 'points'>('reps');
     const [participantDivision, setParticipantDivision] = useState('RX');
     const [currentPage, setCurrentPage] = useState(1);
     const [isScoreDialogOpen, setIsScoreDialogOpen] = useState(false);

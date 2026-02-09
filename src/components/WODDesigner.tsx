@@ -203,13 +203,14 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
                                                     <Badge className={BLOCK_TEMPLATES[block.type].color}>
                                                         {BLOCK_TEMPLATES[block.type].icon}
                                                         <span className="ml-1 uppercase text-[10px] font-bold tracking-tighter">
-                                                            {block.type}
+                                                            {BLOCK_TEMPLATES[block.type].title}
                                                         </span>
                                                     </Badge>
                                                     <Input
                                                         value={block.title}
                                                         onChange={(e) => updateBlock(block.id, { title: e.target.value })}
-                                                        className="h-8 bg-transparent border-none font-bold text-sm focus-visible:ring-0 px-0 min-w-[100px]"
+                                                        className="h-8 flex-1 text-sm font-black uppercase italic tracking-tight bg-transparent border-none focus-visible:ring-0 p-0 placeholder:text-muted-foreground/30"
+                                                        placeholder={t('wods.block_title_placeholder')}
                                                     />
                                                     <div className="flex items-center gap-2 ml-auto">
                                                         <Button
@@ -227,24 +228,24 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
                                                 {(block.type === 'wod' || block.type === 'conditioning' || block.type === 'strength') && (
                                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-1 border-t border-black/5 dark:border-white/5">
                                                         <div className="space-y-1">
-                                                            <label className="text-[9px] font-black uppercase text-muted-foreground">Format</label>
+                                                            <label className="text-[9px] font-black uppercase text-muted-foreground">{t('wods.format')}</label>
                                                             <select
                                                                 value={block.format || ''}
                                                                 onChange={(e) => updateBlock(block.id, { format: e.target.value as any })}
                                                                 className="w-full h-7 text-[10px] font-bold uppercase bg-background/50 border border-black/5 dark:border-white/10 rounded-md"
                                                             >
-                                                                <option value="">Select Format</option>
-                                                                <option value="for_time">For Time</option>
-                                                                <option value="amrap">AMRAP</option>
-                                                                <option value="emom">EMOM</option>
-                                                                <option value="tabata">Tabata</option>
-                                                                <option value="rm">Max Weight (RM)</option>
-                                                                <option value="complex">Complex</option>
+                                                                <option value="">{t('wods.select_format')}</option>
+                                                                <option value="for_time">{t('wods.formats.for_time')}</option>
+                                                                <option value="amrap">{t('wods.formats.amrap')}</option>
+                                                                <option value="emom">{t('wods.formats.emom')}</option>
+                                                                <option value="tabata">{t('wods.formats.tabata')}</option>
+                                                                <option value="rm">{t('wods.formats.rm')}</option>
+                                                                <option value="complex">{t('wods.formats.complex')}</option>
                                                             </select>
                                                         </div>
                                                         <div className="space-y-1">
                                                             <label className="text-[9px] font-black uppercase text-muted-foreground">
-                                                                {block.format === 'amrap' || block.format === 'emom' ? 'Duration (min)' : 'Time Cap'}
+                                                                {block.format === 'amrap' || block.format === 'emom' ? t('wods.dur_min') : t('wods.time_cap')}
                                                             </label>
                                                             <Input
                                                                 value={block.timeCap || block.duration || ''}
@@ -252,30 +253,30 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
                                                                     timeCap: e.target.value,
                                                                     duration: e.target.value
                                                                 })}
-                                                                placeholder={block.format === 'amrap' ? "e.g. 12:00" : "e.g. 15:00"}
+                                                                placeholder={t('wods.example_time')}
                                                                 className="h-7 text-[10px] font-bold"
                                                             />
                                                         </div>
                                                         {block.format === 'for_time' && (
                                                             <div className="space-y-1">
-                                                                <label className="text-[9px] font-black uppercase text-muted-foreground">Rounds/Sets</label>
+                                                                <label className="text-[9px] font-black uppercase text-muted-foreground">{t('wods.rounds_sets')}</label>
                                                                 <Input
                                                                     value={block.rounds || block.sets || ''}
                                                                     onChange={(e) => updateBlock(block.id, {
                                                                         rounds: e.target.value,
                                                                         sets: e.target.value
                                                                     })}
-                                                                    placeholder="e.g. 5 or 21-15-9"
+                                                                    placeholder={t('wods.example_rounds')}
                                                                     className="h-7 text-[10px] font-bold"
                                                                 />
                                                             </div>
                                                         )}
                                                         <div className="space-y-1">
-                                                            <label className="text-[9px] font-black uppercase text-muted-foreground">Tie Break</label>
+                                                            <label className="text-[9px] font-black uppercase text-muted-foreground">{t('wods.tie_break')}</label>
                                                             <Input
                                                                 value={block.tieBreak || ''}
                                                                 onChange={(e) => updateBlock(block.id, { tieBreak: e.target.value })}
-                                                                placeholder="e.g. Time after 1st round"
+                                                                placeholder={t('wods.example_tie_break')}
                                                                 className="h-7 text-[10px] font-bold"
                                                             />
                                                         </div>
@@ -285,7 +286,7 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
                                                 {/* Fallback Sets input for other types or if not covered above */}
                                                 {!['wod', 'conditioning', 'strength'].includes(block.type) && (
                                                     <div className="flex items-center gap-1 bg-black/[0.03] dark:bg-white/10 rounded-lg px-3 py-1.5 border border-black/5 dark:border-white/20 text-[10px] font-semibold w-fit">
-                                                        <span className="text-muted-foreground uppercase opacity-70">Sets:</span>
+                                                        <span className="text-muted-foreground uppercase opacity-70">{t('wods.sets')}:</span>
                                                         <input
                                                             type="text"
                                                             value={block.sets || ''}
@@ -304,19 +305,19 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
                                                             <div className="flex-1 font-bold italic uppercase text-xs tracking-tighter text-foreground/80">{item.movementName}</div>
                                                             <div className="flex items-center gap-2">
                                                                 <Input
-                                                                    placeholder="Reps/Time"
+                                                                    placeholder={t('wods.reps_time')}
                                                                     value={item.reps}
                                                                     onChange={(e) => updateMovementInBlock(block.id, item.id, { reps: e.target.value })}
                                                                     className="h-9 w-24 text-[10px] bg-background/50 border-black/5 dark:border-white/20 focus:border-primary/50 font-black uppercase tracking-widest text-center"
                                                                 />
                                                                 <Input
-                                                                    placeholder="Weight"
+                                                                    placeholder={t('wods.weight')}
                                                                     value={item.weight}
                                                                     onChange={(e) => updateMovementInBlock(block.id, item.id, { weight: e.target.value })}
                                                                     className="h-9 w-20 text-[10px] bg-background/50 border-black/5 dark:border-white/20 focus:border-primary/50 font-black uppercase tracking-widest text-center"
                                                                 />
                                                                 <Input
-                                                                    placeholder="Notes"
+                                                                    placeholder={t('wods.notes')}
                                                                     value={item.notes}
                                                                     onChange={(e) => updateMovementInBlock(block.id, item.id, { notes: e.target.value })}
                                                                     className="h-9 flex-1 text-[10px] bg-background/50 border-black/5 dark:border-white/20 focus:border-primary/50 font-black uppercase tracking-widest min-w-[120px]"

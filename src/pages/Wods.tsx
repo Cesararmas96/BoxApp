@@ -210,9 +210,9 @@ export const Wods: React.FC = () => {
         const { error } = await supabase.from('wods').delete().eq('id', id);
         if (!error) {
             fetchWods();
-            showNotification('success', 'SESSION DELETED SUCCESSFULLY');
+            showNotification('success', t('wods.delete_success'));
         } else {
-            showNotification('error', 'FAILED TO DELETE SESSION');
+            showNotification('error', t('wods.delete_error'));
         }
         setLoading(false);
     };
@@ -243,10 +243,10 @@ export const Wods: React.FC = () => {
                 .trim();
         }
 
-        const finalShareText = `${wod.title.toUpperCase()}\n\n${cleanText}\n\nSTIMULUS: ${wod.stimulus}\nSCALING: ${wod.scaling_options}`;
+        const finalShareText = `${wod.title.toUpperCase()}\n\n${cleanText}\n\n${t('wods.stimulus').toUpperCase()}: ${wod.stimulus}\n${t('wods.scaling').toUpperCase()}: ${wod.scaling_options}`;
 
         navigator.clipboard.writeText(finalShareText);
-        showNotification('success', 'WOD COPIED TO CLIPBOARD');
+        showNotification('success', t('wods.copy_success'));
         setIsCopying(wod.id);
         setTimeout(() => setIsCopying(null), 2000);
     };
@@ -294,7 +294,7 @@ export const Wods: React.FC = () => {
         }
 
         if (!error) {
-            showNotification('success', editingWodId ? 'SESSION UPDATED SUCCESSFULLY' : 'WOD PUBLISHED TO TRACKS');
+            showNotification('success', editingWodId ? t('wods.update_success') : t('wods.publish_success'));
             setShowEditor(false);
             setEditingWodId(null);
             setNewWOD({
@@ -306,7 +306,7 @@ export const Wods: React.FC = () => {
             setSessionBlocks([]);
             fetchWods();
         } else {
-            showNotification('error', `PUBLISH ERROR: ${error.message.toUpperCase()}`);
+            showNotification('error', t('wods.publish_error', { error: error.message.toUpperCase() }));
         }
         setLoading(false);
     };
@@ -507,11 +507,11 @@ export const Wods: React.FC = () => {
                                 <Trophy className="absolute -right-10 -bottom-10 h-48 w-48 text-primary/5 -rotate-12" />
                                 <DialogHeader>
                                     <DialogTitle className="text-4xl font-black italic uppercase tracking-tighter">
-                                        {editingWodId ? 'Edit Session' : t('wods.designer_title')}
+                                        {editingWodId ? t('wods.edit_session') : t('wods.designer_title')}
                                     </DialogTitle>
                                     <DialogDescription className="uppercase text-[10px] font-bold tracking-[0.3em] text-primary/60 mt-4 px-1 flex items-center gap-2">
                                         <span className="h-1 w-1 rounded-full bg-primary" />
-                                        {editingWodId ? 'Modify technical parameters' : t('wods.designer_subtitle')}
+                                        {editingWodId ? t('wods.modify_params') : t('wods.designer_subtitle')}
                                     </DialogDescription>
                                 </DialogHeader>
                             </div>
@@ -531,7 +531,7 @@ export const Wods: React.FC = () => {
                                             {Object.entries(last7DaysBias).map(([key, count]) => (
                                                 <div key={key} className="space-y-1.5">
                                                     <div className="flex justify-between items-end">
-                                                        <span className="text-[8px] font-black uppercase tracking-widest opacity-50">{key}</span>
+                                                        <span className="text-[8px] font-black uppercase tracking-widest opacity-50">{t(`wods.modalities.${key}`)}</span>
                                                         <span className="text-[10px] font-black italic">{count}/7</span>
                                                     </div>
                                                     <div className="h-1 w-full bg-black/5 dark:bg-white/5 rounded-full overflow-hidden">
@@ -550,10 +550,14 @@ export const Wods: React.FC = () => {
                                         <Label className="uppercase text-[10px] font-black tracking-widest text-primary px-1">{t('wods.track')}</Label>
                                         <Select value={newWOD.track} onValueChange={(v) => setNewWOD({ ...newWOD, track: v as any })}>
                                             <SelectTrigger className="font-black italic uppercase h-14 bg-black/[0.02] dark:bg-white/10 border-black/5 dark:border-white/20 rounded-2xl focus:ring-primary/20 hover:border-primary/50 transition-colors">
-                                                <SelectValue placeholder="Select track" />
+                                                <SelectValue placeholder={t('wods.select_track')} />
                                             </SelectTrigger>
                                             <SelectContent className="glass border-black/10 dark:border-white/20 rounded-2xl">
-                                                {TRACKS.map(t => <SelectItem key={t} value={t} className="font-black uppercase italic py-3">{t}</SelectItem>)}
+                                                {TRACKS.map(track => (
+                                                    <SelectItem key={track} value={track} className="font-black uppercase italic py-3">
+                                                        {t(`wods.tracks.${track.toLowerCase()}`)}
+                                                    </SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -561,7 +565,7 @@ export const Wods: React.FC = () => {
                                         <div className="space-y-3">
                                             <Label className="uppercase text-[10px] font-black tracking-widest text-primary px-1">{t('wods.wod_title')}</Label>
                                             <Input
-                                                placeholder="e.g. MORNING GRIND"
+                                                placeholder={t('wods.morning_grind')}
                                                 className="uppercase italic font-black h-14 bg-black/[0.02] dark:bg-white/10 border-black/5 dark:border-white/20 rounded-2xl focus:ring-primary/20 focus:border-primary/50 transition-all"
                                                 value={newWOD.title}
                                                 onChange={(e) => setNewWOD({ ...newWOD, title: e.target.value })}
@@ -580,7 +584,7 @@ export const Wods: React.FC = () => {
                                 </div>
 
                                 <div className="space-y-4">
-                                    <Label className="uppercase text-[10px] font-black tracking-widest text-primary px-1">SESSION STIMULUS MODALITIES</Label>
+                                    <Label className="uppercase text-[10px] font-black tracking-widest text-primary px-1">{t('wods.stimulus_modalities')}</Label>
                                     <div className="flex flex-wrap gap-2">
                                         {['Weightlifting', 'Gymnastics', 'Mono', 'Metcon'].map((m) => {
                                             const isSelected = (newWOD.modalities || []).includes(m);
@@ -603,7 +607,7 @@ export const Wods: React.FC = () => {
                                                             : "bg-black/[0.02] dark:bg-white/5 border-black/5 dark:border-white/10 hover:border-primary/30"
                                                     )}
                                                 >
-                                                    {m}
+                                                    {t(`wods.modalities.${m.toLowerCase()}`)}
                                                 </Button>
                                             );
                                         })}
@@ -614,7 +618,7 @@ export const Wods: React.FC = () => {
                                     <div className="flex items-center justify-between">
                                         <div className="space-y-1">
                                             <Label className="uppercase text-xs font-black tracking-widest leading-none">{t('wods.routine_structure')}</Label>
-                                            <p className="text-[10px] text-muted-foreground font-bold italic uppercase opacity-50">Build your session block by block</p>
+                                            <p className="text-[10px] text-muted-foreground font-bold italic uppercase opacity-50">{t('wods.build_blocks')}</p>
                                         </div>
                                     </div>
 
@@ -643,7 +647,7 @@ export const Wods: React.FC = () => {
                                     className="w-full h-16 rounded-2xl font-black uppercase tracking-widest text-base shadow-2xl shadow-primary/20 transition-all hover:scale-[1.01] active:scale-[0.99]"
                                     disabled={loading}
                                 >
-                                    {loading ? <Loader2 className="animate-spin" /> : editingWodId ? 'UPDATE SESSION' : t('wods.publish')}
+                                    {loading ? <Loader2 className="animate-spin" /> : editingWodId ? t('wods.update_btn') : t('wods.publish')}
                                 </Button>
                             </div>
                         </DialogContent>
@@ -664,21 +668,21 @@ export const Wods: React.FC = () => {
                     >
                         {t('wods.all_tracks')}
                     </Button>
-                    {TRACKS.map(t => (
+                    {TRACKS.map(track => (
                         <Button
-                            key={t}
-                            variant={activeTrack === t ? "default" : "ghost"}
-                            onClick={() => setActiveTrack(t)}
+                            key={track}
+                            variant={activeTrack === track ? "default" : "ghost"}
+                            onClick={() => setActiveTrack(track)}
                             className={cn(
                                 "h-10 px-6 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all",
-                                activeTrack === t ? "shadow-lg shadow-primary/20" : "hover:bg-white/10",
-                                t === 'CrossFit' && activeTrack !== t && "text-primary/60 hover:text-primary",
-                                t === 'Novice' && activeTrack !== t && "text-emerald-500/60 hover:text-emerald-500",
-                                t === 'Bodybuilding' && activeTrack !== t && "text-blue-500/60 hover:text-blue-500",
-                                t === 'Engine' && activeTrack !== t && "text-orange-500/60 hover:text-orange-500"
+                                activeTrack === track ? "shadow-lg shadow-primary/20" : "hover:bg-white/10",
+                                track === 'CrossFit' && activeTrack !== track && "text-primary/60 hover:text-primary",
+                                track === 'Novice' && activeTrack !== track && "text-emerald-500/60 hover:text-emerald-500",
+                                track === 'Bodybuilding' && activeTrack !== track && "text-blue-500/60 hover:text-blue-500",
+                                track === 'Engine' && activeTrack !== track && "text-orange-500/60 hover:text-orange-500"
                             )}
                         >
-                            {t}
+                            {t(`wods.tracks.${track.toLowerCase()}`)}
                         </Button>
                     ))}
                 </div>
@@ -859,7 +863,7 @@ export const Wods: React.FC = () => {
                                         <div className="flex items-center gap-3">
                                             <Calendar className="h-5 w-5 text-primary" />
                                             <h3 className="text-sm font-black uppercase tracking-[0.3em] text-primary/80 italic">
-                                                WEEK: {week.start} - {week.end}
+                                                {t('common.week', { defaultValue: 'WEEK' })}: {week.start} - {week.end}
                                             </h3>
                                         </div>
                                         <div className="h-px flex-1 bg-gradient-to-r from-primary/20 to-transparent" />
@@ -930,7 +934,7 @@ export const Wods: React.FC = () => {
                                                                 wod.track === 'Bodybuilding' && "bg-blue-500 text-white shadow-blue-500/20",
                                                                 wod.track === 'Engine' && "bg-orange-500 text-white shadow-orange-500/20"
                                                             )}>
-                                                                {wod.track} TRACK
+                                                                {wod.track} {t('wods.track')?.toUpperCase()}
                                                             </Badge>
                                                         </div>
                                                         <CardTitle className="text-2xl md:text-3xl font-black uppercase tracking-tighter italic text-foreground group-hover:text-primary transition-all duration-500 line-clamp-2">
@@ -979,9 +983,9 @@ export const Wods: React.FC = () => {
                                                                     <div className="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center">
                                                                         <Timer className="h-3 w-3 text-primary" />
                                                                     </div>
-                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">{t('wods.workout')}</span>
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">{t('wods.block_wod_short')}</span>
                                                                 </div>
-                                                                <span className="text-[9px] font-bold uppercase tracking-widest text-white/20">STRUCTURED</span>
+                                                                <span className="text-[9px] font-bold uppercase tracking-widest text-white/20">{t('common.structured', { defaultValue: 'STRUCTURED' })}</span>
                                                             </div>
 
                                                             {wod.structure && wod.structure.length > 0 ? (
@@ -994,7 +998,7 @@ export const Wods: React.FC = () => {
                                                                                 <h4 className="text-sm font-black uppercase italic text-foreground tracking-tight">{block.title}</h4>
                                                                                 {block.sets && (
                                                                                     <div className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[8px] font-black uppercase tracking-widest border border-primary/20">
-                                                                                        {block.sets} SETS
+                                                                                        {block.sets} {t('wods.sets', { defaultValue: 'SETS' })}
                                                                                     </div>
                                                                                 )}
                                                                             </div>
@@ -1127,7 +1131,7 @@ export const Wods: React.FC = () => {
                         </div>
                         <div className="hidden md:block px-6">
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">
-                                Showing <span className="text-primary">{Math.min(filteredWods.length, (currentPage - 1) * itemsPerPage + 1)}-{Math.min(filteredWods.length, currentPage * itemsPerPage)}</span> of {filteredWods.length} sessions
+                                {t('common.showing')} <span className="text-primary">{Math.min(filteredWods.length, (currentPage - 1) * itemsPerPage + 1)}-{Math.min(filteredWods.length, currentPage * itemsPerPage)}</span> {t('common.of')} {filteredWods.length} {t('wods.title')?.toLowerCase()}
                             </p>
                         </div>
                     </div>

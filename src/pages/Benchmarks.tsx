@@ -3,8 +3,11 @@ import { supabase } from '@/lib/supabaseClient';
 import {
     History,
     Plus,
-    Activity
+    Activity,
+    Search
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -39,20 +42,24 @@ interface PR {
     movement_id: string;
     value: string;
     performed_at: string;
+    notes: string | null;
     movements: {
         name: string;
+        category: string;
     }
 }
 
 export const Benchmarks: React.FC = () => {
+    const { t } = useTranslation();
     const { user, currentBox } = useAuth();
     const [benchmarks, setBenchmarks] = useState<Benchmark[]>([]);
     const [prs, setPrs] = useState<PR[]>([]);
     const [loading, setLoading] = useState(true);
     const [open, setOpen] = useState(false);
-    const [newPR, setNewPR] = useState({ benchmarkId: '', value: '', notes: '' });
+    const [searchTerm, setSearchTerm] = useState('');
+    const [consistencyScore, setConsistencyScore] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
+    const itemsPerPage = 8;
 
     useEffect(() => {
         fetchPRData();
@@ -60,19 +67,33 @@ export const Benchmarks: React.FC = () => {
 
     const fetchPRData = async () => {
         setLoading(true);
-        if (!user) return;
+        if (!user || !currentBox) return;
 
-        const [benchRes, prRes] = await Promise.all([
-            supabase.from('movements').select('*').eq('box_id', currentBox?.id || ''),
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        const [benchRes, prRes, attendanceRes] = await Promise.all([
+            supabase.from('movements').select('*').eq('box_id', currentBox.id),
             supabase.from('personal_records')
-                .select('*, movements(name)')
+                .select('*, movements(name, category)')
                 .eq('user_id', user.id)
-                .eq('box_id', currentBox?.id || '')
-                .order('performed_at', { ascending: false })
+                .eq('box_id', currentBox.id)
+                .order('performed_at', { ascending: false }),
+            supabase.from('bookings')
+                .select('id')
+                .eq('user_id', user.id)
+                .eq('box_id', currentBox.id)
+                .eq('status', 'attended')
+                .gt('created_at', thirtyDaysAgo.toISOString())
         ]);
 
         if (!benchRes.error) setBenchmarks(benchRes.data as unknown as Benchmark[] || []);
         if (!prRes.error) setPrs(prRes.data as unknown as PR[] || []);
+
+        // Calculate consistency - Target 12 sessions / month = 100%
+        const attendanceCount = attendanceRes.data?.length || 0;
+        setConsistencyScore(Math.min(100, Math.round((attendanceCount / 12) * 100)));
+
         setLoading(false);
     };
 
@@ -130,16 +151,44 @@ export const Benchmarks: React.FC = () => {
                         <div className="space-y-4 py-4">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-muted-foreground">Select Benchmark</label>
-                                <select
-                                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                    value={newPR.benchmarkId}
-                                    onChange={(e) => setNewPR({ ...newPR, benchmarkId: e.target.value })}
-                                >
-                                    <option value="">-- Choose --</option>
-                                    {benchmarks.map(b => (
-                                        <option key={b.id} value={b.id}>{b.name} ({b.category})</option>
-                                    ))}
-                                </select>
+                                <div className="space-y-2">
+                                    <div className="relative">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                            placeholder="Search movement..."
+                                            className="pl-9"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="max-h-[200px] overflow-y-auto border rounded-md p-1 bg-black/5 dark:bg-white/5">
+                                        {benchmarks
+                                            .filter(b => b.name.toLowerCase().includes(searchTerm.toLowerCase()) || b.category?.toLowerCase().includes(searchTerm.toLowerCase()))
+                                            .map(b => (
+                                                <button
+                                                    key={b.id}
+                                                    type="button"
+                                                    onClick={() => setNewPR({ ...newPR, benchmarkId: b.id })}
+                                                    className={cn(
+                                                        "w-full text-left px-3 py-2 rounded-md text-sm transition-colors mb-1",
+                                                        newPR.benchmarkId === b.id
+                                                            ? "bg-primary text-primary-foreground font-bold"
+                                                            : "hover:bg-primary/10 text-muted-foreground hover:text-foreground"
+                                                    )}
+                                                >
+                                                    <div className="flex justify-between items-center">
+                                                        <span>{b.name}</span>
+                                                        <Badge variant="outline" className="text-[9px] uppercase tracking-tighter opacity-70">
+                                                            {b.category || 'Standard'}
+                                                        </Badge>
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        {benchmarks.length === 0 && (
+                                            <p className="text-center py-4 text-xs text-muted-foreground">No movements found</p>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-muted-foreground">Result (e.g. 100kg, 10:00, 50 reps)</label>
@@ -213,7 +262,7 @@ export const Benchmarks: React.FC = () => {
                                                 {new Date(pr.performed_at).toLocaleDateString()}
                                             </TableCell>
                                             <TableCell className="text-xs italic truncate max-w-[150px]">
-                                                -
+                                                {pr.notes || '-'}
                                             </TableCell>
                                         </TableRow>
                                     ))
@@ -285,25 +334,49 @@ export const Benchmarks: React.FC = () => {
                             <CardTitle className="text-sm font-bold uppercase tracking-tight text-muted-foreground">Top Lifts</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            {['Back Squat', 'Deadlift', 'Clean & Jerk'].map(movementName => {
-                                const best = prs.find(p => p.movements.name.toLowerCase() === movementName.toLowerCase());
-                                return (
-                                    <div key={movementName} className="flex items-center justify-between border-b pb-2 last:border-0">
-                                        <span className="text-sm font-medium capitalize">{movementName}</span>
-                                        <span className="font-mono font-bold text-primary">{best?.value || "N/A"}</span>
-                                    </div>
-                                )
-                            })}
+                            {(() => {
+                                // Extract numeric value for comparison
+                                const parseWeight = (val: string) => {
+                                    const num = parseFloat(val.replace(/[^0-9.]/g, ''));
+                                    return isNaN(num) ? 0 : num;
+                                };
+
+                                return ['Back Squat', 'Front Squat', 'Deadlift', 'Clean & Jerk', 'Snatch', 'Bench Press'].map(movementName => {
+                                    const movementsPRs = prs.filter(p => p.movements.name.toLowerCase() === movementName.toLowerCase());
+                                    const best = movementsPRs.length > 0
+                                        ? movementsPRs.reduce((prev, curr) => parseWeight(curr.value) > parseWeight(prev.value) ? curr : prev)
+                                        : null;
+
+                                    // Always show these three, others only if they exist
+                                    const isCore = ['Back Squat', 'Clean & Jerk', 'Snatch'].includes(movementName);
+                                    if (!best && !isCore) return null;
+
+                                    return (
+                                        <div key={movementName} className="flex items-center justify-between border-b pb-2 last:border-0 group">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">{movementName}</span>
+                                            <span className="font-mono font-black text-primary group-hover:scale-110 transition-transform">
+                                                {best?.value || "---"}
+                                            </span>
+                                        </div>
+                                    )
+                                }).filter(Boolean);
+                            })()}
                         </CardContent>
                     </Card>
 
                     <Card className="bg-primary/5 border-primary/20">
                         <CardContent className="pt-6">
                             <div className="flex flex-col items-center text-center space-y-2">
-                                <Activity className="h-8 w-8 text-primary" />
-                                <h3 className="font-bold">Consistency Score</h3>
-                                <p className="text-2xl font-black text-primary">85%</p>
-                                <p className="text-xs text-muted-foreground">Based on your activity in the last 30 days.</p>
+                                <Activity className="h-10 w-10 text-primary animate-pulse" />
+                                <h3 className="text-xs font-black uppercase tracking-[0.2em]">{t('analytics.attendance')} Score</h3>
+                                <div className="text-4xl font-black italic italic tracking-tighter text-primary">{consistencyScore}%</div>
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 leading-none">Last 30 days active track</p>
+                                <div className="h-1.5 w-full bg-primary/10 rounded-full mt-4 overflow-hidden border border-primary/5">
+                                    <div
+                                        className="h-full bg-primary transition-all duration-1000 shadow-[0_0_15px_rgba(var(--primary),0.5)]"
+                                        style={{ width: `${consistencyScore}%` }}
+                                    />
+                                </div>
                             </div>
                         </CardContent>
                     </Card>

@@ -53,6 +53,8 @@ interface Competition {
     type?: string | null;
     box_id?: string | null;
     created_at?: string | null;
+    participants?: { count: number }[];
+    events?: { count: number }[];
 }
 
 interface Participant {
@@ -105,7 +107,7 @@ interface CompetitionJudge {
 
 export const Competitions: React.FC = () => {
     const { t } = useLanguage();
-    const { currentBox } = useAuth();
+    const { currentBox, user } = useAuth();
     const [competitions, setCompetitions] = useState<Competition[]>([]);
     const [loading, setLoading] = useState(true);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -210,10 +212,20 @@ export const Competitions: React.FC = () => {
 
     const fetchScores = async (compId: string) => {
         if (!currentBox) return;
+
+        // Get event IDs for this competition to filter scores
+        const { data: eventData } = await supabase
+            .from('competition_events')
+            .select('id')
+            .eq('competition_id', compId);
+
+        if (!eventData) return;
+        const eventIds = eventData.map(e => e.id);
+
         const { data, error } = await supabase
             .from('competition_scores')
             .select('*')
-            .eq('box_id', currentBox.id);
+            .in('event_id', eventIds);
 
         if (!error && data) {
             setScores(data as CompetitionScore[]);
@@ -251,6 +263,7 @@ export const Competitions: React.FC = () => {
             setNewEventName('');
             setSelectedWodId('');
             fetchEvents(selectedComp.id);
+            fetchCompetitions(); // Refresh counts
         }
     };
 
@@ -362,7 +375,7 @@ export const Competitions: React.FC = () => {
                 score_value: scoreValue,
                 score_display: scoreDisplay,
                 is_validated: true,
-                validated_by: (await supabase.auth.getUser()).data.user?.id
+                validated_by: user?.id
             }]);
 
         if (error) {
@@ -419,11 +432,15 @@ export const Competitions: React.FC = () => {
         setLoading(true);
         const { data, error } = await supabase
             .from('competitions')
-            .select('*')
+            .select(`
+                *,
+                participants:competition_participants(count),
+                events:competition_events(count)
+            `)
             .eq('box_id', currentBox?.id || '')
             .order('start_date', { ascending: false });
 
-        if (!error && data) setCompetitions(data as Competition[]);
+        if (!error && data) setCompetitions(data as unknown as Competition[]);
         setLoading(false);
     };
 
@@ -482,7 +499,7 @@ export const Competitions: React.FC = () => {
                             <div className="space-y-3">
                                 <Label className="px-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground/70">{t('competitions.form_title')}</Label>
                                 <Input
-                                    placeholder="e.g. Winter Open 2026"
+                                    placeholder={t('competitions.placeholders.comp_name')}
                                     required
                                     value={newComp.name}
                                     onChange={(e) => setNewComp({ ...newComp, name: e.target.value })}
@@ -492,7 +509,7 @@ export const Competitions: React.FC = () => {
                             <div className="space-y-3">
                                 <Label className="px-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground/70">{t('competitions.form_desc')}</Label>
                                 <Input
-                                    placeholder="Internal annual competition..."
+                                    placeholder={t('competitions.placeholders.comp_desc')}
                                     value={newComp.description}
                                     onChange={(e) => setNewComp({ ...newComp, description: e.target.value })}
                                     className="h-14 bg-white/5 border-white/10 text-lg font-bold rounded-2xl focus:ring-primary/20 px-6"
@@ -560,13 +577,20 @@ export const Competitions: React.FC = () => {
                                                         {comp.status}
                                                     </Badge>
                                                     <div className="flex -space-x-3">
-                                                        {[1, 2, 3].map(i => (
-                                                            <div key={i} className="h-8 w-8 rounded-full border-2 border-zinc-900 bg-zinc-800 flex items-center justify-center text-[8px] font-black text-white shadow-lg overflow-hidden relative">
-                                                                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent" />
-                                                                A{i}
+                                                        {participants.slice(0, 3).map((p, i) => (
+                                                            <div key={p.id} className="h-8 w-8 rounded-full border-2 border-zinc-900 bg-zinc-800 flex items-center justify-center text-[8px] font-black text-white shadow-lg overflow-hidden relative">
+                                                                {p.athlete?.avatar_url ? (
+                                                                    <img src={p.athlete.avatar_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center">
+                                                                        {p.athlete?.first_name?.[0]}{p.athlete?.last_name?.[0]}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         ))}
-                                                        <div className="h-8 w-8 rounded-full border-2 border-zinc-900 bg-zinc-900/50 backdrop-blur-md flex items-center justify-center text-[8px] font-black text-primary shadow-lg">+12</div>
+                                                        {(comp.participants?.[0]?.count || 0) > 3 && (
+                                                            <div className="h-8 w-8 rounded-full border-2 border-zinc-900 bg-zinc-900/50 backdrop-blur-md flex items-center justify-center text-[8px] font-black text-primary shadow-lg">+{(comp.participants?.[0]?.count || 0) - 3}</div>
+                                                        )}
                                                     </div>
                                                 </div>
                                                 <CardTitle className="text-3xl font-black italic uppercase tracking-tighter mb-2 group-hover:text-primary transition-colors">{comp.name}</CardTitle>
@@ -583,11 +607,15 @@ export const Competitions: React.FC = () => {
                                                     <div className="grid grid-cols-2 gap-3">
                                                         <div className="bg-primary/5 p-4 rounded-2xl border border-primary/10 text-center transition-transform group-hover:scale-[1.02]">
                                                             <p className="text-[10px] font-black text-primary/60 uppercase leading-none mb-2 tracking-widest">{t('competitions.athletes')}</p>
-                                                            <p className="font-black italic text-2xl tracking-tighter">15</p>
+                                                            <p className="font-black italic text-2xl tracking-tighter">
+                                                                {comp.participants?.[0]?.count || 0}
+                                                            </p>
                                                         </div>
                                                         <div className="bg-primary/5 p-4 rounded-2xl border border-primary/10 text-center transition-transform group-hover:scale-[1.02]">
                                                             <p className="text-[10px] font-black text-primary/60 uppercase leading-none mb-2 tracking-widest">{t('competitions.events')}</p>
-                                                            <p className="font-black italic text-2xl tracking-tighter">4</p>
+                                                            <p className="font-black italic text-2xl tracking-tighter">
+                                                                {comp.events?.[0]?.count || 0}
+                                                            </p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -668,6 +696,9 @@ export const Competitions: React.FC = () => {
                                 <TabsTrigger value="events" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none h-full px-0 gap-2.5 uppercase text-[10px] font-black tracking-[0.15em] transition-all hover:text-primary/70">
                                     <ListChecks className="h-4 w-4" /> {t('competitions.events')}
                                 </TabsTrigger>
+                                <TabsTrigger value="scoring" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none h-full px-0 gap-2.5 uppercase text-[10px] font-black tracking-[0.15em] transition-all hover:text-primary/70">
+                                    <Medal className="h-4 w-4" /> {t('competitions.scoring_system')}
+                                </TabsTrigger>
                                 <TabsTrigger value="judges" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none h-full px-0 gap-2.5 uppercase text-[10px] font-black tracking-[0.15em] transition-all hover:text-primary/70">
                                     <ShieldCheck className="h-4 w-4" /> {t('competitions.judges')}
                                 </TabsTrigger>
@@ -700,13 +731,13 @@ export const Competitions: React.FC = () => {
                                             </div>
                                             <Select value={participantDivision} onValueChange={setParticipantDivision}>
                                                 <SelectTrigger className="h-14 rounded-2xl border-white/10 bg-white/5 focus:ring-primary/20 transition-all text-sm font-medium">
-                                                    <SelectValue placeholder="Division" />
+                                                    <SelectValue placeholder={t('competitions.division_placeholder')} />
                                                 </SelectTrigger>
                                                 <SelectContent className="glass border-white/10 rounded-2xl">
-                                                    <SelectItem value="RX">RX</SelectItem>
-                                                    <SelectItem value="Scaled">SCALED</SelectItem>
-                                                    <SelectItem value="Beginners">BEGINNERS</SelectItem>
-                                                    <SelectItem value="Masters">MASTERS</SelectItem>
+                                                    <SelectItem value="RX">{t('competitions.divisions.rx')}</SelectItem>
+                                                    <SelectItem value="Scaled">{t('competitions.divisions.scaled')}</SelectItem>
+                                                    <SelectItem value="Beginners">{t('competitions.divisions.beginners')}</SelectItem>
+                                                    <SelectItem value="Masters">{t('competitions.divisions.masters')}</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -807,7 +838,7 @@ export const Competitions: React.FC = () => {
                                         <div className="space-y-3">
                                             <Label className="text-[10px] font-black uppercase text-primary/60 px-1 tracking-widest">{t('competitions.event_name')}</Label>
                                             <Input
-                                                placeholder="e.g. Event 1: Heavy Grace"
+                                                placeholder={t('competitions.placeholders.event_name')}
                                                 value={newEventName}
                                                 onChange={(e) => setNewEventName(e.target.value)}
                                                 className="bg-white/5 border-white/10 h-14 rounded-2xl focus:ring-primary/20 transition-all font-medium"
@@ -829,16 +860,16 @@ export const Competitions: React.FC = () => {
                                             </Select>
                                         </div>
                                         <div className="space-y-3">
-                                            <Label className="text-[10px] font-black uppercase text-primary/60 px-1 tracking-widest">Scoring Type</Label>
+                                            <Label className="text-[10px] font-black uppercase text-primary/60 px-1 tracking-widest">{t('competitions.scoring_system')}</Label>
                                             <Select value={eventScoringType} onValueChange={(v: any) => setEventScoringType(v)}>
                                                 <SelectTrigger className="bg-white/5 border-white/10 h-14 rounded-2xl focus:ring-primary/20 transition-all">
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent className="glass border-white/10 rounded-2xl">
-                                                    <SelectItem value="reps">REPS (AMRAP)</SelectItem>
-                                                    <SelectItem value="time">TIME (FOR TIME)</SelectItem>
-                                                    <SelectItem value="weight">WEIGHT (MAX LOAD)</SelectItem>
-                                                    <SelectItem value="points">POINTS/OTHER</SelectItem>
+                                                    <SelectItem value="reps">{t('competitions.scoring_types.reps')}</SelectItem>
+                                                    <SelectItem value="time">{t('competitions.scoring_types.time')}</SelectItem>
+                                                    <SelectItem value="weight">{t('competitions.scoring_types.weight')}</SelectItem>
+                                                    <SelectItem value="points">{t('competitions.scoring_types.points')}</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -888,7 +919,7 @@ export const Competitions: React.FC = () => {
                                                             }}
                                                         >
                                                             <Medal className="h-4 w-4" />
-                                                            Log Results
+                                                            {t('competitions.log_results')}
                                                         </Button>
                                                         <Button
                                                             variant="ghost"
@@ -903,6 +934,37 @@ export const Competitions: React.FC = () => {
                                             ))}
                                         </div>
                                     )}
+                                </div>
+                            </TabsContent>
+                            <TabsContent value="scoring" className="mt-0 space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                <div className="bg-white/5 p-10 rounded-[2.5rem] border border-white/5 relative overflow-hidden group">
+                                    <h4 className="font-black italic text-xl mb-6 uppercase tracking-tight flex items-center gap-3">
+                                        <Medal className="h-6 w-6 text-primary" />
+                                        {t('competitions.rules.title')}
+                                    </h4>
+                                    <div className="grid md:grid-cols-2 gap-10">
+                                        <div className="space-y-6">
+                                            <Label className="text-[10px] font-black uppercase text-primary/60 px-1 tracking-widest">{t('competitions.rules.categories')}</Label>
+                                            <div className="grid gap-4">
+                                                <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 transition-all hover:border-primary/20">
+                                                    <span className="font-black italic uppercase tracking-tight">{t('competitions.rules.rx')}</span>
+                                                    <Badge className="bg-primary/20 text-primary border-none text-[8px] font-black tracking-widest uppercase">{t('competitions.rules.active')}</Badge>
+                                                </div>
+                                                <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 transition-all hover:border-primary/20">
+                                                    <span className="font-black italic uppercase tracking-tight">{t('competitions.rules.scaled')}</span>
+                                                    <Badge className="bg-white/10 text-muted-foreground border-none text-[8px] font-black tracking-widest uppercase">{t('competitions.rules.active')}</Badge>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-6">
+                                            <Label className="text-[10px] font-black uppercase text-primary/60 px-1 tracking-widest">{t('competitions.rules.scoring_logic')}</Label>
+                                            <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10">
+                                                <p className="text-xs font-medium text-primary/80 leading-relaxed">
+                                                    Results are calculated based on placement within each division. 1st place gets 1 point, 2nd place 2 points, etc. Lower total score wins.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </TabsContent>
 
@@ -1000,12 +1062,12 @@ export const Competitions: React.FC = () => {
                                 {events.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-24 text-center space-y-10 bg-white/5 rounded-[3rem] border border-white/5">
                                         <BarChart className="h-14 w-14 text-muted-foreground/20" />
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30">Add events to generate leaderboard</p>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30">{t('competitions.no_events')}</p>
                                     </div>
                                 ) : participants.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-24 text-center space-y-10 bg-white/5 rounded-[3rem] border border-white/5">
                                         <Users className="h-14 w-14 text-muted-foreground/20" />
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30">Add athletes to view rankings</p>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30">{t('competitions.no_athletes')}</p>
                                     </div>
                                 ) : (
                                     <div className="space-y-16">
@@ -1040,19 +1102,19 @@ export const Competitions: React.FC = () => {
                                                     <header className="flex items-center gap-6 px-2">
                                                         <h4 className="text-4xl font-black italic uppercase tracking-tighter text-primary">{div}</h4>
                                                         <div className="h-px flex-1 bg-white/5" />
-                                                        <Badge variant="outline" className="h-8 px-4 rounded-full border-primary/20 font-black text-[10px] tracking-widest uppercase">{divRankings.length} ATHLETES</Badge>
+                                                        <Badge variant="outline" className="h-8 px-4 rounded-full border-primary/20 font-black text-[10px] tracking-widest uppercase">{divRankings.length} {t('competitions.athletes')}</Badge>
                                                     </header>
 
                                                     <div className="bg-white/5 rounded-[2.5rem] border border-white/5 overflow-hidden">
                                                         <table className="w-full text-left">
                                                             <thead>
                                                                 <tr className="border-b border-white/5 bg-white/5">
-                                                                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Pos</th>
-                                                                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Athlete</th>
+                                                                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('competitions.pos')}</th>
+                                                                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('competitions.athlete')}</th>
                                                                     {events.map((e, idx) => (
                                                                         <th key={e.id} className="p-6 text-[10px] font-black uppercase tracking-widest text-center text-primary/60">EV{idx + 1}</th>
                                                                     ))}
-                                                                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-right text-primary">Total</th>
+                                                                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-right text-primary">{t('competitions.total')}</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -1070,7 +1132,7 @@ export const Competitions: React.FC = () => {
                                                                                 </div>
                                                                                 <div className="space-y-1">
                                                                                     <p className="text-sm font-black uppercase tracking-tight leading-none">{row.p.athlete.first_name} {row.p.athlete.last_name}</p>
-                                                                                    <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest leading-none">BOX MEMBER</p>
+                                                                                    <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest leading-none">{t('competitions.box_member')}</p>
                                                                                 </div>
                                                                             </div>
                                                                         </td>
@@ -1085,7 +1147,7 @@ export const Competitions: React.FC = () => {
                                                                         <td className="p-6 text-right">
                                                                             <div className="inline-block px-4 py-2 rounded-xl bg-primary/10 border border-primary/20">
                                                                                 <p className="text-lg font-black italic text-primary leading-none">{row.totalPoints}</p>
-                                                                                <p className="text-[8px] font-black uppercase tracking-widest text-primary/40 text-center">PTS</p>
+                                                                                <p className="text-[8px] font-black uppercase tracking-widest text-primary/40 text-center">{t('competitions.pts')}</p>
                                                                             </div>
                                                                         </td>
                                                                     </tr>
@@ -1161,7 +1223,7 @@ export const Competitions: React.FC = () => {
 
                         <header className="space-y-2 relative z-10">
                             <h3 className="text-3xl font-black italic uppercase tracking-tighter text-primary">
-                                Log Result
+                                {t('competitions.log_results')}
                             </h3>
                             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
                                 {selectedEventForScoring?.name}
@@ -1170,10 +1232,10 @@ export const Competitions: React.FC = () => {
 
                         <div className="space-y-6 relative z-10">
                             <div className="space-y-3">
-                                <Label className="text-[10px] font-black uppercase text-primary/60 px-1 tracking-widest">Select Athlete</Label>
+                                <Label className="text-[10px] font-black uppercase text-primary/60 px-1 tracking-widest">{t('competitions.select_athlete_lbl')}</Label>
                                 <Select value={newScore.participant_id} onValueChange={(v) => setNewScore({ ...newScore, participant_id: v })}>
                                     <SelectTrigger className="h-14 rounded-2xl border-white/20 bg-white/5 focus:ring-primary/20 transition-all text-sm font-medium">
-                                        <SelectValue placeholder="Athlete..." />
+                                        <SelectValue placeholder={t('competitions.athlete_placeholder')} />
                                     </SelectTrigger>
                                     <SelectContent className="glass border-white/10 rounded-2xl">
                                         {participants.map(p => (
@@ -1188,7 +1250,7 @@ export const Competitions: React.FC = () => {
                             {selectedEventForScoring?.scoring_type === 'time' ? (
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-3">
-                                        <Label className="text-[10px] font-black uppercase text-primary/60 px-1 tracking-widest">Minutes</Label>
+                                        <Label className="text-[10px] font-black uppercase text-primary/60 px-1 tracking-widest">{t('common.minutes', { defaultValue: 'MINUTES' })}</Label>
                                         <Input
                                             type="number"
                                             placeholder="00"
@@ -1198,7 +1260,7 @@ export const Competitions: React.FC = () => {
                                         />
                                     </div>
                                     <div className="space-y-3">
-                                        <Label className="text-[10px] font-black uppercase text-primary/60 px-1 tracking-widest">Seconds</Label>
+                                        <Label className="text-[10px] font-black uppercase text-primary/60 px-1 tracking-widest">{t('common.seconds', { defaultValue: 'SECONDS' })}</Label>
                                         <Input
                                             type="number"
                                             placeholder="00"
@@ -1227,7 +1289,7 @@ export const Competitions: React.FC = () => {
                                 className="w-full h-16 rounded-2xl uppercase font-black tracking-[0.2em] gap-3 shadow-xl shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-all bg-primary text-primary-foreground"
                                 onClick={handleAddScore}
                             >
-                                <Save className="h-5 w-5" /> Save Result
+                                <Save className="h-5 w-5" /> {t('common.save')}
                             </Button>
                         </div>
                     </div>

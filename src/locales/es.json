@@ -147,7 +147,60 @@
         "manage_judges": "Gestionar Jueces",
         "scoring_system": "Sistema de Puntuación",
         "scoring_desc": "Selecciona categorías (RX, Scaled) y define criterios de puntuación.",
-        "config_rules": "Configurar Reglas"
+        "config_rules": "Configurar Reglas",
+        "category": "Categoría",
+        "order": "Orden",
+        "add_event": "Programar Nuevo Evento",
+        "event_name": "Nombre del Evento",
+        "select_wod": "WOD / Workout Objetivo",
+        "select_wod_placeholder": "Seleccionar desde biblioteca...",
+        "add_event_btn": "Agregar Evento a Competencia",
+        "linked_events": "Cronograma de Operaciones",
+        "no_events": "No hay eventos programados.",
+        "available_staff": "Personal del Box Disponible",
+        "appoint": "Designar como Juez",
+        "appointed_judges": "Certificación Oficial",
+        "no_judges": "No hay jueces asignados.",
+        "official_judge": "Oficial Certificado",
+        "leaderboard_live": "Panel de Operaciones en Vivo",
+        "leaderboard_placeholder": "Los resultados aparecerán aquí a medida que los jueces suban puntajes.",
+        "scoring_types": {
+            "reps": "REPS (AMRAP)",
+            "time": "TIEMPO (FOR TIME)",
+            "weight": "PESO (CARGA MÁX)",
+            "points": "PUNTOS/OTRO"
+        },
+        "log_results": "Registrar Resultados",
+        "official_staff": "Personal Oficial",
+        "division_placeholder": "División",
+        "no_athletes_footer": "Agrega atletas para ver el ranking",
+        "no_events_footer": "Agrega eventos para generar la tabla",
+        "pos": "Pos",
+        "athlete": "Atleta",
+        "total": "Total",
+        "box_member": "MIEMBRO DEL BOX",
+        "pts": "PTS",
+        "select_athlete_lbl": "Seleccionar Atleta",
+        "athlete_placeholder": "Atleta...",
+        "divisions": {
+            "rx": "RX",
+            "scaled": "SCALED",
+            "beginners": "PRINCIPIANTES",
+            "masters": "MASTERS"
+        },
+        "placeholders": {
+            "comp_name": "ej. Winter Open 2026",
+            "comp_desc": "Competencia interna anual...",
+            "event_name": "ej. Evento 1: Heavy Grace"
+        },
+        "rules": {
+            "title": "Reglas de Puntuación",
+            "categories": "Categorías",
+            "scoring_logic": "Lógica de Puntuación",
+            "rx": "RX (Según Prescrito)",
+            "scaled": "Scaled (Adaptado)",
+            "active": "ACTIVO"
+        }
     },
     "settings": {
         "title": "Ajustes del Sistema",

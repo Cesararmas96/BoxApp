@@ -166,7 +166,44 @@
         "official_judge": "Certified Official",
         "leaderboard_live": "Live Operations Dashboard",
         "leaderboard_placeholder": "Real-time results will appear here as judges submit scores.",
-        "configure_brackets": "Configure Brackets & Heats"
+        "configure_brackets": "Configure Brackets & Heats",
+        "scoring_types": {
+            "reps": "REPS (AMRAP)",
+            "time": "TIME (FOR TIME)",
+            "weight": "WEIGHT (MAX LOAD)",
+            "points": "POINTS/OTHER"
+        },
+        "log_results": "Log Results",
+        "official_staff": "Official Staff",
+        "division_placeholder": "Division",
+        "no_athletes_footer": "Add athletes to view rankings",
+        "no_events_footer": "Add events to generate leaderboard",
+        "pos": "Pos",
+        "athlete": "Athlete",
+        "total": "Total",
+        "box_member": "BOX MEMBER",
+        "pts": "PTS",
+        "select_athlete_lbl": "Select Athlete",
+        "athlete_placeholder": "Athlete...",
+        "divisions": {
+            "rx": "RX",
+            "scaled": "SCALED",
+            "beginners": "BEGINNERS",
+            "masters": "MASTERS"
+        },
+        "placeholders": {
+            "comp_name": "e.g. Winter Open 2026",
+            "comp_desc": "Internal annual competition...",
+            "event_name": "e.g. Event 1: Heavy Grace"
+        },
+        "rules": {
+            "title": "Config Rules",
+            "categories": "Categories",
+            "scoring_logic": "Scoring Logic",
+            "rx": "RX (As Prescribed)",
+            "scaled": "Scaled (Modified)",
+            "active": "ACTIVE"
+        }
     },
     "settings": {
         "title": "System Settings",

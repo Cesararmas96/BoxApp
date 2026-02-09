@@ -146,11 +146,13 @@ export const Competitions: React.FC = () => {
     const itemsPerPage = 6;
 
     useEffect(() => {
-        fetchCompetitions();
-        fetchAthletes();
-        fetchWods();
-        fetchStaff();
-    }, []);
+        if (currentBox) {
+            fetchCompetitions();
+            fetchAthletes();
+            fetchWods();
+            fetchStaff();
+        }
+    }, [currentBox]);
 
     const fetchStaff = async () => {
         if (!currentBox) return;
@@ -262,8 +264,10 @@ export const Competitions: React.FC = () => {
             showNotification('success', 'EVENT ADDED TO COMPETITION');
             setNewEventName('');
             setSelectedWodId('');
-            fetchEvents(selectedComp.id);
-            fetchCompetitions(); // Refresh counts
+            if (selectedComp) {
+                fetchEvents(selectedComp.id);
+            }
+            fetchCompetitions();
         }
     };
 
@@ -343,10 +347,14 @@ export const Competitions: React.FC = () => {
             }]);
 
         if (error) {
-            showNotification('error', 'ERROR ADDING ATHLETE: ' + error.message.toUpperCase());
+            showNotification('error', 'ERROR ADDING ATHLETE: ' + (error.message || 'UNKNOWN ERROR').toUpperCase());
         } else {
             showNotification('success', 'ATHLETE ADDED TO COMPETITION');
-            fetchParticipants(selectedComp.id);
+            setSearchAthlete(''); // Clear search
+            if (selectedComp) {
+                fetchParticipants(selectedComp.id);
+                fetchCompetitions(); // Refresh counts
+            }
         }
     };
 

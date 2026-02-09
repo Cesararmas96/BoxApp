@@ -192,7 +192,7 @@ export const Wods: React.FC = () => {
             modalities: wod.modalities,
             lesson_plan: wod.lesson_plan,
             track: wod.track,
-            date: new Date(wod.date).toISOString().split('T')[0]
+            date: wod.date ? new Date(wod.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
         });
 
         if (wod.structure) {
@@ -392,26 +392,40 @@ export const Wods: React.FC = () => {
 
     const getWeekRange = (dateStr: string) => {
         if (!dateStr) return { start: '---', end: '---', monday: '' };
-        const dStr = dateStr.split('T')[0].replace(/-/g, '/');
-        const date = new Date(dStr);
-        const day = date.getDay();
-        const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-        const monday = new Date(date.setDate(diff));
-        const sunday = new Date(monday);
-        sunday.setDate(monday.getDate() + 6);
-        return {
-            start: monday.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
-            end: sunday.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
-            monday: monday.toISOString().split('T')[0]
-        };
+        try {
+            const dStr = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+            const normalizedDate = dStr.replace(/-/g, '/');
+            const date = new Date(normalizedDate);
+
+            if (isNaN(date.getTime())) return { start: '---', end: '---', monday: '' };
+
+            const day = date.getDay();
+            const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+            const monday = new Date(date.getTime());
+            monday.setDate(diff);
+
+            const sunday = new Date(monday.getTime());
+            sunday.setDate(monday.getDate() + 6);
+
+            return {
+                start: monday.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
+                end: sunday.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
+                monday: monday.toISOString().split('T')[0]
+            };
+        } catch (e) {
+            return { start: '---', end: '---', monday: '' };
+        }
     };
 
     const totalPages = Math.ceil(filteredWods.length / itemsPerPage);
 
     const last7DaysBias = useMemo(() => {
         const counts = { weightlifting: 0, gymnastics: 0, mono: 0, metcon: 0 };
-        // Window Analysis: Mon-Sat of the current WOD week (Methodology Suggestion)
+        if (!newWOD.date) return counts;
+
         const currentWodDate = new Date(newWOD.date + 'T12:00:00');
+        if (isNaN(currentWodDate.getTime())) return counts;
+
         const dayOfWeek = currentWodDate.getDay();
         const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
         const monday = new Date(currentWodDate);

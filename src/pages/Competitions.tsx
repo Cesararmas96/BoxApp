@@ -15,7 +15,8 @@ import {
     BarChart,
     ListChecks,
     Search,
-    ChevronLeft
+    ChevronLeft,
+    Save
 } from 'lucide-react';
 import {
     Select,
@@ -61,6 +62,7 @@ interface Participant {
     status: string | null;
     division: string | null;
     athlete?: {
+        id: string;
         first_name: string | null;
         last_name: string | null;
         email: string | null;
@@ -68,12 +70,23 @@ interface Participant {
     };
 }
 
+interface CompetitionScore {
+    id: string;
+    event_id: string;
+    participant_id: string;
+    score_value: number;
+    score_display: string;
+    is_validated: boolean;
+    validated_by: string | null;
+    created_at?: string;
+}
+
 interface CompetitionEvent {
     id: string;
     competition_id: string | null;
     name: string;
     description: string | null;
-    scoring_type: string | null;
+    scoring_type: 'time' | 'reps' | 'weight' | 'points';
     order_index: number | null;
 }
 
@@ -113,10 +126,21 @@ export const Competitions: React.FC = () => {
     const [isManageOpen, setIsManageOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('participants');
     const [judges, setJudges] = useState<CompetitionJudge[]>([]);
+    const [scores, setScores] = useState<CompetitionScore[]>([]);
     const [staffMembers, setStaffMembers] = useState<any[]>([]);
     const [newEventName, setNewEventName] = useState('');
     const [selectedWodId, setSelectedWodId] = useState('');
+    const [eventScoringType, setEventScoringType] = useState<'time' | 'reps' | 'weight' | 'points'>('reps');
+    const [participantDivision, setParticipantDivision] = useState('RX');
     const [currentPage, setCurrentPage] = useState(1);
+    const [isScoreDialogOpen, setIsScoreDialogOpen] = useState(false);
+    const [selectedEventForScoring, setSelectedEventForScoring] = useState<CompetitionEvent | null>(null);
+    const [newScore, setNewScore] = useState({
+        participant_id: '',
+        value: '',
+        minutes: '',
+        seconds: ''
+    });
     const itemsPerPage = 6;
 
     useEffect(() => {
@@ -184,25 +208,40 @@ export const Competitions: React.FC = () => {
         if (!error && data) setJudges(data as unknown as CompetitionJudge[]);
     };
 
+    const fetchScores = async (compId: string) => {
+        if (!currentBox) return;
+        const { data, error } = await supabase
+            .from('competition_scores')
+            .select('*')
+            .eq('box_id', currentBox.id);
+
+        if (!error && data) {
+            setScores(data as CompetitionScore[]);
+        }
+    };
+
     const handleManageCompetition = (comp: Competition, tab: string = 'participants') => {
         setSelectedComp(comp);
         fetchParticipants(comp.id);
         fetchEvents(comp.id);
         fetchJudges(comp.id);
+        fetchScores(comp.id);
         setActiveTab(tab);
         setIsManageOpen(true);
     };
 
     const handleAddEvent = async () => {
-        if (!selectedComp || !selectedWodId || !newEventName) return;
+        if (!selectedComp || !newEventName) return;
 
         const { error } = await supabase
             .from('competition_events')
             .insert([{
                 competition_id: selectedComp.id,
-                wod_id: selectedWodId,
+                box_id: currentBox?.id,
                 name: newEventName,
-                order_index: events.length
+                wod_id: selectedWodId || null,
+                scoring_type: eventScoringType,
+                order_index: events.length + 1
             }]);
 
         if (error) {
@@ -284,8 +323,10 @@ export const Competitions: React.FC = () => {
             .from('competition_participants')
             .insert([{
                 competition_id: selectedComp.id,
+                box_id: currentBox?.id,
                 user_id: athleteId,
-                category: 'RX'
+                division: participantDivision,
+                status: 'active'
             }]);
 
         if (error) {
@@ -293,6 +334,44 @@ export const Competitions: React.FC = () => {
         } else {
             showNotification('success', 'ATHLETE ADDED TO COMPETITION');
             fetchParticipants(selectedComp.id);
+        }
+    };
+
+    const handleAddScore = async () => {
+        if (!selectedComp || !selectedEventForScoring || !newScore.participant_id) return;
+
+        let scoreValue = 0;
+        let scoreDisplay = '';
+
+        if (selectedEventForScoring.scoring_type === 'time') {
+            const mins = parseInt(newScore.minutes) || 0;
+            const secs = parseInt(newScore.seconds) || 0;
+            scoreValue = (mins * 60) + secs;
+            scoreDisplay = `${mins}:${secs.toString().padStart(2, '0')}`;
+        } else {
+            scoreValue = parseFloat(newScore.value) || 0;
+            scoreDisplay = scoreValue.toString() + (selectedEventForScoring.scoring_type === 'weight' ? ' kg' : '');
+        }
+
+        const { error } = await supabase
+            .from('competition_scores')
+            .insert([{
+                box_id: currentBox?.id,
+                event_id: selectedEventForScoring.id,
+                participant_id: newScore.participant_id,
+                score_value: scoreValue,
+                score_display: scoreDisplay,
+                is_validated: true,
+                validated_by: (await supabase.auth.getUser()).data.user?.id
+            }]);
+
+        if (error) {
+            showNotification('error', 'ERROR SAVING SCORE: ' + error.message.toUpperCase());
+        } else {
+            showNotification('success', 'SCORE SAVED SUCCESSFULLY');
+            setIsScoreDialogOpen(false);
+            setNewScore({ participant_id: '', value: '', minutes: '', seconds: '' });
+            fetchScores(selectedComp.id);
         }
     };
 
@@ -603,14 +682,27 @@ export const Competitions: React.FC = () => {
                                             </h3>
                                             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">{t('competitions.search_placeholder')}</p>
                                         </div>
-                                        <div className="relative group">
-                                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                                            <Input
-                                                placeholder={t('common.search')}
-                                                value={searchAthlete}
-                                                onChange={(e) => setSearchAthlete(e.target.value)}
-                                                className="pl-12 h-14 rounded-2xl border-white/10 bg-white/5 focus:ring-primary/20 transition-all text-sm font-medium"
-                                            />
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="relative group">
+                                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                                <Input
+                                                    placeholder={t('common.search')}
+                                                    value={searchAthlete}
+                                                    onChange={(e) => setSearchAthlete(e.target.value)}
+                                                    className="pl-12 h-14 rounded-2xl border-white/10 bg-white/5 focus:ring-primary/20 transition-all text-sm font-medium"
+                                                />
+                                            </div>
+                                            <Select value={participantDivision} onValueChange={setParticipantDivision}>
+                                                <SelectTrigger className="h-14 rounded-2xl border-white/10 bg-white/5 focus:ring-primary/20 transition-all text-sm font-medium">
+                                                    <SelectValue placeholder="Division" />
+                                                </SelectTrigger>
+                                                <SelectContent className="glass border-white/10 rounded-2xl">
+                                                    <SelectItem value="RX">RX</SelectItem>
+                                                    <SelectItem value="Scaled">SCALED</SelectItem>
+                                                    <SelectItem value="Beginners">BEGINNERS</SelectItem>
+                                                    <SelectItem value="Masters">MASTERS</SelectItem>
+                                                </SelectContent>
+                                            </Select>
                                         </div>
                                         <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-none">
                                             {athletes
@@ -705,7 +797,7 @@ export const Competitions: React.FC = () => {
                                         <Plus className="h-6 w-6 text-primary" />
                                         {t('competitions.add_event')}
                                     </h4>
-                                    <div className="grid sm:grid-cols-2 gap-8">
+                                    <div className="grid sm:grid-cols-3 gap-8">
                                         <div className="space-y-3">
                                             <Label className="text-[10px] font-black uppercase text-primary/60 px-1 tracking-widest">{t('competitions.event_name')}</Label>
                                             <Input
@@ -727,6 +819,20 @@ export const Competitions: React.FC = () => {
                                                             {wod.title}
                                                         </SelectItem>
                                                     ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <Label className="text-[10px] font-black uppercase text-primary/60 px-1 tracking-widest">Scoring Type</Label>
+                                            <Select value={eventScoringType} onValueChange={(v: any) => setEventScoringType(v)}>
+                                                <SelectTrigger className="bg-white/5 border-white/10 h-14 rounded-2xl focus:ring-primary/20 transition-all">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent className="glass border-white/10 rounded-2xl">
+                                                    <SelectItem value="reps">REPS (AMRAP)</SelectItem>
+                                                    <SelectItem value="time">TIME (FOR TIME)</SelectItem>
+                                                    <SelectItem value="weight">WEIGHT (MAX LOAD)</SelectItem>
+                                                    <SelectItem value="points">POINTS/OTHER</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -765,14 +871,28 @@ export const Competitions: React.FC = () => {
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-10 w-10 text-rose-500 opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-500/10 rounded-xl"
-                                                        onClick={() => handleRemoveEvent(event.id)}
-                                                    >
-                                                        <Trash2 className="h-5 w-5" />
-                                                    </Button>
+                                                    <div className="flex items-center gap-3">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-10 px-4 gap-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-xl font-bold uppercase text-[10px] tracking-widest opacity-0 group-hover:opacity-100 transition-all"
+                                                            onClick={() => {
+                                                                setSelectedEventForScoring(event);
+                                                                setIsScoreDialogOpen(true);
+                                                            }}
+                                                        >
+                                                            <Medal className="h-4 w-4" />
+                                                            Log Results
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-10 w-10 text-rose-500 opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-500/10 rounded-xl"
+                                                            onClick={() => handleRemoveEvent(event.id)}
+                                                        >
+                                                            <Trash2 className="h-5 w-5" />
+                                                        </Button>
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
@@ -870,46 +990,108 @@ export const Competitions: React.FC = () => {
                                 </div>
                             </TabsContent>
 
-                            <TabsContent value="leaderboard" className="mt-0 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <div className="flex flex-col items-center justify-center py-24 text-center space-y-10 bg-white/5 rounded-[3rem] border border-white/5 relative overflow-hidden group">
-                                    <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-
-                                    <div className="relative">
-                                        <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full scale-150 transform group-hover:scale-[2] transition-transform duration-1000" />
-                                        <div className="relative h-28 w-28 rounded-[2rem] bg-primary flex items-center justify-center shadow-2xl shadow-primary/20 transform group-hover:rotate-6 transition-transform">
-                                            <BarChart className="h-14 w-14 text-primary-foreground" />
-                                        </div>
+                            <TabsContent value="leaderboard" className="mt-0 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+                                {events.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center py-24 text-center space-y-10 bg-white/5 rounded-[3rem] border border-white/5">
+                                        <BarChart className="h-14 w-14 text-muted-foreground/20" />
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30">Add events to generate leaderboard</p>
                                     </div>
-
-                                    <div className="space-y-4 max-w-sm px-6 relative z-10">
-                                        <h3 className="text-3xl font-black italic uppercase tracking-tighter">{t('competitions.leaderboard_live')}</h3>
-                                        <p className="text-muted-foreground/60 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
-                                            {t('competitions.leaderboard_placeholder')}
-                                        </p>
+                                ) : participants.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center py-24 text-center space-y-10 bg-white/5 rounded-[3rem] border border-white/5">
+                                        <Users className="h-14 w-14 text-muted-foreground/20" />
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30">Add athletes to view rankings</p>
                                     </div>
+                                ) : (
+                                    <div className="space-y-16">
+                                        {Array.from(new Set(participants.map(p => p.division))).map(div => {
+                                            const divRankings = participants
+                                                .filter(p => p.division === div)
+                                                .map(p => {
+                                                    let totalPoints = 0;
+                                                    const eventResults = events.map(event => {
+                                                        const pScore = scores.find(s => s.participant_id === p.id && s.event_id === event.id);
 
-                                    <Button className="h-14 px-10 rounded-2xl uppercase font-black tracking-widest text-xs gap-3 shadow-xl shadow-primary/20 hover:scale-[1.05] active:scale-[0.95] transition-all relative z-10">
-                                        <Settings className="h-4 w-4" /> {t('competitions.configure_brackets')}
-                                    </Button>
+                                                        // Point calculation for the division
+                                                        const groupScores = scores.filter(s => s.event_id === event.id && participants.some(part => part.id === s.participant_id && part.division === div));
+                                                        const sorted = [...groupScores].sort((a, b) => {
+                                                            if (event.scoring_type === 'time') return a.score_value - b.score_value;
+                                                            return b.score_value - a.score_value;
+                                                        });
 
-                                    <div className="grid grid-cols-3 gap-12 mt-16 w-full max-w-md px-10 relative opacity-40 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700">
-                                        <div className="flex flex-col items-center space-y-3">
-                                            <div className="w-16 h-1.5 bg-zinc-500/20 rounded-full" />
-                                            <div className="w-12 h-14 rounded-xl bg-white/5 border border-white/10" />
-                                            <div className="w-14 h-3 bg-white/5 rounded-full" />
-                                        </div>
-                                        <div className="flex flex-col items-center space-y-3 -mt-6">
-                                            <div className="w-16 h-1.5 bg-primary/40 rounded-full" />
-                                            <div className="w-12 h-20 rounded-xl bg-primary/20 border border-primary/20" />
-                                            <div className="w-14 h-3 bg-primary/20 rounded-full" />
-                                        </div>
-                                        <div className="flex flex-col items-center space-y-3">
-                                            <div className="w-16 h-1.5 bg-zinc-500/20 rounded-full" />
-                                            <div className="w-12 h-10 rounded-xl bg-white/5 border border-white/10" />
-                                            <div className="w-14 h-3 bg-white/5 rounded-full" />
-                                        </div>
+                                                        const rank = sorted.findIndex(s => s.participant_id === p.id) + 1;
+                                                        const points = rank > 0 ? rank : participants.filter(part => part.division === div).length + 1;
+                                                        totalPoints += points;
+
+                                                        return { eventId: event.id, points, score: pScore?.score_display || '-' };
+                                                    });
+
+                                                    return { p, totalPoints, eventResults };
+                                                })
+                                                .sort((a, b) => a.totalPoints - b.totalPoints);
+
+                                            return (
+                                                <div key={div} className="space-y-8">
+                                                    <header className="flex items-center gap-6 px-2">
+                                                        <h4 className="text-4xl font-black italic uppercase tracking-tighter text-primary">{div}</h4>
+                                                        <div className="h-px flex-1 bg-white/5" />
+                                                        <Badge variant="outline" className="h-8 px-4 rounded-full border-primary/20 font-black text-[10px] tracking-widest uppercase">{divRankings.length} ATHLETES</Badge>
+                                                    </header>
+
+                                                    <div className="bg-white/5 rounded-[2.5rem] border border-white/5 overflow-hidden">
+                                                        <table className="w-full text-left">
+                                                            <thead>
+                                                                <tr className="border-b border-white/5 bg-white/5">
+                                                                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Pos</th>
+                                                                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Athlete</th>
+                                                                    {events.map((e, idx) => (
+                                                                        <th key={e.id} className="p-6 text-[10px] font-black uppercase tracking-widest text-center text-primary/60">EV{idx + 1}</th>
+                                                                    ))}
+                                                                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-right text-primary">Total</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {divRankings.map((row, idx) => (row.p.athlete &&
+                                                                    <tr key={row.p.id} className="border-b border-white/5 last:border-none hover:bg-white/5 transition-colors">
+                                                                        <td className="p-6">
+                                                                            <div className={`h-8 w-8 rounded-lg flex items-center justify-center font-black text-xs ${idx === 0 ? 'bg-yellow-500 text-black' : idx === 1 ? 'bg-zinc-300 text-black' : idx === 2 ? 'bg-amber-600 text-white' : 'bg-white/10 text-muted-foreground'}`}>
+                                                                                {idx + 1}
+                                                                            </div>
+                                                                        </td>
+                                                                        <td className="p-6">
+                                                                            <div className="flex items-center gap-4">
+                                                                                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center font-black text-primary text-xs border border-primary/10">
+                                                                                    {row.p.athlete.first_name?.[0]}{row.p.athlete.last_name?.[0]}
+                                                                                </div>
+                                                                                <div className="space-y-1">
+                                                                                    <p className="text-sm font-black uppercase tracking-tight leading-none">{row.p.athlete.first_name} {row.p.athlete.last_name}</p>
+                                                                                    <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest leading-none">BOX MEMBER</p>
+                                                                                </div>
+                                                                            </div>
+                                                                        </td>
+                                                                        {row.eventResults.map(res => (
+                                                                            <td key={res.eventId} className="p-6 text-center">
+                                                                                <div className="space-y-1">
+                                                                                    <p className="text-sm font-black italic">{res.score}</p>
+                                                                                    <p className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-widest">({res.points} pts)</p>
+                                                                                </div>
+                                                                            </td>
+                                                                        ))}
+                                                                        <td className="p-6 text-right">
+                                                                            <div className="inline-block px-4 py-2 rounded-xl bg-primary/10 border border-primary/20">
+                                                                                <p className="text-lg font-black italic text-primary leading-none">{row.totalPoints}</p>
+                                                                                <p className="text-[8px] font-black uppercase tracking-widest text-primary/40 text-center">PTS</p>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
-                                </div>
+                                )}
                             </TabsContent>
                         </div>
                     </Tabs>
@@ -962,6 +1144,89 @@ export const Competitions: React.FC = () => {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Score Registration Dialog */}
+            <Dialog open={isScoreDialogOpen} onOpenChange={setIsScoreDialogOpen}>
+                <DialogContent className="glass border-white/10 max-w-lg rounded-[2.5rem] p-0 overflow-hidden">
+                    <div className="p-8 space-y-8 text-white relative">
+                        <div className="absolute top-0 right-0 p-8 opacity-5">
+                            <Medal className="h-32 w-32 text-primary" />
+                        </div>
+
+                        <header className="space-y-2 relative z-10">
+                            <h3 className="text-3xl font-black italic uppercase tracking-tighter text-primary">
+                                Log Result
+                            </h3>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                                {selectedEventForScoring?.name}
+                            </p>
+                        </header>
+
+                        <div className="space-y-6 relative z-10">
+                            <div className="space-y-3">
+                                <Label className="text-[10px] font-black uppercase text-primary/60 px-1 tracking-widest">Select Athlete</Label>
+                                <Select value={newScore.participant_id} onValueChange={(v) => setNewScore({ ...newScore, participant_id: v })}>
+                                    <SelectTrigger className="h-14 rounded-2xl border-white/20 bg-white/5 focus:ring-primary/20 transition-all text-sm font-medium">
+                                        <SelectValue placeholder="Athlete..." />
+                                    </SelectTrigger>
+                                    <SelectContent className="glass border-white/10 rounded-2xl">
+                                        {participants.map(p => (
+                                            <SelectItem key={p.id} value={p.id} className="rounded-xl focus:bg-primary/10 py-3 font-medium">
+                                                {p.athlete?.first_name} {p.athlete?.last_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {selectedEventForScoring?.scoring_type === 'time' ? (
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-3">
+                                        <Label className="text-[10px] font-black uppercase text-primary/60 px-1 tracking-widest">Minutes</Label>
+                                        <Input
+                                            type="number"
+                                            placeholder="00"
+                                            value={newScore.minutes}
+                                            onChange={(e) => setNewScore({ ...newScore, minutes: e.target.value })}
+                                            className="h-16 rounded-2xl border-white/20 bg-white/5 focus:ring-primary/20 text-center text-3xl font-black italic"
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <Label className="text-[10px] font-black uppercase text-primary/60 px-1 tracking-widest">Seconds</Label>
+                                        <Input
+                                            type="number"
+                                            placeholder="00"
+                                            value={newScore.seconds}
+                                            onChange={(e) => setNewScore({ ...newScore, seconds: e.target.value })}
+                                            className="h-16 rounded-2xl border-white/20 bg-white/5 focus:ring-primary/20 text-center text-3xl font-black italic"
+                                        />
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] font-black uppercase text-primary/60 px-1 tracking-widest">
+                                        {selectedEventForScoring?.scoring_type === 'reps' ? 'Total Reps' : selectedEventForScoring?.scoring_type === 'weight' ? 'Weight (kg)' : 'Points'}
+                                    </Label>
+                                    <Input
+                                        type="number"
+                                        placeholder="0"
+                                        value={newScore.value}
+                                        onChange={(e) => setNewScore({ ...newScore, value: e.target.value })}
+                                        className="h-16 rounded-2xl border-white/20 bg-white/5 focus:ring-primary/20 text-center text-3xl font-black italic"
+                                    />
+                                </div>
+                            )}
+
+                            <Button
+                                className="w-full h-16 rounded-2xl uppercase font-black tracking-[0.2em] gap-3 shadow-xl shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-all bg-primary text-primary-foreground"
+                                onClick={handleAddScore}
+                            >
+                                <Save className="h-5 w-5" /> Save Result
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             {/* Premium Confirmation Dialog */}
             <ConfirmationDialog

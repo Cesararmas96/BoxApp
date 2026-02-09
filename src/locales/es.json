@@ -169,6 +169,7 @@
             "favicon_hint": "Formato: .ico o .png (32x32px)",
             "live_preview": "Vista Previa",
             "upload": "Subir",
+            "name_required": "El nombre del box es obligatorio.",
             "logo_uploaded": "¡Logo subido! No olvides guardar los cambios.",
             "favicon_uploaded": "¡Favicon subido! No olvides guardar los cambios.",
             "success": "¡Ajustes de branding guardados con éxito!",
@@ -390,7 +391,8 @@
         "update_password": "Actualizar Contraseña",
         "success_profile": "¡Perfil actualizado con éxito!",
         "success_password": "¡Contraseña actualizada con éxito!",
-        "upload_image_error": "Por favor sube un archivo de imagen.",
+        "error_required_fields": "Nombre y Apellido son obligatorios.",
+        "upload_image_error": "Por favor sube un archivo de imagen válido.",
         "image_size_error": "La imagen debe pesar menos de 2MB.",
         "updating": "Actualizando...",
         "saving": "Guardando..."

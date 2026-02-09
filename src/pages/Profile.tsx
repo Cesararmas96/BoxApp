@@ -66,6 +66,14 @@ export const Profile: React.FC = () => {
         setProfileSuccess(false);
         setIsUpdating(true);
 
+        if (!profile.first_name.trim() || !profile.last_name.trim()) {
+            const errorMsg = t('profile.error_required_fields');
+            setProfileError(errorMsg);
+            showNotification('error', errorMsg);
+            setIsUpdating(false);
+            return;
+        }
+
         try {
             const { error: errorResult } = await supabase
                 .from('profiles')
@@ -340,7 +348,10 @@ export const Profile: React.FC = () => {
                         <CardContent className="p-8 space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <Label htmlFor="first_name" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">{t('profile.first_name')}</Label>
+                                    <div className="flex items-center gap-1 ml-1">
+                                        <Label htmlFor="first_name" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{t('profile.first_name')}</Label>
+                                        <div className="w-1 h-1 rounded-full bg-destructive" />
+                                    </div>
                                     <Input
                                         id="first_name"
                                         placeholder={t('profile.first_name_placeholder')}
@@ -350,7 +361,10 @@ export const Profile: React.FC = () => {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="last_name" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">{t('profile.last_name')}</Label>
+                                    <div className="flex items-center gap-1 ml-1">
+                                        <Label htmlFor="last_name" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{t('profile.last_name')}</Label>
+                                        <div className="w-1 h-1 rounded-full bg-destructive" />
+                                    </div>
                                     <Input
                                         id="last_name"
                                         placeholder={t('profile.last_name_placeholder')}

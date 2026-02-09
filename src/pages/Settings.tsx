@@ -172,6 +172,13 @@ export const Settings: React.FC = () => {
         if (!currentBox?.id) return;
         setIsSaving(true);
         setMessage(null);
+
+        if (!boxSettings.name.trim()) {
+            setMessage({ type: 'error', text: t('settings.branding.name_required') });
+            setIsSaving(false);
+            return;
+        }
+
         try {
             const { error } = await supabase
                 .from('boxes')
@@ -258,7 +265,10 @@ export const Settings: React.FC = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="box-name">{t('settings.branding.box_name')}</Label>
+                                            <div className="flex items-center gap-1">
+                                                <Label htmlFor="box-name">{t('settings.branding.box_name')}</Label>
+                                                <div className="w-1 h-1 rounded-full bg-destructive" />
+                                            </div>
                                             <Input
                                                 id="box-name"
                                                 value={boxSettings.name}

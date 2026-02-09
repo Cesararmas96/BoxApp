@@ -152,44 +152,62 @@ export const Benchmarks: React.FC = () => {
                         <div className="space-y-4 py-4">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-muted-foreground">Select Benchmark</label>
-                                <div className="space-y-2">
-                                    <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <Input
-                                            placeholder="Search movement..."
-                                            className="pl-9"
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                        />
+                                {!newPR.benchmarkId ? (
+                                    <div className="space-y-2">
+                                        <div className="relative">
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                            <Input
+                                                placeholder="Search movement..."
+                                                className="pl-9"
+                                                value={searchTerm}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                                autoFocus
+                                            />
+                                        </div>
+                                        <div className="max-h-[250px] overflow-y-auto border rounded-2xl p-2 bg-black/5 dark:bg-white/5 space-y-1">
+                                            {benchmarks
+                                                .filter(b => b.name.toLowerCase().includes(searchTerm.toLowerCase()) || b.category?.toLowerCase().includes(searchTerm.toLowerCase()))
+                                                .map(b => (
+                                                    <button
+                                                        key={b.id}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setNewPR({ ...newPR, benchmarkId: b.id });
+                                                            setSearchTerm(''); // Clear search for next time
+                                                        }}
+                                                        className="w-full text-left px-4 py-3 rounded-xl text-sm transition-all hover:bg-primary/10 hover:translate-x-1 group"
+                                                    >
+                                                        <div className="flex justify-between items-center">
+                                                            <span className="font-bold group-hover:text-primary transition-colors">{b.name}</span>
+                                                            <Badge variant="outline" className="text-[9px] uppercase tracking-tighter opacity-70">
+                                                                {b.category || 'Standard'}
+                                                            </Badge>
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                            {benchmarks.length === 0 && (
+                                                <p className="text-center py-8 text-xs text-muted-foreground italic">No movements found. Try another term.</p>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="max-h-[200px] overflow-y-auto border rounded-md p-1 bg-black/5 dark:bg-white/5">
-                                        {benchmarks
-                                            .filter(b => b.name.toLowerCase().includes(searchTerm.toLowerCase()) || b.category?.toLowerCase().includes(searchTerm.toLowerCase()))
-                                            .map(b => (
-                                                <button
-                                                    key={b.id}
-                                                    type="button"
-                                                    onClick={() => setNewPR({ ...newPR, benchmarkId: b.id })}
-                                                    className={cn(
-                                                        "w-full text-left px-3 py-2 rounded-md text-sm transition-colors mb-1",
-                                                        newPR.benchmarkId === b.id
-                                                            ? "bg-primary text-primary-foreground font-bold"
-                                                            : "hover:bg-primary/10 text-muted-foreground hover:text-foreground"
-                                                    )}
-                                                >
-                                                    <div className="flex justify-between items-center">
-                                                        <span>{b.name}</span>
-                                                        <Badge variant="outline" className="text-[9px] uppercase tracking-tighter opacity-70">
-                                                            {b.category || 'Standard'}
-                                                        </Badge>
-                                                    </div>
-                                                </button>
-                                            ))}
-                                        {benchmarks.length === 0 && (
-                                            <p className="text-center py-4 text-xs text-muted-foreground">No movements found</p>
-                                        )}
+                                ) : (
+                                    <div className="flex items-center justify-between p-4 rounded-2xl bg-primary/10 border border-primary/20 animate-in fade-in zoom-in duration-300">
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-primary leading-none mb-1">Target Benchmark</span>
+                                            <span className="text-sm font-black uppercase italic tracking-tight">
+                                                {benchmarks.find(b => b.id === newPR.benchmarkId)?.name}
+                                            </span>
+                                        </div>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => setNewPR({ ...newPR, benchmarkId: '' })}
+                                            className="text-[9px] font-black uppercase tracking-widest hover:bg-primary/20"
+                                        >
+                                            Change
+                                        </Button>
                                     </div>
-                                </div>
+                                )}
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-muted-foreground">Result (e.g. 100kg, 10:00, 50 reps)</label>

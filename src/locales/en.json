@@ -135,6 +135,8 @@
         "start_first": "Start your first internal throwdown to build community.",
         "create_first": "Create Your First Competition",
         "athletes": "Athletes",
+        "current_athletes": "Registered Athletes",
+        "athletes_registered": "Athletes registered",
         "events": "Events",
         "manage_participants": "Manage Participants",
         "view_brackets": "View Brackets",

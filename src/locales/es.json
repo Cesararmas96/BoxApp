@@ -138,6 +138,8 @@
         "start_first": "Comienza tu primer throwdown interno para crear comunidad.",
         "create_first": "Crear tu Primera Competencia",
         "athletes": "Atletas",
+        "current_athletes": "Atletas Inscritos",
+        "athletes_registered": "Atletas registrados",
         "events": "Eventos",
         "manage_participants": "Gestionar Participantes",
         "view_brackets": "Ver Llaves",

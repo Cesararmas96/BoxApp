@@ -125,6 +125,8 @@ export const Competitions: React.FC = () => {
     const [events, setEvents] = useState<CompetitionEvent[]>([]);
     const [availableWods, setAvailableWods] = useState<any[]>([]);
     const [searchAthlete, setSearchAthlete] = useState('');
+    const [searchWod, setSearchWod] = useState('');
+    const [eventScoringType, setEventScoringType] = useState<'time' | 'reps' | 'weight' | 'points'>('reps');
     const [isManageOpen, setIsManageOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('participants');
     const [judges, setJudges] = useState<CompetitionJudge[]>([]);
@@ -187,10 +189,19 @@ export const Competitions: React.FC = () => {
     const fetchParticipants = async (compId: string) => {
         const { data, error } = await supabase
             .from('competition_participants')
-            .select('*, athlete:profiles(*)')
+            .select(`
+                *,
+                athlete:profiles!user_id(*)
+            `)
             .eq('competition_id', compId);
 
-        if (!error && data) setParticipants(data as unknown as Participant[]);
+        if (error) {
+            console.error('Error fetching participants:', error);
+            showNotification('error', 'ERROR FETCHING PARTICIPANTS');
+        } else if (data) {
+            console.log('Participants fetched:', data.length);
+            setParticipants(data as unknown as Participant[]);
+        }
     };
 
     const fetchEvents = async (compId: string) => {
@@ -200,7 +211,11 @@ export const Competitions: React.FC = () => {
             .eq('competition_id', compId)
             .order('order_index', { ascending: true });
 
-        if (!error && data) setEvents(data as unknown as CompetitionEvent[]);
+        if (error) {
+            console.error('Error fetching events:', error);
+        } else if (data) {
+            setEvents(data as unknown as CompetitionEvent[]);
+        }
     };
 
     const fetchJudges = async (compId: string) => {
@@ -252,7 +267,7 @@ export const Competitions: React.FC = () => {
             .insert([{
                 competition_id: selectedComp.id,
                 box_id: currentBox?.id,
-                name: newEventName,
+                title: newEventName,
                 wod_id: selectedWodId || null,
                 scoring_type: eventScoringType,
                 order_index: events.length + 1
@@ -865,11 +880,27 @@ export const Competitions: React.FC = () => {
                                                     <SelectValue placeholder={t('competitions.select_wod_placeholder')} />
                                                 </SelectTrigger>
                                                 <SelectContent className="glass border-white/10 rounded-2xl overflow-hidden p-2">
-                                                    {availableWods.map(wod => (
-                                                        <SelectItem key={wod.id} value={wod.id} className="rounded-xl focus:bg-primary/10 py-3 text-sm font-medium">
-                                                            {wod.title}
-                                                        </SelectItem>
-                                                    ))}
+                                                    <div className="px-2 pb-2 mb-2 border-b border-white/5">
+                                                        <div className="relative">
+                                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                            <Input
+                                                                placeholder={t('common.search')}
+                                                                value={searchWod}
+                                                                onChange={(e) => setSearchWod(e.target.value)}
+                                                                className="pl-9 h-10 bg-white/5 border-white/5 rounded-xl text-xs"
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div className="max-h-[200px] overflow-y-auto">
+                                                        {availableWods
+                                                            .filter(wod => wod.title?.toLowerCase().includes(searchWod.toLowerCase()))
+                                                            .map(wod => (
+                                                                <SelectItem key={wod.id} value={wod.id} className="rounded-xl focus:bg-primary/10 py-3 text-sm font-medium">
+                                                                    {wod.title}
+                                                                </SelectItem>
+                                                            ))}
+                                                    </div>
                                                 </SelectContent>
                                             </Select>
                                         </div>

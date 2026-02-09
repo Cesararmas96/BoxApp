@@ -182,6 +182,11 @@
         "pts": "PTS",
         "select_athlete_lbl": "Seleccionar Atleta",
         "athlete_placeholder": "Atleta...",
+        "no_active_comp": "No hay competencias activas",
+        "points_system": "Sistema de Puntos",
+        "lower_wins": "Menor puntuación gana (Estándar CrossFit)",
+        "manage_judges_short": "Jueces",
+        "manage_scoring_short": "Puntuación",
         "divisions": {
             "rx": "RX",
             "scaled": "SCALED",

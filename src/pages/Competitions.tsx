@@ -620,14 +620,20 @@ export const Competitions: React.FC = () => {
                                                     </div>
                                                 </div>
                                             </CardContent>
-                                            <CardFooter className="bg-white/5 border-t border-white/5 grid grid-cols-2 gap-3 p-6 mt-auto">
-                                                <Button variant="ghost" size="sm" className="h-10 text-[10px] uppercase font-black tracking-widest gap-2 bg-white/5 hover:bg-white/10 rounded-xl" onClick={() => handleManageCompetition(comp, 'participants')}>
-                                                    <Users className="h-4 w-4 text-primary" /> {t('competitions.athletes')}
+                                            <CardFooter className="bg-white/5 border-t border-white/5 grid grid-cols-2 lg:grid-cols-4 gap-2 p-4 mt-auto">
+                                                <Button variant="ghost" size="sm" className="h-10 text-[9px] uppercase font-black tracking-widest gap-1.5 bg-white/5 hover:bg-white/10 rounded-xl px-2" onClick={() => handleManageCompetition(comp, 'participants')}>
+                                                    <Users className="h-3.5 w-3.5 text-primary" /> {t('competitions.athletes')}
                                                 </Button>
-                                                <Button variant="ghost" size="sm" className="h-10 text-[10px] uppercase font-black tracking-widest gap-2 bg-white/5 hover:bg-white/10 rounded-xl" onClick={() => handleManageCompetition(comp, 'events')}>
-                                                    <ListChecks className="h-4 w-4 text-primary" /> {t('competitions.events')}
+                                                <Button variant="ghost" size="sm" className="h-10 text-[9px] uppercase font-black tracking-widest gap-1.5 bg-white/5 hover:bg-white/10 rounded-xl px-2" onClick={() => handleManageCompetition(comp, 'events')}>
+                                                    <ListChecks className="h-3.5 w-3.5 text-primary" /> {t('competitions.events')}
                                                 </Button>
-                                                <Button className="col-span-2 h-12 text-[10px] uppercase font-black tracking-widest gap-2 rounded-xl shadow-lg shadow-primary/10 group/btn" onClick={() => handleManageCompetition(comp, 'leaderboard')}>
+                                                <Button variant="ghost" size="sm" className="h-10 text-[9px] uppercase font-black tracking-widest gap-1.5 bg-white/5 hover:bg-white/10 rounded-xl px-2" onClick={() => handleManageCompetition(comp, 'judges')}>
+                                                    <ShieldCheck className="h-3.5 w-3.5 text-primary" /> {t('competitions.manage_judges_short')}
+                                                </Button>
+                                                <Button variant="ghost" size="sm" className="h-10 text-[9px] uppercase font-black tracking-widest gap-1.5 bg-white/5 hover:bg-white/10 rounded-xl px-2" onClick={() => handleManageCompetition(comp, 'scoring')}>
+                                                    <Medal className="h-3.5 w-3.5 text-primary" /> {t('competitions.manage_scoring_short')}
+                                                </Button>
+                                                <Button className="col-span-full h-12 text-[10px] uppercase font-black tracking-widest gap-2 rounded-xl shadow-lg shadow-primary/10 group/btn mt-1" onClick={() => handleManageCompetition(comp, 'leaderboard')}>
                                                     <BarChart className="h-4 w-4" /> {t('competitions.view_brackets')}
                                                     <ChevronRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
                                                 </Button>
@@ -958,10 +964,23 @@ export const Competitions: React.FC = () => {
                                         </div>
                                         <div className="space-y-6">
                                             <Label className="text-[10px] font-black uppercase text-primary/60 px-1 tracking-widest">{t('competitions.rules.scoring_logic')}</Label>
-                                            <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10">
-                                                <p className="text-xs font-medium text-primary/80 leading-relaxed">
-                                                    Results are calculated based on placement within each division. 1st place gets 1 point, 2nd place 2 points, etc. Lower total score wins.
-                                                </p>
+                                            <div className="space-y-4">
+                                                <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10">
+                                                    <p className="text-xs font-medium text-primary/80 leading-relaxed">
+                                                        {t('competitions.lower_wins')}
+                                                    </p>
+                                                </div>
+                                                <div className="space-y-3">
+                                                    <Label className="text-[10px] font-black uppercase text-muted-foreground/40 px-1 tracking-widest">{t('competitions.points_system')}</Label>
+                                                    <Select defaultValue="standard">
+                                                        <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl font-bold uppercase text-[10px] tracking-widest">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="glass border-white/10 rounded-xl">
+                                                            <SelectItem value="standard" className="text-[10px] font-bold uppercase tracking-widest">{t('competitions.lower_wins')}</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1184,7 +1203,9 @@ export const Competitions: React.FC = () => {
                         <Button
                             className="w-full gap-3 h-14 rounded-2xl bg-white/5 border border-white/10 hover:bg-primary hover:text-primary-foreground hover:border-primary uppercase font-black text-xs tracking-[0.2em] transition-all shadow-lg active:scale-[0.98]"
                             onClick={() => {
-                                if (competitions.length > 0) handleManageCompetition(competitions[0], 'judges');
+                                const activeComp = filteredCompetitions('active')[0];
+                                if (activeComp) handleManageCompetition(activeComp, 'judges');
+                                else showNotification(t('competitions.no_active_comp'), 'error');
                             }}
                         >
                             <UserPlus className="h-5 w-5" /> {t('competitions.manage_judges')}
@@ -1206,7 +1227,14 @@ export const Competitions: React.FC = () => {
                     </CardHeader>
                     <CardContent className="px-10 pb-10 space-y-8">
                         <p className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-[0.1em] leading-relaxed line-clamp-2">{t('competitions.scoring_desc')}</p>
-                        <Button className="w-full gap-3 h-14 rounded-2xl bg-white/5 border border-white/10 hover:bg-yellow-500 hover:text-white hover:border-yellow-500 uppercase font-black text-xs tracking-[0.2em] transition-all shadow-lg active:scale-[0.98]">
+                        <Button
+                            className="w-full gap-3 h-14 rounded-2xl bg-white/5 border border-white/10 hover:bg-yellow-500 hover:text-white hover:border-yellow-500 uppercase font-black text-xs tracking-[0.2em] transition-all shadow-lg active:scale-[0.98]"
+                            onClick={() => {
+                                const activeComp = filteredCompetitions('active')[0];
+                                if (activeComp) handleManageCompetition(activeComp, 'scoring');
+                                else showNotification(t('competitions.no_active_comp'), 'error');
+                            }}
+                        >
                             <Settings className="h-5 w-5" /> {t('competitions.config_rules')}
                         </Button>
                     </CardContent>

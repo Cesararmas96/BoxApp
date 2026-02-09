@@ -136,7 +136,7 @@ export const CheckInTab: React.FC<CheckInTabProps> = ({ competition }) => {
                         {t('competitions.checkin.checked_in')}
                     </p>
                     <div className="flex items-end gap-2">
-                        <span className="text-2xl font-black italic text-primary">{stats.checkedIn}</u>
+                        <span className="text-2xl font-black italic text-primary">{stats.checkedIn}</span>
                         <span className="text-xs font-bold text-muted-foreground mb-1">/ {stats.total}</span>
                     </div>
                 </div>

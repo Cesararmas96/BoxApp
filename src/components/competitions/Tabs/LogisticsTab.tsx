@@ -48,8 +48,28 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
     const { showNotification } = useNotification();
 
     const [events, setEvents] = useState<Event[]>([]);
-    const [viewMode, setViewMode] = useState<'list' | 'timeline'>('list');
+    const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+    const [heats, setHeats] = useState<Heat[]>([]);
     const [allHeats, setAllHeats] = useState<Heat[]>([]);
+    const [viewMode, setViewMode] = useState<'list' | 'timeline'>('list');
+    const [loading, setLoading] = useState(false);
+
+    const fetchEvents = async () => {
+        setLoading(true);
+        const { data, error } = await supabase
+            .from('competition_events')
+            .select('*')
+            .eq('competition_id', competition.id)
+            .order('order', { ascending: true });
+
+        if (data) {
+            setEvents(data as any);
+            if (data.length > 0 && !selectedEventId) {
+                setSelectedEventId(data[0].id);
+            }
+        }
+        setLoading(false);
+    };
 
     const fetchAllHeats = async () => {
         setLoading(true);

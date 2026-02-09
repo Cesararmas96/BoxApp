@@ -72,9 +72,9 @@ export const DivisionsTab: React.FC<DivisionsTabProps> = ({ competition }) => {
             .insert([payload]);
 
         if (error) {
-            showNotification('error', 'ERROR ADDING DIVISION: ' + error.message.toUpperCase());
+            showNotification('error', t('competitions.error_adding_division', { defaultValue: 'ERROR ADDING DIVISION' }) + ': ' + error.message.toUpperCase());
         } else {
-            showNotification('success', 'DIVISION ADDED SUCCESSFULLY');
+            showNotification('success', t('competitions.division_added_success', { defaultValue: 'DIVISION ADDED SUCCESSFULLY' }));
             // Reset form
             setNewDivision({
                 name: '',
@@ -96,9 +96,9 @@ export const DivisionsTab: React.FC<DivisionsTabProps> = ({ competition }) => {
                     .eq('id', divisionId);
 
                 if (error) {
-                    showNotification('error', 'ERROR REMOVING DIVISION: ' + error.message.toUpperCase());
+                    showNotification('error', t('competitions.error_removing_division', { defaultValue: 'ERROR REMOVING DIVISION' }) + ': ' + error.message.toUpperCase());
                 } else {
-                    showNotification('success', 'DIVISION REMOVED FROM COMPETITION');
+                    showNotification('success', t('competitions.division_removed_success', { defaultValue: 'DIVISION REMOVED FROM COMPETITION' }));
                     fetchDivisions();
                 }
             },
@@ -140,10 +140,10 @@ export const DivisionsTab: React.FC<DivisionsTabProps> = ({ competition }) => {
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="male">Male</SelectItem>
-                                <SelectItem value="female">Female</SelectItem>
-                                <SelectItem value="mixed">Mixed</SelectItem>
-                                <SelectItem value="any">Any</SelectItem>
+                                <SelectItem value="male">{t('common.gender.male')}</SelectItem>
+                                <SelectItem value="female">{t('common.gender.female')}</SelectItem>
+                                <SelectItem value="mixed">{t('common.gender.mixed', { defaultValue: 'Mixed' })}</SelectItem>
+                                <SelectItem value="any">{t('common.gender.any', { defaultValue: 'Any' })}</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -153,7 +153,7 @@ export const DivisionsTab: React.FC<DivisionsTabProps> = ({ competition }) => {
                         <Input
                             value={newDivision.description}
                             onChange={(e) => setNewDivision({ ...newDivision, description: e.target.value })}
-                            placeholder="Optional description"
+                            placeholder={t('common.description_optional', { defaultValue: 'Optional description' })}
                             className="bg-zinc-900/50 border-white/10"
                         />
                     </div>

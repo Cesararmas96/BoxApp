@@ -520,11 +520,11 @@ export const Billing: React.FC = () => {
                 <TabsList className="grid w-full max-w-md grid-cols-2 bg-muted/50 p-1 mb-6">
                     <TabsTrigger value="finance" className="flex items-center gap-2">
                         <DollarSign className="h-4 w-4" />
-                        Finances
+                        {t('billing.finances_tab', { defaultValue: 'Finances' })}
                     </TabsTrigger>
                     <TabsTrigger value="athletes" className="flex items-center gap-2">
                         <Users className="h-4 w-4" />
-                        Athletes Status
+                        {t('billing.athletes_status_tab', { defaultValue: 'Athletes Status' })}
                     </TabsTrigger>
                 </TabsList>
 
@@ -599,10 +599,10 @@ export const Billing: React.FC = () => {
                                                 {editingPlan ? t('billing.edit_plan') : t('billing.create_plan')}
                                             </DialogTitle>
                                             <DialogDescription>
-                                                {t('billing.plan_desc', { defaultValue: 'Manage your box subscription plans here.' })}
+                                                {t('billing.plan_desc')}
                                             </DialogDescription>
                                             <DialogDescription className="sr-only">
-                                                Configure plan details including name, price, and duration.
+                                                {t('billing.plan_config_hint', { defaultValue: 'Configure plan details including name, price, and duration.' })}
                                             </DialogDescription>
                                         </DialogHeader>
                                         <div className="grid gap-4 py-4">
@@ -751,10 +751,10 @@ export const Billing: React.FC = () => {
                                                 {editingExpense ? t('billing.edit_expense') : t('billing.add_expense')}
                                             </DialogTitle>
                                             <DialogDescription>
-                                                {t('billing.expense_desc', { defaultValue: 'Track your box expenses and categories.' })}
+                                                {t('billing.expense_desc')}
                                             </DialogDescription>
                                             <DialogDescription className="sr-only">
-                                                Register or edit business expenses to track your box finances.
+                                                {t('billing.expense_hint', { defaultValue: 'Register or edit business expenses to track your box finances.' })}
                                             </DialogDescription>
                                         </DialogHeader>
                                         <div className="grid gap-4 py-4">

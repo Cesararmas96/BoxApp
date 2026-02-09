@@ -141,7 +141,7 @@ export const Dashboard: React.FC = () => {
                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500">{t('dashboard.system_live')}</span>
                 </div>
                 <h1 className="text-5xl lg:text-6xl font-black italic tracking-tighter uppercase text-primary text-glow leading-none">{t('dashboard.command_center')}</h1>
-                <p className="text-muted-foreground font-medium uppercase text-[10px] tracking-[0.3em] opacity-60 mt-2">Operational Analytics & Global Oversight</p>
+                <p className="text-muted-foreground font-medium uppercase text-[10px] tracking-[0.3em] opacity-60 mt-2">{t('dashboard.analytics_subtitle', { defaultValue: 'Operational Analytics & Global Oversight' })}</p>
             </div>
 
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">

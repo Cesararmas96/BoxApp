@@ -37,6 +37,7 @@ import { Competition, CompetitionEvent as Event, CompetitionHeat as Heat } from 
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { generateLinearHeats, Participant } from '@/utils/heatGenerator';
 import { HeatSchedule } from '../HeatSchedule';
+import { TimelineView } from '../TimelineView';
 
 interface LogisticsTabProps {
     competition: Competition;
@@ -47,23 +48,18 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
     const { showNotification } = useNotification();
 
     const [events, setEvents] = useState<Event[]>([]);
-    const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-    const [heats, setHeats] = useState<Heat[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [viewMode, setViewMode] = useState<'list' | 'timeline'>('list');
+    const [allHeats, setAllHeats] = useState<Heat[]>([]);
 
-    const fetchEvents = async () => {
-        const { data, error } = await supabase
-            .from('competition_events')
+    const fetchAllHeats = async () => {
+        setLoading(true);
+        const { data } = await supabase
+            .from('competition_heats')
             .select('*')
             .eq('competition_id', competition.id)
-            .order('order_index', { ascending: true });
-
-        if (data) {
-            setEvents(data as any);
-            if (data.length > 0 && !selectedEventId) {
-                setSelectedEventId(data[0].id);
-            }
-        }
+            .order('start_time', { ascending: true });
+        if (data) setAllHeats(data as any);
+        setLoading(false);
     };
 
     const fetchHeats = async () => {
@@ -86,8 +82,12 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
 
     // Fetch heats for the selected event
     useEffect(() => {
-        fetchHeats();
-    }, [selectedEventId]);
+        if (viewMode === 'list') {
+            fetchHeats();
+        } else {
+            fetchAllHeats();
+        }
+    }, [selectedEventId, viewMode]);
 
 
     const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
@@ -157,14 +157,15 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
                 if (lError) throw new Error('Failed to assign lanes');
             }
 
-            showNotification('success', `GENERATED ${generatedHeats.length} HEATS`);
+            showNotification('success', t('competitions.heats_generated_success', { count: generatedHeats.length, defaultValue: `GENERATED ${generatedHeats.length} HEATS` }));
             setIsGeneratorOpen(false);
             // Refresh heats list
-            fetchHeats();
+            if (viewMode === 'list') fetchHeats();
+            else fetchAllHeats();
 
         } catch (error: any) {
             console.error(error);
-            showNotification('error', error.message || 'GENERATION FAILED');
+            showNotification('error', error.message || t('competitions.generation_failed', { defaultValue: 'GENERATION FAILED' }));
         } finally {
             setIsGenerating(false);
         }
@@ -180,8 +181,27 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
                         <Timer className="h-5 w-5 text-primary" />
                         {t('competitions.events', { defaultValue: 'EVENTS' })}
                     </h3>
+
+                    {/* View Switcher */}
+                    <div className="flex p-1 bg-white/5 rounded-xl border border-white/5 mt-4">
+                        <button
+                            onClick={() => setViewMode('list')}
+                            className={`flex-1 py-2 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'list' ? 'bg-primary text-primary-foreground shadow-lg' : 'text-muted-foreground hover:text-white'
+                                }`}
+                        >
+                            List
+                        </button>
+                        <button
+                            onClick={() => setViewMode('timeline')}
+                            className={`flex-1 py-2 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'timeline' ? 'bg-primary text-primary-foreground shadow-lg' : 'text-muted-foreground hover:text-white'
+                                }`}
+                        >
+                            Timeline
+                        </button>
+                    </div>
                 </div>
-                <ScrollArea className="flex-1 -mx-4 px-4">
+
+                <ScrollArea className="flex-1 -mx-4 px-4 mt-2">
                     <div className="space-y-2">
                         {events.map(event => (
                             <button
@@ -201,7 +221,7 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
                         ))}
                         {events.length === 0 && (
                             <div className="text-center p-8 text-muted-foreground text-xs uppercase tracking-widest font-bold opacity-50">
-                                No events found
+                                {t('competitions.no_events_found', { defaultValue: 'No events found' })}
                             </div>
                         )}
                     </div>
@@ -214,78 +234,93 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
                     <div className="space-y-1">
                         <h3 className="text-xl font-black italic uppercase tracking-tight flex items-center gap-3">
                             <Clock className="h-5 w-5 text-primary" />
-                            {events.find(e => e.id === selectedEventId)?.title || (events.find(e => e.id === selectedEventId) as any)?.name || 'SELECT EVENT'} - HEATS
+                            {viewMode === 'timeline' ? t('competitions.full_timeline', { defaultValue: 'FULL TIMELINE' }) : (events.find(e => e.id === selectedEventId)?.title || (events.find(e => e.id === selectedEventId) as any)?.name || t('competitions.select_event_title'))}
+                            {viewMode === 'list' && ` - ${t('competitions.heats')}`}
                         </h3>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
-                            MANAGE HEATS AND LANE ASSIGNMENTS
+                            {viewMode === 'timeline' ? t('competitions.timeline_desc', { defaultValue: 'View all scheduled heats chronologically' }) : t('competitions.manage_heats_assignments')}
                         </p>
                     </div>
 
                     <div className="flex gap-2">
-                        <Dialog open={isGeneratorOpen} onOpenChange={setIsGeneratorOpen}>
-                            <DialogTrigger asChild>
-                                <Button disabled={!selectedEventId} variant="outline" className="uppercase font-bold text-xs tracking-widest gap-2 border-white/10 hover:bg-white/5">
-                                    <Settings2 className="h-4 w-4" /> GENERATOR
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent className="bg-zinc-950 border-white/10">
-                                <DialogHeader>
-                                    <DialogTitle className="text-xl font-black italic uppercase">Generate Heats</DialogTitle>
-                                    <DialogDescription className="text-xs uppercase tracking-widest">
-                                        Automatically distribute athletes into heats and lanes.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <div className="space-y-4 py-4">
-                                    <div className="space-y-2">
-                                        <Label className="text-[10px] uppercase font-black text-muted-foreground">Division</Label>
-                                        <Select value={selectedDivisionId} onValueChange={setSelectedDivisionId}>
-                                            <SelectTrigger className="bg-white/5 border-white/10">
-                                                <SelectValue placeholder="Select Division" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {divisions.map(d => (
-                                                    <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-[10px] uppercase font-black text-muted-foreground">Lanes per Heat</Label>
-                                        <Input
-                                            type="number"
-                                            value={lanesPerHeat}
-                                            onChange={(e) => setLanesPerHeat(parseInt(e.target.value))}
-                                            className="bg-white/5 border-white/10"
-                                        />
-                                    </div>
-                                </div>
-                                <DialogFooter>
-                                    <Button variant="ghost" onClick={() => setIsGeneratorOpen(false)}>CANCEL</Button>
-                                    <Button onClick={handleGenerateHeats} disabled={isGenerating || !selectedDivisionId}>
-                                        {isGenerating ? 'GENERATING...' : 'GENERATE'}
-                                    </Button>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
+                        {viewMode === 'list' && (
+                            <>
+                                <Dialog open={isGeneratorOpen} onOpenChange={setIsGeneratorOpen}>
+                                    <DialogTrigger asChild>
+                                        <Button disabled={!selectedEventId} variant="outline" className="uppercase font-bold text-xs tracking-widest gap-2 border-white/10 hover:bg-white/5">
+                                            <Settings2 className="h-4 w-4" /> {t('competitions.generator')}
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="bg-zinc-950 border-white/10">
+                                        <DialogHeader>
+                                            <DialogTitle className="text-xl font-black italic uppercase">{t('competitions.generate_heats')}</DialogTitle>
+                                            <DialogDescription className="text-xs uppercase tracking-widest">
+                                                {t('competitions.generate_heats_desc')}
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <div className="space-y-4 py-4">
+                                            <div className="space-y-2">
+                                                <Label className="text-[10px] uppercase font-black text-muted-foreground">Division</Label>
+                                                <Select value={selectedDivisionId} onValueChange={setSelectedDivisionId}>
+                                                    <SelectTrigger className="bg-white/5 border-white/10">
+                                                        <SelectValue placeholder="Select Division" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {divisions.map(d => (
+                                                            <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-[10px] uppercase font-black text-muted-foreground">Lanes per Heat</Label>
+                                                <Input
+                                                    type="number"
+                                                    value={lanesPerHeat}
+                                                    onChange={(e) => setLanesPerHeat(parseInt(e.target.value))}
+                                                    className="bg-white/5 border-white/10"
+                                                />
+                                            </div>
+                                        </div>
+                                        <DialogFooter>
+                                            <Button variant="ghost" onClick={() => setIsGeneratorOpen(false)}>{t('common.cancel')}</Button>
+                                            <Button onClick={handleGenerateHeats} disabled={isGenerating || !selectedDivisionId}>
+                                                {isGenerating ? t('competitions.generating') : t('competitions.generate')}
+                                            </Button>
+                                        </DialogFooter>
+                                    </DialogContent>
+                                </Dialog>
 
-                        <Button onClick={async () => {
-                            if (!selectedEventId) return;
-                            const heatName = `Heat ${heats.length + 1}`;
-                            const { error } = await supabase.from('competition_heats').insert([{
-                                competition_id: competition.id,
-                                event_id: selectedEventId,
-                                name: heatName,
-                                status: 'pending'
-                            }]);
-                            if (error) showNotification('error', 'ERROR CREATING HEAT');
-                            else fetchHeats();
-                        }} disabled={!selectedEventId} className="uppercase font-black text-xs tracking-widest gap-2 bg-white/5 hover:bg-primary hover:text-primary-foreground border border-white/10">
-                            <Plus className="h-4 w-4" /> ADD HEAT
-                        </Button>
+                                <Button onClick={async () => {
+                                    if (!selectedEventId) return;
+                                    const heatName = `${t('competitions.heat')} ${heats.length + 1}`;
+                                    const { error } = await supabase.from('competition_heats').insert([{
+                                        competition_id: competition.id,
+                                        event_id: selectedEventId,
+                                        name: heatName,
+                                        status: 'pending'
+                                    }]);
+                                    if (error) showNotification('error', t('competitions.error_creating_heat', { defaultValue: 'ERROR CREATING HEAT' }));
+                                    else fetchHeats();
+                                }} disabled={!selectedEventId} className="uppercase font-black text-xs tracking-widest gap-2 bg-white/5 hover:bg-primary hover:text-primary-foreground border border-white/10">
+                                    <Plus className="h-4 w-4" /> {t('competitions.add_heat')}
+                                </Button>
+                            </>
+                        )}
+
+                        {viewMode === 'timeline' && (
+                            <Button onClick={fetchAllHeats} variant="outline" className="uppercase font-bold text-xs tracking-widest gap-2 border-white/10 hover:bg-white/5">
+                                Refresh
+                            </Button>
+                        )}
                     </div>
                 </div>
 
-                <HeatSchedule heats={heats} onHeatUpdate={fetchHeats} />
+                {viewMode === 'list' ? (
+                    <HeatSchedule heats={heats} onHeatUpdate={fetchHeats} />
+                ) : (
+                    <TimelineView heats={allHeats} events={events} />
+                )}
             </div>
         </div>
     );

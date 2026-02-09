@@ -17,6 +17,7 @@ import { Competitions } from './pages/Competitions';
 import { AuditLogs } from './pages/AuditLogs';
 import { Movements } from './pages/Movements';
 import { Profile } from './pages/Profile';
+import { LiveLeaderboard } from './pages/LiveLeaderboard';
 import { ForceChangePassword } from './pages/ForceChangePassword';
 import { ThemeProvider, useTheme } from './components/theme-provider';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -82,6 +83,7 @@ function AppContent() {
     <Routes>
       {/* Standalone pages */}
       <Route path="/box-display" element={<BoxDisplay />} />
+      <Route path="/competitions/:id/live" element={<LiveLeaderboard />} />
 
       {/* Layout wrapper pages */}
       <Route element={<MainLayout userProfile={userProfile} />}>

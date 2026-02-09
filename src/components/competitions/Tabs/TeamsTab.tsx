@@ -92,9 +92,9 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ competition }) => {
             .insert([payload]);
 
         if (error) {
-            showNotification('error', 'ERROR ADDING TEAM: ' + error.message.toUpperCase());
+            showNotification('error', t('competitions.error_adding_team', { defaultValue: 'ERROR ADDING TEAM' }) + ': ' + error.message.toUpperCase());
         } else {
-            showNotification('success', 'TEAM ADDED SUCCESSFULLY');
+            showNotification('success', t('competitions.team_added_success', { defaultValue: 'TEAM ADDED SUCCESSFULLY' }));
             setNewTeam({
                 name: '',
                 captain_user_id: 'none',
@@ -115,9 +115,9 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ competition }) => {
                     .eq('id', teamId);
 
                 if (error) {
-                    showNotification('error', 'ERROR REMOVING TEAM: ' + error.message.toUpperCase());
+                    showNotification('error', t('competitions.error_removing_team', { defaultValue: 'ERROR REMOVING TEAM' }) + ': ' + error.message.toUpperCase());
                 } else {
-                    showNotification('success', 'TEAM REMOVED FROM COMPETITION');
+                    showNotification('success', t('competitions.team_removed_success', { defaultValue: 'TEAM REMOVED FROM COMPETITION' }));
                     fetchTeams();
                 }
             },
@@ -159,7 +159,7 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ competition }) => {
                                 <SelectValue placeholder="Select Captain" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="none">No Captain</SelectItem>
+                                <SelectItem value="none">{t('competitions.no_captain', { defaultValue: 'No Captain' })}</SelectItem>
                                 {participants.map((p: any) => (
                                     <SelectItem key={p.user_id} value={p.user_id}>
                                         {p.profile?.first_name} {p.profile?.last_name}
@@ -174,7 +174,7 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ competition }) => {
                         <Input
                             value={newTeam.join_code}
                             onChange={(e) => setNewTeam({ ...newTeam, join_code: e.target.value })}
-                            placeholder="Auto-generated if empty"
+                            placeholder={t('competitions.auto_generated_hint', { defaultValue: 'Auto-generated if empty' })}
                             className="bg-zinc-900/50 border-white/10"
                         />
                     </div>
@@ -230,7 +230,7 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ competition }) => {
                             </div>
 
                             <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-end">
-                                <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">MEMBERS</div>
+                                <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">{t('competitions.members_count')}</div>
                                 <div className="text-2xl font-black italic">{team.members?.[0]?.count || 0}</div>
                             </div>
                         </div>

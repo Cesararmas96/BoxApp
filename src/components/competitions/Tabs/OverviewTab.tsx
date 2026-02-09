@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabaseClient';
 import {
     Calendar,
     MapPin,
@@ -7,7 +8,8 @@ import {
     ShieldCheck,
     Timer,
     ChevronRight,
-    ArrowUpRight
+    ArrowUpRight,
+    UserCheck
 } from 'lucide-react';
 import { Competition } from '@/types/competitions';
 import { useLanguage } from '@/hooks';
@@ -20,16 +22,49 @@ interface OverviewTabProps {
     onTabChange: (tab: string) => void;
 }
 
+interface StatItem {
+    label: string;
+    value: number;
+    icon: any;
+    color: string;
+    bgColor: string;
+    tab: string;
+}
+
 export const OverviewTab: React.FC<OverviewTabProps> = ({ competition, onTabChange }) => {
     const { t } = useLanguage();
+    const [checkinStats, setCheckinStats] = useState({
+        checkedIn: 0,
+        waiverSigned: 0,
+        total: 0
+    });
 
-    const getCount = (data: any[] | undefined) => {
-        if (!data) return 0;
-        if (data.length === 1 && 'count' in data[0]) return data[0].count;
-        return data.length;
+    useEffect(() => {
+        const fetchStats = async () => {
+            const { data } = await supabase
+                .from('competition_participants')
+                .select('checked_in, waiver_signed')
+                .eq('competition_id', competition.id);
+
+            if (data) {
+                setCheckinStats({
+                    checkedIn: data.filter(p => p.checked_in).length,
+                    waiverSigned: data.filter(p => p.waiver_signed).length,
+                    total: data.length
+                });
+            }
+        };
+
+        fetchStats();
+    }, [competition.id]);
+
+    const getCount = (arr: any[] | undefined | null): number => {
+        if (!arr) return 0;
+        if (arr.length === 1 && 'count' in arr[0]) return arr[0].count;
+        return arr.length;
     };
 
-    const stats = [
+    const stats: StatItem[] = [
         {
             label: t('competitions.athletes'),
             value: getCount(competition.participants),
@@ -61,6 +96,14 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ competition, onTabChan
             color: 'text-purple-500',
             bgColor: 'bg-purple-500/10',
             tab: 'logistics'
+        },
+        {
+            label: t('competitions.checkin_tab'),
+            value: checkinStats.checkedIn,
+            icon: UserCheck,
+            color: 'text-rose-500',
+            bgColor: 'bg-rose-500/10',
+            tab: 'checkin'
         }
     ];
 
@@ -118,9 +161,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ competition, onTabChan
                         <div className="h-20 w-20 rounded-3xl bg-primary/20 flex items-center justify-center mb-2">
                             <Trophy className="h-10 w-10 text-primary" />
                         </div>
-                        <h4 className="font-black uppercase italic text-xl tracking-tight">Ready for Action?</h4>
+                        <h4 className="font-black uppercase italic text-xl tracking-tight">{t('competitions.ready_action', { defaultValue: 'Ready for Action?' })}</h4>
                         <p className="text-sm text-white/40 leading-relaxed font-medium">
-                            Monitor real-time results and manage all aspects of your competition from this dashboard.
+                            {t('competitions.comp_desc_short', { defaultValue: 'Monitor real-time results and manage all aspects of your competition from this dashboard.' })}
                         </p>
                     </CardContent>
                 </Card>
@@ -152,14 +195,14 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ competition, onTabChan
             <div className="bg-primary/5 rounded-[2rem] p-8 border border-primary/10">
                 <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 mb-6 flex items-center gap-2">
                     <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                    Competition Checklist
+                    {t('competitions.checklist', { defaultValue: 'Competition Checklist' })}
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {[
-                        { text: 'Set up Divisions & Categories', done: (competition.divisions_count || 0) > 0 },
-                        { text: 'Configure Events & Scoring', done: getCount(competition.events) > 0 },
-                        { text: 'Register Athletes or Teams', done: getCount(competition.participants) > 0 },
-                        { text: 'Generate Heats & Schedule', done: getCount(competition.heats) > 0 },
+                        { text: t('competitions.step_divisions', { defaultValue: 'Set up Divisions & Categories' }), done: (competition.divisions_count || 0) > 0 },
+                        { text: t('competitions.step_events', { defaultValue: 'Configure Events & Scoring' }), done: getCount(competition.events) > 0 },
+                        { text: t('competitions.step_athletes', { defaultValue: 'Register Athletes or Teams' }), done: getCount(competition.participants) > 0 },
+                        { text: t('competitions.step_heats', { defaultValue: 'Generate Heats & Schedule' }), done: getCount(competition.heats) > 0 },
                     ].map((item, i) => (
                         <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5">
                             <div className={`h-5 w-5 rounded-full flex items-center justify-center ${item.done ? 'bg-emerald-500/20 text-emerald-500' : 'bg-white/10 text-white/20'}`}>

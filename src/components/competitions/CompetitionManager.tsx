@@ -30,6 +30,9 @@ import { LogisticsTab } from './Tabs/LogisticsTab';
 import { LeaderboardTab } from './Tabs/LeaderboardTab';
 import { ScoringTab } from './Tabs/ScoringTab';
 import { OverviewTab } from './Tabs/OverviewTab';
+import { CheckInTab } from './Tabs/CheckInTab';
+import { UserCheck } from 'lucide-react';
+
 
 interface CompetitionManagerProps {
     competition: Competition | null;
@@ -74,6 +77,10 @@ export const CompetitionManager: React.FC<CompetitionManagerProps> = ({ competit
                         <TabsTrigger value="participants" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none h-full px-0 gap-2.5 uppercase text-[10px] font-black tracking-[0.15em] transition-all hover:text-primary/70">
                             <Users className="h-4 w-4" /> {t('competitions.athletes')}
                         </TabsTrigger>
+                        <TabsTrigger value="checkin" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none h-full px-0 gap-2.5 uppercase text-[10px] font-black tracking-[0.15em] transition-all hover:text-primary/70">
+                            <UserCheck className="h-4 w-4" /> {t('competitions.checkin_tab', { defaultValue: 'CHECK-IN' })}
+                        </TabsTrigger>
+
                         <TabsTrigger value="events" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none h-full px-0 gap-2.5 uppercase text-[10px] font-black tracking-[0.15em] transition-all hover:text-primary/70">
                             <ListChecks className="h-4 w-4" /> {t('competitions.events')}
                         </TabsTrigger>
@@ -111,6 +118,11 @@ export const CompetitionManager: React.FC<CompetitionManagerProps> = ({ competit
                         <ParticipantsTab competition={competition} />
                     </TabsContent>
 
+                    <TabsContent value="checkin" className="mt-0 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <CheckInTab competition={competition} />
+                    </TabsContent>
+
+
                     <TabsContent value="events" className="mt-0 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <EventsTab competition={competition} />
                     </TabsContent>
@@ -128,20 +140,36 @@ export const CompetitionManager: React.FC<CompetitionManagerProps> = ({ competit
                     </TabsContent>
 
 
-                    <TabsContent value="scoring" className="mt-0 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <TabsContent value="scoring" className="flex-1 mt-0 p-6 md:p-10 overflow-y-auto min-h-0">
+                        <div className="flex items-center gap-4 mb-8">
+                            <Medal className="h-5 w-5 text-primary" />
+                            <h3 className="uppercase italic font-black text-xl tracking-tighter">{t('competitions.scoring_tab')}</h3>
+                        </div>
                         <ScoringTab competition={competition} />
                     </TabsContent>
 
-                    <TabsContent value="judges" className="mt-0 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <TabsContent value="judges" className="flex-1 mt-0 p-6 md:p-10 overflow-y-auto min-h-0">
+                        <div className="flex items-center gap-4 mb-8">
+                            <ShieldCheck className="h-5 w-5 text-primary" />
+                            <h3 className="uppercase italic font-black text-xl tracking-tighter">{t('competitions.appointed_judges')}</h3>
+                        </div>
                         <JudgesTab competition={competition} />
                     </TabsContent>
 
-                    <TabsContent value="leaderboard" className="mt-0 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <TabsContent value="leaderboard" className="flex-1 mt-0 p-6 md:p-10 overflow-y-auto min-h-0">
+                        <div className="flex items-center gap-4 mb-8">
+                            <BarChart className="h-5 w-5 text-primary" />
+                            <h3 className="uppercase italic font-black text-xl tracking-tighter">{t('competitions.leaderboard_live')}</h3>
+                        </div>
                         <LeaderboardTab competition={competition} />
                     </TabsContent>
 
-                    <TabsContent value="settings" className="mt-0 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <SettingsTab competition={competition} />
+                    <TabsContent value="settings" className="flex-1 mt-0 p-6 md:p-10 overflow-y-auto min-h-0">
+                        <div className="flex items-center gap-4 mb-8">
+                            <Settings className="h-5 w-5 text-primary" />
+                            <h3 className="uppercase italic font-black text-xl tracking-tighter">{t('competitions.settings_tab')}</h3>
+                        </div>
+                        <SettingsTab competitionId={competition.id} />
                     </TabsContent>
                 </div>
             </Tabs>

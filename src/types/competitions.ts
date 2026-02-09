@@ -30,6 +30,8 @@ export interface CompetitionParticipant {
     division_id: string | null;
     division?: string | null; // Joined or legacy field
     team_id: string | null;
+    checked_in?: boolean;
+    waiver_signed?: boolean;
     athlete?: {
         id: string;
         first_name: string | null;

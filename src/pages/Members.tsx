@@ -570,7 +570,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1 p-4 rounded-2xl bg-white/[0.03] border border-white/5 shadow-inner">
                                     <p className="text-[10px] font-black italic text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
-                                        <Search className="h-3 w-3 text-primary/50" /> INFO
+                                        <Search className="h-3 w-3 text-primary/50" /> {t('members.info_header', { defaultValue: 'INFO' })}
                                     </p>
                                     <p className="text-xs font-bold truncate opacity-80">{selectedMember?.email || t('members.no_email')}</p>
                                     <p className="text-[10px] font-medium text-muted-foreground italic">
@@ -604,16 +604,16 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                             {/* Membership Status Section */}
                             <div className="p-5 rounded-2xl bg-gradient-to-br from-primary/5 to-transparent border border-primary/10 shadow-sm">
                                 <h3 className="text-[10px] font-black italic uppercase tracking-widest text-primary mb-3 flex items-center gap-2">
-                                    <ShieldCheck className="h-3.5 w-3.5" /> MEMBRESÍA
+                                    <ShieldCheck className="h-3.5 w-3.5" /> {t('members.membership_header', { defaultValue: 'MEMBRESÍA' })}
                                 </h3>
                                 {selectedMember?.memberships && selectedMember.memberships.length > 0 ? (
                                     <div className="space-y-3">
                                         {selectedMember.memberships.map((m: any) => (
                                             <div key={m.id} className="flex items-center justify-between p-3 rounded-xl bg-black/20 border border-white/5">
                                                 <div className="flex flex-col">
-                                                    <span className="text-xs font-black uppercase italic tracking-tighter">Status: {m.status.toUpperCase()}</span>
+                                                    <span className="text-xs font-black uppercase italic tracking-tighter">{t('members.table_status')}: {m.status.toUpperCase()}</span>
                                                     <span className="text-[10px] text-muted-foreground font-mono">
-                                                        {m.start_date ? new Date(m.start_date).toLocaleDateString() : 'SIN FECHA'} {'->'} {m.end_date ? new Date(m.end_date).toLocaleDateString() : 'SIN FECHA'}
+                                                        {m.start_date ? new Date(m.start_date).toLocaleDateString() : t('members.no_date', { defaultValue: 'SIN FECHA' })} {'->'} {m.end_date ? new Date(m.end_date).toLocaleDateString() : t('members.no_date', { defaultValue: 'SIN FECHA' })}
                                                     </span>
                                                 </div>
                                                 <Badge className={cn(
@@ -627,8 +627,8 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                     </div>
                                 ) : (
                                     <div className="flex flex-col items-center justify-center py-4 text-center">
-                                        <p className="text-xs font-bold text-muted-foreground italic mb-3 opacity-60">
-                                            ESTE ATLETA NO TIENE NINGUNA MEMBRESÍA ACTIVA
+                                        <p className="text-xs font-bold text-muted-foreground italic mb-1 opacity-60">
+                                            {t('members.no_active_membership')}
                                         </p>
                                         <Button
                                             size="sm"
@@ -638,7 +638,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                                 window.location.href = '/billing?tab=athletes';
                                             }}
                                         >
-                                            ASIGNAR PLAN EN FINANZAS
+                                            {t('members.assign_plan_btn')}
                                         </Button>
                                     </div>
                                 )}
@@ -651,11 +651,11 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                 </h3>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <p className="text-[9px] font-black italic uppercase text-muted-foreground/50 tracking-widest leading-none mb-1">Contact Name</p>
+                                        <p className="text-[9px] font-black italic uppercase text-muted-foreground/50 tracking-widest leading-none mb-1">{t('members.contact_name', { defaultValue: 'Contact Name' })}</p>
                                         <p className="text-xs font-bold italic uppercase">{selectedMember?.emergency_contact_name || '---'}</p>
                                     </div>
                                     <div>
-                                        <p className="text-[9px] font-black italic uppercase text-muted-foreground/50 tracking-widest leading-none mb-1">Phone Number</p>
+                                        <p className="text-[9px] font-black italic uppercase text-muted-foreground/50 tracking-widest leading-none mb-1">{t('members.phone_number', { defaultValue: 'Phone Number' })}</p>
                                         <p className="text-xs font-bold italic tracking-wider">{selectedMember?.emergency_contact_phone || '---'}</p>
                                     </div>
                                 </div>

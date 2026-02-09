@@ -166,9 +166,9 @@ export const EventsTab: React.FC<EventsTabProps> = ({ competition }) => {
             .insert([payload]);
 
         if (error) {
-            showNotification('error', 'ERROR ADDING EVENT: ' + error.message.toUpperCase());
+            showNotification('error', t('competitions.errors.add_event', { defaultValue: 'ERROR ADDING EVENT' }) + ': ' + error.message.toUpperCase());
         } else {
-            showNotification('success', 'EVENT ADDED TO COMPETITION');
+            showNotification('success', t('competitions.success.event_added', { defaultValue: 'EVENT ADDED TO COMPETITION' }));
             // Reset form
             setNewEvent({
                 title: '',
@@ -196,9 +196,9 @@ export const EventsTab: React.FC<EventsTabProps> = ({ competition }) => {
                     .eq('id', eventId);
 
                 if (error) {
-                    showNotification('error', 'ERROR REMOVING EVENT: ' + error.message.toUpperCase());
+                    showNotification('error', t('competitions.errors.remove_event', { defaultValue: 'ERROR REMOVING EVENT' }) + ': ' + error.message.toUpperCase());
                 } else {
-                    showNotification('success', 'EVENT REMOVED FROM COMPETITION');
+                    showNotification('success', t('competitions.success.event_removed', { defaultValue: 'EVENT REMOVED FROM COMPETITION' }));
                     fetchEvents();
                 }
             },
@@ -221,16 +221,16 @@ export const EventsTab: React.FC<EventsTabProps> = ({ competition }) => {
 
                 <div className="space-y-4 bg-white/5 p-6 rounded-[2rem] border border-white/5">
                     <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Import WOD (Optional)</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('competitions.import_wod_lbl', { defaultValue: 'Import WOD (Optional)' })}</Label>
                         <Select
                             value={newEvent.wod_id || 'custom'}
                             onValueChange={handleWodSelect}
                         >
                             <SelectTrigger className="bg-zinc-900/50 border-white/10">
-                                <SelectValue placeholder="Select from WODs" />
+                                <SelectValue placeholder={t('competitions.select_wod_placeholder', { defaultValue: 'Select from WODs' })} />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="custom">Custom Event</SelectItem>
+                                <SelectItem value="custom">{t('competitions.custom_event', { defaultValue: 'Custom Event' })}</SelectItem>
                                 {availableWods.map(wod => (
                                     <SelectItem key={wod.id} value={wod.id}>
                                         {wod.date} - {wod.title}
@@ -252,19 +252,20 @@ export const EventsTab: React.FC<EventsTabProps> = ({ competition }) => {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('competitions.wod_type')}</Label>
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('competitions.wod_type_lbl', { defaultValue: 'WOD Type' })}</Label>
                             <Select
                                 value={newEvent.wod_type}
-                                onValueChange={(val) => setNewEvent({ ...newEvent, wod_type: val })}
+                                onValueChange={(v) => setNewEvent({ ...newEvent, wod_type: v })}
                             >
-                                <SelectTrigger className="bg-zinc-900/50 border-white/10">
-                                    <SelectValue />
+                                <SelectTrigger className="bg-zinc-900/50 border-white/10 uppercase font-black text-[10px]">
+                                    <SelectValue placeholder={t('competitions.select_type_placeholder', { defaultValue: 'Select Type' })} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="for_time">For Time</SelectItem>
-                                    <SelectItem value="amrap">AMRAP</SelectItem>
-                                    <SelectItem value="rm">1RM / Max Weight</SelectItem>
-                                    <SelectItem value="complex">Complex</SelectItem>
+                                    <SelectItem value="for_time" className="font-black italic uppercase text-[10px] tracking-widest">FOR TIME</SelectItem>
+                                    <SelectItem value="amrap" className="font-black italic uppercase text-[10px] tracking-widest">AMRAP</SelectItem>
+                                    <SelectItem value="rm" className="font-black italic uppercase text-[10px] tracking-widest">RM</SelectItem>
+                                    <SelectItem value="max_reps" className="font-black italic uppercase text-[10px] tracking-widest">MAX REPS</SelectItem>
+                                    <SelectItem value="complex" className="font-black italic uppercase text-[10px] tracking-widest">COMPLEX</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -295,15 +296,17 @@ export const EventsTab: React.FC<EventsTabProps> = ({ competition }) => {
                         <Textarea
                             value={newEvent.description}
                             onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
-                            placeholder="Workout description..."
-                            className="bg-zinc-900/50 border-white/10 min-h-[80px]"
+                            placeholder={t('competitions.event_desc_placeholder', { defaultValue: 'Describe the event...' })}
+                            className="bg-zinc-900/50 border-white/10 min-h-[100px]"
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <Button onClick={handleAddEvent} className="w-full font-black uppercase tracking-widest">
-                            <Plus className="h-4 w-4 mr-2" />
-                            {t('competitions.add_event_btn')}
+                        <Button
+                            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black italic uppercase tracking-tighter h-12 rounded-xl"
+                            onClick={handleAddEvent}
+                        >
+                            {t('competitions.add_to_comp', { defaultValue: 'Add to Competition' })}
                         </Button>
                     </div>
                 </div>

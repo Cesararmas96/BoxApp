@@ -19,6 +19,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Competition, CompetitionParticipant } from '@/types/competitions';
 
 interface ParticipantsTabProps {
@@ -64,7 +65,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ competition })
 
         if (error) {
             console.error('Error fetching participants:', error);
-            showNotification('error', 'ERROR FETCHING PARTICIPANTS');
+            showNotification('error', t('competitions.errors.fetch_participants', { defaultValue: 'ERROR FETCHING PARTICIPANTS' }));
         } else if (data) {
             setParticipants(data as unknown as CompetitionParticipant[]);
         }
@@ -79,14 +80,14 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ competition })
                 competition_id: competition.id,
                 box_id: currentBox?.id,
                 user_id: athleteId,
-                division: participantDivision, // This will be deprecated or mapped to division_id later
+                division: participantDivision,
                 status: 'active'
             }]);
 
         if (error) {
-            showNotification('error', 'ERROR ADDING ATHLETE: ' + (error.message || 'UNKNOWN ERROR').toUpperCase());
+            showNotification('error', t('competitions.errors.add_athlete', { defaultValue: 'ERROR ADDING ATHLETE' }) + ': ' + (error.message || 'UNKNOWN ERROR').toUpperCase());
         } else {
-            showNotification('success', 'ATHLETE ADDED TO COMPETITION');
+            showNotification('success', t('competitions.success.athlete_added', { defaultValue: 'ATHLETE ADDED TO COMPETITION' }));
             setSearchAthlete('');
             fetchParticipants();
         }
@@ -103,9 +104,9 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ competition })
                     .eq('id', participantId);
 
                 if (error) {
-                    showNotification('error', 'ERROR REMOVING ATHLETE: ' + error.message.toUpperCase());
+                    showNotification('error', t('competitions.errors.remove_athlete', { defaultValue: 'ERROR REMOVING ATHLETE' }) + ': ' + error.message.toUpperCase());
                 } else {
-                    showNotification('success', 'ATHLETE REMOVED FROM COMPETITION');
+                    showNotification('success', t('competitions.success.athlete_removed', { defaultValue: 'ATHLETE REMOVED FROM COMPETITION' }));
                     fetchParticipants();
                 }
             },
@@ -146,7 +147,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ competition })
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                     {athletes
                         .filter(a =>
                             !participants.some(p => p.user_id === a.id) &&
@@ -197,7 +198,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ competition })
                         <div className="col-span-3 text-center">{t('common.status')}</div>
                         <div className="col-span-1"></div>
                     </div>
-                    <div className="max-h-[400px] overflow-y-auto p-2 space-y-1">
+                    <div className="max-h-[400px] overflow-y-auto p-2 space-y-1 custom-scrollbar">
                         {participants.map((participant) => (
                             <div key={participant.id} className="grid grid-cols-12 gap-4 items-center p-3 rounded-xl hover:bg-white/5 transition-colors group">
                                 <div className="col-span-5 flex items-center gap-3">

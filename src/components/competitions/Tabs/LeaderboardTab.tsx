@@ -182,7 +182,7 @@ export const LeaderboardTab: React.FC<LeaderboardTabProps> = ({ competition }) =
     if (loading) {
         return (
             <div className="flex items-center justify-center h-full">
-                <p className="text-xs uppercase tracking-widest font-bold text-muted-foreground animate-pulse">Calculating standings...</p>
+                <p className="text-xs uppercase tracking-widest font-bold text-muted-foreground animate-pulse">{t('competitions.standings_loading', { defaultValue: 'Calculating standings...' })}</p>
             </div>
         );
     }
@@ -191,7 +191,7 @@ export const LeaderboardTab: React.FC<LeaderboardTabProps> = ({ competition }) =
         return (
             <div className="flex flex-col items-center justify-center h-full text-center p-10 space-y-4 opacity-50">
                 <Users className="h-16 w-16 text-muted-foreground" />
-                <p className="font-bold uppercase tracking-widest text-muted-foreground">No athletes registered</p>
+                <p className="font-bold uppercase tracking-widest text-muted-foreground">{t('competitions.no_athletes')}</p>
             </div>
         );
     }
@@ -241,13 +241,13 @@ export const LeaderboardTab: React.FC<LeaderboardTabProps> = ({ competition }) =
                                         <thead>
                                             <tr className="bg-white/5 border-b border-white/5">
                                                 <th className="p-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground w-20 text-center">#</th>
-                                                <th className="p-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Athlete</th>
+                                                <th className="p-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('competitions.athlete')}</th>
                                                 {events.map((event, idx) => (
                                                     <th key={event.id} className="p-6 text-[10px] font-black uppercase tracking-widest text-center text-primary/60 min-w-[100px]">
                                                         {event.title || event.name || `EV ${idx + 1}`}
                                                     </th>
                                                 ))}
-                                                <th className="p-6 text-[10px] font-black uppercase tracking-widest text-right text-primary w-32">Total</th>
+                                                <th className="p-6 text-[10px] font-black uppercase tracking-widest text-right text-primary w-32">{t('competitions.total')}</th>
                                             </tr>
                                         </thead>
                                         <tbody>

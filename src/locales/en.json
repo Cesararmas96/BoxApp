@@ -297,6 +297,21 @@
             "active": "ACTIVE"
         },
         "manage_competition": "MANAGE COMPETITION",
+        "checkin_tab": "Check-in",
+        "checkin": {
+            "title": "Athlete Check-in",
+            "subtitle": "Manage athlete arrivals and waiver status.",
+            "status": "Attendance",
+            "waiver": "Legal",
+            "signed": "SIGNED",
+            "pending": "PENDING",
+            "checked_in": "CONFIRMED",
+            "not_checked_in": "MISSING",
+            "search_athletes": "Search athletes...",
+            "division": "Division",
+            "athlete": "Athlete",
+            "actions": "Actions"
+        },
         "add_division": "ADD DIVISION",
         "division_details": "DIVISION DETAILS",
         "add_division_btn": "ADD DIVISION",

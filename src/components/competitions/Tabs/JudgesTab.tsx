@@ -228,7 +228,7 @@ export const JudgesTab: React.FC<JudgesTabProps> = ({ competition }) => {
                     <div className="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
                         {loading ? (
                             <div className="flex items-center justify-center h-full">
-                                <p className="text-xs uppercase tracking-widest font-bold text-muted-foreground animate-pulse">Loading judges...</p>
+                                <p className="text-xs uppercase tracking-widest font-bold text-muted-foreground animate-pulse">{t('common.loading')}</p>
                             </div>
                         ) : judges.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-full text-center p-10 space-y-4 opacity-50">
@@ -236,8 +236,8 @@ export const JudgesTab: React.FC<JudgesTabProps> = ({ competition }) => {
                                     <ShieldCheck className="h-10 w-10 text-muted-foreground" />
                                 </div>
                                 <div className="space-y-2">
-                                    <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">No judges authorized</p>
-                                    <p className="text-xs text-muted-foreground/60 max-w-[200px] mx-auto">Add judges from the left panel to allow them to score entries.</p>
+                                    <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{t('competitions.no_judges')}</p>
+                                    <p className="text-xs text-muted-foreground/60 max-w-[200px] mx-auto">{t('competitions.no_judges_desc', { defaultValue: 'Add judges from the left panel to allow them to score entries.' })}</p>
                                 </div>
                             </div>
                         ) : (
@@ -251,7 +251,7 @@ export const JudgesTab: React.FC<JudgesTabProps> = ({ competition }) => {
                                                     <AvatarFallback className="bg-zinc-800 text-muted-foreground font-black"><User className="h-5 w-5" /></AvatarFallback>
                                                 </Avatar>
                                                 <div className="absolute -bottom-1 -right-1 bg-primary text-[8px] font-black px-1.5 py-0.5 rounded text-primary-foreground uppercase tracking-wider shadow-sm">
-                                                    JUDGE
+                                                    {t('competitions.official_judge')}
                                                 </div>
                                             </div>
 

@@ -46,14 +46,15 @@ export const MainLayout: React.FC<LayoutProps> = ({ userProfile }) => {
 
     useEffect(() => {
         // Update Favicon based on current box
-        if (currentBox?.favicon_url) {
+        const box = currentBox as any;
+        if (box?.favicon_url) {
             let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
             if (!link) {
                 link = document.createElement('link');
                 link.rel = 'icon';
                 document.getElementsByTagName('head')[0].appendChild(link);
             }
-            link.href = currentBox.favicon_url;
+            link.href = box.favicon_url;
         }
 
         // Update Page Title based on current box and active item
@@ -82,7 +83,7 @@ export const MainLayout: React.FC<LayoutProps> = ({ userProfile }) => {
         navigate('/login');
     };
 
-    const customNavConfig = (currentBox?.theme_config as any)?.navigation;
+    const customNavConfig = (currentBox as Box)?.theme_config?.navigation;
 
     const filteredNavItems = navItems
         .filter(item => {
@@ -278,14 +279,14 @@ export const MainLayout: React.FC<LayoutProps> = ({ userProfile }) => {
                                     <p className="text-[8px] font-medium text-muted-foreground truncate italic">{userProfile?.role_id}</p>
                                 </div>
                                 <DropdownMenuItem onClick={() => navigateTo('/profile')} className="cursor-pointer font-black uppercase text-[9px] tracking-[0.15em] rounded-xl focus:bg-primary/10 focus:text-primary transition-colors gap-2">
-                                    <User className="h-3 w-3" /> Profile Settings
+                                    <User className="h-3 w-3" /> {t('profile.title')}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => navigateTo('/settings')} className="cursor-pointer font-black uppercase text-[9px] tracking-[0.15em] rounded-xl focus:bg-primary/10 focus:text-primary transition-colors gap-2">
-                                    <SettingsIcon className="h-3 w-3" /> System Settings
+                                    <SettingsIcon className="h-3 w-3" /> {t('nav.settings')}
                                 </DropdownMenuItem>
                                 <Separator className="my-2 bg-primary/10" />
                                 <DropdownMenuItem onClick={handleLogout} className="cursor-pointer font-black uppercase text-[9px] tracking-[0.15em] rounded-xl focus:bg-destructive/10 focus:text-destructive transition-colors gap-2">
-                                    <LogOut className="h-3 w-3" /> Sign Out
+                                    <LogOut className="h-3 w-3" /> {t('nav.logout')}
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>

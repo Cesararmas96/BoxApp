@@ -46,6 +46,7 @@ interface Movement {
     name: string;
     category: 'Weightlifting' | 'Gymnastics' | 'Monostructural' | 'Accessory' | 'Other' | string | null;
     demo_url?: string | null;
+    image_url?: string | null;
     box_id?: string | null;
     created_at: string | null;
 }
@@ -73,13 +74,16 @@ export const Movements: React.FC = () => {
     const [formData, setFormData] = useState({
         name: '',
         category: 'Weightlifting' as string,
-        demo_url: ''
+        demo_url: '',
+        image_url: ''
     });
     const { notification, showNotification, hideNotification, confirmState, showConfirm, hideConfirm } = useNotification();
 
     useEffect(() => {
-        fetchMovements();
-    }, []);
+        if (currentBox?.id) {
+            fetchMovements();
+        }
+    }, [currentBox?.id]);
 
     const fetchMovements = async () => {
         setLoading(true);
@@ -103,6 +107,7 @@ export const Movements: React.FC = () => {
             name: formData.name,
             category: formData.category,
             demo_url: formData.demo_url || null,
+            image_url: formData.image_url || null,
             box_id: currentBox?.id
         };
 
@@ -128,7 +133,7 @@ export const Movements: React.FC = () => {
             showNotification('success', editingMovement ? 'MOVEMENT UPDATED SUCCESSFULY' : 'NEW MOVEMENT CREATED');
             setShowEditor(false);
             setEditingMovement(null);
-            setFormData({ name: '', category: 'Weightlifting', demo_url: '' });
+            setFormData({ name: '', category: 'Weightlifting', demo_url: '', image_url: '' });
             fetchMovements();
         }
         setLoading(false);
@@ -177,7 +182,7 @@ export const Movements: React.FC = () => {
                     setShowEditor(open);
                     if (!open) {
                         setEditingMovement(null);
-                        setFormData({ name: '', category: 'Weightlifting', demo_url: '' });
+                        setFormData({ name: '', category: 'Weightlifting', demo_url: '', image_url: '' });
                     }
                 }}>
                     <DialogTrigger asChild>
@@ -220,6 +225,25 @@ export const Movements: React.FC = () => {
                                 </Select>
                             </div>
                             <div className="space-y-2">
+                                <Label className="uppercase text-[10px] font-black tracking-widest opacity-70">IMAGE URL (OPTIONAL)</Label>
+                                <Input
+                                    placeholder="/movements/back-squat.png"
+                                    className="italic font-bold h-12 bg-muted/20 border-muted-foreground/10 focus-visible:ring-primary"
+                                    value={formData.image_url}
+                                    onChange={e => setFormData({ ...formData, image_url: e.target.value })}
+                                />
+                                {formData.image_url && (
+                                    <div className="relative w-full h-32 rounded-xl overflow-hidden border border-muted-foreground/10 bg-muted/10">
+                                        <img
+                                            src={formData.image_url}
+                                            alt="Movement preview"
+                                            className="w-full h-full object-contain"
+                                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                            <div className="space-y-2">
                                 <Label className="uppercase text-[10px] font-black tracking-widest opacity-70">DEMO URL (OPTIONAL)</Label>
                                 <Input
                                     placeholder="https://..."
@@ -255,6 +279,16 @@ export const Movements: React.FC = () => {
                 ) : (
                     paginatedMovements.map(m => (
                         <Card key={m.id} className="group hover:border-primary/40 transition-all shadow-md bg-background/50 backdrop-blur-sm overflow-hidden">
+                            {m.image_url && (
+                                <div className="h-36 w-full bg-gradient-to-b from-muted/30 to-transparent overflow-hidden">
+                                    <img
+                                        src={m.image_url}
+                                        alt={m.name}
+                                        className="w-full h-full object-contain p-2 transition-transform group-hover:scale-105"
+                                        onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }}
+                                    />
+                                </div>
+                            )}
                             <CardContent className="p-4 flex items-center justify-between relative">
                                 <div className="flex items-center gap-3">
                                     <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-inner">
@@ -275,7 +309,7 @@ export const Movements: React.FC = () => {
                                         className="h-9 w-9 text-blue-500 hover:bg-blue-500/10 border border-transparent hover:border-blue-500/20"
                                         onClick={() => {
                                             setEditingMovement(m);
-                                            setFormData({ name: m.name, category: m.category || 'Other', demo_url: m.demo_url || '' });
+                                            setFormData({ name: m.name, category: m.category || 'Other', demo_url: m.demo_url || '', image_url: m.image_url || '' });
                                             setShowEditor(true);
                                         }}
                                     >

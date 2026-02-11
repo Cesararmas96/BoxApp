@@ -1004,6 +1004,14 @@ export const Wods: React.FC = () => {
                                                                             <div className="grid gap-2">
                                                                                 {block.items.map((item) => (
                                                                                     <div key={item.id} className="flex items-center gap-4 p-3 rounded-xl bg-black/[0.01] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 hover:border-primary/20 hover:bg-primary/5 transition-all duration-300 group/movement">
+                                                                                        {(() => {
+                                                                                            const mov = movements.find((m: any) => m.name === item.movementName);
+                                                                                            return mov?.image_url ? (
+                                                                                                <div className="h-8 w-8 rounded-lg overflow-hidden bg-muted/30 border border-muted-foreground/10 flex-shrink-0">
+                                                                                                    <img src={mov.image_url} alt={item.movementName} className="w-full h-full object-contain" />
+                                                                                                </div>
+                                                                                            ) : null;
+                                                                                        })()}
                                                                                         <div className="flex-1 space-y-0.5">
                                                                                             <p className="text-[11px] font-black uppercase italic tracking-tight">{item.movementName}</p>
                                                                                             {item.notes && <p className="text-[8px] text-muted-foreground uppercase font-bold tracking-widest opacity-60 line-clamp-1">{item.notes}</p>}

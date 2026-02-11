@@ -29,13 +29,11 @@ interface TeamsTabProps {
 
 export const TeamsTab: React.FC<TeamsTabProps> = ({ competition }) => {
     const { t } = useLanguage();
-    const { currentBox } = useAuth();
+    const { } = useAuth();
     const { showNotification, showConfirm } = useNotification();
 
     const [teams, setTeams] = useState<Team[]>([]);
     const [participants, setParticipants] = useState<any[]>([]); // To select captain
-    const [loading, setLoading] = useState(false);
-
     // Form State
     const [newTeam, setNewTeam] = useState({
         name: '',

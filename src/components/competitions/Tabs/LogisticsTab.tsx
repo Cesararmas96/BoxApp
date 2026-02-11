@@ -1,21 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage, useNotification } from '@/hooks';
 import {
     Timer,
     Plus,
-    Trash2,
-    Users,
     ChevronRight,
-    Calendar,
     Clock,
-    MoreVertical,
     Settings2
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import {
     Dialog,
@@ -33,9 +27,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Competition, CompetitionEvent as Event, CompetitionHeat as Heat } from '@/types/competitions';
+import { Competition, CompetitionEvent, CompetitionHeat } from '@/types/competitions';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { generateLinearHeats, Participant } from '@/utils/heatGenerator';
+import { generateLinearHeats } from '@/utils/heatGenerator';
 import { HeatSchedule } from '../HeatSchedule';
 import { TimelineView } from '../TimelineView';
 
@@ -47,20 +41,20 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
     const { t } = useLanguage();
     const { showNotification } = useNotification();
 
-    const [events, setEvents] = useState<Event[]>([]);
+    const [events, setEvents] = useState<CompetitionEvent[]>([]);
     const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-    const [heats, setHeats] = useState<Heat[]>([]);
-    const [allHeats, setAllHeats] = useState<Heat[]>([]);
+    const [heats, setHeats] = useState<CompetitionHeat[]>([]);
+    const [allHeats, setAllHeats] = useState<CompetitionHeat[]>([]);
     const [viewMode, setViewMode] = useState<'list' | 'timeline'>('list');
-    const [loading, setLoading] = useState(false);
+    const [, setLoading] = useState(false);
 
     const fetchEvents = async () => {
         setLoading(true);
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from('competition_events')
             .select('*')
             .eq('competition_id', competition.id)
-            .order('order', { ascending: true });
+            .order('order_index', { ascending: true });
 
         if (data) {
             setEvents(data as any);
@@ -75,7 +69,7 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
         setLoading(true);
         const { data } = await supabase
             .from('competition_heats')
-            .select('*')
+            .select('*, lane_assignments(*, competition_participants(*, profiles(*)))')
             .eq('competition_id', competition.id)
             .order('start_time', { ascending: true });
         if (data) setAllHeats(data as any);
@@ -85,9 +79,9 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
     const fetchHeats = async () => {
         if (!selectedEventId) return;
         setLoading(true);
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from('competition_heats')
-            .select('*')
+            .select('*, lane_assignments(*, competition_participants(*, profiles(*)))')
             .eq('event_id', selectedEventId)
             .order('start_time', { ascending: true });
 
@@ -136,9 +130,8 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
             // 1. Fetch participants for division
             const { data: participants, error: pError } = await supabase
                 .from('competition_participants')
-                .select('id, first_name, last_name, rank') // Assuming existing columns or just ID needed
+                .select('id')
                 .eq('division_id', selectedDivisionId)
-                // .order('rank', { ascending: true }) // If rank exists, use it for seeding
                 ;
 
             if (pError || !participants) throw new Error('Failed to fetch participants');
@@ -337,7 +330,7 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
                 </div>
 
                 {viewMode === 'list' ? (
-                    <HeatSchedule heats={heats} onHeatUpdate={fetchHeats} />
+                    <HeatSchedule heats={heats as any} onHeatUpdate={fetchHeats} />
                 ) : (
                     <TimelineView heats={allHeats} events={events} />
                 )}

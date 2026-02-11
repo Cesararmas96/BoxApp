@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { LayoutDashboard, Users, Trophy, BarChart3, Settings as SettingsIcon, Calendar as CalendarIcon, Receipt, LogOut, Inbox, Menu, X, Monitor, Medal, Shield, History, Dumbbell, User } from 'lucide-react';
+import { LayoutDashboard, Users, Trophy, BarChart3, Settings as SettingsIcon, Calendar as CalendarIcon, Receipt, LogOut, Inbox, Menu, X, Monitor, Medal, Shield, History, Dumbbell, User, Languages } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import { ModeToggle } from '@/components/mode-toggle';
 import { useLanguage } from '@/hooks';
-import { Languages } from 'lucide-react';
+import { Database } from '@/types/supabase';
+type Box = Database['public']['Tables']['boxes']['Row'] & { theme_config?: any };
 import {
     DropdownMenu,
     DropdownMenuContent,

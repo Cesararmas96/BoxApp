@@ -16,9 +16,11 @@ interface Heat {
         lane_number: number;
         participant_id: string;
         competition_participants: {
-            first_name: string;
-            last_name: string;
-        }
+            profiles: {
+                first_name: string;
+                last_name: string;
+            } | null;
+        } | null;
     }[];
 }
 
@@ -85,7 +87,7 @@ export const HeatSchedule: React.FC<HeatScheduleProps> = ({ heats, onHeatUpdate 
                                                 {assignment.lane_number}
                                             </div>
                                             <span className="text-[10px] font-bold uppercase truncate">
-                                                {assignment.competition_participants?.first_name} {assignment.competition_participants?.last_name}
+                                                {assignment.competition_participants?.profiles?.first_name} {assignment.competition_participants?.profiles?.last_name}
                                             </span>
                                         </div>
                                     ))}

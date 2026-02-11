@@ -7,10 +7,7 @@ import {
     Plus,
     Trash2,
     Timer,
-    Dumbbell,
-    Trophy,
-    FileText,
-    Video
+    Trophy
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -25,8 +22,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Competition, CompetitionEvent } from '@/types/competitions';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { Switch } from '@/components/ui/switch';
+
 
 interface EventsTabProps {
     competition: Competition;
@@ -39,8 +35,6 @@ export const EventsTab: React.FC<EventsTabProps> = ({ competition }) => {
 
     const [events, setEvents] = useState<CompetitionEvent[]>([]);
     const [availableWods, setAvailableWods] = useState<any[]>([]);
-    const [loading, setLoading] = useState(false);
-
     // Form State
     const [newEvent, setNewEvent] = useState({
         title: '',
@@ -163,7 +157,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({ competition }) => {
 
         const { error } = await supabase
             .from('competition_events')
-            .insert([payload]);
+            .insert([payload] as any);
 
         if (error) {
             showNotification('error', t('competitions.errors.add_event', { defaultValue: 'ERROR ADDING EVENT' }) + ': ' + error.message.toUpperCase());

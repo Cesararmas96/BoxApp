@@ -133,7 +133,7 @@ export const LiveLeaderboard: React.FC = () => {
             let totalPoints = 0;
             const eventResults = events.map(event => {
                 const pScore = scores.find(s => s.participant_id === p.id && s.event_id === event.id);
-                const { value, display } = parseScore(pScore?.score_data, event.wod_type || 'for_time');
+                const { value: _value, display } = parseScore(pScore?.score_data, event.wod_type || 'for_time');
 
                 const eventScoresInDiv = scores.filter(s =>
                     s.event_id === event.id &&
@@ -239,19 +239,19 @@ export const LiveLeaderboard: React.FC = () => {
                         <div
                             key={row.participant.id}
                             className={`flex items-center h-28 rounded-[2rem] border transition-all duration-500 overflow-hidden ${idx === 0
-                                    ? 'bg-yellow-500/10 border-yellow-500/30 shadow-[0_0_30px_rgba(234,179,8,0.05)]'
-                                    : idx === 1
-                                        ? 'bg-zinc-300/10 border-zinc-300/30'
-                                        : idx === 2
-                                            ? 'bg-amber-700/10 border-amber-700/30'
-                                            : 'bg-white/[0.02] border-white/5'
+                                ? 'bg-yellow-500/10 border-yellow-500/30 shadow-[0_0_30px_rgba(234,179,8,0.05)]'
+                                : idx === 1
+                                    ? 'bg-zinc-300/10 border-zinc-300/30'
+                                    : idx === 2
+                                        ? 'bg-amber-700/10 border-amber-700/30'
+                                        : 'bg-white/[0.02] border-white/5'
                                 }`}
                         >
                             <div className="w-24 flex items-center justify-center">
                                 <div className={`h-16 w-16 rounded-2xl flex items-center justify-center text-4xl font-black italic ${idx === 0 ? 'text-yellow-500' :
-                                        idx === 1 ? 'text-zinc-300' :
-                                            idx === 2 ? 'text-amber-700' :
-                                                'text-white/20'
+                                    idx === 1 ? 'text-zinc-300' :
+                                        idx === 2 ? 'text-amber-700' :
+                                            'text-white/20'
                                     }`}>
                                     {idx + 1}
                                 </div>

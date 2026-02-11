@@ -7,7 +7,6 @@ import {
     Search
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -117,7 +116,7 @@ export const Benchmarks: React.FC = () => {
                 value: newPR.value,
                 notes: newPR.notes,
                 performed_at: new Date().toISOString()
-            }]);
+            }] as any);
 
         if (!error) {
             setOpen(false);

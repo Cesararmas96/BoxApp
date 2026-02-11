@@ -1,27 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { useAuth } from '@/contexts/AuthContext';
-import { useLanguage, useNotification } from '@/hooks';
+import { useLanguage } from '@/hooks';
 import {
-    Trophy,
     Search,
-    Filter,
-    ChevronRight,
     QrCode,
-    Timer,
-    Dumbbell,
     Calendar,
-    CheckCircle2,
-    Circle,
-    AlertCircle
+    Circle
 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Competition } from '@/types/competitions';
 import { Card } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScoreEntry } from '../ScoreEntry';
 
 interface ScoringTabProps {
@@ -30,7 +25,6 @@ interface ScoringTabProps {
 
 export const ScoringTab: React.FC<ScoringTabProps> = ({ competition }) => {
     const { t } = useLanguage();
-    const { user } = useAuth();
     const [events, setEvents] = useState<any[]>([]);
     const [selectedEventId, setSelectedEventId] = useState<string>('');
     const [heats, setHeats] = useState<any[]>([]);
@@ -67,21 +61,21 @@ export const ScoringTab: React.FC<ScoringTabProps> = ({ competition }) => {
             let query = supabase
                 .from('competition_heats')
                 .select(`
-                    *,
-                    lane_assignments (
-                        id,
-                        lane_number,
-                        participant_id,
-                        competition_participants (
-                            id,
-                            first_name,
-                            last_name,
-                            division,
-                            team_id,
-                            competition_teams (name)
-                        )
-                    )
-                `)
+    *,
+    lane_assignments(
+        id,
+        lane_number,
+        participant_id,
+        competition_participants(
+            id,
+            first_name,
+            last_name,
+            division,
+            team_id,
+            competition_teams(name)
+        )
+    )
+        `)
                 .eq('event_id', selectedEventId)
                 .order('start_time', { ascending: true });
 
@@ -89,22 +83,13 @@ export const ScoringTab: React.FC<ScoringTabProps> = ({ competition }) => {
                 query = query.eq('id', selectedHeatId);
             }
 
-            const { data, error } = await query;
+            const { data } = await query;
             if (data) setHeats(data);
             setLoading(false);
         };
 
         fetchHeatsAndLanes();
     }, [selectedEventId, selectedHeatId]);
-
-    // Helper to get status color (placeholder logic)
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'completed': return 'text-green-500 bg-green-500/10 border-green-500/20';
-            case 'inprogress': return 'text-blue-500 bg-blue-500/10 border-blue-500/20';
-            default: return 'text-muted-foreground bg-white/5 border-white/10';
-        }
-    };
 
     return (
         <div className="space-y-6 h-full flex flex-col">

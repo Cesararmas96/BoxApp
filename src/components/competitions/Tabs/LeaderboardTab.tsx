@@ -3,14 +3,9 @@ import { supabase } from '@/lib/supabaseClient';
 import { useLanguage } from '@/hooks';
 import {
     BarChart,
-    Trophy,
-    Users,
-    Medal,
-    Timer,
-    Dumbbell
+    Users
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Database } from '@/types/supabase';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -21,7 +16,7 @@ interface LeaderboardTabProps {
 }
 
 // Local wrapper for calculation convenience
-interface ParticipantWithAthlete extends CompetitionParticipant {
+interface ParticipantWithAthlete extends Omit<CompetitionParticipant, 'athlete'> {
     athlete: {
         first_name: string;
         last_name: string;
@@ -66,7 +61,7 @@ export const LeaderboardTab: React.FC<LeaderboardTabProps> = ({ competition }) =
                     .in('event_id', eventIds)
                     .in('status', ['submitted', 'verified']); // Only count valid scores
 
-                scoreData = (sData || []) as CompetitionScore[];
+                scoreData = (sData || []) as unknown as CompetitionScore[];
             }
 
             if (partData) setParticipants(partData as unknown as ParticipantWithAthlete[]);
@@ -113,7 +108,7 @@ export const LeaderboardTab: React.FC<LeaderboardTabProps> = ({ competition }) =
                 const eventResults = events.map(event => {
                     const pScore = scores.find(s => s.participant_id === p.id && s.event_id === event.id);
 
-                    const { value, display } = parseScore(pScore?.score_data, event.wod_type || 'for_time');
+                    const { value: _value, display } = parseScore(pScore?.score_data, event.wod_type || 'for_time');
 
                     // Ranking Logic (Low Point System)
                     // Get all valid scores for this event and division

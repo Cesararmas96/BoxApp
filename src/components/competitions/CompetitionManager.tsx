@@ -169,7 +169,7 @@ export const CompetitionManager: React.FC<CompetitionManagerProps> = ({ competit
                             <Settings className="h-5 w-5 text-primary" />
                             <h3 className="uppercase italic font-black text-xl tracking-tighter">{t('competitions.settings_tab')}</h3>
                         </div>
-                        <SettingsTab competitionId={competition.id} />
+                        <SettingsTab competition={competition} />
                     </TabsContent>
                 </div>
             </Tabs>

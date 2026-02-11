@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Timer, Dumbbell, Repeat } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
-import { useLanguage, useNotification } from '@/hooks';
+import { useNotification } from '@/hooks';
 import { SignaturePad } from '@/components/ui/signature-pad';
 
 import { CompetitionEvent } from '@/types/competitions';

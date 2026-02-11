@@ -174,7 +174,6 @@ export const Profile: React.FC = () => {
         try {
             // Compress image if it's an image
             const compressedBlob = await compressImage(file);
-            const fileExt = 'jpg'; // We compress to jpeg
             const cleanFileName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
             const storageFileName = `${user.id}/${Date.now()}_${cleanFileName}`;
             const filePath = `${storageFileName}`;

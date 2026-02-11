@@ -23,7 +23,6 @@ import {
     DialogFooter
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { useLanguage, useNotification } from '@/hooks';
 import { Toast } from '@/components/ui/toast-custom';
@@ -138,7 +137,7 @@ export const Schedule: React.FC = () => {
     const handleUnlinkWod = async (wodId: string) => {
         const { error } = await supabase
             .from('wods')
-            .update({ date: null, track: null })
+            .update({ date: undefined, track: undefined } as any)
             .eq('id', wodId);
 
         if (!error) {

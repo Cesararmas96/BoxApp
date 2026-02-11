@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage, useNotification } from '@/hooks';
 import {
     Settings,
@@ -67,7 +66,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ competition, onUpdate 
                 start_date: formData.start_date,
                 end_date: formData.end_date,
                 status: formData.status,
-                scoring_system: formData.scoring_system,
+                scoring_system: formData.scoring_system as any,
                 is_team_event: formData.is_team_event,
                 team_size: formData.is_team_event ? formData.team_size : 1
             })

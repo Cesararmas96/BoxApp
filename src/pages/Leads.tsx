@@ -130,7 +130,7 @@ export const Leads: React.FC = () => {
                             email: lead.email,
                             role: 'athlete',
                             status: 'active'
-                        }]);
+                        }] as any);
                     showNotification('success', t('leads.success_convert').toUpperCase());
                 } else {
                     showNotification('success', t('common.success_update', { defaultValue: 'STATUS UPDATED' }).toUpperCase());

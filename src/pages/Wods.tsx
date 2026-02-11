@@ -21,7 +21,6 @@ import {
     ChevronRight,
     LayoutGrid,
     List,
-    Filter,
     X,
 } from 'lucide-react';
 import { WODDesigner, SessionBlock, LessonBlock } from '@/components/WODDesigner';

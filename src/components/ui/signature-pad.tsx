@@ -10,7 +10,7 @@ interface SignaturePadProps {
 export const SignaturePad: React.FC<SignaturePadProps> = ({ onChange, label }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isDrawing, setIsDrawing] = useState(false);
-    const [hasSignature, setHasSignature] = useState(false);
+    const [_hasSignature, setHasSignature] = useState(false);
 
     useEffect(() => {
         const canvas = canvasRef.current;

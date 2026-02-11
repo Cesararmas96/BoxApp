@@ -82,7 +82,7 @@ export const CheckInTab: React.FC<CheckInTabProps> = ({ competition }) => {
 
             setStats(prev => ({
                 ...prev,
-                checkedIn: prev.checked_in + (currentStatus ? -1 : 1)
+                checkedIn: prev.checkedIn + (currentStatus ? -1 : 1)
             }));
 
             showNotification('success', t('common.updated', { defaultValue: 'UPDATED' }));

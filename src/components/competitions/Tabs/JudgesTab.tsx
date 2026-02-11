@@ -100,12 +100,14 @@ export const JudgesTab: React.FC<JudgesTabProps> = ({ competition }) => {
             return;
         }
 
+        if (!currentBox?.id) return;
+
         setSearching(true);
         const { data, error } = await supabase
             .from('profiles')
             .select('id, first_name, last_name, email, avatar_url')
             .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%`)
-            .eq('box_id', currentBox?.id)
+            .eq('box_id', currentBox.id)
             .limit(5);
 
         if (!error && data) {
@@ -287,14 +289,15 @@ export const JudgesTab: React.FC<JudgesTabProps> = ({ competition }) => {
             </div>
 
             <ConfirmationDialog
-                open={deleteConfirmOpen}
-                onOpenChange={setDeleteConfirmOpen}
+                isOpen={deleteConfirmOpen}
+                onClose={() => setDeleteConfirmOpen(false)}
                 title={t('common.confirm_delete', { defaultValue: 'CONFIRM REMOVAL' })}
                 description={t('competitions.confirm_remove_judge', { defaultValue: 'Are you sure you want to remove this judge? They will no longer be able to score events.' })}
-                confirmLabel={t('common.delete', { defaultValue: 'REMOVE JUDGE' })}
-                cancelLabel={t('common.cancel', { defaultValue: 'CANCEL' })}
+                confirmText={t('common.delete', { defaultValue: 'REMOVE JUDGE' })}
+                cancelText={t('common.cancel', { defaultValue: 'CANCEL' })}
                 onConfirm={handleRemoveJudge}
                 variant="destructive"
+                icon="destructive"
             />
         </div>
     );

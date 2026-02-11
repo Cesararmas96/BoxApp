@@ -98,6 +98,7 @@ export type Database = {
                 Row: {
                     address: string | null
                     created_at: string | null
+                    favicon_url: string | null
                     feature_flags: Json | null
                     id: string
                     logo_url: string | null
@@ -112,6 +113,7 @@ export type Database = {
                 Insert: {
                     address?: string | null
                     created_at?: string | null
+                    favicon_url?: string | null
                     feature_flags?: Json | null
                     id?: string
                     logo_url?: string | null
@@ -126,6 +128,7 @@ export type Database = {
                 Update: {
                     address?: string | null
                     created_at?: string | null
+                    favicon_url?: string | null
                     feature_flags?: Json | null
                     id?: string
                     logo_url?: string | null
@@ -766,6 +769,7 @@ export type Database = {
                     created_at: string | null
                     email: string | null
                     first_name: string | null
+                    force_password_change: boolean | null
                     id: string
                     last_name: string | null
                     role_id: string
@@ -777,6 +781,7 @@ export type Database = {
                     created_at?: string | null
                     email?: string | null
                     first_name?: string | null
+                    force_password_change?: boolean | null
                     id: string
                     last_name?: string | null
                     role_id?: string
@@ -788,6 +793,7 @@ export type Database = {
                     created_at?: string | null
                     email?: string | null
                     first_name?: string | null
+                    force_password_change?: boolean | null
                     id?: string
                     last_name?: string | null
                     role_id?: string
@@ -939,6 +945,436 @@ export type Database = {
                 }
                 Relationships: []
             }
+            bookings: {
+                Row: {
+                    id: string
+                    user_id: string | null
+                    session_id: string | null
+                    class_id: string | null
+                    box_id: string | null
+                    status: string | null
+                    checked_in_at: string | null
+                    created_at: string | null
+                    updated_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    user_id?: string | null
+                    session_id?: string | null
+                    class_id?: string | null
+                    box_id?: string | null
+                    status?: string | null
+                    checked_in_at?: string | null
+                    created_at?: string | null
+                    updated_at?: string | null
+                }
+                Update: {
+                    id?: string
+                    user_id?: string | null
+                    session_id?: string | null
+                    class_id?: string | null
+                    box_id?: string | null
+                    status?: string | null
+                    checked_in_at?: string | null
+                    created_at?: string | null
+                    updated_at?: string | null
+                }
+                Relationships: []
+            }
+            expenses: {
+                Row: {
+                    id: string
+                    box_id: string | null
+                    category: string | null
+                    description: string | null
+                    amount: number
+                    date: string | null
+                    vendor: string | null
+                    is_recurring: boolean | null
+                    created_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    box_id?: string | null
+                    category?: string | null
+                    description?: string | null
+                    amount: number
+                    date?: string | null
+                    vendor?: string | null
+                    is_recurring?: boolean | null
+                    created_at?: string | null
+                }
+                Update: {
+                    id?: string
+                    box_id?: string | null
+                    category?: string | null
+                    description?: string | null
+                    amount?: number
+                    date?: string | null
+                    vendor?: string | null
+                    is_recurring?: boolean | null
+                    created_at?: string | null
+                }
+                Relationships: []
+            }
+            functional_feedback: {
+                Row: {
+                    id: string
+                    session_id: string | null
+                    athlete_id: string | null
+                    coach_id: string | null
+                    movement_id: string | null
+                    rating: number | null
+                    notes: string | null
+                    created_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    session_id?: string | null
+                    athlete_id?: string | null
+                    coach_id?: string | null
+                    movement_id?: string | null
+                    rating?: number | null
+                    notes?: string | null
+                    created_at?: string | null
+                }
+                Update: {
+                    id?: string
+                    session_id?: string | null
+                    athlete_id?: string | null
+                    coach_id?: string | null
+                    movement_id?: string | null
+                    rating?: number | null
+                    notes?: string | null
+                    created_at?: string | null
+                }
+                Relationships: []
+            }
+            invoices: {
+                Row: {
+                    id: string
+                    user_id: string | null
+                    box_id: string | null
+                    membership_id: string | null
+                    amount: number
+                    status: string | null
+                    due_date: string | null
+                    paid_at: string | null
+                    created_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    user_id?: string | null
+                    box_id?: string | null
+                    membership_id?: string | null
+                    amount: number
+                    status?: string | null
+                    due_date?: string | null
+                    paid_at?: string | null
+                    created_at?: string | null
+                }
+                Update: {
+                    id?: string
+                    user_id?: string | null
+                    box_id?: string | null
+                    membership_id?: string | null
+                    amount?: number
+                    status?: string | null
+                    due_date?: string | null
+                    paid_at?: string | null
+                    created_at?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "invoices_user_id_fkey"
+                        columns: ["user_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
+            leads: {
+                Row: {
+                    id: string
+                    box_id: string | null
+                    first_name: string | null
+                    last_name: string | null
+                    email: string | null
+                    phone: string | null
+                    source: string | null
+                    status: string | null
+                    notes: string | null
+                    assigned_to: string | null
+                    created_at: string | null
+                    updated_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    box_id?: string | null
+                    first_name?: string | null
+                    last_name?: string | null
+                    email?: string | null
+                    phone?: string | null
+                    source?: string | null
+                    status?: string | null
+                    notes?: string | null
+                    assigned_to?: string | null
+                    created_at?: string | null
+                    updated_at?: string | null
+                }
+                Update: {
+                    id?: string
+                    box_id?: string | null
+                    first_name?: string | null
+                    last_name?: string | null
+                    email?: string | null
+                    phone?: string | null
+                    source?: string | null
+                    status?: string | null
+                    notes?: string | null
+                    assigned_to?: string | null
+                    created_at?: string | null
+                    updated_at?: string | null
+                }
+                Relationships: []
+            }
+            memberships: {
+                Row: {
+                    id: string
+                    user_id: string | null
+                    plan_id: string | null
+                    box_id: string | null
+                    status: string | null
+                    start_date: string | null
+                    end_date: string | null
+                    remaining_credits: number | null
+                    created_at: string | null
+                    updated_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    user_id?: string | null
+                    plan_id?: string | null
+                    box_id?: string | null
+                    status?: string | null
+                    start_date?: string | null
+                    end_date?: string | null
+                    remaining_credits?: number | null
+                    created_at?: string | null
+                    updated_at?: string | null
+                }
+                Update: {
+                    id?: string
+                    user_id?: string | null
+                    plan_id?: string | null
+                    box_id?: string | null
+                    status?: string | null
+                    start_date?: string | null
+                    end_date?: string | null
+                    remaining_credits?: number | null
+                    created_at?: string | null
+                    updated_at?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "memberships_user_id_fkey"
+                        columns: ["user_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "memberships_plan_id_fkey"
+                        columns: ["plan_id"]
+                        isOneToOne: false
+                        referencedRelation: "plans"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
+            movements: {
+                Row: {
+                    id: string
+                    name: string
+                    category: string | null
+                    description: string | null
+                    video_url: string | null
+                    box_id: string | null
+                    created_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    name: string
+                    category?: string | null
+                    description?: string | null
+                    video_url?: string | null
+                    box_id?: string | null
+                    created_at?: string | null
+                }
+                Update: {
+                    id?: string
+                    name?: string
+                    category?: string | null
+                    description?: string | null
+                    video_url?: string | null
+                    box_id?: string | null
+                    created_at?: string | null
+                }
+                Relationships: []
+            }
+            personal_records: {
+                Row: {
+                    id: string
+                    athlete_id: string | null
+                    movement_id: string | null
+                    value: number | null
+                    unit: string | null
+                    date: string | null
+                    notes: string | null
+                    box_id: string | null
+                    created_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    athlete_id?: string | null
+                    movement_id?: string | null
+                    value?: number | null
+                    unit?: string | null
+                    date?: string | null
+                    notes?: string | null
+                    box_id?: string | null
+                    created_at?: string | null
+                }
+                Update: {
+                    id?: string
+                    athlete_id?: string | null
+                    movement_id?: string | null
+                    value?: number | null
+                    unit?: string | null
+                    date?: string | null
+                    notes?: string | null
+                    box_id?: string | null
+                    created_at?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "personal_records_athlete_id_fkey"
+                        columns: ["athlete_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "personal_records_movement_id_fkey"
+                        columns: ["movement_id"]
+                        isOneToOne: false
+                        referencedRelation: "movements"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
+            plans: {
+                Row: {
+                    id: string
+                    name: string
+                    price: number
+                    interval: string
+                    features: string[]
+                    is_featured: boolean | null
+                    popular_tag: string | null
+                    button_text: string | null
+                    created_at: string | null
+                    updated_at: string | null
+                    box_id: string | null
+                    duration_days: number | null
+                    total_credits: number | null
+                }
+                Insert: {
+                    id?: string
+                    name: string
+                    price: number
+                    interval?: string
+                    features?: string[]
+                    is_featured?: boolean | null
+                    popular_tag?: string | null
+                    button_text?: string | null
+                    created_at?: string | null
+                    updated_at?: string | null
+                    box_id?: string | null
+                    duration_days?: number | null
+                    total_credits?: number | null
+                }
+                Update: {
+                    id?: string
+                    name?: string
+                    price?: number
+                    interval?: string
+                    features?: string[]
+                    is_featured?: boolean | null
+                    popular_tag?: string | null
+                    button_text?: string | null
+                    created_at?: string | null
+                    updated_at?: string | null
+                    box_id?: string | null
+                    duration_days?: number | null
+                    total_credits?: number | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "plans_box_id_fkey"
+                        columns: ["box_id"]
+                        isOneToOne: false
+                        referencedRelation: "boxes"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
+            results: {
+                Row: {
+                    id: string
+                    athlete_id: string | null
+                    wod_id: string | null
+                    score: string | null
+                    rx: boolean | null
+                    notes: string | null
+                    created_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    athlete_id?: string | null
+                    wod_id?: string | null
+                    score?: string | null
+                    rx?: boolean | null
+                    notes?: string | null
+                    created_at?: string | null
+                }
+                Update: {
+                    id?: string
+                    athlete_id?: string | null
+                    wod_id?: string | null
+                    score?: string | null
+                    rx?: boolean | null
+                    notes?: string | null
+                    created_at?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "results_athlete_id_fkey"
+                        columns: ["athlete_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "results_wod_id_fkey"
+                        columns: ["wod_id"]
+                        isOneToOne: false
+                        referencedRelation: "wods"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
         }
         Views: {
             [_ in never]: never
@@ -948,7 +1384,7 @@ export type Database = {
         }
         Enums: {
             competition_scoring_system: "low_point" | "table_point"
-            score_status: "valid" | "dns" | "dnf" | "calibrated"
+            score_status: "pending" | "submitted" | "verified" | "invalid" | "dns" | "dnf"
             wod_type: "for_time" | "amrap" | "rm" | "complex"
         }
         CompositeTypes: {

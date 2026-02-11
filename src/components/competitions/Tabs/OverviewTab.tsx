@@ -9,8 +9,12 @@ import {
     Timer,
     ChevronRight,
     ArrowUpRight,
-    UserCheck
+    UserCheck,
+    Database,
+    Zap
 } from 'lucide-react';
+import { seedCompetition } from '@/utils/seedCompetition';
+import { useNotification } from '@/hooks';
 import { Competition } from '@/types/competitions';
 import { useLanguage } from '@/hooks';
 import { Card, CardContent } from '@/components/ui/card';
@@ -33,6 +37,8 @@ interface StatItem {
 
 export const OverviewTab: React.FC<OverviewTabProps> = ({ competition, onTabChange }) => {
     const { t } = useLanguage();
+    const { showNotification } = useNotification();
+    const [isSeeding, setIsSeeding] = useState(false);
     const [checkinStats, setCheckinStats] = useState({
         checkedIn: 0,
         waiverSigned: 0,
@@ -156,15 +162,33 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ competition, onTabChan
                     </CardContent>
                 </Card>
 
-                <Card className="bg-white/5 border-white/10 rounded-[2rem] overflow-hidden">
+                <Card className="bg-white/5 border-white/10 rounded-[2rem] overflow-hidden group">
                     <CardContent className="p-8 flex flex-col items-center justify-center text-center h-full space-y-4">
-                        <div className="h-20 w-20 rounded-3xl bg-primary/20 flex items-center justify-center mb-2">
-                            <Trophy className="h-10 w-10 text-primary" />
+                        <div className="h-16 w-16 rounded-3xl bg-amber-500/20 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                            <Database className="h-8 w-8 text-amber-500" />
                         </div>
-                        <h4 className="font-black uppercase italic text-xl tracking-tight">{t('competitions.ready_action', { defaultValue: 'Ready for Action?' })}</h4>
-                        <p className="text-sm text-white/40 leading-relaxed font-medium">
-                            {t('competitions.comp_desc_short', { defaultValue: 'Monitor real-time results and manage all aspects of your competition from this dashboard.' })}
-                        </p>
+                        <h4 className="font-black uppercase italic text-lg tracking-tight">Debug Tools</h4>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={isSeeding}
+                            onClick={async () => {
+                                if (window.confirm('This will CLEAR existing data and generate mock athletes, events, heats, and scores. Proceed?')) {
+                                    setIsSeeding(true);
+                                    const result = await seedCompetition(competition.id);
+                                    if (result.success) {
+                                        showNotification('success', 'Mock data generated successfully! Please refresh or switch tabs.');
+                                    } else {
+                                        showNotification('error', 'Seeding failed. Check console.');
+                                    }
+                                    setIsSeeding(false);
+                                }
+                            }}
+                            className="rounded-xl border-amber-500/20 text-amber-500 hover:bg-amber-500/10 text-[9px] font-black uppercase tracking-widest gap-2"
+                        >
+                            <Zap className="h-3 w-3" />
+                            {isSeeding ? 'Seeding...' : 'Seed Mock Data'}
+                        </Button>
                     </CardContent>
                 </Card>
             </div>

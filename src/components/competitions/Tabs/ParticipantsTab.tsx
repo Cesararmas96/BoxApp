@@ -19,7 +19,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Competition, CompetitionParticipant } from '@/types/competitions';
 
 interface ParticipantsTabProps {

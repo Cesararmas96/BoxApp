@@ -421,7 +421,7 @@ export const Movements: React.FC = () => {
                             onClick={() => setSelectedMovement(m)}
                         >
                             {/* Image area */}
-                            <div className="relative h-40 w-full bg-gradient-to-br from-muted/20 to-muted/5 overflow-hidden">
+                            <div className="relative h-40 w-full bg-gradient-to-br from-muted/20 to-muted/5 overflow-hidden rounded-2xl">
                                 {m.image_url ? (
                                     <img
                                         src={m.image_url}

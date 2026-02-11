@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -11,10 +11,10 @@ import {
     Zap,
     Trophy,
     Pencil,
+    Upload,
     Loader2,
     ChevronLeft,
     ChevronRight,
-    Image as ImageIcon,
     X,
     ExternalLink,
 } from 'lucide-react';
@@ -80,6 +80,50 @@ const CATEGORY_DOT_COLORS: Record<string, string> = {
     Other: 'bg-amber-400'
 };
 
+const compressImage = (file: File, maxWidth = 600, maxHeight = 600, quality = 0.8): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target?.result as string;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height *= maxWidth / width;
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width *= maxHeight / height;
+                        height = maxHeight;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx?.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob(
+                    (blob) => {
+                        if (blob) resolve(blob);
+                        else reject(new Error('Canvas to Blob failed'));
+                    },
+                    'image/jpeg',
+                    quality
+                );
+            };
+            img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+    });
+};
+
 export const Movements: React.FC = () => {
     const { t } = useLanguage();
     const { currentBox } = useAuth();
@@ -97,7 +141,39 @@ export const Movements: React.FC = () => {
         demo_url: '',
         image_url: ''
     });
+    const [isUploadingImage, setIsUploadingImage] = useState(false);
+    const imageInputRef = useRef<HTMLInputElement>(null);
     const { notification, showNotification, hideNotification, confirmState, showConfirm, hideConfirm } = useNotification();
+
+    const handleImageUpload = async (file: File) => {
+        if (!file || !currentBox?.id) return;
+        setIsUploadingImage(true);
+        try {
+            const compressedBlob = await compressImage(file, 600, 600);
+            const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+            const fileName = `mov_${Date.now()}_${cleanName}`;
+            const filePath = `movements/${currentBox.id}/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('branding')
+                .upload(filePath, compressedBlob, {
+                    contentType: 'image/jpeg',
+                    upsert: true
+                });
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('branding')
+                .getPublicUrl(filePath);
+
+            setFormData(prev => ({ ...prev, image_url: publicUrl }));
+        } catch (err: any) {
+            showNotification('error', `UPLOAD FAILED: ${err.message?.toUpperCase() || 'UNKNOWN ERROR'}`);
+        } finally {
+            setIsUploadingImage(false);
+        }
+    };
 
     useEffect(() => {
         if (currentBox?.id) {
@@ -246,8 +322,34 @@ export const Movements: React.FC = () => {
                             </div>
                             <div className="space-y-2">
                                 <Label className="uppercase text-[10px] font-black tracking-widest opacity-70">REFERENCE IMAGE (OPTIONAL)</Label>
-                                <div className="relative w-full h-44 rounded-2xl overflow-hidden border-2 border-dashed border-muted-foreground/20 bg-muted/5 hover:border-primary/40 transition-colors group/img">
-                                    {formData.image_url ? (
+                                <input
+                                    ref={imageInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) handleImageUpload(file);
+                                        e.target.value = '';
+                                    }}
+                                />
+                                <div
+                                    className="relative w-full h-44 rounded-2xl overflow-hidden border-2 border-dashed border-muted-foreground/20 bg-muted/5 hover:border-primary/40 transition-colors group/img cursor-pointer"
+                                    onClick={() => !isUploadingImage && !formData.image_url && imageInputRef.current?.click()}
+                                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                    onDrop={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        const file = e.dataTransfer.files?.[0];
+                                        if (file && file.type.startsWith('image/')) handleImageUpload(file);
+                                    }}
+                                >
+                                    {isUploadingImage ? (
+                                        <div className="flex flex-col items-center justify-center h-full gap-3">
+                                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Uploading...</span>
+                                        </div>
+                                    ) : formData.image_url ? (
                                         <>
                                             <img
                                                 src={formData.image_url}
@@ -258,24 +360,25 @@ export const Movements: React.FC = () => {
                                             <button
                                                 type="button"
                                                 className="absolute top-2 right-2 h-7 w-7 rounded-full bg-destructive/90 text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-all hover:scale-110"
-                                                onClick={() => setFormData({ ...formData, image_url: '' })}
+                                                onClick={(e) => { e.stopPropagation(); setFormData({ ...formData, image_url: '' }); }}
                                             >
                                                 <X className="h-3.5 w-3.5" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="absolute bottom-2 right-2 h-7 px-2.5 rounded-full bg-black/50 backdrop-blur-md text-white flex items-center justify-center gap-1.5 opacity-0 group-hover/img:opacity-100 transition-all text-[8px] font-black uppercase tracking-widest hover:bg-black/70"
+                                                onClick={(e) => { e.stopPropagation(); imageInputRef.current?.click(); }}
+                                            >
+                                                <Upload className="h-3 w-3" /> Change
                                             </button>
                                         </>
                                     ) : (
                                         <div className="flex flex-col items-center justify-center h-full gap-2 opacity-40 group-hover/img:opacity-60 transition-opacity">
-                                            <ImageIcon className="h-8 w-8" />
-                                            <span className="text-[9px] font-black uppercase tracking-[0.2em]">No image set</span>
+                                            <Upload className="h-8 w-8" />
+                                            <span className="text-[9px] font-black uppercase tracking-[0.2em]">Click or drag to upload</span>
                                         </div>
                                     )}
                                 </div>
-                                <Input
-                                    placeholder="/movements/back-squat.png"
-                                    className="italic font-bold h-10 text-xs bg-muted/20 border-muted-foreground/10 focus-visible:ring-primary"
-                                    value={formData.image_url}
-                                    onChange={e => setFormData({ ...formData, image_url: e.target.value })}
-                                />
                             </div>
                             <div className="space-y-2">
                                 <Label className="uppercase text-[10px] font-black tracking-widest opacity-70">DEMO URL (OPTIONAL)</Label>

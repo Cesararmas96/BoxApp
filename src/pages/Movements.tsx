@@ -14,6 +14,9 @@ import {
     Loader2,
     ChevronLeft,
     ChevronRight,
+    Image as ImageIcon,
+    X,
+    ExternalLink,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -61,6 +64,22 @@ const CATEGORY_ICONS: Record<string, any> = {
     Other: <Trophy className="h-4 w-4" />
 };
 
+const CATEGORY_COLORS: Record<string, string> = {
+    Weightlifting: 'from-red-500/80 to-orange-500/80',
+    Gymnastics: 'from-violet-500/80 to-fuchsia-500/80',
+    Monostructural: 'from-sky-500/80 to-cyan-500/80',
+    Accessory: 'from-emerald-500/80 to-teal-500/80',
+    Other: 'from-amber-500/80 to-yellow-500/80'
+};
+
+const CATEGORY_DOT_COLORS: Record<string, string> = {
+    Weightlifting: 'bg-red-400',
+    Gymnastics: 'bg-violet-400',
+    Monostructural: 'bg-sky-400',
+    Accessory: 'bg-emerald-400',
+    Other: 'bg-amber-400'
+};
+
 export const Movements: React.FC = () => {
     const { t } = useLanguage();
     const { currentBox } = useAuth();
@@ -69,8 +88,9 @@ export const Movements: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [showEditor, setShowEditor] = useState(false);
     const [editingMovement, setEditingMovement] = useState<Movement | null>(null);
+    const [selectedMovement, setSelectedMovement] = useState<Movement | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 8;
+    const itemsPerPage = 12;
     const [formData, setFormData] = useState({
         name: '',
         category: 'Weightlifting' as string,
@@ -225,23 +245,37 @@ export const Movements: React.FC = () => {
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label className="uppercase text-[10px] font-black tracking-widest opacity-70">IMAGE URL (OPTIONAL)</Label>
+                                <Label className="uppercase text-[10px] font-black tracking-widest opacity-70">REFERENCE IMAGE (OPTIONAL)</Label>
+                                <div className="relative w-full h-44 rounded-2xl overflow-hidden border-2 border-dashed border-muted-foreground/20 bg-muted/5 hover:border-primary/40 transition-colors group/img">
+                                    {formData.image_url ? (
+                                        <>
+                                            <img
+                                                src={formData.image_url}
+                                                alt="Movement preview"
+                                                className="w-full h-full object-contain p-3"
+                                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                            />
+                                            <button
+                                                type="button"
+                                                className="absolute top-2 right-2 h-7 w-7 rounded-full bg-destructive/90 text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-all hover:scale-110"
+                                                onClick={() => setFormData({ ...formData, image_url: '' })}
+                                            >
+                                                <X className="h-3.5 w-3.5" />
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center h-full gap-2 opacity-40 group-hover/img:opacity-60 transition-opacity">
+                                            <ImageIcon className="h-8 w-8" />
+                                            <span className="text-[9px] font-black uppercase tracking-[0.2em]">No image set</span>
+                                        </div>
+                                    )}
+                                </div>
                                 <Input
                                     placeholder="/movements/back-squat.png"
-                                    className="italic font-bold h-12 bg-muted/20 border-muted-foreground/10 focus-visible:ring-primary"
+                                    className="italic font-bold h-10 text-xs bg-muted/20 border-muted-foreground/10 focus-visible:ring-primary"
                                     value={formData.image_url}
                                     onChange={e => setFormData({ ...formData, image_url: e.target.value })}
                                 />
-                                {formData.image_url && (
-                                    <div className="relative w-full h-32 rounded-xl overflow-hidden border border-muted-foreground/10 bg-muted/10">
-                                        <img
-                                            src={formData.image_url}
-                                            alt="Movement preview"
-                                            className="w-full h-full object-contain"
-                                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                                        />
-                                    </div>
-                                )}
                             </div>
                             <div className="space-y-2">
                                 <Label className="uppercase text-[10px] font-black tracking-widest opacity-70">DEMO URL (OPTIONAL)</Label>
@@ -270,7 +304,7 @@ export const Movements: React.FC = () => {
                 />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                 {loading && movements.length === 0 ? (
                     <div className="col-span-full py-20 flex flex-col items-center gap-4 opacity-50">
                         <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -278,36 +312,50 @@ export const Movements: React.FC = () => {
                     </div>
                 ) : (
                     paginatedMovements.map(m => (
-                        <Card key={m.id} className="group hover:border-primary/40 transition-all shadow-md bg-background/50 backdrop-blur-sm overflow-hidden">
-                            {m.image_url && (
-                                <div className="h-36 w-full bg-gradient-to-b from-muted/30 to-transparent overflow-hidden">
+                        <Card
+                            key={m.id}
+                            className="group relative overflow-hidden cursor-pointer border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-background/60 backdrop-blur-sm"
+                            onClick={() => setSelectedMovement(m)}
+                        >
+                            {/* Image area */}
+                            <div className="relative h-40 w-full bg-gradient-to-br from-muted/20 to-muted/5 overflow-hidden">
+                                {m.image_url ? (
                                     <img
                                         src={m.image_url}
                                         alt={m.name}
-                                        className="w-full h-full object-contain p-2 transition-transform group-hover:scale-105"
-                                        onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }}
+                                        className="w-full h-full object-contain p-3 transition-transform duration-500 group-hover:scale-110"
+                                        onError={(e) => {
+                                            const parent = (e.target as HTMLImageElement).parentElement;
+                                            if (parent) {
+                                                parent.innerHTML = '<div class="flex items-center justify-center h-full opacity-20"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/><path d="M3 16.5V5a2 2 0 0 1 2-2h11"/><circle cx="9" cy="9" r="2"/><path d="M21 11V5a2 2 0 0 0-2-2H16"/><path d="M21 21H8"/><path d="M3 21v-5"/></svg></div>';
+                                            }
+                                        }}
                                     />
-                                </div>
-                            )}
-                            <CardContent className="p-4 flex items-center justify-between relative">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-inner">
-                                        {CATEGORY_ICONS[m.category || 'Other'] || <Activity className="h-6 w-6" />}
-                                    </div>
-                                    <div>
-                                        <p className="font-black uppercase italic text-sm tracking-tight leading-none mb-1">{m.name}</p>
-                                        <div className="flex items-center gap-1.5 opacity-50">
-                                            <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                                            <p className="text-[9px] font-black uppercase tracking-widest">{m.category}</p>
+                                ) : (
+                                    <div className="flex items-center justify-center h-full">
+                                        <div className="text-muted-foreground/15">
+                                            {CATEGORY_ICONS[m.category || 'Other'] ? (
+                                                React.cloneElement(CATEGORY_ICONS[m.category || 'Other'], { className: 'h-12 w-12' })
+                                            ) : (
+                                                <Activity className="h-12 w-12" />
+                                            )}
                                         </div>
                                     </div>
+                                )}
+
+                                {/* Category badge */}
+                                <div className={`absolute top-2 left-2 px-2 py-0.5 rounded-full bg-gradient-to-r ${CATEGORY_COLORS[m.category || 'Other'] || 'from-gray-500/80 to-gray-400/80'} backdrop-blur-md`}>
+                                    <span className="text-[8px] font-black uppercase tracking-widest text-white drop-shadow-sm">{m.category}</span>
                                 </div>
-                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
+
+                                {/* Hover overlay with action buttons */}
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-9 w-9 text-blue-500 hover:bg-blue-500/10 border border-transparent hover:border-blue-500/20"
-                                        onClick={() => {
+                                        className="h-9 w-9 bg-white/20 backdrop-blur-md text-white hover:bg-white/40 border border-white/20 rounded-xl transition-all scale-75 group-hover:scale-100"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
                                             setEditingMovement(m);
                                             setFormData({ name: m.name, category: m.category || 'Other', demo_url: m.demo_url || '', image_url: m.image_url || '' });
                                             setShowEditor(true);
@@ -318,19 +366,30 @@ export const Movements: React.FC = () => {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-9 w-9 text-destructive hover:bg-destructive/10 border border-transparent hover:border-destructive/20"
-                                        onClick={() => showConfirm({
-                                            title: t('common.confirm_delete', { defaultValue: 'CONFIRMAR ELIMINACIÓN' }),
-                                            description: t('movements.delete_warning', { defaultValue: '¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR ESTE MOVIMIENTO? ESTA ACCIÓN NO SE PUEDE DESHACER.' }),
-                                            onConfirm: () => handleDelete(m.id),
-                                            variant: 'destructive',
-                                            icon: 'destructive'
-                                        })}
+                                        className="h-9 w-9 bg-red-500/30 backdrop-blur-md text-white hover:bg-red-500/60 border border-red-400/20 rounded-xl transition-all scale-75 group-hover:scale-100"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            showConfirm({
+                                                title: t('common.confirm_delete', { defaultValue: 'CONFIRMAR ELIMINACIÓN' }),
+                                                description: t('movements.delete_warning', { defaultValue: '¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR ESTE MOVIMIENTO? ESTA ACCIÓN NO SE PUEDE DESHACER.' }),
+                                                onConfirm: () => handleDelete(m.id),
+                                                variant: 'destructive',
+                                                icon: 'destructive'
+                                            });
+                                        }}
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </div>
-                                <div className="absolute right-0 top-0 h-full w-1 bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+
+                            {/* Card footer */}
+                            <CardContent className="p-3">
+                                <p className="font-black uppercase italic text-xs tracking-tight leading-tight truncate" title={m.name}>{m.name}</p>
+                                <div className="flex items-center gap-1 mt-1 opacity-50">
+                                    <div className={`h-1.5 w-1.5 rounded-full ${CATEGORY_DOT_COLORS[m.category || 'Other'] || 'bg-primary'}`} />
+                                    <p className="text-[8px] font-bold uppercase tracking-widest truncate">{m.category}</p>
+                                </div>
                             </CardContent>
                         </Card>
                     ))
@@ -403,6 +462,96 @@ export const Movements: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            {/* Movement Detail Modal */}
+            <Dialog open={!!selectedMovement} onOpenChange={(open) => { if (!open) setSelectedMovement(null); }}>
+                <DialogContent className="sm:max-w-lg border-0 bg-background/95 backdrop-blur-xl shadow-2xl p-0 overflow-hidden">
+                    <DialogHeader className="sr-only">
+                        <DialogTitle>{selectedMovement?.name || 'Movement Detail'}</DialogTitle>
+                        <DialogDescription>Detailed view of the {selectedMovement?.name} movement</DialogDescription>
+                    </DialogHeader>
+
+                    {selectedMovement && (
+                        <div>
+                            {/* Image section */}
+                            <div className="relative h-64 w-full bg-gradient-to-br from-muted/20 to-muted/5">
+                                {selectedMovement.image_url ? (
+                                    <img
+                                        src={selectedMovement.image_url}
+                                        alt={selectedMovement.name}
+                                        className="w-full h-full object-contain p-6"
+                                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                    />
+                                ) : (
+                                    <div className="flex items-center justify-center h-full">
+                                        <div className="text-muted-foreground/15">
+                                            {CATEGORY_ICONS[selectedMovement.category || 'Other'] ? (
+                                                React.cloneElement(CATEGORY_ICONS[selectedMovement.category || 'Other'], { className: 'h-20 w-20' })
+                                            ) : (
+                                                <Activity className="h-20 w-20" />
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                                <div className={`absolute top-4 left-4 px-3 py-1 rounded-full bg-gradient-to-r ${CATEGORY_COLORS[selectedMovement.category || 'Other'] || 'from-gray-500/80 to-gray-400/80'} backdrop-blur-md`}>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-white drop-shadow-sm flex items-center gap-1.5">
+                                        {CATEGORY_ICONS[selectedMovement.category || 'Other']}
+                                        {selectedMovement.category}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Info section */}
+                            <div className="p-6 space-y-4">
+                                <h2 className="text-2xl font-black uppercase italic tracking-tighter">{selectedMovement.name}</h2>
+
+                                {selectedMovement.demo_url && (
+                                    <a
+                                        href={selectedMovement.demo_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-xs font-black uppercase tracking-widest"
+                                    >
+                                        <ExternalLink className="h-3.5 w-3.5" />
+                                        VIEW DEMO
+                                    </a>
+                                )}
+
+                                <div className="flex gap-2 pt-2">
+                                    <Button
+                                        variant="outline"
+                                        className="flex-1 gap-2 font-bold uppercase italic text-xs h-10"
+                                        onClick={() => {
+                                            setEditingMovement(selectedMovement);
+                                            setFormData({ name: selectedMovement.name, category: selectedMovement.category || 'Other', demo_url: selectedMovement.demo_url || '', image_url: selectedMovement.image_url || '' });
+                                            setSelectedMovement(null);
+                                            setShowEditor(true);
+                                        }}
+                                    >
+                                        <Pencil className="h-3.5 w-3.5" /> EDIT
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        className="gap-2 font-bold uppercase italic text-xs h-10 text-destructive hover:bg-destructive/10 border-destructive/20"
+                                        onClick={() => {
+                                            setSelectedMovement(null);
+                                            showConfirm({
+                                                title: t('common.confirm_delete', { defaultValue: 'CONFIRMAR ELIMINACIÓN' }),
+                                                description: t('movements.delete_warning', { defaultValue: '¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR ESTE MOVIMIENTO? ESTA ACCIÓN NO SE PUEDE DESHACER.' }),
+                                                onConfirm: () => handleDelete(selectedMovement.id),
+                                                variant: 'destructive',
+                                                icon: 'destructive'
+                                            });
+                                        }}
+                                    >
+                                        <Trash2 className="h-3.5 w-3.5" /> DELETE
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
 
             {/* Premium Toast Notification System */}
             {notification && (

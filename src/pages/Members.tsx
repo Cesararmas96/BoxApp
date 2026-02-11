@@ -107,8 +107,10 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
     const handlePageChange = (page: number) => setCurrentPage(page);
 
     useEffect(() => {
-        fetchMembers();
-    }, []);
+        if (currentBox?.id) {
+            fetchMembers();
+        }
+    }, [currentBox?.id]);
 
     const fetchMembers = async () => {
         setLoading(true);

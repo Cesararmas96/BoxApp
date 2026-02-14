@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import {
     Calendar as CalendarIcon,
@@ -8,7 +8,9 @@ import {
     Trophy,
     RefreshCw,
     Users,
-    Trash2
+    Trash2,
+    MessageSquare,
+    Zap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,7 +47,7 @@ interface WODSummary {
 
 export const Schedule: React.FC = () => {
     const { t } = useLanguage();
-    const { user, currentBox } = useAuth();
+    const { user, currentBox, isAthlete } = useAuth();
     const [sessions, setSessions] = useState<any[]>([]);
     const [wods, setWods] = useState<WODSummary[]>([]);
     const [loading, setLoading] = useState(true);
@@ -59,6 +61,12 @@ export const Schedule: React.FC = () => {
     const [isAssigningWod, setIsAssigningWod] = useState<{ track: string, date: Date } | null>(null);
     const [recentWods, setRecentWods] = useState<WODSummary[]>([]);
     const [isUnlinkingWod, setIsUnlinkingWod] = useState<string | null>(null);
+    const [selectedDayIndex, setSelectedDayIndex] = useState<number>(() => {
+        const today = new Date();
+        const day = today.getDay();
+        return day === 0 ? 5 : Math.min(day - 1, 5);
+    });
+    const dayScrollRef = useRef<HTMLDivElement>(null);
     const { notification, showNotification, hideNotification } = useNotification();
 
     useEffect(() => {
@@ -66,6 +74,23 @@ export const Schedule: React.FC = () => {
             fetchData();
         }
     }, [viewDate, currentBox?.id]);
+
+    // Sync mobile day selector when navigating weeks
+    useEffect(() => {
+        const today = new Date();
+        const start = new Date(viewDate);
+        const day = start.getDay();
+        const diff = day === 0 ? -6 : 1 - day;
+        start.setDate(start.getDate() + diff);
+        start.setHours(0, 0, 0, 0);
+        const dates = Array.from({ length: 6 }, (_, i) => {
+            const d = new Date(start);
+            d.setDate(d.getDate() + i);
+            return d;
+        });
+        const todayIdx = dates.findIndex(d => d.toDateString() === today.toDateString());
+        setSelectedDayIndex(todayIdx >= 0 ? todayIdx : 0);
+    }, [viewDate]);
 
     const formatDateForQuery = (date: Date) => {
         return date.toISOString().split('T')[0];
@@ -219,6 +244,16 @@ export const Schedule: React.FC = () => {
                         </Button>
                     </div>
 
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-3 text-[10px] font-black uppercase tracking-widest border-primary/20 text-primary hover:bg-primary/10"
+                        onClick={() => setViewDate(new Date())}
+                    >
+                        <Zap className="h-3 w-3 mr-1" />
+                        {t('schedule.today', { defaultValue: 'Today' })}
+                    </Button>
+
                     <Dialog open={isCreateOpen} onOpenChange={(open) => {
                         setIsCreateOpen(open);
                         if (open) setSelectedViewerDate(new Date());
@@ -238,26 +273,34 @@ export const Schedule: React.FC = () => {
                                 </DialogDescription>
                             </DialogHeader>
 
-                            {/* Day Selector within Modal */}
-                            <div className="flex items-center justify-between bg-zinc-900/50 p-1.5 rounded-2xl border border-white/5 mb-8 shadow-inner">
+                            {/* Day Selector within Modal - Enhanced touch targets */}
+                            <div className="flex items-center justify-between bg-zinc-900/50 p-1.5 rounded-2xl border border-white/5 mb-8 shadow-inner gap-1">
                                 {getDatesOfWeek().map((date, i) => {
                                     const isSelected = selectedViewerDate.toDateString() === date.toDateString();
+                                    const isToday = date.toDateString() === new Date().toDateString();
+                                    const localDateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                                    const hasWod = wods.some(w => w.date?.split('T')[0] === localDateStr);
                                     return (
                                         <button
                                             key={i}
                                             onClick={() => setSelectedViewerDate(date)}
                                             className={cn(
-                                                "flex-1 py-3 rounded-xl transition-all duration-500 flex flex-col items-center gap-1.5 relative overflow-hidden",
+                                                "flex-1 min-h-[52px] min-w-[44px] py-2.5 rounded-xl transition-all duration-300 flex flex-col items-center justify-center gap-1 relative overflow-hidden",
                                                 isSelected
-                                                    ? "bg-primary text-white shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] scale-105 z-10 font-bold"
-                                                    : "hover:bg-white/5 text-zinc-500 hover:text-zinc-300"
+                                                    ? "bg-primary text-white shadow-lg shadow-primary/30 scale-105 z-10"
+                                                    : isToday
+                                                        ? "bg-primary/10 text-primary"
+                                                        : "hover:bg-white/5 text-zinc-500 hover:text-zinc-300"
                                             )}
                                         >
                                             {isSelected && (
                                                 <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
                                             )}
-                                            <span className="text-[7px] font-black uppercase tracking-[0.2em]">{weekDays[i]}</span>
-                                            <span className="text-sm font-black italic tracking-tighter">{date.getDate()}</span>
+                                            <span className="text-[9px] font-black uppercase tracking-wider">{weekDays[i]}</span>
+                                            <span className="text-base font-black italic tracking-tighter leading-none">{date.getDate()}</span>
+                                            {hasWod && !isSelected && (
+                                                <div className={cn("w-1 h-1 rounded-full", isToday ? "bg-primary" : "bg-primary/50")} />
+                                            )}
                                         </button>
                                     );
                                 })}
@@ -378,6 +421,43 @@ export const Schedule: React.FC = () => {
                 </div>
             </div>
 
+            {/* Mobile Day Selector Pills */}
+            <div className="md:hidden" ref={dayScrollRef}>
+                <div className="flex items-center bg-muted/30 p-1.5 rounded-2xl border border-white/5 gap-1">
+                    {getDatesOfWeek().map((date, i) => {
+                        const isToday = date.toDateString() === new Date().toDateString();
+                        const isSelected = selectedDayIndex === i;
+                        const hasSessions = sessions.some(s => new Date(s.start_time).toDateString() === date.toDateString());
+                        const localDateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                        const hasWods = wods.some(w => w.date?.split('T')[0] === localDateStr);
+
+                        return (
+                            <button
+                                key={i}
+                                onClick={() => setSelectedDayIndex(i)}
+                                className={cn(
+                                    "flex-1 min-w-[48px] py-2.5 rounded-xl transition-all duration-300 flex flex-col items-center gap-0.5 relative",
+                                    isSelected
+                                        ? "bg-primary text-white shadow-lg shadow-primary/20 scale-[1.05] z-10"
+                                        : isToday
+                                            ? "bg-primary/10 text-primary"
+                                            : "text-muted-foreground hover:bg-white/5"
+                                )}
+                            >
+                                <span className="text-[9px] font-black uppercase tracking-wider">{weekDays[i]}</span>
+                                <span className="text-base font-black italic tracking-tighter leading-none">{date.getDate()}</span>
+                                {(hasSessions || hasWods) && !isSelected && (
+                                    <div className={cn(
+                                        "w-1 h-1 rounded-full mt-0.5",
+                                        isToday ? "bg-primary" : "bg-primary/50"
+                                    )} />
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
                 {getDatesOfWeek().map((date, i) => {
                     const isToday = date.toDateString() === new Date().toDateString();
@@ -386,7 +466,8 @@ export const Schedule: React.FC = () => {
                     return (
                         <Card key={i} className={cn(
                             "glass overflow-hidden transition-all duration-500 border-white/5",
-                            isToday ? "border-primary/50 shadow-2xl shadow-primary/10 ring-1 ring-primary/20 scale-[1.02] z-10" : "opacity-90 hover:opacity-100 hover:scale-[1.01]"
+                            isToday ? "border-primary/50 shadow-2xl shadow-primary/10 ring-1 ring-primary/20 md:scale-[1.02] z-10" : "opacity-90 hover:opacity-100 hover:scale-[1.01]",
+                            selectedDayIndex === i ? "block" : "hidden md:block"
                         )}>
                             <CardHeader className={cn(
                                 "p-4 text-center border-b border-white/5",
@@ -504,6 +585,20 @@ export const Schedule: React.FC = () => {
                                                                         {session.profiles ? `${session.profiles.first_name} ${session.profiles.last_name}` : 'Coach'}
                                                                     </span>
                                                                 </div>
+                                                                {isAthlete && (
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        className="h-6 gap-1 px-2 text-[8px] font-black uppercase tracking-widest text-primary/60 hover:text-primary hover:bg-primary/10 rounded-lg"
+                                                                        onClick={(e: React.MouseEvent) => {
+                                                                            e.stopPropagation();
+                                                                            setIsFeedbackOpen(session.id);
+                                                                        }}
+                                                                    >
+                                                                        <MessageSquare className="h-2.5 w-2.5" />
+                                                                        {t('schedule.give_feedback', { defaultValue: 'Feedback' })}
+                                                                    </Button>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     ))}

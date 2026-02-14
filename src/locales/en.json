@@ -28,7 +28,13 @@
             "all": "All Genders",
             "male": "Male",
             "female": "Female"
-        }
+        },
+        "mon": "MON",
+        "tue": "TUE",
+        "wed": "WED",
+        "thu": "THU",
+        "fri": "FRI",
+        "sat": "SAT"
     },
     "nav": {
         "dashboard": "Dashboard",
@@ -504,7 +510,11 @@
         "feedback_success": "Success! Your feedback helps us improve.",
         "rpe_scale": "Scale of RPE: {{value}}",
         "programmed_wod": "Programmed WOD",
-        "track_suffix": "TRACK"
+        "track_suffix": "TRACK",
+        "today": "Today",
+        "give_feedback": "Feedback",
+        "programming_viewer": "PROGRAMMING VIEWER",
+        "session_overview": "Session Details & Programming"
     },
     "dashboard": {
         "athlete_hub": "Athlete Hub",

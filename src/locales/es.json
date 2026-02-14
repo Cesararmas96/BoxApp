@@ -28,7 +28,13 @@
             "all": "Todos",
             "male": "Masculino",
             "female": "Femenino"
-        }
+        },
+        "mon": "LUN",
+        "tue": "MAR",
+        "wed": "MIÉ",
+        "thu": "JUE",
+        "fri": "VIE",
+        "sat": "SÁB"
     },
     "nav": {
         "dashboard": "Panel Principal",
@@ -499,7 +505,11 @@
         "feedback_success": "¡Éxito! Tu feedback nos ayuda a mejorar.",
         "rpe_scale": "Escala de RPE: {{value}}",
         "programmed_wod": "WOD Programado",
-        "track_suffix": "TRACK"
+        "track_suffix": "TRACK",
+        "today": "Hoy",
+        "give_feedback": "Feedback",
+        "programming_viewer": "VISOR DE PROGRAMACIÓN",
+        "session_overview": "Detalles de la Sesión y Programación"
     },
     "dashboard": {
         "athlete_hub": "Centro del Atleta",

@@ -49,14 +49,16 @@ export const Settings: React.FC = () => {
 
     const logoInputRef = useRef<HTMLInputElement>(null);
     const faviconInputRef = useRef<HTMLInputElement>(null);
+    const loginBgInputRef = useRef<HTMLInputElement>(null);
 
     const [boxSettings, setBoxSettings] = useState({
         name: '',
         logo_url: '',
-        favicon_url: ''
+        favicon_url: '',
+        login_background_url: ''
     });
     const [isSaving, setIsSaving] = useState(false);
-    const [isUploading, setIsUploading] = useState<'logo' | null | 'favicon'>(null);
+    const [isUploading, setIsUploading] = useState<'logo' | 'favicon' | 'login_bg' | null>(null);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
     const [navigationConfig, setNavigationConfig] = useState<any[]>([]);
@@ -82,7 +84,8 @@ export const Settings: React.FC = () => {
             setBoxSettings({
                 name: currentBox.name || '',
                 logo_url: currentBox.logo_url || '',
-                favicon_url: currentBox.favicon_url || ''
+                favicon_url: currentBox.favicon_url || '',
+                login_background_url: currentBox.login_background_url || ''
             });
 
             // Initialize navigation config
@@ -153,7 +156,7 @@ export const Settings: React.FC = () => {
         });
     };
 
-    const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'favicon') => {
+    const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'favicon' | 'login_bg') => {
         const file = event.target.files?.[0];
         if (!file || !currentBox?.id) return;
 
@@ -161,8 +164,8 @@ export const Settings: React.FC = () => {
         setMessage(null);
 
         try {
-            // Compress if it's an image
-            const compressedBlob = await compressImage(file, type === 'logo' ? 800 : 128, type === 'logo' ? 800 : 128);
+            const maxDim = type === 'favicon' ? 128 : type === 'login_bg' ? 1920 : 800;
+            const compressedBlob = await compressImage(file, maxDim, maxDim, type === 'login_bg' ? 0.85 : 0.8);
 
             const cleanFileName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
             const fileName = `${type}_${Date.now()}_${cleanFileName}`;
@@ -181,9 +184,10 @@ export const Settings: React.FC = () => {
                 .from('branding')
                 .getPublicUrl(filePath);
 
+            const fieldKey = type === 'logo' ? 'logo_url' : type === 'favicon' ? 'favicon_url' : 'login_background_url';
             setBoxSettings(prev => ({
                 ...prev,
-                [type === 'logo' ? 'logo_url' : 'favicon_url']: publicUrl
+                [fieldKey]: publicUrl
             }));
 
             setMessage({
@@ -215,6 +219,7 @@ export const Settings: React.FC = () => {
                     name: boxSettings.name,
                     logo_url: boxSettings.logo_url,
                     favicon_url: boxSettings.favicon_url,
+                    login_background_url: boxSettings.login_background_url,
                     updated_at: new Date().toISOString()
                 })
                 .eq('id', currentBox.id);
@@ -227,7 +232,8 @@ export const Settings: React.FC = () => {
                     ...currentBox,
                     name: boxSettings.name,
                     logo_url: boxSettings.logo_url,
-                    favicon_url: boxSettings.favicon_url
+                    favicon_url: boxSettings.favicon_url,
+                    login_background_url: boxSettings.login_background_url
                 });
             }
 
@@ -430,6 +436,34 @@ export const Settings: React.FC = () => {
                                             </div>
                                             <input type="file" ref={faviconInputRef} className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'favicon')} />
                                             <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">{t('settings.branding.favicon_hint')}</p>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="login-bg-url">{t('settings.branding.login_bg_url')}</Label>
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    id="login-bg-url"
+                                                    placeholder="https://example.com/background.jpg"
+                                                    value={getFileNameFromUrl(boxSettings.login_background_url)}
+                                                    onChange={(e) => setBoxSettings({ ...boxSettings, login_background_url: e.target.value })}
+                                                    className="rounded-xl h-11 flex-1"
+                                                />
+                                                <Button
+                                                    variant="outline"
+                                                    className="rounded-xl h-11 flex-shrink-0 gap-2 px-4"
+                                                    onClick={() => loginBgInputRef.current?.click()}
+                                                    disabled={isUploading === 'login_bg'}
+                                                >
+                                                    {isUploading === 'login_bg' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                                                    <span className="text-xs font-bold uppercase tracking-widest">{t('settings.branding.upload')}</span>
+                                                </Button>
+                                            </div>
+                                            <input type="file" ref={loginBgInputRef} className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'login_bg')} />
+                                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">{t('settings.branding.login_bg_hint')}</p>
+                                            {boxSettings.login_background_url && (
+                                                <div className="mt-2 rounded-xl overflow-hidden border border-white/10 h-24">
+                                                    <img src={boxSettings.login_background_url} alt="Login BG Preview" className="w-full h-full object-cover" />
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 

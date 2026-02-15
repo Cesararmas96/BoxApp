@@ -477,6 +477,9 @@
             "name_required": "Box name is required.",
             "logo_uploaded": "Logo uploaded! Don't forget to save changes.",
             "favicon_uploaded": "Favicon uploaded! Don't forget to save changes.",
+            "login_bg_url": "Login Background",
+            "login_bg_hint": "Recommended: 1920x1080px high-quality JPG image of your Box",
+            "login_bg_uploaded": "Login background uploaded! Don't forget to save changes.",
             "success": "Branding settings saved successfully!",
             "save": "Save Changes",
             "sync": "Sync Branding"
@@ -702,7 +705,14 @@
         "confirm_password_force": "Confirm New Password",
         "logout": "Log Out",
         "password_updated_success": "Password updated successfully!",
-        "new_password_force": "New Technical Password"
+        "new_password_force": "New Technical Password",
+        "login_welcome": "Welcome back",
+        "login_subtitle": "Sign in to your account to continue",
+        "login_tagline": "CrossFit Management Platform",
+        "email_placeholder": "your@email.com",
+        "show_password": "Show password",
+        "hide_password": "Hide password",
+        "powered_by": "Powered by BoxApp"
     },
     "profile": {
         "title": "Account Settings",

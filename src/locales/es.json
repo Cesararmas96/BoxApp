@@ -476,6 +476,9 @@
             "name_required": "El nombre del box es obligatorio.",
             "logo_uploaded": "¡Logo subido! No olvides guardar los cambios.",
             "favicon_uploaded": "¡Favicon subido! No olvides guardar los cambios.",
+            "login_bg_url": "Fondo de Login",
+            "login_bg_hint": "Recomendado: 1920x1080px imagen JPG de alta calidad de tu Box",
+            "login_bg_uploaded": "¡Fondo de login subido! No olvides guardar los cambios.",
             "success": "¡Ajustes de branding guardados con éxito!",
             "save": "Guardar Cambios",
             "sync": "Sincronizar Branding"
@@ -702,7 +705,14 @@
         "new_password_force": "Nueva Contraseña Técnica",
         "confirm_password_force": "Confirmar Nueva Contraseña",
         "logout": "Cerrar Sesión",
-        "password_updated_success": "¡Contraseña actualizada con éxito!"
+        "password_updated_success": "¡Contraseña actualizada con éxito!",
+        "login_welcome": "Bienvenido de nuevo",
+        "login_subtitle": "Inicia sesión en tu cuenta para continuar",
+        "login_tagline": "Plataforma de Gestión CrossFit",
+        "email_placeholder": "tu@email.com",
+        "show_password": "Mostrar contraseña",
+        "hide_password": "Ocultar contraseña",
+        "powered_by": "Desarrollado por BoxApp"
     },
     "profile": {
         "title": "Ajustes de Cuenta",

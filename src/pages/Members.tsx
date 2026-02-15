@@ -143,6 +143,38 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
         setLoading(false);
     };
 
+    const handleQuickAssignPlan = async (memberId: string) => {
+        if (!selectedPlanId || !currentBox?.id) return;
+        setAssigningPlan(true);
+        try {
+            const plan = plans.find((p: any) => p.id === selectedPlanId);
+            const startDate = new Date();
+            const endDate = new Date();
+            endDate.setDate(endDate.getDate() + (plan?.duration_days || 30));
+
+            const { error } = await supabase.from('memberships').insert([{
+                athlete_id: memberId,
+                user_id: memberId,
+                plan_id: selectedPlanId,
+                box_id: currentBox.id,
+                status: 'active',
+                start_date: startDate.toISOString(),
+                end_date: endDate.toISOString()
+            }]);
+
+            if (error) throw error;
+            showNotification('success', t('members.plan_assigned_success', { defaultValue: 'PLAN ASSIGNED SUCCESSFULLY' }));
+            setSelectedPlanId('');
+            setDetailsOpen(false);
+            fetchMembers();
+        } catch (error: any) {
+            console.error('Error assigning plan:', error);
+            showNotification('error', (error.message || 'Error').toUpperCase());
+        } finally {
+            setAssigningPlan(false);
+        }
+    };
+
     const handleAddMember = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -725,19 +757,44 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="flex flex-col items-center justify-center py-4 text-center">
-                                        <p className="text-xs font-bold text-muted-foreground italic mb-1 opacity-60">
+                                    <div className="space-y-3">
+                                        <p className="text-xs font-bold text-muted-foreground italic opacity-60">
                                             {t('members.no_active_membership')}
                                         </p>
+                                        {/* Inline plan cards */}
+                                        {plans.length > 0 && (
+                                            <div className="space-y-2 max-h-[25vh] overflow-y-auto pr-1">
+                                                {plans.map((plan: any) => (
+                                                    <div
+                                                        key={plan.id}
+                                                        className={cn(
+                                                            "p-3 rounded-xl border cursor-pointer transition-all duration-200 active:scale-[0.98]",
+                                                            selectedPlanId === plan.id
+                                                                ? "border-primary bg-primary/10 shadow-lg shadow-primary/10"
+                                                                : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                                                        )}
+                                                        onClick={() => setSelectedPlanId(plan.id)}
+                                                    >
+                                                        <div className="flex justify-between items-center">
+                                                            <div>
+                                                                <p className="text-xs font-black italic uppercase tracking-tight">{plan.name}</p>
+                                                                <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">
+                                                                    {plan.duration_days} {t('members.days', { defaultValue: 'days' })}
+                                                                </p>
+                                                            </div>
+                                                            <p className="text-base font-black italic text-primary">${plan.price}</p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                         <Button
                                             size="sm"
-                                            className="h-9 px-6 bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 text-[10px] font-black uppercase italic tracking-tighter"
-                                            onClick={() => {
-                                                setDetailsOpen(false);
-                                                window.location.href = '/billing?tab=athletes';
-                                            }}
+                                            disabled={!selectedPlanId || assigningPlan}
+                                            onClick={() => selectedMember && handleQuickAssignPlan(selectedMember.id)}
+                                            className="w-full h-10 rounded-xl shadow-xl shadow-primary/20 text-[10px] font-black italic uppercase tracking-widest"
                                         >
-                                            {t('members.assign_plan_btn')}
+                                            {assigningPlan ? <Loader2 className="h-4 w-4 animate-spin" /> : t('members.assign_plan_btn')}
                                         </Button>
                                     </div>
                                 )}

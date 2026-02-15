@@ -592,8 +592,10 @@
         "no_email": "No email",
         "info_header": "INFO",
         "membership_header": "MEMBERSHIP",
-        "no_active_membership": "THIS ATHLETE DOES NOT HAVE ANY ACTIVE MEMBERSHIP",
-        "assign_plan_btn": "ASSIGN PLAN IN FINANCES",
+        "no_active_membership": "NO ACTIVE MEMBERSHIP",
+        "assign_plan_btn": "ASSIGN PLAN",
+        "plan_assigned_success": "PLAN ASSIGNED SUCCESSFULLY!",
+        "days": "days",
         "contact_name": "Contact Name",
         "phone_number": "Phone Number",
         "no_date": "NO DATE",
@@ -859,9 +861,12 @@
         "last_update": "Observed",
         "detail_desc": "Lead details",
         "conversion_success_title": "Member Created!",
-        "conversion_success_desc": "{{name}} is now a member. Would you like to assign a membership plan?",
-        "assign_plan_now": "Assign Plan Now",
-        "assign_plan_later": "Later"
+        "conversion_success_desc": "{{name}} is now a member. Choose a plan:",
+        "assign_plan_now": "Assign Plan",
+        "assign_plan_later": "Later",
+        "all_set": "All Set!",
+        "plan_assigned_success": "Membership assigned successfully.",
+        "days": "days"
     },
     "analytics": {
         "title": "Analytics Dashboard",

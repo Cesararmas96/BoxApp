@@ -592,8 +592,10 @@
         "no_email": "Sin email",
         "info_header": "INFO",
         "membership_header": "MEMBRESÍA",
-        "no_active_membership": "ESTE ATLETA NO TIENE NINGUNA MEMBRESÍA ACTIVA",
-        "assign_plan_btn": "ASIGNAR PLAN EN FINANZAS",
+        "no_active_membership": "SIN MEMBRESÍA ACTIVA",
+        "assign_plan_btn": "ASIGNAR PLAN",
+        "plan_assigned_success": "¡PLAN ASIGNADO EXITOSAMENTE!",
+        "days": "días",
         "contact_name": "Nombre de Contacto",
         "phone_number": "Número de Teléfono",
         "no_date": "SIN FECHA",
@@ -859,9 +861,12 @@
         "last_update": "Registrado",
         "detail_desc": "Detalles del prospecto",
         "conversion_success_title": "¡Miembro Creado!",
-        "conversion_success_desc": "{{name}} ahora es miembro. ¿Deseas asignar un plan de membresía?",
-        "assign_plan_now": "Asignar Plan Ahora",
-        "assign_plan_later": "Después"
+        "conversion_success_desc": "{{name}} ahora es miembro. Selecciona un plan:",
+        "assign_plan_now": "Asignar Plan",
+        "assign_plan_later": "Después",
+        "all_set": "¡Listo!",
+        "plan_assigned_success": "Membresía asignada exitosamente.",
+        "days": "días"
     },
     "analytics": {
         "title": "Panel de Analíticas",

@@ -68,10 +68,17 @@ function AppContent() {
   }
 
   if (!session) {
+    const hasOAuthHash =
+      window.location.hash.includes('access_token=') ||
+      window.location.hash.includes('refresh_token=') ||
+      window.location.hash.includes('error=');
+
     return (
       <Routes>
         {/* OAuth callback — must be available before session is fully established */}
         <Route path="/auth/callback" element={<AuthCallback />} />
+        {/* Some providers may return tokens on root hash (/#access_token=...). Handle that too. */}
+        <Route path="/" element={hasOAuthHash ? <AuthCallback /> : <Navigate to="/login" replace />} />
         {/* Multi-tenant: box-specific login via slug */}
         <Route path="/box/:boxSlug" element={<Login />} />
         {/* Default login (resolves first box for backward compat) */}

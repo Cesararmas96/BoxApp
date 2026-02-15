@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -11,7 +10,7 @@ import {
     ChevronLeft,
     ChevronRight,
     Phone,
-    ArrowRight,
+    Loader2,
     CalendarDays
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -63,7 +62,6 @@ interface Lead {
 export const Leads: React.FC = () => {
     const { t } = useLanguage();
     const { currentBox } = useAuth();
-    const navigate = useNavigate();
     const [leads, setLeads] = useState<Lead[]>([]);
     const [loading, setLoading] = useState(true);
     const [open, setOpen] = useState(false);
@@ -73,6 +71,11 @@ export const Leads: React.FC = () => {
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [conversionSuccessOpen, setConversionSuccessOpen] = useState(false);
     const [convertedLeadName, setConvertedLeadName] = useState('');
+    const [convertedMemberId, setConvertedMemberId] = useState<string | null>(null);
+    const [plans, setPlans] = useState<any[]>([]);
+    const [selectedPlanId, setSelectedPlanId] = useState('');
+    const [assigningPlan, setAssigningPlan] = useState(false);
+    const [planAssigned, setPlanAssigned] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 8;
     const { notification, showNotification, hideNotification, confirmState, showConfirm, hideConfirm } = useNotification();
@@ -80,8 +83,14 @@ export const Leads: React.FC = () => {
     useEffect(() => {
         if (currentBox?.id) {
             fetchLeads();
+            fetchPlans();
         }
     }, [currentBox?.id]);
+
+    const fetchPlans = async () => {
+        const { data } = await supabase.from('plans').select('*').eq('box_id', currentBox?.id || '').order('price');
+        setPlans(data || []);
+    };
 
     const fetchLeads = async () => {
         setLoading(true);
@@ -187,7 +196,11 @@ export const Leads: React.FC = () => {
                     showNotification('error', t('leads.error_generic').toUpperCase());
                 } else {
                     const fullName = `${lead.first_name || ''} ${lead.last_name || ''}`.trim();
+                    const newMemberId = (data as any)?.user?.id || null;
                     setConvertedLeadName(fullName);
+                    setConvertedMemberId(newMemberId);
+                    setSelectedPlanId('');
+                    setPlanAssigned(false);
                     setConversionSuccessOpen(true);
                     fetchLeads();
                 }
@@ -218,6 +231,35 @@ export const Leads: React.FC = () => {
             });
         } else {
             executeUpdate();
+        }
+    };
+
+    const handleQuickAssignPlan = async () => {
+        if (!convertedMemberId || !selectedPlanId || !currentBox?.id) return;
+        setAssigningPlan(true);
+        try {
+            const plan = plans.find((p: any) => p.id === selectedPlanId);
+            const startDate = new Date();
+            const endDate = new Date();
+            endDate.setDate(endDate.getDate() + (plan?.duration_days || 30));
+
+            const { error } = await supabase.from('memberships').insert([{
+                athlete_id: convertedMemberId,
+                user_id: convertedMemberId,
+                plan_id: selectedPlanId,
+                box_id: currentBox.id,
+                status: 'active',
+                start_date: startDate.toISOString(),
+                end_date: endDate.toISOString()
+            }]);
+
+            if (error) throw error;
+            setPlanAssigned(true);
+        } catch (error: any) {
+            console.error('Error assigning plan:', error);
+            showNotification('error', (error.message || t('leads.error_generic')).toUpperCase());
+        } finally {
+            setAssigningPlan(false);
         }
     };
 
@@ -772,41 +814,94 @@ export const Leads: React.FC = () => {
                 </DialogContent>
             </Dialog>
 
-            {/* Conversion Success Dialog */}
-            <Dialog open={conversionSuccessOpen} onOpenChange={setConversionSuccessOpen}>
-                <DialogContent className="sm:max-w-[400px] p-0 overflow-hidden border-none glass rounded-[2rem]">
-                    <div className="p-8 text-center space-y-6">
-                        <div className="mx-auto h-20 w-20 rounded-full bg-emerald-500/10 border-2 border-emerald-500/20 flex items-center justify-center">
-                            <CheckCircle className="h-10 w-10 text-emerald-500" />
+            {/* Conversion Success + Inline Plan Assignment Dialog */}
+            <Dialog open={conversionSuccessOpen} onOpenChange={(open) => {
+                setConversionSuccessOpen(open);
+                if (!open) { setSelectedPlanId(''); setPlanAssigned(false); }
+            }}>
+                <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden border-none glass rounded-[2rem] max-h-[90vh] overflow-y-auto">
+                    {!planAssigned ? (
+                        <div className="p-6 md:p-8 space-y-5">
+                            {/* Success header */}
+                            <div className="text-center space-y-2">
+                                <div className="mx-auto h-16 w-16 rounded-full bg-emerald-500/10 border-2 border-emerald-500/20 flex items-center justify-center">
+                                    <CheckCircle className="h-8 w-8 text-emerald-500" />
+                                </div>
+                                <DialogTitle className="text-lg font-black italic uppercase tracking-tighter">
+                                    {t('leads.conversion_success_title')}
+                                </DialogTitle>
+                                <DialogDescription className="text-sm text-muted-foreground">
+                                    {t('leads.conversion_success_desc', { name: convertedLeadName })}
+                                </DialogDescription>
+                            </div>
+
+                            {/* Plan cards - tap to select */}
+                            {plans.length > 0 && (
+                                <div className="space-y-2 max-h-[35vh] overflow-y-auto pr-1">
+                                    {plans.map((plan: any) => (
+                                        <div
+                                            key={plan.id}
+                                            className={cn(
+                                                "p-4 rounded-2xl border cursor-pointer transition-all duration-200 active:scale-[0.98]",
+                                                selectedPlanId === plan.id
+                                                    ? "border-primary bg-primary/10 shadow-lg shadow-primary/10"
+                                                    : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                                            )}
+                                            onClick={() => setSelectedPlanId(plan.id)}
+                                        >
+                                            <div className="flex justify-between items-center">
+                                                <div>
+                                                    <p className="text-sm font-black italic uppercase tracking-tight">{plan.name}</p>
+                                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
+                                                        {plan.duration_days} {t('leads.days', { defaultValue: 'days' })}
+                                                    </p>
+                                                </div>
+                                                <p className="text-xl font-black italic text-primary">${plan.price}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Actions */}
+                            <div className="flex flex-col gap-2 pt-1">
+                                <Button
+                                    disabled={!selectedPlanId || assigningPlan}
+                                    onClick={handleQuickAssignPlan}
+                                    className="w-full h-12 rounded-2xl shadow-xl shadow-primary/20 font-black italic uppercase tracking-widest text-xs"
+                                >
+                                    {assigningPlan ? <Loader2 className="h-5 w-5 animate-spin" /> : t('leads.assign_plan_now')}
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    className="w-full h-10 font-black italic uppercase tracking-widest text-[10px] opacity-60 hover:opacity-100"
+                                    onClick={() => { setConversionSuccessOpen(false); setSelectedPlanId(''); }}
+                                >
+                                    {t('leads.assign_plan_later')}
+                                </Button>
+                            </div>
                         </div>
-                        <div className="space-y-2">
-                            <DialogTitle className="text-xl font-black italic uppercase tracking-tighter">
-                                {t('leads.conversion_success_title', { defaultValue: 'Member Created!' })}
-                            </DialogTitle>
-                            <DialogDescription className="text-sm text-muted-foreground">
-                                {t('leads.conversion_success_desc', { name: convertedLeadName, defaultValue: `${convertedLeadName} is now a member. Would you like to assign a plan?` })}
-                            </DialogDescription>
-                        </div>
-                        <div className="flex flex-col gap-3">
+                    ) : (
+                        <div className="p-8 text-center space-y-5">
+                            <div className="mx-auto h-20 w-20 rounded-full bg-emerald-500/10 border-2 border-emerald-500/20 flex items-center justify-center">
+                                <CheckCircle className="h-10 w-10 text-emerald-500" />
+                            </div>
+                            <div className="space-y-1">
+                                <DialogTitle className="text-lg font-black italic uppercase tracking-tighter">
+                                    {t('leads.all_set', { defaultValue: 'All Set!' })}
+                                </DialogTitle>
+                                <DialogDescription className="text-sm text-muted-foreground">
+                                    {t('leads.plan_assigned_success', { defaultValue: 'Membership assigned successfully.' })}
+                                </DialogDescription>
+                            </div>
                             <Button
-                                className="w-full h-12 rounded-2xl shadow-xl shadow-primary/20 gap-2 font-black italic uppercase tracking-widest text-xs"
-                                onClick={() => {
-                                    setConversionSuccessOpen(false);
-                                    navigate('/billing?tab=athletes');
-                                }}
+                                className="w-full h-12 rounded-2xl font-black italic uppercase tracking-widest text-xs"
+                                onClick={() => { setConversionSuccessOpen(false); setPlanAssigned(false); setSelectedPlanId(''); }}
                             >
-                                {t('leads.assign_plan_now', { defaultValue: 'Assign Plan Now' })}
-                                <ArrowRight className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                className="w-full h-10 font-black italic uppercase tracking-widest text-[10px] opacity-60 hover:opacity-100"
-                                onClick={() => setConversionSuccessOpen(false)}
-                            >
-                                {t('leads.assign_plan_later', { defaultValue: 'Later' })}
+                                {t('common.close')}
                             </Button>
                         </div>
-                    </div>
+                    )}
                 </DialogContent>
             </Dialog>
 

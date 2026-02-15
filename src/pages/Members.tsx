@@ -10,7 +10,8 @@ import {
     ShieldCheck,
     ShieldAlert,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -91,6 +92,9 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
     });
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [plans, setPlans] = useState<any[]>([]);
+    const [selectedPlanId, setSelectedPlanId] = useState('');
+    const [assigningPlan, setAssigningPlan] = useState(false);
     const itemsPerPage = 8;
     const { notification, showNotification, hideNotification, confirmState, hideConfirm } = useNotification();
 
@@ -109,8 +113,14 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
     useEffect(() => {
         if (currentBox?.id) {
             fetchMembers();
+            fetchPlans();
         }
     }, [currentBox?.id]);
+
+    const fetchPlans = async () => {
+        const { data } = await supabase.from('plans').select('*').eq('box_id', currentBox?.id || '').order('price');
+        setPlans(data || []);
+    };
 
     const fetchMembers = async () => {
         setLoading(true);

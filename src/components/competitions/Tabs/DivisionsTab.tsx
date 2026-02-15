@@ -131,7 +131,7 @@ export const DivisionsTab: React.FC<DivisionsTabProps> = ({ competition }) => {
                     </div>
 
                     <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('common.gender')}</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('common.gender_label')}</Label>
                         <Select
                             value={newDivision.gender}
                             onValueChange={(val: any) => setNewDivision({ ...newDivision, gender: val })}

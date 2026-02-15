@@ -270,7 +270,7 @@ export const Billing: React.FC = () => {
             const { error: invoiceError } = await supabase
                 .from('invoices')
                 .insert([{
-                    user_id: membership.user_id,
+                    user_id: membership.athlete_id || membership.user_id,
                     box_id: currentBox?.id,
                     amount: amount,
                     status: 'paid'
@@ -405,7 +405,7 @@ export const Billing: React.FC = () => {
         }
 
         // Check if athlete already has a membership
-        const existingMembership = memberships.find(m => m.user_id === newMembership.userId);
+        const existingMembership = memberships.find(m => (m.athlete_id || m.user_id) === newMembership.userId);
         if (existingMembership) {
             addNotification('error', 'Este atleta ya tiene una membresía registrada');
             return;
@@ -440,6 +440,7 @@ export const Billing: React.FC = () => {
             const { error } = await supabase
                 .from('memberships')
                 .insert([{
+                    athlete_id: newMembership.userId,
                     user_id: newMembership.userId,
                     plan_id: newMembership.planId,
                     box_id: currentBox?.id,
@@ -1099,7 +1100,7 @@ export const Billing: React.FC = () => {
                                                                 date.setMonth(date.getMonth() + offset);
                                                                 const monthStr = date.toLocaleString('default', { month: 'short' });
                                                                 const hasPayment = invoices.some(inv =>
-                                                                    (inv.user_id === m.user_id) &&
+                                                                    (inv.user_id === (m.athlete_id || m.user_id)) &&
                                                                     new Date(inv.created_at).getMonth() === date.getMonth() &&
                                                                     new Date(inv.created_at).getFullYear() === date.getFullYear() &&
                                                                     inv.status === 'paid'

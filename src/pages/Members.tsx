@@ -114,12 +114,21 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
 
     const fetchMembers = async () => {
         setLoading(true);
+        const boxId = currentBox?.id || '';
+        if (!boxId) {
+            setMembers([]);
+            setLoading(false);
+            return;
+        }
         const { data, error } = await supabase
             .from('profiles')
-            .select('*, memberships(*)')
-            .eq('box_id', currentBox?.id || '')
+            .select('*, memberships!memberships_user_id_fkey(*)')
+            .eq('box_id', boxId)
             .order('created_at', { ascending: false });
 
+        if (error) {
+            console.error('[Members] fetchMembers error:', error.message, error.details);
+        }
         if (!error && data) setMembers(data as any[]);
         setLoading(false);
     };
@@ -234,21 +243,22 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between mb-10">
+            {/* Header */}
+            <div className="flex flex-col gap-4 md:gap-6 md:flex-row md:items-end md:justify-between mb-4 md:mb-10">
                 <div className="space-y-1">
-                    <h1 className="text-4xl font-black italic tracking-tighter uppercase text-glow">{t('members.title')}</h1>
+                    <h1 className="text-3xl md:text-4xl font-black italic tracking-tighter uppercase text-glow">{t('members.title')}</h1>
                     <p className="text-muted-foreground/60 text-xs font-bold uppercase tracking-[0.3em]">{t('members.subtitle')}</p>
                 </div>
 
                 {userProfile?.role_id === 'admin' && (
                     <Dialog open={open} onOpenChange={setOpen}>
                         <DialogTrigger asChild>
-                            <Button className="h-14 px-8 rounded-2xl shadow-xl shadow-primary/20 group">
+                            <Button className="h-12 md:h-14 px-8 rounded-2xl shadow-xl shadow-primary/20 group w-full md:w-auto">
                                 <UserPlus className="h-5 w-5 group-hover:scale-110 transition-transform" />
                                 <span className="ml-2 font-black italic uppercase tracking-wider">{t('members.add_btn')}</span>
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[425px]">
+                        <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
                                 <DialogTitle>{t('members.new_title')}</DialogTitle>
                                 <DialogDescription>
@@ -360,7 +370,84 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                 )}
             </div>
 
-            <Card className="glass overflow-hidden border-white/10 shadow-premium">
+            {/* Mobile Search (sticky) */}
+            <div className="sticky top-0 z-20 md:hidden bg-background/80 backdrop-blur-xl pb-3 -mx-2 px-2">
+                <div className="relative group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                    <Input
+                        type="search"
+                        placeholder={t('members.search_placeholder')}
+                        className="pl-12 w-full bg-zinc-950/20 border-white/5 h-12 rounded-2xl"
+                        value={searchTerm}
+                        onChange={(e) => {
+                            setSearchTerm(e.target.value);
+                            setCurrentPage(1);
+                        }}
+                    />
+                </div>
+            </div>
+
+            {/* Mobile Card List */}
+            <div className="md:hidden space-y-3">
+                {loading ? (
+                    <div className="flex flex-col items-center gap-3 py-16">
+                        <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">{t('common.loading')}</span>
+                    </div>
+                ) : currentMembers.length === 0 ? (
+                    <div className="flex flex-col items-center gap-3 py-16 opacity-30">
+                        <Search className="h-12 w-12" />
+                        <p className="text-xs font-black italic uppercase tracking-widest">{t('common.no_data')}</p>
+                    </div>
+                ) : (
+                    currentMembers.map((member) => (
+                        <div
+                            key={member.id}
+                            className="glass rounded-2xl border border-white/5 p-4 active:scale-[0.98] transition-all duration-200 cursor-pointer"
+                            onClick={() => {
+                                setSelectedMember(member);
+                                setDetailsOpen(true);
+                            }}
+                        >
+                            <div className="flex items-center gap-4">
+                                <Avatar className="h-12 w-12 shrink-0 rounded-2xl glass border-white/10 shadow-lg">
+                                    <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/5 text-primary text-xs uppercase font-black italic">
+                                        {member.first_name?.[0]}{member.last_name?.[0]}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between gap-2">
+                                        <span className="font-black italic uppercase tracking-tight text-sm truncate">{member.first_name} {member.last_name}</span>
+                                        <Badge variant={getStatusVariant(member.status)} className="capitalize text-[8px] font-black italic tracking-widest py-0 px-2 rounded-lg shrink-0">
+                                            {t(`members.status_${member.status}`)}
+                                        </Badge>
+                                    </div>
+                                    <div className="flex items-center justify-between mt-1">
+                                        <span className="text-[10px] text-muted-foreground/60 truncate">{member.email || t('members.no_email')}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-2">
+                                        <Badge variant="outline" className="capitalize text-[8px] font-black italic tracking-widest border-primary/20 bg-primary/5 text-primary py-0 px-2 rounded-lg">
+                                            {t(`roles.role_${member.role_id}`)}
+                                        </Badge>
+                                        {member.waiver_signed ? (
+                                            <span className="text-emerald-500 text-[8px] font-black uppercase tracking-widest italic flex items-center gap-1">
+                                                <ShieldCheck className="h-3 w-3" /> {t('members.waiver_signed')}
+                                            </span>
+                                        ) : (
+                                            <span className="text-destructive text-[8px] font-black uppercase tracking-widest italic flex items-center gap-1">
+                                                <ShieldAlert className="h-3 w-3" /> {t('members.waiver_pending')}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))
+                )}
+            </div>
+
+            {/* Desktop Table */}
+            <Card className="glass overflow-hidden border-white/10 shadow-premium hidden md:block">
                 <CardHeader className="p-8 pb-4 border-b border-white/5">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                         <CardTitle className="text-xl font-black italic uppercase tracking-tight flex items-center gap-3">
@@ -377,7 +464,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                     value={searchTerm}
                                     onChange={(e) => {
                                         setSearchTerm(e.target.value);
-                                        setCurrentPage(1); // Reset to first page on search
+                                        setCurrentPage(1);
                                     }}
                                 />
                             </div>
@@ -475,17 +562,17 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-                <div className="flex items-center justify-between gap-4 mt-8 bg-muted/20 p-4 rounded-2xl border border-muted-foreground/10 mx-6 mb-6">
-                    <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between gap-4 bg-muted/20 p-3 md:p-4 rounded-2xl border border-muted-foreground/10">
+                    <div className="flex items-center gap-1 md:gap-2">
                         <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handlePageChange(currentPage - 1)}
                             disabled={currentPage === 1}
-                            className="h-9 px-3 font-bold uppercase text-[10px] tracking-widest gap-2 italic"
+                            className="h-9 px-2 md:px-3 font-bold uppercase text-[10px] tracking-widest gap-1 italic"
                         >
                             <ChevronLeft className="h-4 w-4" />
-                            {t('common.previous', { defaultValue: 'PREVIOUS' })}
+                            <span className="hidden sm:inline">{t('common.previous', { defaultValue: 'PREVIOUS' })}</span>
                         </Button>
                         <div className="flex items-center gap-1">
                             {[...Array(totalPages)].map((_, i) => {
@@ -520,9 +607,9 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                             size="sm"
                             onClick={() => handlePageChange(currentPage + 1)}
                             disabled={currentPage === totalPages}
-                            className="h-9 px-3 font-bold uppercase text-[10px] tracking-widest gap-2 italic"
+                            className="h-9 px-2 md:px-3 font-bold uppercase text-[10px] tracking-widest gap-1 italic"
                         >
-                            {t('common.next', { defaultValue: 'NEXT' })}
+                            <span className="hidden sm:inline">{t('common.next', { defaultValue: 'NEXT' })}</span>
                             <ChevronRight className="h-4 w-4" />
                         </Button>
                     </div>
@@ -536,23 +623,23 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
 
             {/* Member Details Dialog */}
             <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-                <DialogContent className="sm:max-w-[500px] border-none glass-morphism p-0 overflow-hidden shadow-2xl">
+                <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto border-none glass-morphism p-0 overflow-hidden shadow-2xl">
                     <div className="relative">
                         {/* Header Background Gradient */}
                         <div className="absolute inset-0 h-32 bg-gradient-to-br from-primary/20 via-primary/5 to-transparent pointer-events-none" />
 
-                        <DialogHeader className="p-8 pb-4 relative z-10">
-                            <div className="flex items-end gap-6">
-                                <Avatar className="h-20 w-20 rounded-2xl border-2 border-white/10 shadow-2xl bg-background p-1">
-                                    <AvatarFallback className="rounded-xl bg-gradient-to-br from-primary/30 to-primary/10 text-primary text-xl font-black italic">
+                        <DialogHeader className="p-6 md:p-8 pb-4 relative z-10">
+                            <div className="flex items-end gap-4 md:gap-6">
+                                <Avatar className="h-16 w-16 md:h-20 md:w-20 shrink-0 rounded-2xl border-2 border-white/10 shadow-2xl bg-background p-1">
+                                    <AvatarFallback className="rounded-xl bg-gradient-to-br from-primary/30 to-primary/10 text-primary text-lg md:text-xl font-black italic">
                                         {selectedMember?.first_name?.[0]}{selectedMember?.last_name?.[0]}
                                     </AvatarFallback>
                                 </Avatar>
-                                <div className="flex-1 pb-2">
-                                    <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter leading-none mb-1">
+                                <div className="flex-1 pb-1 md:pb-2 min-w-0">
+                                    <DialogTitle className="text-xl md:text-2xl font-black italic uppercase tracking-tighter leading-none mb-1 truncate">
                                         {selectedMember?.first_name} {selectedMember?.last_name}
                                     </DialogTitle>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 flex-wrap">
                                         <Badge variant="outline" className="text-[9px] font-black italic uppercase tracking-widest border-primary/20 bg-primary/5 text-primary py-0 px-2">
                                             {selectedMember?.role_id ? t(`roles.role_${selectedMember.role_id}`) : '...'}
                                         </Badge>
@@ -563,11 +650,11 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                 </div>
                             </div>
                             <DialogDescription className="sr-only">
-                                {t('members.member_details_desc') || `Information for ${selectedMember?.first_name} {selectedMember?.last_name}`}
+                                {t('members.member_details_desc') || `Information for ${selectedMember?.first_name} ${selectedMember?.last_name}`}
                             </DialogDescription>
                         </DialogHeader>
 
-                        <div className="px-8 pb-8 space-y-6 relative z-10">
+                        <div className="px-6 md:px-8 pb-6 md:pb-8 space-y-4 md:space-y-6 relative z-10">
                             {/* Contact & Bio Info */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1 p-4 rounded-2xl bg-white/[0.03] border border-white/5 shadow-inner">
@@ -664,7 +751,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                             </div>
                         </div>
 
-                        <DialogFooter className="bg-muted/30 p-6 flex flex-row items-center justify-between border-t border-white/5">
+                        <DialogFooter className="bg-muted/30 p-4 md:p-6 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-white/5">
                             <Button
                                 variant="ghost"
                                 size="sm"
@@ -721,7 +808,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
 
             {/* Edit Member Dialog */}
             <Dialog open={editOpen} onOpenChange={setEditOpen}>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>{t('members.edit_title') || 'EDIT MEMBER'}</DialogTitle>
                         <DialogDescription>

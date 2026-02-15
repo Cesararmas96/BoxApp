@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { MainLayout } from './layouts/MainLayout';
 import { Login } from './pages/Login';
+import { AuthCallback } from './pages/AuthCallback';
 import { Members } from './pages/Members';
 import { Leads } from './pages/Leads';
 import { Wods } from './pages/Wods';
@@ -69,6 +70,11 @@ function AppContent() {
   if (!session) {
     return (
       <Routes>
+        {/* OAuth callback — must be available before session is fully established */}
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        {/* Multi-tenant: box-specific login via slug */}
+        <Route path="/box/:boxSlug" element={<Login />} />
+        {/* Default login (resolves first box for backward compat) */}
         <Route path="/login" element={<Login />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>

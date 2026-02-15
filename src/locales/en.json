@@ -714,7 +714,10 @@
         "hide_password": "Hide password",
         "powered_by": "Powered by BoxApp",
         "continue_with_google": "Continue with Google",
-        "or_divider": "or"
+        "or_divider": "or",
+        "box_not_found": "Box not found",
+        "box_not_found_desc": "The gym you're looking for doesn't exist or the link is incorrect. Please check the URL and try again.",
+        "go_to_login": "Go to Login"
     },
     "profile": {
         "title": "Account Settings",

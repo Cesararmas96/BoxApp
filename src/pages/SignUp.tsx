@@ -10,9 +10,13 @@ import { useAuth } from '@/contexts/AuthContext';
 
 interface SignUpProps {
     onBackToLogin: () => void;
+    /** Multi-tenant: the box_id to assign the new user to */
+    boxId?: string;
+    /** Multi-tenant: the box slug for the trigger fallback */
+    boxSlug?: string;
 }
 
-export const SignUp: React.FC<SignUpProps> = ({ onBackToLogin }) => {
+export const SignUp: React.FC<SignUpProps> = ({ onBackToLogin, boxId, boxSlug }) => {
     const { t } = useLanguage();
     const { signUp } = useAuth();
     const [email, setEmail] = useState('');
@@ -56,6 +60,8 @@ export const SignUp: React.FC<SignUpProps> = ({ onBackToLogin }) => {
                     data: {
                         first_name: firstName,
                         last_name: lastName,
+                        ...(boxId ? { box_id: boxId } : {}),
+                        ...(boxSlug ? { box_slug: boxSlug } : {}),
                     }
                 }
             });

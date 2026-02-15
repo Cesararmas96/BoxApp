@@ -714,7 +714,10 @@
         "hide_password": "Ocultar contraseña",
         "powered_by": "Desarrollado por BoxApp",
         "continue_with_google": "Continuar con Google",
-        "or_divider": "o"
+        "or_divider": "o",
+        "box_not_found": "Gimnasio no encontrado",
+        "box_not_found_desc": "El gimnasio que buscas no existe o el enlace es incorrecto. Por favor verifica la URL e intenta de nuevo.",
+        "go_to_login": "Ir al Login"
     },
     "profile": {
         "title": "Ajustes de Cuenta",

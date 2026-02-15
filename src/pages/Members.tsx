@@ -152,8 +152,8 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
             icon: 'warning',
             onConfirm: async () => {
                 try {
-                    const { data, error } = await supabase.functions.invoke('reset-password', {
-                        body: { user_id: memberId }
+                    const { data, error } = await supabase.rpc('admin_reset_password', {
+                        target_user_id: memberId
                     });
 
                     if (error) throw error;

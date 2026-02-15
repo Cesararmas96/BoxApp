@@ -224,30 +224,30 @@ export const Login: React.FC = () => {
                 <div className="w-full max-w-[400px] mx-auto">
                     <div className="rounded-3xl bg-white/[0.07] backdrop-blur-2xl border border-white/[0.10] shadow-[0_8px_60px_rgba(0,0,0,0.5)] overflow-hidden animate-premium-in" style={{ animationDelay: '120ms' }}>
 
-                        <div className="px-6 pt-7 pb-1 sm:px-8 sm:pt-8 text-center">
+                        {/* Title section */}
+                        <div className="px-7 pt-8 pb-2 sm:px-9 sm:pt-10 text-center">
                             <h3 className="text-xl sm:text-2xl font-semibold text-white tracking-tight">
                                 {getTitle()}
                             </h3>
-                            <p className="text-white/40 text-[13px] mt-1 font-medium">
+                            <p className="text-white/40 text-[13px] mt-1.5 font-medium">
                                 {getSubtitle()}
                             </p>
                         </div>
 
                         {/* Google OAuth button + divider (only on login/signup) */}
                         {showSocialLogin && (
-                            <div className="px-6 pt-4 sm:px-8 space-y-4">
+                            <div className="px-7 pt-5 sm:px-9 space-y-5">
                                 <button
                                     type="button"
                                     onClick={handleGoogleSignIn}
                                     disabled={googleLoading || loading}
-                                    className="w-full h-13 rounded-2xl bg-white/[0.06] border border-white/[0.10] text-white font-medium text-[15px] flex items-center justify-center gap-3 hover:bg-white/[0.10] active:scale-[0.98] transition-all duration-200 disabled:opacity-50"
+                                    className="w-full h-[52px] rounded-2xl bg-white/[0.06] border border-white/[0.10] text-white font-medium text-[15px] flex items-center justify-center gap-3 hover:bg-white/[0.12] active:scale-[0.98] transition-all duration-200 disabled:opacity-50"
                                 >
                                     {googleLoading ? (
                                         <Loader2 className="h-5 w-5 animate-spin text-white/60" />
                                     ) : (
                                         <>
-                                            {/* Google icon SVG */}
-                                            <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
+                                            <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
                                                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
                                                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
                                                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
@@ -259,15 +259,15 @@ export const Login: React.FC = () => {
                                 </button>
 
                                 {/* "or" divider */}
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-4">
                                     <div className="flex-1 h-px bg-white/[0.08]" />
-                                    <span className="text-white/30 text-xs font-medium uppercase tracking-wider">{t('auth.or_divider')}</span>
+                                    <span className="text-white/25 text-[11px] font-medium uppercase tracking-widest">{t('auth.or_divider')}</span>
                                     <div className="flex-1 h-px bg-white/[0.08]" />
                                 </div>
                             </div>
                         )}
 
-                        <form onSubmit={handleAuth} className="px-6 pb-6 pt-2 sm:px-8 sm:pb-8 space-y-4">
+                        <form onSubmit={handleAuth} className="px-7 pb-7 pt-3 sm:px-9 sm:pb-9 space-y-5">
                             {error && (
                                 <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 py-3 animate-in fade-in zoom-in duration-300 rounded-2xl">
                                     <Info className="h-4 w-4 text-red-400" />
@@ -277,7 +277,7 @@ export const Login: React.FC = () => {
 
                             {/* Email field */}
                             {!isForcedReset && (
-                                <div className="space-y-2">
+                                <div className="space-y-2.5">
                                     <Label htmlFor="email" className="text-[11px] font-semibold uppercase tracking-wider text-white/40 ml-1">{t('auth.email')}</Label>
                                     <div className="relative group">
                                         <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-white/30 transition-colors group-focus-within:text-white/70" />
@@ -285,7 +285,7 @@ export const Login: React.FC = () => {
                                             id="email"
                                             type="email"
                                             placeholder={t('auth.email_placeholder')}
-                                            className="bg-white/[0.06] border-white/[0.08] pl-12 h-13 rounded-2xl text-white placeholder:text-white/25 focus:border-white/20 focus:ring-1 focus:ring-white/10 transition-all text-[15px] font-medium"
+                                            className="bg-white/[0.06] border-white/[0.08] pl-12 h-[52px] rounded-2xl text-white placeholder:text-white/25 focus:border-white/20 focus:ring-1 focus:ring-white/10 transition-all text-[15px] font-medium"
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
                                             required
@@ -297,29 +297,29 @@ export const Login: React.FC = () => {
 
                             {/* Force-reset password fields */}
                             {isForcedReset && (
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
+                                <div className="space-y-5">
+                                    <div className="space-y-2.5">
                                         <Label className="text-[11px] font-semibold uppercase tracking-wider text-white/40 ml-1">{t('auth.new_password_force')}</Label>
                                         <div className="relative group">
                                             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-white/30 transition-colors group-focus-within:text-white/70" />
                                             <Input
                                                 type="password"
                                                 placeholder="••••••••"
-                                                className="bg-white/[0.06] border-white/[0.08] pl-12 h-13 rounded-2xl text-white placeholder:text-white/25 focus:border-white/20 focus:ring-1 focus:ring-white/10 transition-all font-mono text-[15px]"
+                                                className="bg-white/[0.06] border-white/[0.08] pl-12 h-[52px] rounded-2xl text-white placeholder:text-white/25 focus:border-white/20 focus:ring-1 focus:ring-white/10 transition-all font-mono text-[15px]"
                                                 value={newPassword}
                                                 onChange={(e) => setNewPassword(e.target.value)}
                                                 required
                                             />
                                         </div>
                                     </div>
-                                    <div className="space-y-2">
+                                    <div className="space-y-2.5">
                                         <Label className="text-[11px] font-semibold uppercase tracking-wider text-white/40 ml-1">{t('auth.confirm_password_force')}</Label>
                                         <div className="relative group">
                                             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-white/30 transition-colors group-focus-within:text-white/70" />
                                             <Input
                                                 type="password"
                                                 placeholder="••••••••"
-                                                className="bg-white/[0.06] border-white/[0.08] pl-12 h-13 rounded-2xl text-white placeholder:text-white/25 focus:border-white/20 focus:ring-1 focus:ring-white/10 transition-all font-mono text-[15px]"
+                                                className="bg-white/[0.06] border-white/[0.08] pl-12 h-[52px] rounded-2xl text-white placeholder:text-white/25 focus:border-white/20 focus:ring-1 focus:ring-white/10 transition-all font-mono text-[15px]"
                                                 value={confirmPassword}
                                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                                 required
@@ -331,7 +331,7 @@ export const Login: React.FC = () => {
 
                             {/* Password field */}
                             {!isResetting && !isForcedReset && (
-                                <div className="space-y-2">
+                                <div className="space-y-2.5">
                                     <div className="flex justify-between items-end ml-1">
                                         <Label htmlFor="pass" className="text-[11px] font-semibold uppercase tracking-wider text-white/40">{t('auth.password')}</Label>
                                         {!isSignUp && (
@@ -350,7 +350,7 @@ export const Login: React.FC = () => {
                                             id="pass"
                                             type={showPassword ? "text" : "password"}
                                             placeholder="••••••••"
-                                            className="bg-white/[0.06] border-white/[0.08] pl-12 pr-12 h-13 rounded-2xl text-white placeholder:text-white/25 focus:border-white/20 focus:ring-1 focus:ring-white/10 transition-all font-mono text-[15px]"
+                                            className="bg-white/[0.06] border-white/[0.08] pl-12 pr-12 h-[52px] rounded-2xl text-white placeholder:text-white/25 focus:border-white/20 focus:ring-1 focus:ring-white/10 transition-all font-mono text-[15px]"
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
                                             required
@@ -371,7 +371,7 @@ export const Login: React.FC = () => {
                             {/* Submit button */}
                             <Button
                                 type="submit"
-                                className="w-full h-13 rounded-2xl bg-white text-black font-semibold text-[15px] shadow-lg hover:bg-white/90 active:scale-[0.98] transition-all duration-200 group mt-2"
+                                className="w-full h-[52px] rounded-2xl bg-white text-black font-semibold text-[15px] shadow-lg hover:bg-white/90 active:scale-[0.98] transition-all duration-200 group mt-1"
                                 disabled={loading}
                             >
                                 {loading ? (
@@ -386,7 +386,7 @@ export const Login: React.FC = () => {
                         </form>
 
                         {/* Bottom toggle */}
-                        <div className="px-6 pb-6 sm:px-8 sm:pb-8 -mt-1">
+                        <div className="px-7 pb-7 sm:px-9 sm:pb-9 -mt-2">
                             <div className="flex items-center justify-center gap-1.5">
                                 <p className="text-white/30 text-[13px] font-medium">
                                     {isForcedReset

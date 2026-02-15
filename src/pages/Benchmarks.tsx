@@ -19,13 +19,13 @@ import {
     TableRow
 } from '@/components/ui/table';
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-    DialogTrigger,
-    DialogFooter
+    ResponsiveDialog as Dialog,
+    ResponsiveDialogContent as DialogContent,
+    ResponsiveDialogHeader as DialogHeader,
+    ResponsiveDialogTitle as DialogTitle,
+    ResponsiveDialogDescription as DialogDescription,
+    ResponsiveDialogTrigger as DialogTrigger,
+    ResponsiveDialogFooter as DialogFooter
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';

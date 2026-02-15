@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription
+    ResponsiveDialogContent as DialogContent,
+    ResponsiveDialogHeader as DialogHeader,
+    ResponsiveDialogTitle as DialogTitle,
+    ResponsiveDialogDescription as DialogDescription
 } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {

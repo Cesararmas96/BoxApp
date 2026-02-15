@@ -18,6 +18,19 @@ export default {
             },
         },
         extend: {
+            fontFamily: {
+                sans: [
+                    "-apple-system",
+                    "BlinkMacSystemFont",
+                    '"SF Pro Display"',
+                    '"SF Pro Text"',
+                    '"Helvetica Neue"',
+                    "Helvetica",
+                    "Arial",
+                    "system-ui",
+                    "sans-serif",
+                ],
+            },
             spacing: {
                 '13': '3.25rem',
             },
@@ -61,6 +74,12 @@ export default {
                 md: "calc(var(--radius) - 2px)",
                 sm: "calc(var(--radius) - 4px)",
             },
+            boxShadow: {
+                'apple-sm': 'var(--shadow-sm)',
+                'apple': 'var(--shadow-md)',
+                'apple-lg': 'var(--shadow-lg)',
+                'apple-xl': 'var(--shadow-xl)',
+            },
             keyframes: {
                 "accordion-down": {
                     from: { height: 0 },
@@ -70,10 +89,20 @@ export default {
                     from: { height: "var(--radix-accordion-content-height)" },
                     to: { height: 0 },
                 },
+                "sheet-up": {
+                    from: { transform: "translateY(100%)" },
+                    to: { transform: "translateY(0)" },
+                },
+                "sheet-down": {
+                    from: { transform: "translateY(0)" },
+                    to: { transform: "translateY(100%)" },
+                },
             },
             animation: {
                 "accordion-down": "accordion-down 0.2s ease-out",
                 "accordion-up": "accordion-up 0.2s ease-out",
+                "sheet-up": "sheet-up 0.35s cubic-bezier(0.32, 0.72, 0, 1)",
+                "sheet-down": "sheet-down 0.25s cubic-bezier(0.32, 0.72, 0, 1)",
             },
         },
     },

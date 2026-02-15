@@ -25,12 +25,12 @@ import {
     CardContent,
 } from "@/components/ui/card";
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-    DialogDescription,
+    ResponsiveDialog as Dialog,
+    ResponsiveDialogContent as DialogContent,
+    ResponsiveDialogHeader as DialogHeader,
+    ResponsiveDialogTitle as DialogTitle,
+    ResponsiveDialogTrigger as DialogTrigger,
+    ResponsiveDialogDescription as DialogDescription,
 } from "@/components/ui/dialog";
 import {
     Select,

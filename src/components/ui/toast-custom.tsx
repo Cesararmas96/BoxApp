@@ -19,44 +19,44 @@ export const Toast: React.FC<ToastProps> = ({ type, message, onClose, duration =
         if (type !== 'loading') {
             const timer = setTimeout(() => {
                 setIsVisible(false);
-                setTimeout(onClose, 300); // Wait for fade-out animation
+                setTimeout(onClose, 300);
             }, duration);
             return () => clearTimeout(timer);
         }
     }, [type, duration, onClose]);
 
     const icons = {
-        success: <CheckCircle2 className="h-5 w-5 text-emerald-500" />,
+        success: <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />,
         error: <AlertCircle className="h-5 w-5 text-destructive" />,
         loading: <Loader2 className="h-5 w-5 text-primary animate-spin" />
     };
 
     const colors = {
-        success: "border-emerald-500/20 bg-emerald-500/10 text-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.1)]",
-        error: "border-destructive/20 bg-destructive/10 text-destructive shadow-[0_0_20px_rgba(239,68,68,0.1)]",
-        loading: "border-primary/20 bg-primary/10 text-primary shadow-[0_0_20px_rgba(var(--primary),0.1)]"
+        success: "border-emerald-200 dark:border-emerald-800/50 bg-emerald-50 dark:bg-emerald-950/50",
+        error: "border-destructive/20 bg-destructive/5",
+        loading: "border-primary/20 bg-primary/5"
     };
 
     const toastContent = (
         <div className={cn(
-            "fixed top-6 right-6 z-[99999] transition-all duration-300 ease-out",
-            isVisible ? "translate-x-0 opacity-100 scale-100" : "translate-x-4 opacity-0 scale-95"
+            "fixed top-4 right-4 z-[99999] transition-all duration-300 ease-out",
+            isVisible ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"
         )}>
             <div className={cn(
-                "flex items-center gap-3 px-5 py-3 rounded-2xl border backdrop-blur-md min-w-[320px] max-w-[90vw]",
+                "flex items-center gap-3 px-4 py-3 rounded-2xl border backdrop-blur-xl min-w-[300px] max-w-[90vw] shadow-apple-lg",
                 colors[type]
             )}>
                 <div className="flex-shrink-0">{icons[type]}</div>
-                <p className="flex-1 text-sm font-black uppercase italic tracking-tight">{message}</p>
+                <p className="flex-1 text-sm font-medium text-foreground">{message}</p>
                 {type !== 'loading' && (
                     <button
                         onClick={() => {
                             setIsVisible(false);
                             setTimeout(onClose, 300);
                         }}
-                        className="p-1 hover:bg-black/5 rounded-full transition-colors"
+                        className="p-1 hover:bg-foreground/5 rounded-full transition-colors"
                     >
-                        <X className="h-4 w-4 opacity-50" />
+                        <X className="h-4 w-4 text-muted-foreground" />
                     </button>
                 )}
             </div>
@@ -65,5 +65,3 @@ export const Toast: React.FC<ToastProps> = ({ type, message, onClose, duration =
 
     return createPortal(toastContent, document.body);
 };
-
-// Global context/provider can be added later if needed, but for now we can use it per page or as a portal.

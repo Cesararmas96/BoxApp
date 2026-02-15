@@ -39,12 +39,12 @@ import {
     TableRow
 } from '@/components/ui/table';
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-    DialogTrigger
+    ResponsiveDialog as Dialog,
+    ResponsiveDialogContent as DialogContent,
+    ResponsiveDialogHeader as DialogHeader,
+    ResponsiveDialogTitle as DialogTitle,
+    ResponsiveDialogDescription as DialogDescription,
+    ResponsiveDialogTrigger as DialogTrigger
 } from '@/components/ui/dialog';
 import {
     DropdownMenu,

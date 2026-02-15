@@ -46,7 +46,6 @@ export const MainLayout: React.FC<LayoutProps> = ({ userProfile }) => {
     const navItems = getNavItems(t);
 
     useEffect(() => {
-        // Update Favicon based on current box
         const box = currentBox as any;
         if (box?.favicon_url) {
             let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
@@ -58,9 +57,7 @@ export const MainLayout: React.FC<LayoutProps> = ({ userProfile }) => {
             link.href = box.favicon_url;
         }
 
-        // Update Page Title based on current box and active item
         if (currentBox?.name) {
-            // Find nav item by checking if path starts with item path (for nested routes) or is exact
             const matchingItem = navItems.find(item =>
                 location.pathname === item.path ||
                 (item.path !== '/' && location.pathname.startsWith(`${item.path}/`))
@@ -88,22 +85,19 @@ export const MainLayout: React.FC<LayoutProps> = ({ userProfile }) => {
 
     const filteredNavItems = navItems
         .filter(item => {
-            // Role access check (existing logic)
             const hasRoleAccess = !item.roles || (userProfile?.role_id && item.roles.includes(userProfile.role_id));
             if (!hasRoleAccess) return false;
 
-            // Custom visibility check
             if (customNavConfig && Array.isArray(customNavConfig)) {
-                const config = customNavConfig.find(c => c.id === item.id);
+                const config = customNavConfig.find((c: any) => c.id === item.id);
                 if (config && config.visible === false) return false;
             }
             return true;
         })
-        .sort((a, b) => {
-            // Custom order check
+        .sort((a: any, b: any) => {
             if (customNavConfig && Array.isArray(customNavConfig)) {
-                const configA = customNavConfig.find(c => c.id === a.id);
-                const configB = customNavConfig.find(c => c.id === b.id);
+                const configA = customNavConfig.find((c: any) => c.id === a.id);
+                const configB = customNavConfig.find((c: any) => c.id === b.id);
                 if (configA && configB && typeof configA.order === 'number' && typeof configB.order === 'number') {
                     return configA.order - configB.order;
                 }
@@ -127,138 +121,129 @@ export const MainLayout: React.FC<LayoutProps> = ({ userProfile }) => {
             {/* Mobile Backdrop */}
             <div
                 className={cn(
-                    "fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm lg:hidden transition-all duration-300",
+                    "fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm lg:hidden transition-all duration-300",
                     isSidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
                 )}
                 onClick={() => setIsSidebarOpen(false)}
             />
 
-            {/* Sidebar */}
+            {/* Sidebar — Apple-style navigation */}
             <aside className={cn(
-                "fixed inset-y-6 left-6 z-[110] w-64 flex flex-col bg-card/40 backdrop-blur-3xl border border-white/10 rounded-[2rem] shadow-premium transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] lg:translate-x-0 lg:z-40",
-                isSidebarOpen ? "translate-x-0" : "-translate-x-[calc(100%+32px)]"
+                "fixed inset-y-0 left-0 z-[110] w-[272px] flex flex-col bg-card/80 backdrop-blur-xl border-r border-border/50 transition-transform duration-300 ease-out lg:translate-x-0",
+                isSidebarOpen ? "translate-x-0" : "-translate-x-full"
             )}>
-                <div className="flex h-20 items-center justify-between px-6 shrink-0 relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                    <div className="flex items-center gap-3" onClick={() => navigateTo('/dashboard')} style={{ cursor: 'pointer' }}>
+                {/* Logo section */}
+                <div className="flex h-16 items-center justify-between px-5 shrink-0">
+                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateTo('/dashboard')}>
                         {currentBox?.logo_url ? (
-                            <img src={currentBox.logo_url} alt="Logo" className="h-10 w-10 object-contain rounded-lg shadow-lg shadow-primary/10" />
+                            <img src={currentBox.logo_url} alt="Logo" className="h-8 w-8 object-contain rounded-lg" />
                         ) : (
-                            <div className="h-10 w-10 bg-primary/20 rounded-lg flex items-center justify-center">
-                                <span className="text-primary font-black italic">B</span>
+                            <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                                <span className="text-primary font-bold text-sm">B</span>
                             </div>
                         )}
-                        <div className="flex flex-col">
-                            <span className="text-xl font-black tracking-tighter text-primary uppercase italic text-glow leading-none truncate max-w-[120px]">
-                                {currentBox?.name || 'Box Manager'}
-                            </span>
-                            <span className="text-[8px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 mt-1">Sport-Tech Engine</span>
-                        </div>
+                        <span className="text-base font-semibold text-foreground truncate max-w-[150px]">
+                            {currentBox?.name || 'Box Manager'}
+                        </span>
                     </div>
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="lg:hidden hover:bg-destructive/10 hover:text-destructive transition-colors rounded-full z-10"
+                        className="lg:hidden h-8 w-8 rounded-full"
                         onClick={() => setIsSidebarOpen(false)}
                     >
-                        <X className="h-5 w-5" />
+                        <X className="h-4 w-4" />
                     </Button>
                 </div>
 
-                <div className="px-4">
-                    <Separator className="bg-primary/10" />
-                </div>
+                <Separator className="bg-border/50" />
 
-                <div className="flex-1 px-3 py-6 overflow-y-auto">
-                    <nav className="space-y-1">
+                {/* Navigation items */}
+                <div className="flex-1 px-3 py-4 overflow-y-auto">
+                    <nav className="space-y-0.5">
                         {filteredNavItems.map((item) => (
-                            <Button
+                            <button
                                 key={item.id}
-                                variant={isActive(item.path) ? "default" : "ghost"}
                                 className={cn(
-                                    "w-full justify-start gap-3 h-12 px-5 font-bold uppercase text-[10px] tracking-widest transition-all duration-500 rounded-2xl relative group overflow-hidden border-none",
+                                    "w-full flex items-center gap-3 h-10 px-3 rounded-lg text-sm font-medium transition-colors",
                                     isActive(item.path)
-                                        ? "bg-primary text-white shadow-lg shadow-primary/20 scale-[1.02]"
-                                        : "text-muted-foreground/80 hover:bg-primary/10 hover:text-primary hover:scale-[1.02]"
+                                        ? "bg-primary text-primary-foreground"
+                                        : "text-muted-foreground hover:bg-accent hover:text-foreground"
                                 )}
                                 onClick={() => navigateTo(item.path)}
                             >
-                                {isActive(item.path) && (
-                                    <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-white rounded-r-full animate-in fade-in slide-in-from-left-2 duration-300" />
-                                )}
-                                <item.icon className={cn("h-4 w-4 transition-transform duration-300", isActive(item.path) ? "text-white scale-110" : "text-primary/70 group-hover:scale-125")} />
-                                {item.label}
-                                {!isActive(item.path) && (
-                                    <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                )}
-                            </Button>
+                                <item.icon className="h-4 w-4 shrink-0" />
+                                <span className="truncate">{item.label}</span>
+                            </button>
                         ))}
                     </nav>
                 </div>
 
-                <div className="p-4 space-y-2 mt-auto bg-white/5 backdrop-blur-md rounded-b-[2rem] border-t border-white/5">
-                    <Button
-                        variant={isActive('/settings') ? "default" : "ghost"}
+                {/* Bottom section */}
+                <div className="p-3 space-y-0.5 border-t border-border/50">
+                    <button
                         className={cn(
-                            "w-full justify-start gap-3 h-11 px-4 font-bold uppercase text-[10px] tracking-widest rounded-xl transition-all border-none",
-                            isActive('/settings') ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-muted-foreground/80 hover:bg-primary/10 hover:text-primary"
+                            "w-full flex items-center gap-3 h-10 px-3 rounded-lg text-sm font-medium transition-colors",
+                            isActive('/settings')
+                                ? "bg-primary text-primary-foreground"
+                                : "text-muted-foreground hover:bg-accent hover:text-foreground"
                         )}
                         onClick={() => navigateTo('/settings')}
                     >
-                        <SettingsIcon className="h-4 w-4 transition-transform group-hover:rotate-45" />
+                        <SettingsIcon className="h-4 w-4" />
                         {t('nav.settings')}
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        className="w-full justify-start gap-3 h-11 px-4 text-muted-foreground/80 font-bold uppercase text-[10px] tracking-widest rounded-xl hover:text-destructive hover:bg-destructive/10 transition-all border-none"
+                    </button>
+                    <button
+                        className="w-full flex items-center gap-3 h-10 px-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                         onClick={handleLogout}
                     >
-                        <LogOut className="h-4 w-4 text-destructive/70" />
+                        <LogOut className="h-4 w-4" />
                         {t('nav.logout')}
-                    </Button>
+                    </button>
                 </div>
             </aside>
 
             {/* Content Wrapper */}
-            <div className="flex-1 flex flex-col min-w-0 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]">
-                {/* Header */}
-                <header className="flex h-16 items-center justify-between px-6 md:px-10 glass sticky top-6 mx-6 rounded-3xl z-30 shadow-premium border-white/10 font-inter transition-all duration-700 lg:ml-[288px]">
+            <div className="flex-1 flex flex-col min-w-0 lg:pl-[272px]">
+                {/* Header — Apple-style navigation bar */}
+                <header className="sticky top-0 z-30 flex h-14 items-center justify-between px-4 md:px-6 bg-background/80 backdrop-blur-xl border-b border-border/50">
+                    {/* Left: hamburger + logo on mobile */}
                     <div className="flex items-center gap-3 lg:hidden">
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="text-primary hover:bg-primary/10 rounded-full"
+                            className="h-9 w-9 rounded-full"
                             onClick={toggleSidebar}
                         >
-                            <Menu className="h-6 w-6" />
+                            <Menu className="h-5 w-5" />
                         </Button>
                         <div className="flex items-center gap-2">
-                            {currentBox?.logo_url && <img src={currentBox.logo_url} className="h-6 w-6 object-contain" alt="Logo" />}
-                            <span className="text-lg font-black italic tracking-tighter text-primary uppercase text-glow">{currentBox?.name || 'Box Manager'}</span>
+                            {currentBox?.logo_url && <img src={currentBox.logo_url} className="h-6 w-6 object-contain rounded-md" alt="Logo" />}
+                            <span className="text-base font-semibold text-foreground">{currentBox?.name || 'Box Manager'}</span>
                         </div>
                     </div>
-                    <div className="hidden lg:flex items-center gap-4 bg-zinc-950/20 px-4 py-1.5 rounded-full border border-primary/10">
-                        <div className="flex items-center gap-2">
-                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                            <span className="text-[9px] font-black uppercase tracking-[0.1em] text-emerald-500/80">LNX-Node: 01-Active</span>
-                        </div>
-                        <div className="w-px h-3 bg-primary/10" />
-                        <div className="flex items-center gap-2">
-                            <span className="text-[9px] font-black uppercase tracking-[0.1em] text-muted-foreground/60">{t('nav.system_online')}</span>
+
+                    {/* Left: status on desktop */}
+                    <div className="hidden lg:flex items-center gap-3">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                            <span className="text-xs font-medium">{t('nav.system_online')}</span>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
+
+                    {/* Right: actions */}
+                    <div className="flex items-center gap-1">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="hover:bg-primary/10 text-primary rounded-full transition-all hover:rotate-12 active:scale-90">
-                                    <Languages className="h-5 w-5" />
+                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+                                    <Languages className="h-4 w-4" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-card/80 backdrop-blur-2xl border-white/10 w-44 rounded-2xl p-2 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-                                <DropdownMenuItem onClick={() => changeLanguage('es')} className="cursor-pointer font-black uppercase text-[9px] tracking-[0.15em] rounded-xl focus:bg-primary/10 focus:text-primary transition-colors">
+                            <DropdownMenuContent align="end" className="w-40">
+                                <DropdownMenuItem onClick={() => changeLanguage('es')} className="cursor-pointer text-sm">
                                     Español
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => changeLanguage('en')} className="cursor-pointer font-black uppercase text-[9px] tracking-[0.15em] rounded-xl focus:bg-primary/10 focus:text-primary transition-colors">
+                                <DropdownMenuItem onClick={() => changeLanguage('en')} className="cursor-pointer text-sm">
                                     English
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -266,28 +251,28 @@ export const MainLayout: React.FC<LayoutProps> = ({ userProfile }) => {
                         <ModeToggle />
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-10 w-10 p-0 rounded-full border border-primary/20 overflow-hidden hover:scale-105 transition-transform">
+                                <Button variant="ghost" className="h-9 w-9 p-0 rounded-full overflow-hidden">
                                     {userProfile?.avatar_url && (userProfile.avatar_url.startsWith('http') || userProfile.avatar_url.startsWith('/')) ? (
                                         <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                                     ) : (
-                                        <User className="h-5 w-5 text-primary" />
+                                        <User className="h-4 w-4 text-muted-foreground" />
                                     )}
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-card/80 backdrop-blur-2xl border-white/10 w-56 rounded-2xl p-2 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-                                <div className="px-3 py-2 border-b border-primary/10 mb-2">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-primary truncate">{userProfile?.first_name} {userProfile?.last_name}</p>
-                                    <p className="text-[8px] font-medium text-muted-foreground truncate italic">{userProfile?.role_id}</p>
+                            <DropdownMenuContent align="end" className="w-56">
+                                <div className="px-3 py-2.5 border-b border-border mb-1">
+                                    <p className="text-sm font-medium text-foreground truncate">{userProfile?.first_name} {userProfile?.last_name}</p>
+                                    <p className="text-xs text-muted-foreground truncate">{userProfile?.role_id}</p>
                                 </div>
-                                <DropdownMenuItem onClick={() => navigateTo('/profile')} className="cursor-pointer font-black uppercase text-[9px] tracking-[0.15em] rounded-xl focus:bg-primary/10 focus:text-primary transition-colors gap-2">
-                                    <User className="h-3 w-3" /> {t('profile.title')}
+                                <DropdownMenuItem onClick={() => navigateTo('/profile')} className="cursor-pointer gap-2">
+                                    <User className="h-4 w-4" /> {t('profile.title')}
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => navigateTo('/settings')} className="cursor-pointer font-black uppercase text-[9px] tracking-[0.15em] rounded-xl focus:bg-primary/10 focus:text-primary transition-colors gap-2">
-                                    <SettingsIcon className="h-3 w-3" /> {t('nav.settings')}
+                                <DropdownMenuItem onClick={() => navigateTo('/settings')} className="cursor-pointer gap-2">
+                                    <SettingsIcon className="h-4 w-4" /> {t('nav.settings')}
                                 </DropdownMenuItem>
-                                <Separator className="my-2 bg-primary/10" />
-                                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer font-black uppercase text-[9px] tracking-[0.15em] rounded-xl focus:bg-destructive/10 focus:text-destructive transition-colors gap-2">
-                                    <LogOut className="h-3 w-3" /> {t('nav.logout')}
+                                <Separator className="my-1" />
+                                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer gap-2 text-destructive focus:text-destructive">
+                                    <LogOut className="h-4 w-4" /> {t('nav.logout')}
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -295,11 +280,8 @@ export const MainLayout: React.FC<LayoutProps> = ({ userProfile }) => {
                 </header>
 
                 {/* Main Content Area */}
-                <main className={cn(
-                    "flex-1 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]",
-                    "lg:ml-[288px]"
-                )}>
-                    <div className="container mx-auto p-6 md:p-10 max-w-7xl animate-premium-in">
+                <main className="flex-1">
+                    <div className="container mx-auto p-4 md:p-6 lg:p-8 max-w-7xl animate-premium-in">
                         <Outlet />
                     </div>
                 </main>

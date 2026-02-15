@@ -712,7 +712,9 @@
         "email_placeholder": "your@email.com",
         "show_password": "Show password",
         "hide_password": "Hide password",
-        "powered_by": "Powered by BoxApp"
+        "powered_by": "Powered by BoxApp",
+        "continue_with_google": "Continue with Google",
+        "or_divider": "or"
     },
     "profile": {
         "title": "Account Settings",

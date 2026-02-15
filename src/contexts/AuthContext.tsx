@@ -17,6 +17,7 @@ interface AuthContextType {
     isRoot: boolean;
     isAthlete: boolean;
     signIn: (credentials: any) => Promise<{ error: any; data?: any }>;
+    signInWithGoogle: () => Promise<{ error: any }>;
     signUp: (credentials: any) => Promise<{ data: any; error: any }>;
     resetPassword: (email: string) => Promise<{ error: any }>;
     updateUser: (attributes: any) => Promise<{ data: any; error: any }>;
@@ -142,6 +143,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return result;
     };
 
+    const signInWithGoogle = async () => {
+        console.log('[AuthContext] Google OAuth started');
+        const result = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: `${window.location.origin}/dashboard`,
+            },
+        });
+        // onAuthStateChange will handle session + profile fetch after redirect
+        return { error: result.error };
+    };
+
     const signUp = async (credentials: any) => {
         setLoading(true);
         const result = await supabase.auth.signUp(credentials);
@@ -188,6 +201,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isRoot,
         isAthlete,
         signIn,
+        signInWithGoogle,
         signUp,
         resetPassword,
         updateUser,

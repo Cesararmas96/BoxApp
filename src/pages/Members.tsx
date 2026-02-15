@@ -152,7 +152,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
             icon: 'warning',
             onConfirm: async () => {
                 try {
-                    const { data, error } = await supabase.rpc('admin_reset_password', {
+                    const { data, error } = await (supabase as any).rpc('admin_reset_password', {
                         target_user_id: memberId
                     });
 

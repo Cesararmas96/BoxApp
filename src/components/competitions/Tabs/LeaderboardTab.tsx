@@ -206,7 +206,7 @@ export const LeaderboardTab: React.FC<LeaderboardTabProps> = ({ competition }) =
 
                 <div className="w-[200px]">
                     <Select value={selectedDivision} onValueChange={setSelectedDivision}>
-                        <SelectTrigger className="bg-white/5 border-white/10 h-10 rounded-xl">
+                        <SelectTrigger className="bg-muted/50 border-border h-10 rounded-xl">
                             <SelectValue placeholder="All Divisions" />
                         </SelectTrigger>
                         <SelectContent>
@@ -227,14 +227,14 @@ export const LeaderboardTab: React.FC<LeaderboardTabProps> = ({ competition }) =
                                 <Badge className="bg-primary text-primary-foreground hover:bg-primary h-8 px-4 text-xs font-black uppercase tracking-widest rounded-lg">
                                     {divData.division}
                                 </Badge>
-                                <div className="h-px flex-1 bg-white/5" />
+                                <div className="h-px flex-1 bg-muted/50" />
                             </div>
 
-                            <div className="bg-white/5 border border-white/5 rounded-[2rem] overflow-hidden shadow-2xl">
+                            <div className="bg-muted/50 border border-border rounded-[2rem] overflow-hidden shadow-2xl">
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left min-w-[800px]">
                                         <thead>
-                                            <tr className="bg-white/5 border-b border-white/5">
+                                            <tr className="bg-muted/50 border-b border-border">
                                                 <th className="p-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground w-20 text-center">#</th>
                                                 <th className="p-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('competitions.athlete')}</th>
                                                 {events.map((event, idx) => (
@@ -247,11 +247,11 @@ export const LeaderboardTab: React.FC<LeaderboardTabProps> = ({ competition }) =
                                         </thead>
                                         <tbody>
                                             {divData.rankings.map((row, idx) => (
-                                                <tr key={row.participant.id} className="border-b border-white/5 last:border-none hover:bg-white/5 transition-colors group">
+                                                <tr key={row.participant.id} className="border-b border-border last:border-none hover:bg-muted transition-colors group">
                                                     <td className="p-6 text-center">
                                                         <div className={`mx-auto h-8 w-8 rounded-lg flex items-center justify-center font-black text-xs shadow-lg ${idx === 0 ? 'bg-yellow-500 text-black shadow-yellow-500/20' :
-                                                            idx === 1 ? 'bg-zinc-300 text-black shadow-zinc-300/20' :
-                                                                idx === 2 ? 'bg-amber-700 text-white shadow-amber-700/20' :
+                                                            idx === 1 ? 'bg-muted text-foreground shadow-md' :
+                                                                idx === 2 ? 'bg-amber-700 text-foreground shadow-amber-700/20' :
                                                                     'bg-white/10 text-muted-foreground'
                                                             }`}>
                                                             {idx + 1}
@@ -263,7 +263,7 @@ export const LeaderboardTab: React.FC<LeaderboardTabProps> = ({ competition }) =
                                                                 {row.participant.athlete.first_name?.[0]}{row.participant.athlete.last_name?.[0]}
                                                             </div>
                                                             <div>
-                                                                <p className="font-black text-sm uppercase tracking-tight text-white/90 group-hover:text-primary transition-colors">{row.participant.athlete.first_name} {row.participant.athlete.last_name}</p>
+                                                                <p className="font-black text-sm uppercase tracking-tight text-foreground group-hover:text-primary transition-colors">{row.participant.athlete.first_name} {row.participant.athlete.last_name}</p>
                                                             </div>
                                                         </div>
                                                     </td>

@@ -904,7 +904,7 @@ export const Billing: React.FC = () => {
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                     <Input
                                         placeholder={t('common.search', { defaultValue: 'Buscar atleta...' })}
-                                        className="h-9 pl-9 bg-muted/20 border-white/5 rounded-xl text-xs focus:bg-background transition-all"
+                                        className="h-9 pl-9 bg-muted/20 border-border rounded-xl text-xs focus:bg-background transition-all"
                                         value={membershipSearch}
                                         onChange={(e) => {
                                             setMembershipSearch(e.target.value);
@@ -919,7 +919,7 @@ export const Billing: React.FC = () => {
                                             {t('billing.add_membership')}
                                         </Button>
                                     </DialogTrigger>
-                                    <DialogContent className="sm:max-w-[425px] glass border-white/10 shadow-2xl p-0 overflow-visible">
+                                    <DialogContent className="sm:max-w-[425px] glass border-border shadow-2xl p-0 overflow-visible">
                                         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent pointer-events-none rounded-lg" />
                                         <DialogHeader className="p-6 pb-0 relative z-0">
                                             <div className="flex items-center gap-3 mb-2">
@@ -940,7 +940,7 @@ export const Billing: React.FC = () => {
                                                     value={newMembership.userId}
                                                     onValueChange={(val) => setNewMembership({ ...newMembership, userId: val })}
                                                 >
-                                                    <SelectTrigger className="h-12 bg-background border-border rounded-2xl focus:ring-primary/50 transition-all hover:bg-muted/50">
+                                                    <SelectTrigger className="h-12 bg-background border-border rounded-2xl focus:ring-primary/50 transition-all hover:bg-muted">
                                                         <SelectValue placeholder={t('billing.select_athlete')} />
                                                     </SelectTrigger>
                                                     <SelectContent className="glass border-border max-h-[300px] p-0 shadow-2xl">
@@ -979,7 +979,7 @@ export const Billing: React.FC = () => {
                                                     value={newMembership.planId}
                                                     onValueChange={(val) => setNewMembership({ ...newMembership, planId: val })}
                                                 >
-                                                    <SelectTrigger className="h-12 bg-background border-border rounded-2xl focus:ring-primary/50 transition-all hover:bg-muted/50">
+                                                    <SelectTrigger className="h-12 bg-background border-border rounded-2xl focus:ring-primary/50 transition-all hover:bg-muted">
                                                         <SelectValue placeholder={t('billing.select_plan')} />
                                                     </SelectTrigger>
                                                     <SelectContent className="glass border-border p-1 shadow-2xl">
@@ -1010,7 +1010,7 @@ export const Billing: React.FC = () => {
                                                         ? "bg-primary border-primary scale-110 shadow-lg shadow-primary/30"
                                                         : "border-muted-foreground/30 bg-muted/20"
                                                 )}>
-                                                    {newMembership.isUnclear && <CheckCircle2 className="h-4 w-4 text-white" strokeWidth={3} />}
+                                                    {newMembership.isUnclear && <CheckCircle2 className="h-4 w-4 text-foreground" strokeWidth={3} />}
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <Label className="text-[11px] font-black uppercase tracking-tight cursor-pointer group-hover:text-primary transition-colors">{t('billing.unclear_start_date')}</Label>
@@ -1037,7 +1037,7 @@ export const Billing: React.FC = () => {
                                                 <Button
                                                     variant="outline"
                                                     onClick={() => setIsMembershipDialogOpen(false)}
-                                                    className="h-14 flex-1 rounded-2xl border-white/10 hover:bg-white/5 font-black italic uppercase tracking-wider text-sm transition-all"
+                                                    className="h-14 flex-1 rounded-2xl border-border hover:bg-muted font-black italic uppercase tracking-wider text-sm transition-all"
                                                 >
                                                     {t('common.cancel', { defaultValue: 'CANCELAR' })}
                                                 </Button>

@@ -68,7 +68,7 @@ export const AthleteDashboard: React.FC = () => {
                 </CardContent>
             </Card>
 
-            <Card className="glass relative group overflow-hidden border-white/10">
+            <Card className="glass relative group overflow-hidden border-border">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                 <CardHeader className="pt-8 px-8">
                     <CardTitle className="text-[11px] font-black uppercase tracking-[0.4em] text-primary italic flex items-center gap-3">
@@ -83,7 +83,7 @@ export const AthleteDashboard: React.FC = () => {
                 </CardContent>
             </Card>
 
-            <Card className="glass relative group overflow-hidden border-white/10">
+            <Card className="glass relative group overflow-hidden border-border">
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                 <CardHeader className="pt-8 px-8">
                     <CardTitle className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-500 italic flex items-center gap-3">

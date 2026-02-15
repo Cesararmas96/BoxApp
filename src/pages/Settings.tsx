@@ -460,7 +460,7 @@ export const Settings: React.FC = () => {
                                             <input type="file" ref={loginBgInputRef} className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'login_bg')} />
                                             <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">{t('settings.branding.login_bg_hint')}</p>
                                             {boxSettings.login_background_url && (
-                                                <div className="mt-2 rounded-xl overflow-hidden border border-white/10 h-24">
+                                                <div className="mt-2 rounded-xl overflow-hidden border border-border h-24">
                                                     <img src={boxSettings.login_background_url} alt="Login BG Preview" className="w-full h-full object-cover" />
                                                 </div>
                                             )}
@@ -470,7 +470,7 @@ export const Settings: React.FC = () => {
                                     <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-primary/10 rounded-3xl bg-primary/5">
                                         <div className="mb-4 text-center">
                                             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 mb-2 block">{t('settings.branding.live_preview')}</span>
-                                            <div className="bg-card w-48 h-12 rounded-2xl shadow-xl flex items-center px-4 gap-3 border border-white/5 overflow-hidden">
+                                            <div className="bg-card w-48 h-12 rounded-2xl shadow-xl flex items-center px-4 gap-3 border border-border overflow-hidden">
                                                 {boxSettings.logo_url ? (
                                                     <img src={boxSettings.logo_url} alt="Preview" className="h-6 w-6 object-contain" />
                                                 ) : (
@@ -483,7 +483,7 @@ export const Settings: React.FC = () => {
                                         </div>
                                         <div className="mt-4 flex gap-2">
                                             {boxSettings.favicon_url && (
-                                                <div className="p-2 bg-card rounded-lg border border-white/5 flex items-center gap-2">
+                                                <div className="p-2 bg-card rounded-lg border border-border flex items-center gap-2">
                                                     <img src={boxSettings.favicon_url} alt="Favicon" className="h-4 w-4" />
                                                     <span className="text-[8px] font-bold uppercase text-muted-foreground">{t('settings.branding.favicon_label')}</span>
                                                 </div>
@@ -535,10 +535,10 @@ export const Settings: React.FC = () => {
                                             onClick={() => setDesignStyle(style.id as any)}
                                             className={`flex flex-col items-start p-6 rounded-2xl border-2 transition-all duration-500 text-left gap-4 group ${designStyle === style.id
                                                 ? 'border-primary bg-primary/5 shadow-premium scale-[1.02]'
-                                                : 'border-border hover:border-border/80 hover:bg-muted/50'
+                                                : 'border-border hover:border-border/80 hover:bg-muted'
                                                 }`}
                                         >
-                                            <div className={`p-3 rounded-xl transition-all duration-500 ${designStyle === style.id ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-muted text-muted-foreground group-hover:bg-muted-foreground/10'}`}>
+                                            <div className={`p-3 rounded-xl transition-all duration-500 ${designStyle === style.id ? 'bg-primary text-foreground shadow-lg shadow-primary/30' : 'bg-muted text-muted-foreground group-hover:bg-muted-foreground/10'}`}>
                                                 {style.icon}
                                             </div>
                                             <div>
@@ -613,7 +613,7 @@ export const Settings: React.FC = () => {
                                                 key={color.hex}
                                                 onClick={() => setPrimaryColor(color.hex)}
                                                 className={`w-10 h-10 rounded-full border-4 transition-all duration-300 transform hover:scale-110 ${primaryColor.toLowerCase() === color.hex.toLowerCase()
-                                                    ? 'border-white ring-2 ring-primary shadow-lg scale-110'
+                                                    ? 'border-foreground ring-2 ring-primary shadow-lg scale-110'
                                                     : 'border-transparent shadow-sm'
                                                     }`}
                                                 style={{ backgroundColor: color.hex }}
@@ -628,7 +628,7 @@ export const Settings: React.FC = () => {
                                     <div className="flex gap-4 items-center">
                                         <div className="relative group">
                                             <div
-                                                className="w-14 h-14 rounded-2xl border-4 border-white dark:border-zinc-800 shadow-2xl transition-transform group-hover:scale-105"
+                                                className="w-14 h-14 rounded-2xl border-4 border-background shadow-2xl transition-transform group-hover:scale-105"
                                                 style={{ backgroundColor: primaryColor }}
                                             />
                                             <input

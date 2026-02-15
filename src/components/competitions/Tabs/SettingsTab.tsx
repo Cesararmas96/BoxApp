@@ -92,7 +92,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ competition, onUpdate 
                     <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">{t('competitions.configure_comp', { defaultValue: 'CONFIGURE COMPETITION DETAILS' })}</p>
                 </div>
 
-                <div className="space-y-6 bg-white/5 p-8 rounded-[2rem] border border-white/5">
+                <div className="space-y-6 bg-muted/50 p-8 rounded-[2rem] border border-border">
 
                     {/* Basic Info */}
                     <div className="space-y-4">
@@ -101,7 +101,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ competition, onUpdate 
                             <Input
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                className="bg-zinc-900/50 border-white/10 text-lg font-bold"
+                                className="bg-muted border-border text-lg font-bold"
                             />
                         </div>
 
@@ -110,7 +110,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ competition, onUpdate 
                             <Textarea
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                className="bg-zinc-900/50 border-white/10 min-h-[100px]"
+                                className="bg-muted border-border min-h-[100px]"
                             />
                         </div>
                     </div>
@@ -122,7 +122,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ competition, onUpdate 
                                 type="date"
                                 value={formData.start_date}
                                 onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                                className="bg-zinc-900/50 border-white/10"
+                                className="bg-muted border-border"
                             />
                         </div>
                         <div className="space-y-2">
@@ -131,7 +131,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ competition, onUpdate 
                                 type="date"
                                 value={formData.end_date}
                                 onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                                className="bg-zinc-900/50 border-white/10"
+                                className="bg-muted border-border"
                             />
                         </div>
                     </div>
@@ -143,7 +143,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ competition, onUpdate 
                                 value={formData.status}
                                 onValueChange={(val) => setFormData({ ...formData, status: val })}
                             >
-                                <SelectTrigger className="bg-zinc-900/50 border-white/10">
+                                <SelectTrigger className="bg-muted border-border">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -159,7 +159,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ competition, onUpdate 
                                 value={formData.scoring_system}
                                 onValueChange={(val) => setFormData({ ...formData, scoring_system: val })}
                             >
-                                <SelectTrigger className="bg-zinc-900/50 border-white/10">
+                                <SelectTrigger className="bg-muted border-border">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -170,7 +170,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ competition, onUpdate 
                         </div>
                     </div>
 
-                    <div className="pt-4 border-t border-white/5 space-y-4">
+                    <div className="pt-4 border-t border-border space-y-4">
                         <div className="flex items-center justify-between">
                             <div className="space-y-0.5">
                                 <Label className="text-sm font-bold uppercase tracking-wide">{t('competitions.is_team_event', { defaultValue: 'TEAM COMPETITION' })}</Label>
@@ -189,7 +189,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ competition, onUpdate 
                                     type="number"
                                     value={formData.team_size}
                                     onChange={(e) => setFormData({ ...formData, team_size: parseInt(e.target.value) || 2 })}
-                                    className="bg-zinc-900/50 border-white/10"
+                                    className="bg-muted border-border"
                                 />
                             </div>
                         )}

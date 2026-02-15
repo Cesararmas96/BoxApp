@@ -501,8 +501,8 @@ export const Wods: React.FC = () => {
                                 {t('wods.new_session')}
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[850px] h-[90vh] overflow-hidden p-0 gap-0 border-black/[0.05] dark:border-white/20 bg-background/95 dark:glass backdrop-blur-xl rounded-[3rem] shadow-2xl flex flex-col">
-                            <div className="bg-primary/[0.05] dark:bg-primary/20 p-10 border-b border-black/[0.05] dark:border-white/10 relative overflow-hidden flex-shrink-0">
+                        <DialogContent className="sm:max-w-[850px] h-[90vh] overflow-hidden p-0 gap-0 border-border bg-background/95 backdrop-blur-xl rounded-[3rem] shadow-2xl flex flex-col">
+                            <div className="bg-primary/[0.05] dark:bg-primary/20 p-10 border-b border-border relative overflow-hidden flex-shrink-0">
                                 <Trophy className="absolute -right-10 -bottom-10 h-48 w-48 text-primary/5 -rotate-12" />
                                 <DialogHeader>
                                     <DialogTitle className="text-4xl font-black italic uppercase tracking-tighter">
@@ -533,7 +533,7 @@ export const Wods: React.FC = () => {
                                                         <span className="text-[8px] font-black uppercase tracking-widest opacity-50">{t(`wods.modalities.${key}`)}</span>
                                                         <span className="text-[10px] font-black italic">{count}/7</span>
                                                     </div>
-                                                    <div className="h-1 w-full bg-black/5 dark:bg-white/5 rounded-full overflow-hidden">
+                                                    <div className="h-1 w-full bg-muted/30 rounded-full overflow-hidden">
                                                         <div
                                                             className="h-full bg-primary transition-all duration-1000"
                                                             style={{ width: `${(count / 7) * 100}%` }}
@@ -548,10 +548,10 @@ export const Wods: React.FC = () => {
                                     <div className="space-y-3">
                                         <Label className="uppercase text-[10px] font-black tracking-widest text-primary px-1">{t('wods.track')}</Label>
                                         <Select value={newWOD.track} onValueChange={(v) => setNewWOD({ ...newWOD, track: v as any })}>
-                                            <SelectTrigger className="font-black italic uppercase h-14 bg-black/[0.02] dark:bg-white/10 border-black/5 dark:border-white/20 rounded-2xl focus:ring-primary/20 hover:border-primary/50 transition-colors">
+                                            <SelectTrigger className="font-black italic uppercase h-14 bg-muted/30 dark:bg-muted border-border rounded-2xl focus:ring-primary/20 hover:border-primary/50 transition-colors">
                                                 <SelectValue placeholder={t('wods.select_track')} />
                                             </SelectTrigger>
-                                            <SelectContent className="glass border-black/10 dark:border-white/20 rounded-2xl">
+                                            <SelectContent className="glass border-border rounded-2xl">
                                                 {TRACKS.map(track => (
                                                     <SelectItem key={track} value={track} className="font-black uppercase italic py-3">
                                                         {t(`wods.tracks.${track.toLowerCase()}`)}
@@ -565,7 +565,7 @@ export const Wods: React.FC = () => {
                                             <Label className="uppercase text-[10px] font-black tracking-widest text-primary px-1">{t('wods.wod_title')}</Label>
                                             <Input
                                                 placeholder={t('wods.morning_grind')}
-                                                className="uppercase italic font-black h-14 bg-black/[0.02] dark:bg-white/10 border-black/5 dark:border-white/20 rounded-2xl focus:ring-primary/20 focus:border-primary/50 transition-all"
+                                                className="uppercase italic font-black h-14 bg-muted/30 dark:bg-muted border-border rounded-2xl focus:ring-primary/20 focus:border-primary/50 transition-all"
                                                 value={newWOD.title}
                                                 onChange={(e) => setNewWOD({ ...newWOD, title: e.target.value })}
                                             />
@@ -576,7 +576,7 @@ export const Wods: React.FC = () => {
                                                 type="date"
                                                 value={newWOD.date}
                                                 onChange={(e) => setNewWOD({ ...newWOD, date: e.target.value })}
-                                                className="font-black italic h-14 bg-black/[0.02] dark:bg-white/10 border-black/5 dark:border-white/20 rounded-2xl focus:ring-primary/20 focus:border-primary/50 transition-all"
+                                                className="font-black italic h-14 bg-muted/30 dark:bg-muted border-border rounded-2xl focus:ring-primary/20 focus:border-primary/50 transition-all"
                                             />
                                         </div>
                                     </div>
@@ -603,7 +603,7 @@ export const Wods: React.FC = () => {
                                                         "h-9 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all",
                                                         isSelected
                                                             ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20"
-                                                            : "bg-black/[0.02] dark:bg-white/5 border-black/5 dark:border-white/10 hover:border-primary/30"
+                                                            : "bg-muted/30 border-border hover:border-primary/30"
                                                     )}
                                                 >
                                                     {t(`wods.modalities.${m.toLowerCase()}`)}
@@ -630,17 +630,17 @@ export const Wods: React.FC = () => {
                                     <div className="grid md:grid-cols-2 gap-8 pt-8">
                                         <div className="space-y-3">
                                             <Label className="uppercase text-[10px] font-black tracking-widest text-orange-600 dark:text-orange-500 px-1">{t('wods.stimulus')}</Label>
-                                            <Textarea className="h-32 text-xs italic font-bold bg-black/[0.02] dark:bg-white/10 border-black/5 dark:border-white/20 rounded-2xl p-4 focus:ring-orange-500/20 focus:border-orange-500/50 transition-all text-foreground/80" value={newWOD.stimulus} onChange={e => setNewWOD({ ...newWOD, stimulus: e.target.value })} />
+                                            <Textarea className="h-32 text-xs italic font-bold bg-muted/30 dark:bg-muted border-border rounded-2xl p-4 focus:ring-orange-500/20 focus:border-orange-500/50 transition-all text-foreground/80" value={newWOD.stimulus} onChange={e => setNewWOD({ ...newWOD, stimulus: e.target.value })} />
                                         </div>
                                         <div className="space-y-3">
                                             <Label className="uppercase text-[10px] font-black tracking-widest text-blue-600 dark:text-blue-500 px-1">{t('wods.scaling')}</Label>
-                                            <Textarea className="h-32 text-xs italic font-bold bg-black/[0.02] dark:bg-white/10 border-black/5 dark:border-white/20 rounded-2xl p-4 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all text-foreground/80" value={newWOD.scaling_options} onChange={e => setNewWOD({ ...newWOD, scaling_options: e.target.value })} />
+                                            <Textarea className="h-32 text-xs italic font-bold bg-muted/30 dark:bg-muted border-border rounded-2xl p-4 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all text-foreground/80" value={newWOD.scaling_options} onChange={e => setNewWOD({ ...newWOD, scaling_options: e.target.value })} />
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="p-10 border-t border-white/5 bg-white/5 flex-shrink-0">
+                            <div className="p-10 border-t border-border bg-muted/50 flex-shrink-0">
                                 <Button
                                     onClick={handlePublishManual}
                                     className="w-full h-16 rounded-2xl font-black uppercase tracking-widest text-base shadow-2xl shadow-primary/20 transition-all hover:scale-[1.01] active:scale-[0.99]"
@@ -655,14 +655,14 @@ export const Wods: React.FC = () => {
             </header>
 
             {/* Quick Actions & Filters Bar */}
-            <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between bg-white/5 p-2 rounded-[2rem] border border-white/5" >
+            <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between bg-muted/50 p-2 rounded-[2rem] border border-border" >
                 <div className="flex flex-wrap gap-2">
                     <Button
                         variant={activeTrack === 'all' ? "default" : "ghost"}
                         onClick={() => setActiveTrack('all')}
                         className={cn(
                             "h-10 px-6 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all",
-                            activeTrack === 'all' ? "shadow-lg shadow-primary/20" : "hover:bg-white/10"
+                            activeTrack === 'all' ? "shadow-lg shadow-primary/20" : "hover:bg-muted"
                         )}
                     >
                         {t('wods.all_tracks')}
@@ -674,7 +674,7 @@ export const Wods: React.FC = () => {
                             onClick={() => setActiveTrack(track)}
                             className={cn(
                                 "h-10 px-6 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all",
-                                activeTrack === track ? "shadow-lg shadow-primary/20" : "hover:bg-white/10",
+                                activeTrack === track ? "shadow-lg shadow-primary/20" : "hover:bg-muted",
                                 track === 'CrossFit' && activeTrack !== track && "text-primary/60 hover:text-primary",
                                 track === 'Novice' && activeTrack !== track && "text-emerald-500/60 hover:text-emerald-500",
                                 track === 'Bodybuilding' && activeTrack !== track && "text-blue-500/60 hover:text-blue-500",
@@ -691,7 +691,7 @@ export const Wods: React.FC = () => {
                         <Input
                             ref={dateInputRef}
                             type="date"
-                            className="px-4 h-11 rounded-xl border-black/5 dark:border-white/20 bg-black/[0.02] dark:bg-white/10 focus:ring-primary/20 focus:border-primary/50 transition-all text-[10px] font-black uppercase tracking-widest cursor-pointer [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-inner-spin-button]:hidden [&::-webkit-clear-button]:hidden"
+                            className="px-4 h-11 rounded-xl border-border bg-muted/30 dark:bg-muted focus:ring-primary/20 focus:border-primary/50 transition-all text-[10px] font-black uppercase tracking-widest cursor-pointer [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-inner-spin-button]:hidden [&::-webkit-clear-button]:hidden"
                             value={selectedDate}
                             onChange={(e) => {
                                 setSelectedDate(e.target.value);
@@ -712,7 +712,7 @@ export const Wods: React.FC = () => {
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => setSelectedDate('')}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-foreground z-10"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground z-10"
                             >
                                 <X className="h-4 w-4" />
                             </Button>
@@ -722,7 +722,7 @@ export const Wods: React.FC = () => {
                     <div className="relative group flex-1 md:w-64">
                         <Input
                             placeholder={t('common.search')}
-                            className="px-4 h-11 rounded-xl border-black/5 dark:border-white/20 bg-black/[0.02] dark:bg-white/10 focus:ring-primary/20 focus:border-primary/50 transition-all text-xs font-bold uppercase tracking-wider [&::-webkit-search-cancel-button]:appearance-none"
+                            className="px-4 h-11 rounded-xl border-border bg-muted/30 dark:bg-muted focus:ring-primary/20 focus:border-primary/50 transition-all text-xs font-bold uppercase tracking-wider [&::-webkit-search-cancel-button]:appearance-none"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -733,14 +733,14 @@ export const Wods: React.FC = () => {
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => setSearchQuery('')}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-foreground z-10"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground z-10"
                             >
                                 <X className="h-4 w-4" />
                             </Button>
                         )}
                     </div>
 
-                    <div className="flex bg-black/[0.02] dark:bg-white/10 p-1 rounded-xl border border-black/5 dark:border-white/20 shrink-0">
+                    <div className="flex bg-muted/30 dark:bg-muted p-1 rounded-xl border border-border shrink-0">
                         <Button
                             variant={viewMode === 'grid' ? "secondary" : "ghost"}
                             size="icon"
@@ -771,7 +771,7 @@ export const Wods: React.FC = () => {
                                 setSelectedMonth('all');
                                 setSelectedDate('');
                             }}
-                            className="h-8 rounded-full px-5 text-[9px] font-black uppercase tracking-widest whitespace-nowrap border border-white/5"
+                            className="h-8 rounded-full px-5 text-[9px] font-black uppercase tracking-widest whitespace-nowrap border border-border"
                         >
                             {t('common.all')}
                         </Button>
@@ -787,7 +787,7 @@ export const Wods: React.FC = () => {
                                         setSelectedMonth(month);
                                         setSelectedDate('');
                                     }}
-                                    className="h-8 rounded-full px-5 text-[9px] font-black uppercase tracking-widest whitespace-nowrap border border-white/5"
+                                    className="h-8 rounded-full px-5 text-[9px] font-black uppercase tracking-widest whitespace-nowrap border border-border"
                                 >
                                     {monthName} {year}
                                 </Button>
@@ -800,8 +800,8 @@ export const Wods: React.FC = () => {
             {/* Bias Dashboard */}
             {
                 (activeTrack === 'all' || activeTrack === 'CrossFit') && (
-                    <Card className="border-white/10 glass rounded-[2rem] overflow-hidden shadow-2xl">
-                        <CardHeader className="py-6 border-b border-white/5 bg-primary/10">
+                    <Card className="border-border glass rounded-[2rem] overflow-hidden shadow-2xl">
+                        <CardHeader className="py-6 border-b border-border bg-primary/10">
                             <div className="flex items-center gap-3">
                                 <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
                                     <Target className="h-6 w-6 text-primary-foreground" />
@@ -820,7 +820,7 @@ export const Wods: React.FC = () => {
                                             <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">{key}</span>
                                             <span className="text-xs font-black italic text-primary">{count} <span className="text-[9px] opacity-40">/ 7</span></span>
                                         </div>
-                                        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                                        <div className="h-1.5 w-full bg-muted/50 rounded-full overflow-hidden border border-border">
                                             <div
                                                 className="h-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)] transition-all duration-1000"
                                                 style={{ width: `${(count / 7) * 100}%` }}
@@ -837,9 +837,9 @@ export const Wods: React.FC = () => {
             {/* Board Feed - Grouped by Date */}
             <div className="space-y-16">
                 {wods.length === 0 && !loading ? (
-                    <Card className="border-dashed border-2 border-white/10 py-24 text-center glass rounded-[3rem]">
+                    <Card className="border-dashed border-2 border-border py-24 text-center glass rounded-[3rem]">
                         <div className="space-y-6">
-                            <div className="h-20 w-20 rounded-full bg-white/5 mx-auto flex items-center justify-center border border-white/10">
+                            <div className="h-20 w-20 rounded-full bg-muted/50 mx-auto flex items-center justify-center border border-border">
                                 <Calendar className="h-10 w-10 text-muted-foreground/40" />
                             </div>
                             <div className="space-y-2">
@@ -871,10 +871,10 @@ export const Wods: React.FC = () => {
 
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-4 px-4">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-black/[0.02] dark:bg-white/5 px-3 py-1 rounded-full border border-black/[0.05] dark:border-white/5">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-muted/30 px-3 py-1 rounded-full border border-border">
                                             {date ? new Date(date.split('T')[0].replace(/-/g, '/')).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase() : '---'}
                                         </span>
-                                        <div className="h-px flex-1 bg-black/[0.05] dark:bg-white/5" />
+                                        <div className="h-px flex-1 bg-muted/40" />
                                     </div>
 
                                     <div className={cn(
@@ -882,14 +882,14 @@ export const Wods: React.FC = () => {
                                         viewMode === 'grid' ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"
                                     )}>
                                         {dateWods.map(wod => viewMode === 'compact' ? (
-                                            <div key={wod.id} className="group flex items-center justify-between p-4 bg-black/[0.02] dark:bg-white/5 border border-black/[0.05] dark:border-white/5 rounded-2xl hover:border-primary/20 transition-all duration-300 shadow-sm dark:shadow-lg dark:hover:shadow-primary/5">
+                                            <div key={wod.id} className="group flex items-center justify-between p-4 bg-muted/30 border border-border rounded-2xl hover:border-primary/20 transition-all duration-300 shadow-sm dark:shadow-lg dark:hover:shadow-primary/5">
                                                 <div className="flex items-center gap-6 min-w-0">
                                                     <Badge className={cn(
                                                         "text-[9px] h-5 px-2 font-black uppercase tracking-widest border-none shrink-0",
                                                         wod.track === 'CrossFit' && "bg-primary text-primary-foreground",
-                                                        wod.track === 'Novice' && "bg-emerald-500 text-white",
-                                                        wod.track === 'Bodybuilding' && "bg-blue-500 text-white",
-                                                        wod.track === 'Engine' && "bg-orange-500 text-white"
+                                                        wod.track === 'Novice' && "bg-emerald-500 text-foreground",
+                                                        wod.track === 'Bodybuilding' && "bg-blue-500 text-foreground",
+                                                        wod.track === 'Engine' && "bg-orange-500 text-foreground"
                                                     )}>
                                                         {wod.track}
                                                     </Badge>
@@ -922,16 +922,16 @@ export const Wods: React.FC = () => {
                                                 </div>
                                             </div>
                                         ) : (
-                                            <Card key={wod.id} className="border-black/[0.05] dark:border-white/5 bg-card dark:glass rounded-[2rem] overflow-hidden group hover:border-primary/20 transition-all duration-500 shadow-xl hover:shadow-primary/5 h-full flex flex-col">
-                                                <CardHeader className="flex flex-col md:flex-row md:items-start justify-between gap-4 p-6 border-b border-black/[0.05] dark:border-white/5 bg-black/[0.01] dark:bg-white/5 flex-shrink-0">
+                                            <Card key={wod.id} className="border-border bg-card rounded-[2rem] overflow-hidden group hover:border-primary/20 transition-all duration-500 shadow-xl hover:shadow-primary/5 h-full flex flex-col">
+                                                <CardHeader className="flex flex-col md:flex-row md:items-start justify-between gap-4 p-6 border-b border-border bg-muted/20 flex-shrink-0">
                                                     <div className="space-y-4">
                                                         <div className="flex flex-wrap items-center gap-3">
                                                             <Badge className={cn(
                                                                 "text-[10px] h-6 px-3 font-black uppercase tracking-widest border-none shadow-lg",
                                                                 wod.track === 'CrossFit' && "bg-primary text-primary-foreground shadow-primary/20",
-                                                                wod.track === 'Novice' && "bg-emerald-500 text-white shadow-emerald-500/20",
-                                                                wod.track === 'Bodybuilding' && "bg-blue-500 text-white shadow-blue-500/20",
-                                                                wod.track === 'Engine' && "bg-orange-500 text-white shadow-orange-500/20"
+                                                                wod.track === 'Novice' && "bg-emerald-500 text-foreground shadow-emerald-500/20",
+                                                                wod.track === 'Bodybuilding' && "bg-blue-500 text-foreground shadow-blue-500/20",
+                                                                wod.track === 'Engine' && "bg-orange-500 text-foreground shadow-orange-500/20"
                                                             )}>
                                                                 {wod.track} {t('wods.track')?.toUpperCase()}
                                                             </Badge>
@@ -940,7 +940,7 @@ export const Wods: React.FC = () => {
                                                             {wod.title}
                                                         </CardTitle>
                                                     </div>
-                                                    <div className="flex items-center gap-2 bg-black/[0.02] dark:bg-white/5 p-2 rounded-2xl border border-black/[0.05] dark:border-white/5">
+                                                    <div className="flex items-center gap-2 bg-muted/30 p-2 rounded-2xl border border-border">
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
@@ -957,7 +957,7 @@ export const Wods: React.FC = () => {
                                                         >
                                                             <Pencil className="h-5 w-5" />
                                                         </Button>
-                                                        <div className="w-px h-6 bg-white/5 mx-1" />
+                                                        <div className="w-px h-6 bg-muted/50 mx-1" />
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
@@ -984,12 +984,12 @@ export const Wods: React.FC = () => {
                                                                     </div>
                                                                     <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">{t('wods.block_wod_short')}</span>
                                                                 </div>
-                                                                <span className="text-[9px] font-bold uppercase tracking-widest text-white/20">{t('common.structured', { defaultValue: 'STRUCTURED' })}</span>
+                                                                <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/40">{t('common.structured', { defaultValue: 'STRUCTURED' })}</span>
                                                             </div>
 
                                                             {wod.structure && wod.structure.length > 0 ? (
                                                                 <div className="space-y-4 relative">
-                                                                    <div className="absolute left-4 top-0 bottom-0 w-px bg-black/[0.03] dark:bg-white/5" />
+                                                                    <div className="absolute left-4 top-0 bottom-0 w-px bg-muted/30" />
                                                                     {wod.structure.map((block) => (
                                                                         <div key={block.id} className="relative pl-10 group/block">
                                                                             <div className="absolute left-2.5 top-1.5 h-3 w-3 rounded-full border-2 border-primary bg-background dark:bg-card z-10 shadow-[0_0_8px_rgba(var(--primary),0.3)]" />
@@ -1003,7 +1003,7 @@ export const Wods: React.FC = () => {
                                                                             </div>
                                                                             <div className="grid gap-2">
                                                                                 {block.items.map((item) => (
-                                                                                    <div key={item.id} className="flex items-center gap-4 p-3 rounded-xl bg-black/[0.01] dark:bg-white/5 border border-black/[0.03] dark:border-white/5 hover:border-primary/20 hover:bg-primary/5 transition-all duration-300 group/movement">
+                                                                                    <div key={item.id} className="flex items-center gap-4 p-3 rounded-xl bg-muted/20 border border-border/50 hover:border-primary/20 hover:bg-primary/5 transition-all duration-300 group/movement">
                                                                                         {(() => {
                                                                                             const mov = movements.find((m: any) => m.name === item.movementName);
                                                                                             return mov?.image_url ? (
@@ -1035,7 +1035,7 @@ export const Wods: React.FC = () => {
                                                                     ))}
                                                                 </div>
                                                             ) : (
-                                                                <div className="p-6 rounded-2xl bg-black/[0.01] dark:bg-white/5 border border-black/[0.05] dark:border-white/10 font-mono text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap shadow-inner relative overflow-hidden italic">
+                                                                <div className="p-6 rounded-2xl bg-muted/20 border border-border font-mono text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap shadow-inner relative overflow-hidden italic">
                                                                     <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
                                                                     {wod.metcon}
                                                                 </div>
@@ -1046,12 +1046,12 @@ export const Wods: React.FC = () => {
                                                             <div className="p-4 rounded-2xl border border-orange-500/20 bg-orange-500/5 space-y-2 relative overflow-hidden group/callout">
                                                                 <ZapIcon className="absolute -right-2 -top-2 h-16 w-16 text-orange-500/5 -rotate-12 group-hover:scale-110 transition-transform duration-700" />
                                                                 <p className="text-[9px] font-black uppercase text-orange-500 tracking-[0.2em]">{t('wods.stimulus')}</p>
-                                                                <p className="text-xs font-bold italic text-foreground/70 dark:text-white/70 leading-relaxed relative z-10">{wod.stimulus || "Max effort within capacity."}</p>
+                                                                <p className="text-xs font-bold italic text-foreground/70/70 leading-relaxed relative z-10">{wod.stimulus || "Max effort within capacity."}</p>
                                                             </div>
                                                             <div className="p-4 rounded-2xl border border-blue-500/20 bg-blue-500/5 space-y-2 relative overflow-hidden group/callout">
                                                                 <Shield className="absolute -right-2 -top-2 h-16 w-16 text-blue-500/5 -rotate-12 group-hover:scale-110 transition-transform duration-700" />
                                                                 <p className="text-[9px] font-black uppercase text-blue-500 tracking-[0.2em]">{t('wods.scaling')}</p>
-                                                                <p className="text-xs font-bold italic text-foreground/70 dark:text-white/70 leading-relaxed relative z-10">{wod.scaling_options || "Scale weight to maintain intensity."}</p>
+                                                                <p className="text-xs font-bold italic text-foreground/70/70 leading-relaxed relative z-10">{wod.scaling_options || "Scale weight to maintain intensity."}</p>
                                                             </div>
                                                         </div>
 
@@ -1086,13 +1086,13 @@ export const Wods: React.FC = () => {
             {/* Pagination Controls */}
             {
                 totalPages > 1 && (
-                    <div className="flex items-center justify-between gap-4 mt-12 bg-white/5 p-4 rounded-[2rem] border border-white/5">
+                    <div className="flex items-center justify-between gap-4 mt-12 bg-muted/50 p-4 rounded-[2rem] border border-border">
                         <div className="flex items-center gap-4">
                             <Button
                                 variant="ghost"
                                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                                 disabled={currentPage === 1}
-                                className="h-12 w-12 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 disabled:opacity-20 flex items-center justify-center p-0"
+                                className="h-12 w-12 rounded-2xl bg-muted/50 hover:bg-muted border border-border disabled:opacity-20 flex items-center justify-center p-0"
                             >
                                 <ChevronLeft className="h-6 w-6" />
                             </Button>
@@ -1112,7 +1112,7 @@ export const Wods: React.FC = () => {
                                                 onClick={() => setCurrentPage(pageNumber)}
                                                 className={cn(
                                                     "h-12 w-12 rounded-2xl font-black italic",
-                                                    currentPage === pageNumber ? "shadow-lg shadow-primary/20" : "bg-white/5 hover:bg-white/10"
+                                                    currentPage === pageNumber ? "shadow-lg shadow-primary/20" : "bg-muted/50 hover:bg-muted"
                                                 )}
                                             >
                                                 {pageNumber}
@@ -1131,7 +1131,7 @@ export const Wods: React.FC = () => {
                                 variant="ghost"
                                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                                 disabled={currentPage === totalPages}
-                                className="h-12 w-12 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 disabled:opacity-20 flex items-center justify-center p-0"
+                                className="h-12 w-12 rounded-2xl bg-muted/50 hover:bg-muted border border-border disabled:opacity-20 flex items-center justify-center p-0"
                             >
                                 <ChevronRight className="h-6 w-6" />
                             </Button>

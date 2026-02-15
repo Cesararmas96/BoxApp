@@ -263,18 +263,18 @@ export const Schedule: React.FC = () => {
                                 <Plus className="h-4 w-4" /> {t('schedule.program_btn')}
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[700px] rounded-3xl border-white/5 bg-zinc-950/90 backdrop-blur-2xl shadow-2xl p-6">
+                        <DialogContent className="sm:max-w-[700px] rounded-3xl border-border bg-card backdrop-blur-2xl shadow-2xl p-6">
                             <DialogHeader className="mb-6">
-                                <DialogTitle className="text-3xl font-black italic uppercase tracking-tighter text-white">
+                                <DialogTitle className="text-3xl font-black italic uppercase tracking-tighter text-foreground">
                                     {t('schedule.programming_viewer', { defaultValue: 'PROGRAMMING VIEWER' })}
                                 </DialogTitle>
-                                <DialogDescription className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mt-1">
+                                <DialogDescription className="text-muted-foreground text-[10px] font-black uppercase tracking-widest mt-1">
                                     Manage and assign WODs to specific tracks
                                 </DialogDescription>
                             </DialogHeader>
 
                             {/* Day Selector within Modal - Enhanced touch targets */}
-                            <div className="flex items-center justify-between bg-zinc-900/50 p-1.5 rounded-2xl border border-white/5 mb-8 shadow-inner gap-1">
+                            <div className="flex items-center justify-between bg-muted p-1.5 rounded-2xl border border-border mb-8 shadow-inner gap-1">
                                 {getDatesOfWeek().map((date, i) => {
                                     const isSelected = selectedViewerDate.toDateString() === date.toDateString();
                                     const isToday = date.toDateString() === new Date().toDateString();
@@ -287,10 +287,10 @@ export const Schedule: React.FC = () => {
                                             className={cn(
                                                 "flex-1 min-h-[52px] min-w-[44px] py-2.5 rounded-xl transition-all duration-300 flex flex-col items-center justify-center gap-1 relative overflow-hidden",
                                                 isSelected
-                                                    ? "bg-primary text-white shadow-lg shadow-primary/30 scale-105 z-10"
+                                                    ? "bg-primary text-foreground shadow-lg shadow-primary/30 scale-105 z-10"
                                                     : isToday
                                                         ? "bg-primary/10 text-primary"
-                                                        : "hover:bg-white/5 text-zinc-500 hover:text-zinc-300"
+                                                        : "hover:bg-muted text-muted-foreground hover:text-foreground/80"
                                             )}
                                         >
                                             {isSelected && (
@@ -315,24 +315,24 @@ export const Schedule: React.FC = () => {
                                     );
 
                                     return (
-                                        <Card key={track} className="bg-zinc-900/40 border-white/5 overflow-hidden group hover:border-primary/50 transition-all duration-500 shadow-2xl relative">
-                                            <CardHeader className="p-4 border-b border-white/5 flex flex-row items-center justify-between bg-zinc-900/60">
+                                        <Card key={track} className="bg-muted border-border overflow-hidden group hover:border-primary/50 transition-all duration-500 shadow-2xl relative">
+                                            <CardHeader className="p-4 border-b border-border flex flex-row items-center justify-between bg-muted">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                                                    <span className="font-black italic uppercase tracking-widest text-[10px] text-zinc-300">{track}</span>
+                                                    <span className="font-black italic uppercase tracking-widest text-[10px] text-foreground/80">{track}</span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     {trackWod ? (
                                                         <Badge variant="outline" className="text-[7px] font-black bg-emerald-500/5 text-emerald-400 border-emerald-500/20 px-1.5 py-0 uppercase tracking-widest">ACTIVE</Badge>
                                                     ) : (
-                                                        <Badge variant="outline" className="text-[7px] font-black text-zinc-600 border-zinc-800 px-1.5 py-0 uppercase tracking-widest italic">Wait</Badge>
+                                                        <Badge variant="outline" className="text-[7px] font-black text-muted-foreground border-border px-1.5 py-0 uppercase tracking-widest italic">Wait</Badge>
                                                     )}
                                                 </div>
                                             </CardHeader>
                                             <CardContent className="p-5 min-h-[140px] flex flex-col justify-center">
                                                 {trackWod ? (
                                                     <div className="space-y-4">
-                                                        <h3 className="text-sm font-black uppercase text-white leading-tight line-clamp-2 tracking-tight italic">
+                                                        <h3 className="text-sm font-black uppercase text-foreground leading-tight line-clamp-2 tracking-tight italic">
                                                             {trackWod.title}
                                                         </h3>
                                                         <div className="flex items-center justify-between pt-2">
@@ -348,7 +348,7 @@ export const Schedule: React.FC = () => {
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="icon"
-                                                                    className="h-8 w-8 rounded-xl bg-white/5 hover:bg-primary/20 hover:text-primary text-zinc-400 border border-white/5 transition-all"
+                                                                    className="h-8 w-8 rounded-xl bg-muted/50 hover:bg-primary/20 hover:text-primary text-muted-foreground border border-border transition-all"
                                                                     onClick={() => {
                                                                         fetchRecentWods();
                                                                         setIsAssigningWod({ track, date: selectedViewerDate });
@@ -380,7 +380,7 @@ export const Schedule: React.FC = () => {
                                                                     <Button
                                                                         variant="ghost"
                                                                         size="icon"
-                                                                        className="h-8 w-8 rounded-xl bg-white/5 hover:bg-red-500/20 hover:text-red-500 text-muted-foreground border border-white/5"
+                                                                        className="h-8 w-8 rounded-xl bg-muted/50 hover:bg-red-500/20 hover:text-red-500 text-muted-foreground border border-border"
                                                                         onClick={() => setIsUnlinkingWod(trackWod.id)}
                                                                     >
                                                                         <Trash2 className="h-3.5 w-3.5" />
@@ -398,7 +398,7 @@ export const Schedule: React.FC = () => {
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
-                                                            className="h-8 rounded-xl border-dashed border-white/10 text-[9px] font-black uppercase tracking-widest hover:border-primary/50 hover:bg-primary/5 transition-all"
+                                                            className="h-8 rounded-xl border-dashed border-border text-[9px] font-black uppercase tracking-widest hover:border-primary/50 hover:bg-primary/5 transition-all"
                                                             onClick={() => {
                                                                 fetchRecentWods();
                                                                 setIsAssigningWod({ track, date: selectedViewerDate });
@@ -414,7 +414,7 @@ export const Schedule: React.FC = () => {
                                 })}
                             </div>
                             <DialogFooter className="mt-6">
-                                <Button variant="outline" className="w-full rounded-2xl border-white/10 h-12 uppercase font-black tracking-widest text-[10px]" onClick={() => setIsCreateOpen(false)}>{t('common.close', { defaultValue: 'CLOSE' })}</Button>
+                                <Button variant="outline" className="w-full rounded-2xl border-border h-12 uppercase font-black tracking-widest text-[10px]" onClick={() => setIsCreateOpen(false)}>{t('common.close', { defaultValue: 'CLOSE' })}</Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
@@ -423,7 +423,7 @@ export const Schedule: React.FC = () => {
 
             {/* Mobile Day Selector Pills */}
             <div className="md:hidden" ref={dayScrollRef}>
-                <div className="flex items-center bg-muted/30 p-1.5 rounded-2xl border border-white/5 gap-1">
+                <div className="flex items-center bg-muted/30 p-1.5 rounded-2xl border border-border gap-1">
                     {getDatesOfWeek().map((date, i) => {
                         const isToday = date.toDateString() === new Date().toDateString();
                         const isSelected = selectedDayIndex === i;
@@ -438,10 +438,10 @@ export const Schedule: React.FC = () => {
                                 className={cn(
                                     "flex-1 min-w-[48px] py-2.5 rounded-xl transition-all duration-300 flex flex-col items-center gap-0.5 relative",
                                     isSelected
-                                        ? "bg-primary text-white shadow-lg shadow-primary/20 scale-[1.05] z-10"
+                                        ? "bg-primary text-foreground shadow-lg shadow-primary/20 scale-[1.05] z-10"
                                         : isToday
                                             ? "bg-primary/10 text-primary"
-                                            : "text-muted-foreground hover:bg-white/5"
+                                            : "text-muted-foreground hover:bg-muted"
                                 )}
                             >
                                 <span className="text-[9px] font-black uppercase tracking-wider">{weekDays[i]}</span>
@@ -465,18 +465,18 @@ export const Schedule: React.FC = () => {
 
                     return (
                         <Card key={i} className={cn(
-                            "glass overflow-hidden transition-all duration-500 border-white/5",
+                            "glass overflow-hidden transition-all duration-500 border-border",
                             isToday ? "border-primary/50 shadow-2xl shadow-primary/10 ring-1 ring-primary/20 md:scale-[1.02] z-10" : "opacity-90 hover:opacity-100 hover:scale-[1.01]",
                             selectedDayIndex === i ? "block" : "hidden md:block"
                         )}>
                             <CardHeader className={cn(
-                                "p-4 text-center border-b border-white/5",
-                                isToday ? "bg-primary/10" : "bg-zinc-950/20"
+                                "p-4 text-center border-b border-border",
+                                isToday ? "bg-primary/10" : "bg-muted"
                             )}>
                                 <p className="text-[10px] uppercase font-black tracking-[0.3em] text-muted-foreground/60 italic">{weekDays[i]}</p>
                                 <p className={cn(
                                     "text-2xl font-black italic tracking-tighter mt-1",
-                                    isToday ? "text-primary text-glow" : "text-white"
+                                    isToday ? "text-primary" : "text-foreground"
                                 )}>
                                     {date.getDate()}
                                 </p>
@@ -484,8 +484,8 @@ export const Schedule: React.FC = () => {
                             <CardContent className="p-3 space-y-4 min-h-[300px] flex flex-col">
                                 {loading ? (
                                     <div className="animate-pulse space-y-3">
-                                        <div className="h-20 bg-white/5 rounded-2xl" />
-                                        <div className="h-20 bg-white/5 rounded-2xl" />
+                                        <div className="h-20 bg-muted/50 rounded-2xl" />
+                                        <div className="h-20 bg-muted/50 rounded-2xl" />
                                     </div>
                                 ) : (
                                     <>
@@ -512,10 +512,10 @@ export const Schedule: React.FC = () => {
                                                                     onClick={() => setSelectedWod(wod)}
                                                                 >
                                                                     <div className="flex flex-col">
-                                                                        <span className="text-[7px] font-black text-zinc-500 uppercase tracking-tighter group-hover/wodlink:text-primary transition-colors">{wod.track}</span>
-                                                                        <span className="text-[10px] font-bold text-white/90 truncate italic leading-tight group-hover/wodlink:text-white transition-colors">{wod.title}</span>
+                                                                        <span className="text-[7px] font-black text-muted-foreground uppercase tracking-tighter group-hover/wodlink:text-primary transition-colors">{wod.track}</span>
+                                                                        <span className="text-[10px] font-bold text-foreground truncate italic leading-tight group-hover/wodlink:text-primary transition-colors">{wod.title}</span>
                                                                     </div>
-                                                                    <ChevronRight className="h-2.5 w-2.5 text-zinc-700 group-hover/wodlink:text-primary transition-colors" />
+                                                                    <ChevronRight className="h-2.5 w-2.5 text-muted-foreground group-hover/wodlink:text-primary transition-colors" />
                                                                 </div>
                                                             ))}
                                                         </div>
@@ -528,15 +528,15 @@ export const Schedule: React.FC = () => {
                                         {daySessions.length > 0 && (
                                             <div className="space-y-4">
                                                 <div className="flex items-center gap-2 mb-2">
-                                                    <span className="h-px flex-1 bg-white/5" />
-                                                    <span className="text-[8px] font-black uppercase text-zinc-600 tracking-widest">Sessions</span>
-                                                    <span className="h-px flex-1 bg-white/5" />
+                                                    <span className="h-px flex-1 bg-muted/50" />
+                                                    <span className="text-[8px] font-black uppercase text-muted-foreground tracking-widest">Sessions</span>
+                                                    <span className="h-px flex-1 bg-muted/50" />
                                                 </div>
                                                 <div className="space-y-3">
                                                     {daySessions.map((session) => (
                                                         <div
                                                             key={session.id}
-                                                            className="group p-3 rounded-2xl border border-white/5 bg-zinc-950/40 hover:bg-zinc-900/60 hover:border-primary/30 transition-all cursor-pointer relative overflow-hidden active:scale-[0.98]"
+                                                            className="group p-3 rounded-2xl border border-border bg-muted hover:bg-muted hover:border-primary/30 transition-all cursor-pointer relative overflow-hidden active:scale-[0.98]"
                                                             onClick={() => {
                                                                 setSelectedSession(session);
                                                             }}
@@ -552,7 +552,7 @@ export const Schedule: React.FC = () => {
                                                                 </Badge>
                                                             </div>
 
-                                                            <p className="text-xs font-black italic uppercase tracking-tight text-white group-hover:text-primary transition-colors mb-2">
+                                                            <p className="text-xs font-black italic uppercase tracking-tight text-foreground group-hover:text-primary transition-colors mb-2">
                                                                 {session.title || session.session_types?.name}
                                                             </p>
 
@@ -571,14 +571,14 @@ export const Schedule: React.FC = () => {
                                                                             <p className="text-[8px] font-black text-primary uppercase italic flex items-center gap-1 mb-0.5">
                                                                                 <Trophy className="h-2 w-2" /> Programmed
                                                                             </p>
-                                                                            <p className="text-[9px] font-bold text-white/60 truncate uppercase">{matchedWod.title}</p>
+                                                                            <p className="text-[9px] font-bold text-muted-foreground truncate uppercase">{matchedWod.title}</p>
                                                                         </div>
                                                                     );
                                                                 }
                                                                 return null;
                                                             })()}
 
-                                                            <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
+                                                            <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
                                                                 <div className="flex items-center gap-1.5 text-muted-foreground/40">
                                                                     <Users className="h-3 w-3" />
                                                                     <span className="text-[9px] font-black uppercase tracking-widest italic truncate max-w-[80px]">
@@ -629,7 +629,7 @@ export const Schedule: React.FC = () => {
             </div>
 
             <Dialog open={!!selectedWod} onOpenChange={(open) => !open && setSelectedWod(null)}>
-                <DialogContent className="sm:max-w-[600px] border-white/10 glass shadow-2xl p-0 overflow-hidden rounded-3xl">
+                <DialogContent className="sm:max-w-[600px] border-border glass shadow-2xl p-0 overflow-hidden rounded-3xl">
                     <div className="h-32 bg-primary/20 relative flex items-end p-8 overflow-hidden">
                         <div className="absolute top-0 right-0 p-4 opacity-5">
                             <Trophy className="h-32 w-32 rotate-12" />
@@ -637,14 +637,14 @@ export const Schedule: React.FC = () => {
                         <div className="relative z-10 w-full flex items-center justify-between gap-4">
                             <div>
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Badge className="bg-primary text-white text-[9px] font-black uppercase italic tracking-widest">
+                                    <Badge className="bg-primary text-foreground text-[9px] font-black uppercase italic tracking-widest">
                                         {selectedWod?.track} TRACK
                                     </Badge>
-                                    <Badge variant="outline" className="border-white/20 text-white text-[9px] font-black uppercase tracking-tighter bg-black/20">
+                                    <Badge variant="outline" className="border-border text-foreground text-[9px] font-black uppercase tracking-tighter bg-muted/50">
                                         {selectedWod?.date && new Date(selectedWod.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
                                     </Badge>
                                 </div>
-                                <h2 className="text-3xl font-black uppercase italic tracking-tight text-white line-clamp-1">
+                                <h2 className="text-3xl font-black uppercase italic tracking-tight text-foreground line-clamp-1">
                                     {selectedWod?.title}
                                 </h2>
                             </div>
@@ -655,21 +655,21 @@ export const Schedule: React.FC = () => {
                         {/* Metcon / Main Body */}
                         <div className="space-y-4">
                             <div className="flex items-center gap-2">
-                                <span className="h-px flex-1 bg-white/5" />
+                                <span className="h-px flex-1 bg-muted/50" />
                                 <span className="text-[10px] font-black uppercase tracking-widest text-primary/60 italic">Workout Structure</span>
-                                <span className="h-px flex-1 bg-white/5" />
+                                <span className="h-px flex-1 bg-muted/50" />
                             </div>
 
                             {selectedWod?.structure && selectedWod.structure.length > 0 ? (
                                 <div className="space-y-6">
                                     {selectedWod.structure.map((block: any) => (
-                                        <div key={block.id} className="p-5 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/[0.07] transition-all">
+                                        <div key={block.id} className="p-5 rounded-2xl bg-muted/50 border border-border hover:bg-muted transition-all">
                                             <p className="text-[10px] font-black uppercase text-primary mb-3 italic tracking-[0.2em]">{block.title}</p>
                                             <div className="space-y-3">
                                                 {block.items.map((item: any) => (
                                                     <div key={item.id} className="flex justify-between items-start gap-3">
                                                         <div className="flex-1">
-                                                            <p className="text-xs font-black uppercase italic leading-none text-white/90">{item.movementName}</p>
+                                                            <p className="text-xs font-black uppercase italic leading-none text-foreground">{item.movementName}</p>
                                                             {item.notes && <p className="text-[9px] text-muted-foreground uppercase font-bold mt-1.5 opacity-60 leading-tight">{item.notes}</p>}
                                                         </div>
                                                         <div className="text-right">
@@ -686,7 +686,7 @@ export const Schedule: React.FC = () => {
                                     ))}
                                 </div>
                             ) : (
-                                <div className="p-6 rounded-3xl bg-zinc-950/50 border border-white/5 font-mono text-sm leading-relaxed text-white/80 whitespace-pre-wrap italic">
+                                <div className="p-6 rounded-3xl bg-muted border border-border font-mono text-sm leading-relaxed text-foreground/80 whitespace-pre-wrap italic">
                                     {selectedWod?.metcon}
                                 </div>
                             )}
@@ -716,19 +716,19 @@ export const Schedule: React.FC = () => {
                                     {selectedWod.scaling_beginner && (
                                         <div className="p-3 rounded-xl bg-green-500/5 border border-green-500/10">
                                             <p className="text-[9px] font-black text-green-500 uppercase mb-1">Beginner</p>
-                                            <p className="text-[10px] font-bold text-white/70 italic">{selectedWod.scaling_beginner}</p>
+                                            <p className="text-[10px] font-bold text-foreground/70 italic">{selectedWod.scaling_beginner}</p>
                                         </div>
                                     )}
                                     {selectedWod.scaling_intermediate && (
                                         <div className="p-3 rounded-xl bg-orange-500/5 border border-orange-500/10">
                                             <p className="text-[9px] font-black text-orange-500 uppercase mb-1">Intermediate</p>
-                                            <p className="text-[10px] font-bold text-white/70 italic">{selectedWod.scaling_intermediate}</p>
+                                            <p className="text-[10px] font-bold text-foreground/70 italic">{selectedWod.scaling_intermediate}</p>
                                         </div>
                                     )}
                                     {selectedWod.scaling_advanced && (
                                         <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/10">
                                             <p className="text-[9px] font-black text-blue-500 uppercase mb-1">Advanced</p>
-                                            <p className="text-[10px] font-bold text-white/70 italic">{selectedWod.scaling_advanced}</p>
+                                            <p className="text-[10px] font-bold text-foreground/70 italic">{selectedWod.scaling_advanced}</p>
                                         </div>
                                     )}
                                 </div>
@@ -739,7 +739,7 @@ export const Schedule: React.FC = () => {
                         {selectedWod?.modalities && selectedWod.modalities.length > 0 && (
                             <div className="flex gap-2 flex-wrap">
                                 {selectedWod.modalities.map(m => (
-                                    <Badge key={m} variant="secondary" className="bg-white/5 text-[8px] font-black uppercase tracking-widest border border-white/10 px-3 py-1 h-auto active:scale-95 transition-transform cursor-default">
+                                    <Badge key={m} variant="secondary" className="bg-muted/50 text-[8px] font-black uppercase tracking-widest border border-border px-3 py-1 h-auto active:scale-95 transition-transform cursor-default">
                                         {m}
                                     </Badge>
                                 ))}
@@ -751,7 +751,7 @@ export const Schedule: React.FC = () => {
 
             {/* Assign WOD Dialog */}
             <Dialog open={!!isAssigningWod} onOpenChange={(open) => !open && setIsAssigningWod(null)}>
-                <DialogContent className="sm:max-w-[450px] border-white/10 glass rounded-3xl p-6">
+                <DialogContent className="sm:max-w-[450px] border-border glass rounded-3xl p-6">
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-black uppercase italic tracking-tight text-primary">Assign Programming</DialogTitle>
                         <DialogDescription className="text-[10px] font-bold uppercase opacity-60">
@@ -764,7 +764,7 @@ export const Schedule: React.FC = () => {
                             recentWods.map(wod => (
                                 <div
                                     key={wod.id}
-                                    className="p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/50 cursor-pointer transition-all group active:scale-[0.98]"
+                                    className="p-4 rounded-2xl bg-muted/50 border border-border hover:border-primary/50 cursor-pointer transition-all group active:scale-[0.98]"
                                     onClick={async () => {
                                         if (!isAssigningWod || !currentBox?.id) return;
                                         // Update the WOD to the new date and track
@@ -789,7 +789,7 @@ export const Schedule: React.FC = () => {
                                         <Badge className="bg-white/10 text-[8px] font-black uppercase tracking-widest">{wod.track || 'Unassigned'}</Badge>
                                         <span className="text-[8px] font-bold opacity-40 uppercase">{wod.date ? new Date(wod.date).toLocaleDateString() : 'No date'}</span>
                                     </div>
-                                    <h4 className="text-xs font-black uppercase italic text-white group-hover:text-primary transition-colors">{wod.title}</h4>
+                                    <h4 className="text-xs font-black uppercase italic text-foreground group-hover:text-primary transition-colors">{wod.title}</h4>
                                 </div>
                             ))
                         ) : (
@@ -886,7 +886,7 @@ export const Schedule: React.FC = () => {
 
             {/* Session Details Modal (Members / Attendance) */}
             <Dialog open={!!selectedSession} onOpenChange={(open) => !open && setSelectedSession(null)}>
-                <DialogContent className="sm:max-w-[450px] border-white/10 glass max-h-[90vh] overflow-y-auto">
+                <DialogContent className="sm:max-w-[450px] border-border glass max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <div className="flex items-center justify-between mb-2">
                             <Badge variant="glow" style={{ backgroundColor: selectedSession?.session_types?.color }}>
@@ -906,7 +906,7 @@ export const Schedule: React.FC = () => {
 
                     <div className="py-6 space-y-8">
                         {/* Coach Info */}
-                        <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
+                        <div className="flex items-center gap-4 p-4 rounded-2xl bg-muted/50 border border-border">
                             <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center font-black text-lg text-primary">
                                 {selectedSession?.profiles?.first_name?.charAt(0)}{selectedSession?.profiles?.last_name?.charAt(0)}
                             </div>
@@ -923,37 +923,37 @@ export const Schedule: React.FC = () => {
                                 return (
                                     <div className="space-y-4">
                                         <div className="flex items-center gap-2">
-                                            <span className="h-px flex-1 bg-white/5" />
+                                            <span className="h-px flex-1 bg-muted/50" />
                                             <span className="text-[10px] font-black uppercase tracking-widest text-primary italic">Daily Programming</span>
-                                            <span className="h-px flex-1 bg-white/5" />
+                                            <span className="h-px flex-1 bg-muted/50" />
                                         </div>
                                         <div
                                             className="p-6 rounded-3xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all group cursor-pointer"
                                             onClick={() => setSelectedWod(matchedWod)}
                                         >
                                             <div className="flex items-center justify-between mb-4">
-                                                <Badge className="bg-primary text-white text-[9px] font-black uppercase tracking-widest">{matchedWod.track} TRACK</Badge>
+                                                <Badge className="bg-primary text-foreground text-[9px] font-black uppercase tracking-widest">{matchedWod.track} TRACK</Badge>
                                                 <Trophy className="h-4 w-4 text-primary" />
                                             </div>
-                                            <h3 className="text-2xl font-black uppercase italic tracking-tight text-white group-hover:text-primary transition-colors mb-4">{matchedWod.title}</h3>
+                                            <h3 className="text-2xl font-black uppercase italic tracking-tight text-foreground group-hover:text-primary transition-colors mb-4">{matchedWod.title}</h3>
 
                                             {/* Content Preview */}
-                                            <div className="space-y-3 bg-black/20 p-4 rounded-2xl border border-white/5 mb-4">
+                                            <div className="space-y-3 bg-muted/50 p-4 rounded-2xl border border-border mb-4">
                                                 {matchedWod.metcon && (
                                                     <div>
                                                         <p className="text-[7px] font-black uppercase text-primary tracking-widest mb-1 italic">Workout</p>
-                                                        <p className="text-xs text-zinc-300 line-clamp-3 leading-relaxed">{matchedWod.metcon}</p>
+                                                        <p className="text-xs text-foreground/80 line-clamp-3 leading-relaxed">{matchedWod.metcon}</p>
                                                     </div>
                                                 )}
                                                 {matchedWod.stimulus && !matchedWod.metcon && (
                                                     <div>
                                                         <p className="text-[7px] font-black uppercase text-primary tracking-widest mb-1 italic">Goal</p>
-                                                        <p className="text-xs text-zinc-300 line-clamp-3 leading-relaxed">{matchedWod.stimulus}</p>
+                                                        <p className="text-xs text-foreground/80 line-clamp-3 leading-relaxed">{matchedWod.stimulus}</p>
                                                     </div>
                                                 )}
                                             </div>
 
-                                            <p className="text-[10px] text-zinc-400 uppercase font-bold tracking-widest flex items-center gap-2">
+                                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest flex items-center gap-2">
                                                 <div className="h-1 w-1 bg-primary rounded-full animate-pulse" />
                                                 Click for full modality & scaling details
                                             </p>
@@ -962,7 +962,7 @@ export const Schedule: React.FC = () => {
                                 );
                             }
                             return (
-                                <div className="text-center py-8 px-4 rounded-3xl border border-dashed border-white/10 opacity-40">
+                                <div className="text-center py-8 px-4 rounded-3xl border border-dashed border-border opacity-40">
                                     <p className="text-[10px] font-black uppercase tracking-widest">No programming assigned to this track yet</p>
                                 </div>
                             );
@@ -970,7 +970,7 @@ export const Schedule: React.FC = () => {
                     </div>
 
                     <DialogFooter>
-                        <Button variant="outline" className="w-full h-12 rounded-2xl font-black uppercase tracking-widest border-white/10" onClick={() => setSelectedSession(null)}>
+                        <Button variant="outline" className="w-full h-12 rounded-2xl font-black uppercase tracking-widest border-border" onClick={() => setSelectedSession(null)}>
                             {t('common.close', { defaultValue: 'CLOSE' })}
                         </Button>
                     </DialogFooter>

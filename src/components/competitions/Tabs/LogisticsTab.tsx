@@ -188,7 +188,7 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
     return (
         <div className="grid md:grid-cols-12 gap-10 h-full">
             {/* Event Selection */}
-            <div className="md:col-span-3 border-r border-white/5 pr-6 flex flex-col gap-4">
+            <div className="md:col-span-3 border-r border-border pr-6 flex flex-col gap-4">
                 <div className="space-y-2">
                     <h3 className="text-xl font-black italic uppercase tracking-tight flex items-center gap-3">
                         <Timer className="h-5 w-5 text-primary" />
@@ -196,17 +196,17 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
                     </h3>
 
                     {/* View Switcher */}
-                    <div className="flex p-1 bg-white/5 rounded-xl border border-white/5 mt-4">
+                    <div className="flex p-1 bg-muted/50 rounded-xl border border-border mt-4">
                         <button
                             onClick={() => setViewMode('list')}
-                            className={`flex-1 py-2 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'list' ? 'bg-primary text-primary-foreground shadow-lg' : 'text-muted-foreground hover:text-white'
+                            className={`flex-1 py-2 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'list' ? 'bg-primary text-primary-foreground shadow-lg' : 'text-muted-foreground hover:text-foreground'
                                 }`}
                         >
                             List
                         </button>
                         <button
                             onClick={() => setViewMode('timeline')}
-                            className={`flex-1 py-2 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'timeline' ? 'bg-primary text-primary-foreground shadow-lg' : 'text-muted-foreground hover:text-white'
+                            className={`flex-1 py-2 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'timeline' ? 'bg-primary text-primary-foreground shadow-lg' : 'text-muted-foreground hover:text-foreground'
                                 }`}
                         >
                             Timeline
@@ -222,7 +222,7 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
                                 onClick={() => setSelectedEventId(event.id)}
                                 className={`w-full text-left p-4 rounded-xl border transition-all duration-300 flex items-center justify-between group ${selectedEventId === event.id
                                     ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20'
-                                    : 'bg-white/5 border-white/5 hover:bg-white/10 text-muted-foreground hover:text-white'
+                                    : 'bg-muted/50 border-border hover:bg-muted text-muted-foreground hover:text-foreground'
                                     }`}
                             >
                                 <div className="space-y-1">
@@ -260,11 +260,11 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
                             <>
                                 <Dialog open={isGeneratorOpen} onOpenChange={setIsGeneratorOpen}>
                                     <DialogTrigger asChild>
-                                        <Button disabled={!selectedEventId} variant="outline" className="uppercase font-bold text-xs tracking-widest gap-2 border-white/10 hover:bg-white/5">
+                                        <Button disabled={!selectedEventId} variant="outline" className="uppercase font-bold text-xs tracking-widest gap-2 border-border hover:bg-muted">
                                             <Settings2 className="h-4 w-4" /> {t('competitions.generator')}
                                         </Button>
                                     </DialogTrigger>
-                                    <DialogContent className="bg-zinc-950 border-white/10">
+                                    <DialogContent className="bg-card border-border">
                                         <DialogHeader>
                                             <DialogTitle className="text-xl font-black italic uppercase">{t('competitions.generate_heats')}</DialogTitle>
                                             <DialogDescription className="text-xs uppercase tracking-widest">
@@ -275,7 +275,7 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
                                             <div className="space-y-2">
                                                 <Label className="text-[10px] uppercase font-black text-muted-foreground">Division</Label>
                                                 <Select value={selectedDivisionId} onValueChange={setSelectedDivisionId}>
-                                                    <SelectTrigger className="bg-white/5 border-white/10">
+                                                    <SelectTrigger className="bg-muted/50 border-border">
                                                         <SelectValue placeholder="Select Division" />
                                                     </SelectTrigger>
                                                     <SelectContent>
@@ -291,7 +291,7 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
                                                     type="number"
                                                     value={lanesPerHeat}
                                                     onChange={(e) => setLanesPerHeat(parseInt(e.target.value))}
-                                                    className="bg-white/5 border-white/10"
+                                                    className="bg-muted/50 border-border"
                                                 />
                                             </div>
                                         </div>
@@ -315,14 +315,14 @@ export const LogisticsTab: React.FC<LogisticsTabProps> = ({ competition }) => {
                                     }]);
                                     if (error) showNotification('error', t('competitions.error_creating_heat', { defaultValue: 'ERROR CREATING HEAT' }));
                                     else fetchHeats();
-                                }} disabled={!selectedEventId} className="uppercase font-black text-xs tracking-widest gap-2 bg-white/5 hover:bg-primary hover:text-primary-foreground border border-white/10">
+                                }} disabled={!selectedEventId} className="uppercase font-black text-xs tracking-widest gap-2 bg-muted/50 hover:bg-primary hover:text-primary-foreground border border-border">
                                     <Plus className="h-4 w-4" /> {t('competitions.add_heat')}
                                 </Button>
                             </>
                         )}
 
                         {viewMode === 'timeline' && (
-                            <Button onClick={fetchAllHeats} variant="outline" className="uppercase font-bold text-xs tracking-widest gap-2 border-white/10 hover:bg-white/5">
+                            <Button onClick={fetchAllHeats} variant="outline" className="uppercase font-bold text-xs tracking-widest gap-2 border-border hover:bg-muted">
                                 Refresh
                             </Button>
                         )}

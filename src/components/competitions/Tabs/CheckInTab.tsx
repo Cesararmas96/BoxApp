@@ -131,7 +131,7 @@ export const CheckInTab: React.FC<CheckInTabProps> = ({ competition }) => {
                     </p>
                 </div>
 
-                <div className="bg-white/5 rounded-2xl p-4 border border-white/5 flex flex-col justify-center">
+                <div className="bg-muted/50 rounded-2xl p-4 border border-border flex flex-col justify-center">
                     <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1">
                         {t('competitions.checkin.checked_in')}
                     </p>
@@ -141,7 +141,7 @@ export const CheckInTab: React.FC<CheckInTabProps> = ({ competition }) => {
                     </div>
                 </div>
 
-                <div className="bg-white/5 rounded-2xl p-4 border border-white/5 flex flex-col justify-center">
+                <div className="bg-muted/50 rounded-2xl p-4 border border-border flex flex-col justify-center">
                     <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1">
                         {t('competitions.checkin.waiver')}
                     </p>
@@ -160,18 +160,18 @@ export const CheckInTab: React.FC<CheckInTabProps> = ({ competition }) => {
                         placeholder={t('competitions.checkin.search_athletes')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-12 h-14 rounded-2xl border-white/10 bg-white/5 focus:ring-primary/20 transition-all text-sm font-medium"
+                        className="pl-12 h-14 rounded-2xl border-border bg-muted/50 focus:ring-primary/20 transition-all text-sm font-medium"
                     />
                 </div>
-                <Button variant="outline" className="h-14 px-6 rounded-2xl border-white/10 bg-white/5 shrink-0">
+                <Button variant="outline" className="h-14 px-6 rounded-2xl border-border bg-muted/50 shrink-0">
                     <Filter className="h-4 w-4 mr-2" />
                     {t('common.filter', { defaultValue: 'FILTER' })}
                 </Button>
             </div>
 
             {/* List */}
-            <div className="bg-white/5 rounded-[2.5rem] border border-white/5 overflow-hidden">
-                <div className="p-6 grid grid-cols-12 gap-4 border-b border-white/5 bg-white/5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+            <div className="bg-muted/50 rounded-[2.5rem] border border-border overflow-hidden">
+                <div className="p-6 grid grid-cols-12 gap-4 border-b border-border bg-muted/50 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                     <div className="col-span-5 pl-2">{t('competitions.checkin.athlete')}</div>
                     <div className="col-span-2 text-center">{t('competitions.checkin.division')}</div>
                     <div className="col-span-2 text-center">{t('competitions.checkin.waiver')}</div>
@@ -192,11 +192,11 @@ export const CheckInTab: React.FC<CheckInTabProps> = ({ competition }) => {
                                     "grid grid-cols-12 gap-4 items-center p-4 rounded-3xl border transition-all group",
                                     participant.checked_in
                                         ? "bg-primary/5 border-primary/20"
-                                        : "bg-white/5 border-white/5 hover:border-white/10"
+                                        : "bg-muted/50 border-border hover:border-border"
                                 )}
                             >
                                 <div className="col-span-5 flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-2xl bg-zinc-800 border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
+                                    <div className="h-12 w-12 rounded-2xl bg-muted border border-border flex items-center justify-center overflow-hidden shrink-0">
                                         {participant.athlete?.avatar_url ? (
                                             <img src={participant.athlete.avatar_url} alt="" className="h-full w-full object-cover" />
                                         ) : (
@@ -216,7 +216,7 @@ export const CheckInTab: React.FC<CheckInTabProps> = ({ competition }) => {
                                 </div>
 
                                 <div className="col-span-2 text-center">
-                                    <Badge variant="outline" className="bg-white/5 border-white/10 font-black italic px-3 py-1">
+                                    <Badge variant="outline" className="bg-muted/50 border-border font-black italic px-3 py-1">
                                         {participant.division || 'RX'}
                                     </Badge>
                                 </div>
@@ -228,7 +228,7 @@ export const CheckInTab: React.FC<CheckInTabProps> = ({ competition }) => {
                                             "flex items-center gap-2 px-3 py-2 rounded-xl border transition-all font-black text-[9px] tracking-widest",
                                             participant.waiver_signed
                                                 ? "bg-blue-500/10 border-blue-500/30 text-blue-400"
-                                                : "bg-white/5 border-white/10 text-muted-foreground hover:border-blue-500/30"
+                                                : "bg-muted/50 border-border text-muted-foreground hover:border-blue-500/30"
                                         )}
                                     >
                                         <FileSignature className="h-3 w-3" />
@@ -243,7 +243,7 @@ export const CheckInTab: React.FC<CheckInTabProps> = ({ competition }) => {
                                             "flex items-center gap-2 px-4 py-2 rounded-xl border transition-all font-black text-[9px] tracking-widest",
                                             participant.checked_in
                                                 ? "bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20"
-                                                : "bg-white/5 border-white/10 text-muted-foreground hover:border-primary/50"
+                                                : "bg-muted/50 border-border text-muted-foreground hover:border-primary/50"
                                         )}
                                     >
                                         {participant.checked_in ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
@@ -258,7 +258,7 @@ export const CheckInTab: React.FC<CheckInTabProps> = ({ competition }) => {
                         ))
                     ) : (
                         <div className="py-20 text-center text-muted-foreground space-y-4">
-                            <div className="h-20 w-20 bg-white/5 rounded-full flex items-center justify-center mx-auto border border-white/5">
+                            <div className="h-20 w-20 bg-muted/50 rounded-full flex items-center justify-center mx-auto border border-border">
                                 <Search className="h-8 w-8 opacity-20" />
                             </div>
                             <div className="space-y-1">

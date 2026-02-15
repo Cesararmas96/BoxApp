@@ -333,8 +333,8 @@ export const Leads: React.FC = () => {
                             <span className="font-black italic uppercase tracking-widest text-xs">{t('leads.acquire_lead')}</span>
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[480px] max-h-[90vh] overflow-y-auto p-0 overflow-hidden border-white/10 glass rounded-[2rem] md:rounded-[2.5rem]">
-                        <div className="bg-primary/10 p-6 md:p-8 border-b border-white/5">
+                    <DialogContent className="sm:max-w-[480px] max-h-[90vh] overflow-y-auto p-0 overflow-hidden border-border glass rounded-[2rem] md:rounded-[2.5rem]">
+                        <div className="bg-primary/10 p-6 md:p-8 border-b border-border">
                             <DialogHeader>
                                 <DialogTitle className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter text-primary">{t('leads.add_prospect')}</DialogTitle>
                                 <DialogDescription className="text-muted-foreground/70 font-medium text-sm">
@@ -490,7 +490,7 @@ export const Leads: React.FC = () => {
                     currentLeads.map((lead) => (
                         <div
                             key={lead.id}
-                            className="glass rounded-2xl border border-white/5 p-4 active:scale-[0.98] transition-all duration-200 cursor-pointer"
+                            className="glass rounded-2xl border border-border p-4 active:scale-[0.98] transition-all duration-200 cursor-pointer"
                             onClick={() => {
                                 setSelectedLead(lead);
                                 setDetailsOpen(true);
@@ -528,7 +528,7 @@ export const Leads: React.FC = () => {
                                 </div>
                             </div>
                             {lead.status !== 'converted' && (
-                                <div className="mt-3 pt-3 border-t border-white/5 flex gap-2">
+                                <div className="mt-3 pt-3 border-t border-border flex gap-2">
                                     {lead.status === 'new' && (
                                         <Button
                                             size="sm"
@@ -624,7 +624,7 @@ export const Leads: React.FC = () => {
                 <CardContent className="p-0">
                     <Table>
                         <TableHeader className="bg-primary/5">
-                            <TableRow className="hover:bg-transparent border-white/5">
+                            <TableRow className="hover:bg-transparent border-border">
                                 <TableHead className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-primary/80 italic">{t('leads.header_identity')}</TableHead>
                                 <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/80 italic">{t('leads.header_status')}</TableHead>
                                 <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/80 italic text-center">{t('leads.header_date')}</TableHead>
@@ -654,7 +654,7 @@ export const Leads: React.FC = () => {
                                 currentLeads.map((lead) => (
                                     <TableRow
                                         key={lead.id}
-                                        className="group border-white/5 hover:bg-primary/5 transition-all duration-300 cursor-pointer"
+                                        className="group border-border hover:bg-primary/5 transition-all duration-300 cursor-pointer"
                                         onClick={() => {
                                             setSelectedLead(lead);
                                             setDetailsOpen(true);
@@ -914,7 +914,7 @@ export const Leads: React.FC = () => {
                                                 "p-4 rounded-2xl border cursor-pointer transition-all duration-200 active:scale-[0.98]",
                                                 selectedPlanId === plan.id
                                                     ? "border-primary bg-primary/10 shadow-lg shadow-primary/10"
-                                                    : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                                                    : "border-border bg-muted/50 hover:border-border"
                                             )}
                                             onClick={() => setSelectedPlanId(plan.id)}
                                         >

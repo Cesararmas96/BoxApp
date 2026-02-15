@@ -360,14 +360,14 @@ export const Movements: React.FC = () => {
                                             />
                                             <button
                                                 type="button"
-                                                className="absolute top-2 right-2 h-7 w-7 rounded-full bg-destructive/90 text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-all hover:scale-110"
+                                                className="absolute top-2 right-2 h-7 w-7 rounded-full bg-destructive/90 text-foreground flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-all hover:scale-110"
                                                 onClick={(e) => { e.stopPropagation(); setFormData({ ...formData, image_url: '' }); }}
                                             >
                                                 <X className="h-3.5 w-3.5" />
                                             </button>
                                             <button
                                                 type="button"
-                                                className="absolute bottom-2 right-2 h-7 px-2.5 rounded-full bg-black/50 backdrop-blur-md text-white flex items-center justify-center gap-1.5 opacity-0 group-hover/img:opacity-100 transition-all text-[8px] font-black uppercase tracking-widest hover:bg-black/70"
+                                                className="absolute bottom-2 right-2 h-7 px-2.5 rounded-full bg-muted/300 backdrop-blur-md text-foreground flex items-center justify-center gap-1.5 opacity-0 group-hover/img:opacity-100 transition-all text-[8px] font-black uppercase tracking-widest hover:bg-black/70"
                                                 onClick={(e) => { e.stopPropagation(); imageInputRef.current?.click(); }}
                                             >
                                                 <Upload className="h-3 w-3" /> Change
@@ -439,7 +439,7 @@ export const Movements: React.FC = () => {
 
                                 {/* Category badge */}
                                 <div className={`absolute top-2 left-2 px-2 py-0.5 rounded-full bg-gradient-to-r ${CATEGORY_COLORS[m.category || 'Other'] || 'from-gray-500/80 to-gray-400/80'} backdrop-blur-md`}>
-                                    <span className="text-[8px] font-black uppercase tracking-widest text-white drop-shadow-sm">{m.category}</span>
+                                    <span className="text-[8px] font-black uppercase tracking-widest text-foreground drop-shadow-sm">{m.category}</span>
                                 </div>
 
                                 {/* Hover overlay with action buttons */}
@@ -447,7 +447,7 @@ export const Movements: React.FC = () => {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-9 w-9 bg-white/20 backdrop-blur-md text-white hover:bg-white/40 border border-white/20 rounded-xl transition-all scale-75 group-hover:scale-100"
+                                        className="h-9 w-9 bg-white/20 backdrop-blur-md text-foreground hover:bg-white/40 border border-border rounded-xl transition-all scale-75 group-hover:scale-100"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             setEditingMovement(m);
@@ -460,7 +460,7 @@ export const Movements: React.FC = () => {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-9 w-9 bg-red-500/30 backdrop-blur-md text-white hover:bg-red-500/60 border border-red-400/20 rounded-xl transition-all scale-75 group-hover:scale-100"
+                                        className="h-9 w-9 bg-red-500/30 backdrop-blur-md text-foreground hover:bg-red-500/60 border border-red-400/20 rounded-xl transition-all scale-75 group-hover:scale-100"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             showConfirm({
@@ -576,7 +576,7 @@ export const Movements: React.FC = () => {
                                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                                 />
                                 <div className={`absolute top-4 left-4 px-3 py-1 rounded-full bg-gradient-to-r ${CATEGORY_COLORS[selectedMovement.category || 'Other'] || 'from-gray-500/80 to-gray-400/80'} backdrop-blur-md`}>
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-white drop-shadow-sm flex items-center gap-1.5">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-foreground drop-shadow-sm flex items-center gap-1.5">
                                         {CATEGORY_ICONS[selectedMovement.category || 'Other']}
                                         {selectedMovement.category}
                                     </span>

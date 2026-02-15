@@ -107,7 +107,7 @@ export const ScoringTab: React.FC<ScoringTabProps> = ({ competition }) => {
 
                 <div className="flex gap-2 w-full md:w-auto">
                     <Select value={selectedEventId} onValueChange={setSelectedEventId}>
-                        <SelectTrigger className="w-full md:w-[200px] bg-white/5 border-white/10 text-xs font-bold uppercase tracking-wider h-10">
+                        <SelectTrigger className="w-full md:w-[200px] bg-muted/50 border-border text-xs font-bold uppercase tracking-wider h-10">
                             <SelectValue placeholder="SELECT EVENT" />
                         </SelectTrigger>
                         <SelectContent>
@@ -120,7 +120,7 @@ export const ScoringTab: React.FC<ScoringTabProps> = ({ competition }) => {
                     </Select>
 
                     <Select value={selectedHeatId} onValueChange={setSelectedHeatId}>
-                        <SelectTrigger className="w-full md:w-[150px] bg-white/5 border-white/10 text-xs font-bold uppercase tracking-wider h-10">
+                        <SelectTrigger className="w-full md:w-[150px] bg-muted/50 border-border text-xs font-bold uppercase tracking-wider h-10">
                             <SelectValue placeholder="ALL HEATS" />
                         </SelectTrigger>
                         <SelectContent>
@@ -139,7 +139,7 @@ export const ScoringTab: React.FC<ScoringTabProps> = ({ competition }) => {
             <div className="grid grid-cols-1 gap-8 overflow-y-auto min-h-0 custom-scrollbar pr-2">
                 {heats.map(heat => (
                     <div key={heat.id} className="space-y-3">
-                        <div className="flex items-center gap-4 sticky top-0 bg-[#09090b] z-10 py-2 border-b border-white/5">
+                        <div className="flex items-center gap-4 sticky top-0 bg-[#09090b] z-10 py-2 border-b border-border">
                             <Badge variant="outline" className="text-xs font-black uppercase tracking-widest px-3 py-1 border-primary/20 bg-primary/5 text-primary">
                                 {heat.name}
                             </Badge>
@@ -153,7 +153,7 @@ export const ScoringTab: React.FC<ScoringTabProps> = ({ competition }) => {
                             {heat.lane_assignments?.sort((a: any, b: any) => a.lane_number - b.lane_number).map((assignment: any) => (
                                 <Card
                                     key={assignment.id}
-                                    className="p-4 bg-white/5 border-white/5 hover:border-primary/50 hover:bg-white/10 transition-all cursor-pointer group relative overflow-hidden"
+                                    className="p-4 bg-muted/50 border-border hover:border-primary/50 hover:bg-muted transition-all cursor-pointer group relative overflow-hidden"
                                     onClick={() => {
                                         setSelectedAssignment(assignment);
                                         setIsScoreEntryOpen(true);
@@ -161,13 +161,13 @@ export const ScoringTab: React.FC<ScoringTabProps> = ({ competition }) => {
                                 >
                                     <div className="absolute top-0 left-0 w-1 h-full bg-white/10 group-hover:bg-primary transition-colors" />
                                     <div className="flex items-center gap-4">
-                                        <div className="flex flex-col items-center justify-center h-10 w-10 bg-black/40 rounded-lg border border-white/5 group-hover:border-primary/20 transition-colors">
+                                        <div className="flex flex-col items-center justify-center h-10 w-10 bg-black/40 rounded-lg border border-border group-hover:border-primary/20 transition-colors">
                                             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-[-2px]">LANE</span>
-                                            <span className="text-xl font-black text-white leading-none">{assignment.lane_number}</span>
+                                            <span className="text-xl font-black text-foreground leading-none">{assignment.lane_number}</span>
                                         </div>
 
                                         <div className="space-y-1 min-w-0">
-                                            <h4 className="font-bold text-sm uppercase truncate text-white group-hover:text-primary transition-colors">
+                                            <h4 className="font-bold text-sm uppercase truncate text-foreground group-hover:text-primary transition-colors">
                                                 {assignment.competition_participants?.first_name} {assignment.competition_participants?.last_name}
                                             </h4>
                                             <div className="flex items-center gap-2">
@@ -190,7 +190,7 @@ export const ScoringTab: React.FC<ScoringTabProps> = ({ competition }) => {
                                 </Card>
                             ))}
                             {(!heat.lane_assignments || heat.lane_assignments.length === 0) && (
-                                <div className="col-span-full py-8 text-center border border-dashed border-white/10 rounded-xl">
+                                <div className="col-span-full py-8 text-center border border-dashed border-border rounded-xl">
                                     <p className="text-xs font-bold text-muted-foreground/50 uppercase tracking-widest">No athletes assigned to this heat</p>
                                 </div>
                             )}
@@ -199,7 +199,7 @@ export const ScoringTab: React.FC<ScoringTabProps> = ({ competition }) => {
                 ))}
 
                 {heats.length === 0 && !loading && (
-                    <div className="flex flex-col items-center justify-center h-64 border border-dashed border-white/10 rounded-3xl bg-white/5">
+                    <div className="flex flex-col items-center justify-center h-64 border border-dashed border-border rounded-3xl bg-muted/50">
                         <Search className="h-8 w-8 text-muted-foreground mb-4" />
                         <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">No heats found for this event</p>
                     </div>

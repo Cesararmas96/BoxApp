@@ -43,7 +43,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ heats, events }) => 
 
     if (heats.length === 0) {
         return (
-            <div className="h-[400px] flex flex-col items-center justify-center text-muted-foreground gap-4 bg-white/5 rounded-[2rem] border border-dashed border-white/10">
+            <div className="h-[400px] flex flex-col items-center justify-center text-muted-foreground gap-4 bg-muted/50 rounded-[2rem] border border-dashed border-border">
                 <Calendar className="h-12 w-12 opacity-20" />
                 <p className="font-bold uppercase tracking-widest text-xs opacity-50">
                     {t('logistics.no_heats_scheduled', { defaultValue: 'No heats scheduled yet' })}
@@ -68,27 +68,27 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ heats, events }) => 
                             {/* Date Header */}
                             {isFirstOfDate && heat.start_time && (
                                 <div className="mb-6 -ml-8 flex items-center gap-4">
-                                    <div className="z-10 bg-zinc-950 px-3 py-1 border border-white/10 rounded-full">
+                                    <div className="z-10 bg-card px-3 py-1 border border-border rounded-full">
                                         <span className="text-[10px] font-black uppercase tracking-tighter text-primary italic">
                                             {formatDate(heat.start_time)}
                                         </span>
                                     </div>
-                                    <div className="h-[1px] flex-1 bg-white/5" />
+                                    <div className="h-[1px] flex-1 bg-muted/50" />
                                 </div>
                             )}
 
                             {/* Timeline Dot */}
-                            <div className="absolute -left-[1.4rem] top-1.5 h-3 w-3 rounded-full border-2 border-primary bg-zinc-950 z-10 shadow-[0_0_10px_rgba(var(--primary),0.3)]" />
+                            <div className="absolute -left-[1.4rem] top-1.5 h-3 w-3 rounded-full border-2 border-primary bg-card z-10 shadow-[0_0_10px_rgba(var(--primary),0.3)]" />
 
                             {/* Heat Card */}
-                            <div className="group bg-white/5 hover:bg-white/10 border border-white/5 hover:border-primary/20 rounded-2xl p-5 transition-all duration-500 hover:translate-x-1">
+                            <div className="group bg-muted/50 hover:bg-muted border border-border hover:border-primary/20 rounded-2xl p-5 transition-all duration-500 hover:translate-x-1">
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                     <div className="space-y-2">
                                         <div className="flex items-center gap-3">
-                                            <span className="text-xl font-black italic uppercase italic tracking-tight text-white group-hover:text-primary transition-colors">
+                                            <span className="text-xl font-black italic uppercase italic tracking-tight text-foreground group-hover:text-primary transition-colors">
                                                 {heat.name}
                                             </span>
-                                            <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-widest border-white/10 text-muted-foreground">
+                                            <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-widest border-border text-muted-foreground">
                                                 {heat.status}
                                             </Badge>
                                         </div>
@@ -119,7 +119,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ heats, events }) => 
 
                                     <div className="flex items-center gap-3">
                                         {/* Quick Action Button */}
-                                        <button className="h-10 px-4 rounded-xl bg-white/5 hover:bg-primary hover:text-primary-foreground border border-white/5 transition-all flex items-center gap-2 group/btn">
+                                        <button className="h-10 px-4 rounded-xl bg-muted/50 hover:bg-primary hover:text-primary-foreground border border-border transition-all flex items-center gap-2 group/btn">
                                             <span className="text-[10px] font-black uppercase tracking-widest">Details</span>
                                             <Search className="h-3.5 w-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
                                         </button>
@@ -127,7 +127,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ heats, events }) => 
                                 </div>
 
                                 {heat.notes && (
-                                    <div className="mt-4 pt-4 border-t border-white/5">
+                                    <div className="mt-4 pt-4 border-t border-border">
                                         <p className="text-[10px] text-muted-foreground/80 leading-relaxed font-medium capitalize">
                                             {heat.notes}
                                         </p>

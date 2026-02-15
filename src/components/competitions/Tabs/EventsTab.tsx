@@ -213,14 +213,14 @@ export const EventsTab: React.FC<EventsTabProps> = ({ competition }) => {
                     <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">{t('competitions.event_details')}</p>
                 </div>
 
-                <div className="space-y-4 bg-white/5 p-6 rounded-[2rem] border border-white/5">
+                <div className="space-y-4 bg-muted/50 p-6 rounded-[2rem] border border-border">
                     <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('competitions.import_wod_lbl', { defaultValue: 'Import WOD (Optional)' })}</Label>
                         <Select
                             value={newEvent.wod_id || 'custom'}
                             onValueChange={handleWodSelect}
                         >
-                            <SelectTrigger className="bg-zinc-900/50 border-white/10">
+                            <SelectTrigger className="bg-muted border-border">
                                 <SelectValue placeholder={t('competitions.select_wod_placeholder', { defaultValue: 'Select from WODs' })} />
                             </SelectTrigger>
                             <SelectContent>
@@ -240,7 +240,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({ competition }) => {
                             value={newEvent.title}
                             onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
                             placeholder="ex. Event 1: Fran"
-                            className="bg-zinc-900/50 border-white/10"
+                            className="bg-muted border-border"
                         />
                     </div>
 
@@ -251,7 +251,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({ competition }) => {
                                 value={newEvent.wod_type}
                                 onValueChange={(v) => setNewEvent({ ...newEvent, wod_type: v })}
                             >
-                                <SelectTrigger className="bg-zinc-900/50 border-white/10 uppercase font-black text-[10px]">
+                                <SelectTrigger className="bg-muted border-border uppercase font-black text-[10px]">
                                     <SelectValue placeholder={t('competitions.select_type_placeholder', { defaultValue: 'Select Type' })} />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -270,7 +270,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({ competition }) => {
                                 value={newEvent.time_cap_seconds || ''}
                                 onChange={(e) => setNewEvent({ ...newEvent, time_cap_seconds: parseInt(e.target.value) || 0 })}
                                 placeholder="ex. 600"
-                                className="bg-zinc-900/50 border-white/10"
+                                className="bg-muted border-border"
                             />
                         </div>
                     </div>
@@ -281,7 +281,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({ competition }) => {
                             value={newEvent.tie_break_strategy || ''}
                             onChange={(e) => setNewEvent({ ...newEvent, tie_break_strategy: e.target.value })}
                             placeholder="ex. Time after 3rd round"
-                            className="bg-zinc-900/50 border-white/10"
+                            className="bg-muted border-border"
                         />
                     </div>
 
@@ -291,7 +291,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({ competition }) => {
                             value={newEvent.description}
                             onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
                             placeholder={t('competitions.event_desc_placeholder', { defaultValue: 'Describe the event...' })}
-                            className="bg-zinc-900/50 border-white/10 min-h-[100px]"
+                            className="bg-muted border-border min-h-[100px]"
                         />
                     </div>
 
@@ -319,12 +319,12 @@ export const EventsTab: React.FC<EventsTabProps> = ({ competition }) => {
 
                 <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
                     {events.map((event, index) => (
-                        <div key={event.id} className="p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/30 transition-all group relative overflow-hidden">
+                        <div key={event.id} className="p-4 rounded-2xl bg-muted/50 border border-border hover:border-primary/30 transition-all group relative overflow-hidden">
                             <div className="absolute top-0 left-0 w-1 h-full bg-primary/20 group-hover:bg-primary transition-colors" />
                             <div className="flex justify-between items-start gap-4 pl-2">
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2">
-                                        <Badge variant="secondary" className="text-[9px] font-black uppercase bg-zinc-800 text-muted-foreground">
+                                        <Badge variant="secondary" className="text-[9px] font-black uppercase bg-muted text-muted-foreground">
                                             #{index + 1}
                                         </Badge>
                                         <h4 className="font-black italic uppercase text-lg tracking-tight">{event.title}</h4>
@@ -351,7 +351,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({ competition }) => {
                         </div>
                     ))}
                     {events.length === 0 && (
-                        <div className="py-20 text-center text-muted-foreground space-y-2 bg-white/5 rounded-[2rem] border-dashed border-2 border-white/10">
+                        <div className="py-20 text-center text-muted-foreground space-y-2 bg-muted/50 rounded-[2rem] border-dashed border-2 border-border">
                             <Trophy className="h-10 w-10 mx-auto opacity-20" />
                             <p className="text-[10px] font-black uppercase tracking-widest opacity-50">{t('competitions.no_events')}</p>
                         </div>

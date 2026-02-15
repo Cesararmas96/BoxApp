@@ -260,7 +260,7 @@ export const Roles: React.FC = () => {
                             <div className="overflow-x-auto">
                                 <Table>
                                     <TableHeader>
-                                        <TableRow className="bg-muted/50 border-none hover:bg-muted/50">
+                                        <TableRow className="bg-muted/50 border-none hover:bg-muted">
                                             <TableHead className="w-[300px] font-black uppercase text-[10px] tracking-widest pl-6">{t('roles.identity')}</TableHead>
                                             <TableHead className="font-black uppercase text-[10px] tracking-widest text-center">{t('roles.security_status')}</TableHead>
                                             <TableHead className="font-black uppercase text-[10px] tracking-widest">{t('roles.active_role')}</TableHead>
@@ -411,7 +411,7 @@ export const Roles: React.FC = () => {
                             <div className="overflow-x-auto">
                                 <Table>
                                     <TableHeader>
-                                        <TableRow className="bg-muted/50 border-none hover:bg-muted/50">
+                                        <TableRow className="bg-muted/50 border-none hover:bg-muted">
                                             <TableHead className="font-black uppercase text-[10px] tracking-widest pl-6">{t('roles.identity')}</TableHead>
                                             <TableHead className="text-center font-black uppercase text-[10px] tracking-widest">{t('roles.role_admin')}</TableHead>
                                             <TableHead className="text-center font-black uppercase text-[10px] tracking-widest">{t('roles.role_coach')}</TableHead>
@@ -484,7 +484,7 @@ export const Roles: React.FC = () => {
                                     <CardHeader className="text-center space-y-0 pb-2">
                                         <div className={cn(
                                             "mx-auto p-3 rounded-full mb-3 group-hover:scale-110 transition-transform",
-                                            user.email === 'root@test.com' ? "bg-primary text-white shadow-[0_0_15px_rgba(var(--primary),0.5)]" : "bg-primary/5 text-primary"
+                                            user.email === 'root@test.com' ? "bg-primary text-foreground shadow-[0_0_15px_rgba(var(--primary),0.5)]" : "bg-primary/5 text-primary"
                                         )}>
                                             {user.email === 'root@test.com' ? <Terminal className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
                                         </div>

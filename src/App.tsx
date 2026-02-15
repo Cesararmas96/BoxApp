@@ -58,10 +58,10 @@ function AppContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-[#050508]">
+      <div className="min-h-screen w-full flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4"></div>
-          <p className="text-zinc-500 font-black italic uppercase tracking-[0.2em] text-xs">Synchronizing Core OS...</p>
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4"></div>
+          <p className="text-sm text-muted-foreground">Loading...</p>
         </div>
       </div>
     );

@@ -117,7 +117,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ competition, onTabChan
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Main Info Card */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 min-w-0">
-                <Card className="md:col-span-2 bg-white/5 border-white/10 rounded-[2rem] overflow-hidden relative group min-w-0">
+                <Card className="md:col-span-2 bg-muted/50 border-border rounded-[2rem] overflow-hidden relative group min-w-0">
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     <CardContent className="p-8 relative z-10">
                         <div className="flex flex-col h-full justify-between gap-6">
@@ -129,14 +129,14 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ competition, onTabChan
                                     {competition.name}
                                 </h3>
                                 <div className="space-y-3">
-                                    <div className="flex items-center gap-3 text-white/60">
+                                    <div className="flex items-center gap-3 text-muted-foreground">
                                         <Calendar className="h-4 w-4 text-primary" />
                                         <span className="text-sm font-medium">
                                             {competition.start_date ? new Date(competition.start_date).toLocaleDateString() : 'N/A'}
                                             {competition.end_date && ` - ${new Date(competition.end_date).toLocaleDateString()}`}
                                         </span>
                                     </div>
-                                    <div className="flex items-center gap-3 text-white/60">
+                                    <div className="flex items-center gap-3 text-muted-foreground">
                                         <MapPin className="h-4 w-4 text-primary" />
                                         <span className="text-sm font-medium">{competition.location || 'No location set'}</span>
                                     </div>
@@ -147,7 +147,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ competition, onTabChan
                                 <Button
                                     onClick={() => onTabChange('settings')}
                                     variant="outline"
-                                    className="rounded-xl border-white/10 hover:bg-white/10 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest"
+                                    className="rounded-xl border-border hover:bg-muted hover:text-foreground transition-all text-[10px] font-black uppercase tracking-widest"
                                 >
                                     {t('competitions.edit_competition')}
                                 </Button>
@@ -162,7 +162,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ competition, onTabChan
                     </CardContent>
                 </Card>
 
-                <Card className="bg-white/5 border-white/10 rounded-[2rem] overflow-hidden group">
+                <Card className="bg-muted/50 border-border rounded-[2rem] overflow-hidden group">
                     <CardContent className="p-8 flex flex-col items-center justify-center text-center h-full space-y-4">
                         <div className="h-16 w-16 rounded-3xl bg-amber-500/20 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
                             <Database className="h-8 w-8 text-amber-500" />
@@ -199,7 +199,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ competition, onTabChan
                     <button
                         key={index}
                         onClick={() => onTabChange(stat.tab)}
-                        className="group relative bg-white/5 border border-white/10 rounded-[2rem] p-6 text-left transition-all hover:bg-white/10 hover:border-white/20 hover:scale-[1.02]"
+                        className="group relative bg-muted/50 border border-border rounded-[2rem] p-6 text-left transition-all hover:bg-muted hover:border-border hover:scale-[1.02]"
                     >
                         <div className={`h-12 w-12 rounded-2xl ${stat.bgColor} flex items-center justify-center mb-4 transition-transform group-hover:scale-110`}>
                             <stat.icon className={`h-6 w-6 ${stat.color}`} />
@@ -209,7 +209,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ competition, onTabChan
                                 <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1 truncate">{stat.label}</p>
                                 <p className="text-xl md:text-2xl font-black italic uppercase tracking-tighter truncate">{stat.value}</p>
                             </div>
-                            <ChevronRight className="h-4 w-4 text-white/20 group-hover:text-primary transition-colors flex-shrink-0" />
+                            <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-primary transition-colors flex-shrink-0" />
                         </div>
                     </button>
                 ))}
@@ -228,11 +228,11 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ competition, onTabChan
                         { text: t('competitions.step_athletes', { defaultValue: 'Register Athletes or Teams' }), done: getCount(competition.participants) > 0 },
                         { text: t('competitions.step_heats', { defaultValue: 'Generate Heats & Schedule' }), done: getCount(competition.heats) > 0 },
                     ].map((item, i) => (
-                        <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5">
-                            <div className={`h-5 w-5 rounded-full flex items-center justify-center ${item.done ? 'bg-emerald-500/20 text-emerald-500' : 'bg-white/10 text-white/20'}`}>
+                        <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 border border-border">
+                            <div className={`h-5 w-5 rounded-full flex items-center justify-center ${item.done ? 'bg-emerald-500/20 text-emerald-500' : 'bg-white/10 text-muted-foreground/40'}`}>
                                 <ShieldCheck className="h-3 w-3" />
                             </div>
-                            <span className={`text-xs font-bold uppercase tracking-wider ${item.done ? 'text-white/80' : 'text-white/40'}`}>
+                            <span className={`text-xs font-bold uppercase tracking-wider ${item.done ? 'text-foreground/80' : 'text-white/40'}`}>
                                 {item.text}
                             </span>
                         </div>

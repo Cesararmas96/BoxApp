@@ -98,13 +98,13 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({ onChange, label }) =
                     variant="ghost"
                     size="sm"
                     onClick={clear}
-                    className="h-6 text-[10px] uppercase font-bold text-muted-foreground hover:text-white"
+                    className="h-6 text-[10px] uppercase font-bold text-muted-foreground hover:text-foreground"
                 >
                     <Eraser className="w-3 h-3 mr-1" />
                     Clear
                 </Button>
             </div>
-            <div className="border border-white/10 rounded-xl overflow-hidden bg-black/40 touch-none">
+            <div className="border border-border rounded-xl overflow-hidden bg-muted touch-none">
                 <canvas
                     ref={canvasRef}
                     className="w-full h-32 block cursor-crosshair"

@@ -444,7 +444,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                     <Input
                         type="search"
                         placeholder={t('members.search_placeholder')}
-                        className="pl-12 w-full bg-zinc-950/20 border-white/5 h-12 rounded-2xl"
+                        className="pl-12 w-full bg-muted border-border h-12 rounded-2xl"
                         value={searchTerm}
                         onChange={(e) => {
                             setSearchTerm(e.target.value);
@@ -470,14 +470,14 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                     currentMembers.map((member) => (
                         <div
                             key={member.id}
-                            className="glass rounded-2xl border border-white/5 p-4 active:scale-[0.98] transition-all duration-200 cursor-pointer"
+                            className="glass rounded-2xl border border-border p-4 active:scale-[0.98] transition-all duration-200 cursor-pointer"
                             onClick={() => {
                                 setSelectedMember(member);
                                 setDetailsOpen(true);
                             }}
                         >
                             <div className="flex items-center gap-4">
-                                <Avatar className="h-12 w-12 shrink-0 rounded-2xl glass border-white/10 shadow-lg">
+                                <Avatar className="h-12 w-12 shrink-0 rounded-2xl glass border-border shadow-lg">
                                     <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/5 text-primary text-xs uppercase font-black italic">
                                         {member.first_name?.[0]}{member.last_name?.[0]}
                                     </AvatarFallback>
@@ -514,8 +514,8 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
             </div>
 
             {/* Desktop Table */}
-            <Card className="glass overflow-hidden border-white/10 shadow-premium hidden md:block">
-                <CardHeader className="p-8 pb-4 border-b border-white/5">
+            <Card className="glass overflow-hidden border-border shadow-premium hidden md:block">
+                <CardHeader className="p-8 pb-4 border-b border-border">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                         <CardTitle className="text-xl font-black italic uppercase tracking-tight flex items-center gap-3">
                             <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
@@ -527,7 +527,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                 <Input
                                     type="search"
                                     placeholder={t('members.search_placeholder')}
-                                    className="pl-12 w-full sm:w-[320px] bg-zinc-950/20 border-white/5 h-12 rounded-2xl"
+                                    className="pl-12 w-full sm:w-[320px] bg-muted border-border h-12 rounded-2xl"
                                     value={searchTerm}
                                     onChange={(e) => {
                                         setSearchTerm(e.target.value);
@@ -535,7 +535,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                     }}
                                 />
                             </div>
-                            <Button variant="outline" size="icon" className="h-12 w-12 rounded-2xl border-white/10 bg-zinc-950/20 hover:bg-primary/10">
+                            <Button variant="outline" size="icon" className="h-12 w-12 rounded-2xl border-border bg-muted hover:bg-primary/10">
                                 <Filter className="h-4 w-4" />
                             </Button>
                         </div>
@@ -571,7 +571,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                     <TableRow key={member.id} className="group hover:bg-primary/[0.02] transition-colors">
                                         <TableCell className="py-4">
                                             <div className="flex items-center gap-4">
-                                                <Avatar className="h-12 w-12 rounded-2xl glass border-white/10 shadow-lg">
+                                                <Avatar className="h-12 w-12 rounded-2xl glass border-border shadow-lg">
                                                     <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/5 text-primary text-xs uppercase font-black italic">
                                                         {member.first_name?.[0]}{member.last_name?.[0]}
                                                     </AvatarFallback>
@@ -697,7 +697,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
 
                         <DialogHeader className="p-6 md:p-8 pb-4 relative z-10">
                             <div className="flex items-end gap-4 md:gap-6">
-                                <Avatar className="h-16 w-16 md:h-20 md:w-20 shrink-0 rounded-2xl border-2 border-white/10 shadow-2xl bg-background p-1">
+                                <Avatar className="h-16 w-16 md:h-20 md:w-20 shrink-0 rounded-2xl border-2 border-border shadow-2xl bg-background p-1">
                                     <AvatarFallback className="rounded-xl bg-gradient-to-br from-primary/30 to-primary/10 text-primary text-lg md:text-xl font-black italic">
                                         {selectedMember?.first_name?.[0]}{selectedMember?.last_name?.[0]}
                                     </AvatarFallback>
@@ -724,7 +724,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                         <div className="px-6 md:px-8 pb-6 md:pb-8 space-y-4 md:space-y-6 relative z-10">
                             {/* Contact & Bio Info */}
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1 p-4 rounded-2xl bg-white/[0.03] border border-white/5 shadow-inner">
+                                <div className="space-y-1 p-4 rounded-2xl bg-muted/50 border border-border shadow-inner">
                                     <p className="text-[10px] font-black italic text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
                                         <Search className="h-3 w-3 text-primary/50" /> {t('members.info_header', { defaultValue: 'INFO' })}
                                     </p>
@@ -733,7 +733,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                         Joined: {selectedMember?.created_at ? new Date(selectedMember.created_at).toLocaleDateString() : '...'}
                                     </p>
                                 </div>
-                                <div className="space-y-1 p-4 rounded-2xl bg-white/[0.03] border border-white/5 shadow-inner">
+                                <div className="space-y-1 p-4 rounded-2xl bg-muted/50 border border-border shadow-inner">
                                     <p className="text-[10px] font-black italic text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
                                         <ShieldCheck className="h-3 w-3 text-primary/50" /> {t('members.waiver_status')}
                                     </p>
@@ -765,7 +765,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                 {selectedMember?.memberships && selectedMember.memberships.length > 0 ? (
                                     <div className="space-y-3">
                                         {selectedMember.memberships.map((m: any) => (
-                                            <div key={m.id} className="flex items-center justify-between p-3 rounded-xl bg-black/20 border border-white/5">
+                                            <div key={m.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/50 border border-border">
                                                 <div className="flex flex-col">
                                                     <span className="text-xs font-black uppercase italic tracking-tighter">{t('members.table_status')}: {m.status.toUpperCase()}</span>
                                                     <span className="text-[10px] text-muted-foreground font-mono">
@@ -796,7 +796,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                                                             "p-3 rounded-xl border cursor-pointer transition-all duration-200 active:scale-[0.98]",
                                                             selectedPlanId === plan.id
                                                                 ? "border-primary bg-primary/10 shadow-lg shadow-primary/10"
-                                                                : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                                                                : "border-border bg-muted/50 hover:border-border"
                                                         )}
                                                         onClick={() => setSelectedPlanId(plan.id)}
                                                     >
@@ -843,7 +843,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                             </div>
                         </div>
 
-                        <DialogFooter className="bg-muted/30 p-4 md:p-6 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-white/5">
+                        <DialogFooter className="bg-muted/30 p-4 md:p-6 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-border">
                             <div className="flex items-center gap-2">
                                 <Button
                                     variant="ghost"

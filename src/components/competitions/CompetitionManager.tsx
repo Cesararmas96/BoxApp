@@ -51,8 +51,8 @@ export const CompetitionManager: React.FC<CompetitionManagerProps> = ({ competit
     if (!competition) return null;
 
     return (
-        <DialogContent className="w-[95vw] md:max-w-[950px] max-h-[90vh] overflow-hidden p-0 gap-0 border-white/10 glass rounded-[3rem] shadow-2xl">
-            <div className="bg-primary/10 p-10 border-b border-white/5 relative overflow-hidden flex-shrink-0">
+        <DialogContent className="w-[95vw] md:max-w-[950px] max-h-[90vh] overflow-hidden p-0 gap-0 border-border glass rounded-[3rem] shadow-2xl">
+            <div className="bg-primary/10 p-10 border-b border-border relative overflow-hidden flex-shrink-0">
                 <Trophy className="absolute -right-10 -bottom-10 h-48 w-48 text-primary/5 -rotate-12" />
                 <DialogHeader>
                     <DialogTitle className="uppercase italic font-black text-3xl md:text-5xl tracking-tighter flex items-center gap-4 truncate">
@@ -69,7 +69,7 @@ export const CompetitionManager: React.FC<CompetitionManagerProps> = ({ competit
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col h-[calc(90vh-160px)] overflow-hidden">
-                <div className="px-6 md:px-10 border-b bg-white/5 flex-shrink-0 overflow-x-auto">
+                <div className="px-6 md:px-10 border-b bg-muted/50 flex-shrink-0 overflow-x-auto">
                     <TabsList className="h-16 bg-transparent gap-8 p-0 flex-nowrap justify-start">
                         <TabsTrigger value="overview" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none h-full px-0 gap-2.5 uppercase text-[10px] font-black tracking-[0.15em] transition-all hover:text-primary/70">
                             <LayoutDashboard className="h-4 w-4" /> {t('common.overview', { defaultValue: 'OVERVIEW' })}
@@ -108,7 +108,7 @@ export const CompetitionManager: React.FC<CompetitionManagerProps> = ({ competit
                     </TabsList>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-10 min-h-0 bg-white/5 scroll-smooth">
+                <div className="flex-1 overflow-y-auto p-10 min-h-0 bg-muted/50 scroll-smooth">
                     {/* Content will be loaded dynamically here */}
                     <TabsContent value="overview" className="mt-0 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <OverviewTab competition={competition} onTabChange={setActiveTab} />

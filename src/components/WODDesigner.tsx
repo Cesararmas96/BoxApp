@@ -156,14 +156,14 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-wrap gap-2 p-3 bg-black/[0.02] dark:bg-white/5 rounded-xl border border-black/5 dark:border-white/10">
+            <div className="flex flex-wrap gap-2 p-3 bg-muted/30 rounded-xl border border-border">
                 {Object.entries(BLOCK_TEMPLATES).map(([type, config]) => (
                     <Button
                         key={type}
                         variant="outline"
                         size="sm"
                         className={cn(
-                            "gap-2 border-black/10 dark:border-white/20 hover:scale-[1.02] transition-all font-black uppercase text-[10px] tracking-widest h-9",
+                            "gap-2 border-border hover:scale-[1.02] transition-all font-black uppercase text-[10px] tracking-widest h-9",
                             type === 'warmup' && "text-orange-500 border-orange-500/20 bg-orange-500/5",
                             type === 'strength' && "text-blue-500 border-blue-500/20 bg-blue-500/5",
                             type === 'conditioning' && "text-purple-500 border-purple-500/20 bg-purple-500/5",
@@ -189,13 +189,13 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
                                         <Card
                                             ref={provided.innerRef}
                                             {...provided.draggableProps}
-                                            className="border-l-4 overflow-visible border-black/5 dark:border-white/20 bg-background/50 dark:bg-white/5 shadow-xl backdrop-blur-md"
+                                            className="border-l-4 overflow-visible border-border bg-background/50 shadow-xl backdrop-blur-md"
                                             style={{
                                                 borderLeftColor: `var(--${block.type}-color)`,
                                                 ...provided.draggableProps.style
                                             }}
                                         >
-                                            <div className="flex flex-col gap-3 p-3 bg-black/[0.02] dark:bg-white/10 border-b border-black/5 dark:border-white/20">
+                                            <div className="flex flex-col gap-3 p-3 bg-muted/30 dark:bg-muted border-b border-border">
                                                 <div className="flex items-center gap-3">
                                                     <div {...provided.dragHandleProps}>
                                                         <GripVertical className="h-4 w-4 text-muted-foreground/50" />
@@ -226,13 +226,13 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
 
                                                 {/* Expanded Controls for WOD/Conditioning/Strength */}
                                                 {(block.type === 'wod' || block.type === 'conditioning' || block.type === 'strength') && (
-                                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-1 border-t border-black/5 dark:border-white/5">
+                                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-1 border-t border-border">
                                                         <div className="space-y-1">
                                                             <label className="text-[9px] font-black uppercase text-muted-foreground">{t('wods.format')}</label>
                                                             <select
                                                                 value={block.format || ''}
                                                                 onChange={(e) => updateBlock(block.id, { format: e.target.value as any })}
-                                                                className="w-full h-7 text-[10px] font-bold uppercase bg-background/50 border border-black/5 dark:border-white/10 rounded-md"
+                                                                className="w-full h-7 text-[10px] font-bold uppercase bg-background/50 border border-border rounded-md"
                                                             >
                                                                 <option value="">{t('wods.select_format')}</option>
                                                                 <option value="for_time">{t('wods.formats.for_time')}</option>
@@ -285,7 +285,7 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
 
                                                 {/* Fallback Sets input for other types or if not covered above */}
                                                 {!['wod', 'conditioning', 'strength'].includes(block.type) && (
-                                                    <div className="flex items-center gap-1 bg-black/[0.03] dark:bg-white/10 rounded-lg px-3 py-1.5 border border-black/5 dark:border-white/20 text-[10px] font-semibold w-fit">
+                                                    <div className="flex items-center gap-1 bg-muted/30 dark:bg-muted rounded-lg px-3 py-1.5 border border-border text-[10px] font-semibold w-fit">
                                                         <span className="text-muted-foreground uppercase opacity-70">{t('wods.sets')}:</span>
                                                         <input
                                                             type="text"
@@ -301,26 +301,26 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
                                             <CardContent className="p-4 space-y-4">
                                                 <div className="space-y-2">
                                                     {block.items.map((item) => (
-                                                        <div key={item.id} className="flex items-center gap-3 p-3 bg-black/[0.02] dark:bg-white/5 rounded-xl border border-black/5 dark:border-white/10 group hover:border-primary/20 transition-all">
+                                                        <div key={item.id} className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl border border-border group hover:border-primary/20 transition-all">
                                                             <div className="flex-1 font-bold italic uppercase text-xs tracking-tighter text-foreground/80">{item.movementName}</div>
                                                             <div className="flex items-center gap-2">
                                                                 <Input
                                                                     placeholder={t('wods.reps_time')}
                                                                     value={item.reps}
                                                                     onChange={(e) => updateMovementInBlock(block.id, item.id, { reps: e.target.value })}
-                                                                    className="h-9 w-24 text-[10px] bg-background/50 border-black/5 dark:border-white/20 focus:border-primary/50 font-black uppercase tracking-widest text-center"
+                                                                    className="h-9 w-24 text-[10px] bg-background/50 border-border focus:border-primary/50 font-black uppercase tracking-widest text-center"
                                                                 />
                                                                 <Input
                                                                     placeholder={t('wods.weight')}
                                                                     value={item.weight}
                                                                     onChange={(e) => updateMovementInBlock(block.id, item.id, { weight: e.target.value })}
-                                                                    className="h-9 w-20 text-[10px] bg-background/50 border-black/5 dark:border-white/20 focus:border-primary/50 font-black uppercase tracking-widest text-center"
+                                                                    className="h-9 w-20 text-[10px] bg-background/50 border-border focus:border-primary/50 font-black uppercase tracking-widest text-center"
                                                                 />
                                                                 <Input
                                                                     placeholder={t('wods.notes')}
                                                                     value={item.notes}
                                                                     onChange={(e) => updateMovementInBlock(block.id, item.id, { notes: e.target.value })}
-                                                                    className="h-9 flex-1 text-[10px] bg-background/50 border-black/5 dark:border-white/20 focus:border-primary/50 font-black uppercase tracking-widest min-w-[120px]"
+                                                                    className="h-9 flex-1 text-[10px] bg-background/50 border-border focus:border-primary/50 font-black uppercase tracking-widest min-w-[120px]"
                                                                 />
                                                                 <Button
                                                                     variant="ghost"
@@ -341,7 +341,7 @@ export const WODDesigner: React.FC<WODDesignerProps> = ({
                                                     </div>
                                                     <Input
                                                         placeholder={t('wods.search_movements', { defaultValue: 'SEARCH MOVEMENTS...' })}
-                                                        className="pl-8 h-12 text-xs bg-black/[0.02] dark:bg-white/10 border-black/5 dark:border-white/20 focus:border-primary/50 focus:ring-primary/10 transition-all font-black uppercase tracking-widest"
+                                                        className="pl-8 h-12 text-xs bg-muted/30 dark:bg-muted border-border focus:border-primary/50 focus:ring-primary/10 transition-all font-black uppercase tracking-widest"
                                                         value={activeSearchBlockId === block.id ? searchQuery : ''}
                                                         onFocus={() => setActiveSearchBlockId(block.id)}
                                                         onChange={(e) => {

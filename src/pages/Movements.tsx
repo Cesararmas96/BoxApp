@@ -25,12 +25,12 @@ import {
     CardContent,
 } from "@/components/ui/card";
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-    DialogDescription,
+    ResponsiveDialog as Dialog,
+    ResponsiveDialogContent as DialogContent,
+    ResponsiveDialogHeader as DialogHeader,
+    ResponsiveDialogTitle as DialogTitle,
+    ResponsiveDialogTrigger as DialogTrigger,
+    ResponsiveDialogDescription as DialogDescription,
 } from "@/components/ui/dialog";
 import {
     Select,
@@ -43,6 +43,7 @@ import { Label } from "@/components/ui/label";
 import { useNotification, useLanguage } from '@/hooks';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Toast } from '@/components/ui/toast-custom';
+import { resolveMovementImage } from '@/lib/movementImages';
 
 interface Movement {
     id: string;
@@ -359,14 +360,14 @@ export const Movements: React.FC = () => {
                                             />
                                             <button
                                                 type="button"
-                                                className="absolute top-2 right-2 h-7 w-7 rounded-full bg-destructive/90 text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-all hover:scale-110"
+                                                className="absolute top-2 right-2 h-7 w-7 rounded-full bg-destructive/90 text-foreground flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-all hover:scale-110"
                                                 onClick={(e) => { e.stopPropagation(); setFormData({ ...formData, image_url: '' }); }}
                                             >
                                                 <X className="h-3.5 w-3.5" />
                                             </button>
                                             <button
                                                 type="button"
-                                                className="absolute bottom-2 right-2 h-7 px-2.5 rounded-full bg-black/50 backdrop-blur-md text-white flex items-center justify-center gap-1.5 opacity-0 group-hover/img:opacity-100 transition-all text-[8px] font-black uppercase tracking-widest hover:bg-black/70"
+                                                className="absolute bottom-2 right-2 h-7 px-2.5 rounded-full bg-muted/300 backdrop-blur-md text-foreground flex items-center justify-center gap-1.5 opacity-0 group-hover/img:opacity-100 transition-all text-[8px] font-black uppercase tracking-widest hover:bg-black/70"
                                                 onClick={(e) => { e.stopPropagation(); imageInputRef.current?.click(); }}
                                             >
                                                 <Upload className="h-3 w-3" /> Change
@@ -422,33 +423,23 @@ export const Movements: React.FC = () => {
                         >
                             {/* Image area */}
                             <div className="relative h-40 w-full bg-gradient-to-br from-muted/20 to-muted/5 overflow-hidden rounded-2xl">
-                                {m.image_url ? (
-                                    <img
-                                        src={m.image_url}
-                                        alt={m.name}
-                                        className="w-full h-full object-contain p-3 transition-transform duration-500 group-hover:scale-110"
-                                        onError={(e) => {
-                                            const parent = (e.target as HTMLImageElement).parentElement;
-                                            if (parent) {
-                                                parent.innerHTML = '<div class="flex items-center justify-center h-full opacity-20"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/><path d="M3 16.5V5a2 2 0 0 1 2-2h11"/><circle cx="9" cy="9" r="2"/><path d="M21 11V5a2 2 0 0 0-2-2H16"/><path d="M21 21H8"/><path d="M3 21v-5"/></svg></div>';
-                                            }
-                                        }}
-                                    />
-                                ) : (
-                                    <div className="flex items-center justify-center h-full">
-                                        <div className="text-muted-foreground/15">
-                                            {CATEGORY_ICONS[m.category || 'Other'] ? (
-                                                React.cloneElement(CATEGORY_ICONS[m.category || 'Other'], { className: 'h-12 w-12' })
-                                            ) : (
-                                                <Activity className="h-12 w-12" />
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
+                                <img
+                                    src={resolveMovementImage(m.name, m.image_url, m.category || 'Other')}
+                                    alt={m.name}
+                                    className="w-full h-full object-contain p-3 transition-transform duration-500 group-hover:scale-110"
+                                    onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        // Fallback to category icon on error
+                                        const parent = target.parentElement;
+                                        if (parent) {
+                                            parent.innerHTML = '<div class="flex items-center justify-center h-full opacity-20"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/><path d="M3 16.5V5a2 2 0 0 1 2-2h11"/><circle cx="9" cy="9" r="2"/><path d="M21 11V5a2 2 0 0 0-2-2H16"/><path d="M21 21H8"/><path d="M3 21v-5"/></svg></div>';
+                                        }
+                                    }}
+                                />
 
                                 {/* Category badge */}
                                 <div className={`absolute top-2 left-2 px-2 py-0.5 rounded-full bg-gradient-to-r ${CATEGORY_COLORS[m.category || 'Other'] || 'from-gray-500/80 to-gray-400/80'} backdrop-blur-md`}>
-                                    <span className="text-[8px] font-black uppercase tracking-widest text-white drop-shadow-sm">{m.category}</span>
+                                    <span className="text-[8px] font-black uppercase tracking-widest text-foreground drop-shadow-sm">{m.category}</span>
                                 </div>
 
                                 {/* Hover overlay with action buttons */}
@@ -456,7 +447,7 @@ export const Movements: React.FC = () => {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-9 w-9 bg-white/20 backdrop-blur-md text-white hover:bg-white/40 border border-white/20 rounded-xl transition-all scale-75 group-hover:scale-100"
+                                        className="h-9 w-9 bg-white/20 backdrop-blur-md text-foreground hover:bg-white/40 border border-border rounded-xl transition-all scale-75 group-hover:scale-100"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             setEditingMovement(m);
@@ -469,7 +460,7 @@ export const Movements: React.FC = () => {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-9 w-9 bg-red-500/30 backdrop-blur-md text-white hover:bg-red-500/60 border border-red-400/20 rounded-xl transition-all scale-75 group-hover:scale-100"
+                                        className="h-9 w-9 bg-red-500/30 backdrop-blur-md text-foreground hover:bg-red-500/60 border border-red-400/20 rounded-xl transition-all scale-75 group-hover:scale-100"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             showConfirm({
@@ -578,26 +569,14 @@ export const Movements: React.FC = () => {
                         <div>
                             {/* Image section */}
                             <div className="relative h-64 w-full bg-gradient-to-br from-muted/20 to-muted/5">
-                                {selectedMovement.image_url ? (
-                                    <img
-                                        src={selectedMovement.image_url}
-                                        alt={selectedMovement.name}
-                                        className="w-full h-full object-contain p-6"
-                                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                                    />
-                                ) : (
-                                    <div className="flex items-center justify-center h-full">
-                                        <div className="text-muted-foreground/15">
-                                            {CATEGORY_ICONS[selectedMovement.category || 'Other'] ? (
-                                                React.cloneElement(CATEGORY_ICONS[selectedMovement.category || 'Other'], { className: 'h-20 w-20' })
-                                            ) : (
-                                                <Activity className="h-20 w-20" />
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
+                                <img
+                                    src={resolveMovementImage(selectedMovement.name, selectedMovement.image_url, selectedMovement.category || 'Other')}
+                                    alt={selectedMovement.name}
+                                    className="w-full h-full object-contain p-6"
+                                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                />
                                 <div className={`absolute top-4 left-4 px-3 py-1 rounded-full bg-gradient-to-r ${CATEGORY_COLORS[selectedMovement.category || 'Other'] || 'from-gray-500/80 to-gray-400/80'} backdrop-blur-md`}>
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-white drop-shadow-sm flex items-center gap-1.5">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-foreground drop-shadow-sm flex items-center gap-1.5">
                                         {CATEGORY_ICONS[selectedMovement.category || 'Other']}
                                         {selectedMovement.category}
                                     </span>

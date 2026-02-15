@@ -96,49 +96,37 @@ export type Database = {
             }
             boxes: {
                 Row: {
-                    address: string | null
                     created_at: string | null
                     favicon_url: string | null
-                    feature_flags: Json | null
                     id: string
+                    login_background_url: string | null
                     logo_url: string | null
                     name: string
-                    owner_id: string | null
-                    phone: string | null
-                    subscription_plan: string | null
-                    subscription_status: string | null
+                    slug: string
                     theme_config: Json | null
-                    timezone: string | null
+                    updated_at: string | null
                 }
                 Insert: {
-                    address?: string | null
                     created_at?: string | null
                     favicon_url?: string | null
-                    feature_flags?: Json | null
                     id?: string
+                    login_background_url?: string | null
                     logo_url?: string | null
                     name: string
-                    owner_id?: string | null
-                    phone?: string | null
-                    subscription_plan?: string | null
-                    subscription_status?: string | null
+                    slug: string
                     theme_config?: Json | null
-                    timezone?: string | null
+                    updated_at?: string | null
                 }
                 Update: {
-                    address?: string | null
                     created_at?: string | null
                     favicon_url?: string | null
-                    feature_flags?: Json | null
                     id?: string
+                    login_background_url?: string | null
                     logo_url?: string | null
                     name?: string
-                    owner_id?: string | null
-                    phone?: string | null
-                    subscription_plan?: string | null
-                    subscription_status?: string | null
+                    slug?: string
                     theme_config?: Json | null
-                    timezone?: string | null
+                    updated_at?: string | null
                 }
                 Relationships: []
             }
@@ -1200,6 +1188,8 @@ export type Database = {
                     category: string | null
                     description: string | null
                     video_url: string | null
+                    image_url: string | null
+                    demo_url: string | null
                     box_id: string | null
                     created_at: string | null
                 }
@@ -1209,6 +1199,8 @@ export type Database = {
                     category?: string | null
                     description?: string | null
                     video_url?: string | null
+                    image_url?: string | null
+                    demo_url?: string | null
                     box_id?: string | null
                     created_at?: string | null
                 }
@@ -1218,6 +1210,8 @@ export type Database = {
                     category?: string | null
                     description?: string | null
                     video_url?: string | null
+                    image_url?: string | null
+                    demo_url?: string | null
                     box_id?: string | null
                     created_at?: string | null
                 }

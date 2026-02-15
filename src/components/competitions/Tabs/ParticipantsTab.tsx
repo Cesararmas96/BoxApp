@@ -131,14 +131,14 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ competition })
                             placeholder={t('common.search')}
                             value={searchAthlete}
                             onChange={(e) => setSearchAthlete(e.target.value)}
-                            className="pl-12 h-14 rounded-2xl border-white/10 bg-white/5 focus:ring-primary/20 transition-all text-sm font-medium"
+                            className="pl-12 h-14 rounded-2xl border-border bg-muted/50 focus:ring-primary/20 transition-all text-sm font-medium"
                         />
                     </div>
                     <Select value={participantDivision} onValueChange={setParticipantDivision}>
-                        <SelectTrigger className="h-14 rounded-2xl border-white/10 bg-white/5 focus:ring-primary/20 transition-all text-sm font-medium">
+                        <SelectTrigger className="h-14 rounded-2xl border-border bg-muted/50 focus:ring-primary/20 transition-all text-sm font-medium">
                             <SelectValue placeholder={t('competitions.division_placeholder')} />
                         </SelectTrigger>
-                        <SelectContent className="glass border-white/10 rounded-2xl">
+                        <SelectContent className="glass border-border rounded-2xl">
                             <SelectItem value="RX">{t('competitions.divisions.rx')}</SelectItem>
                             <SelectItem value="Scaled">{t('competitions.divisions.scaled')}</SelectItem>
                             <SelectItem value="Beginners">{t('competitions.divisions.beginners')}</SelectItem>
@@ -155,7 +155,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ competition })
                         .map(athlete => (
                             <div
                                 key={athlete.id}
-                                className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/30 hover:bg-primary/5 transition-all group"
+                                className="flex items-center justify-between p-4 rounded-2xl bg-muted/50 border border-border hover:border-primary/30 hover:bg-primary/5 transition-all group"
                             >
                                 <div className="flex items-center gap-4">
                                     <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center font-black text-primary text-xs border border-primary/10">
@@ -190,8 +190,8 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ competition })
                     <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">{t('competitions.manage_participants')}</p>
                 </div>
 
-                <div className="bg-white/5 rounded-[2rem] border border-white/5 overflow-hidden min-h-[400px]">
-                    <div className="p-4 grid grid-cols-12 gap-4 border-b border-white/5 bg-white/5 text-[9px] font-black uppercase tracking-widest text-muted-foreground">
+                <div className="bg-muted/50 rounded-[2rem] border border-border overflow-hidden min-h-[400px]">
+                    <div className="p-4 grid grid-cols-12 gap-4 border-b border-border bg-muted/50 text-[9px] font-black uppercase tracking-widest text-muted-foreground">
                         <div className="col-span-5 pl-2">{t('common.athlete')}</div>
                         <div className="col-span-3 text-center">{t('competitions.division')}</div>
                         <div className="col-span-3 text-center">{t('common.status')}</div>
@@ -199,9 +199,9 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ competition })
                     </div>
                     <div className="max-h-[400px] overflow-y-auto p-2 space-y-1 custom-scrollbar">
                         {participants.map((participant) => (
-                            <div key={participant.id} className="grid grid-cols-12 gap-4 items-center p-3 rounded-xl hover:bg-white/5 transition-colors group">
+                            <div key={participant.id} className="grid grid-cols-12 gap-4 items-center p-3 rounded-xl hover:bg-muted transition-colors group">
                                 <div className="col-span-5 flex items-center gap-3">
-                                    <div className="h-8 w-8 rounded-lg bg-zinc-800 flex items-center justify-center text-[9px] font-black text-white">
+                                    <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center text-[9px] font-black text-foreground">
                                         {participant.athlete?.avatar_url ? (
                                             <img src={participant.athlete.avatar_url} alt="" className="h-full w-full object-cover rounded-lg" />
                                         ) : (
@@ -214,7 +214,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ competition })
                                     </div>
                                 </div>
                                 <div className="col-span-3 text-center">
-                                    <Badge variant="secondary" className="text-[9px] font-black uppercase tracking-wider bg-white/5 text-foreground/80 hover:bg-white/10 border-white/10">
+                                    <Badge variant="secondary" className="text-[9px] font-black uppercase tracking-wider bg-muted/50 text-foreground/80 hover:bg-muted border-border">
                                         {participant.division}
                                     </Badge>
                                 </div>

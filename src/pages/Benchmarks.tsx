@@ -19,13 +19,13 @@ import {
     TableRow
 } from '@/components/ui/table';
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-    DialogTrigger,
-    DialogFooter
+    ResponsiveDialog as Dialog,
+    ResponsiveDialogContent as DialogContent,
+    ResponsiveDialogHeader as DialogHeader,
+    ResponsiveDialogTitle as DialogTitle,
+    ResponsiveDialogDescription as DialogDescription,
+    ResponsiveDialogTrigger as DialogTrigger,
+    ResponsiveDialogFooter as DialogFooter
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
@@ -163,7 +163,7 @@ export const Benchmarks: React.FC = () => {
                                                 autoFocus
                                             />
                                         </div>
-                                        <div className="max-h-[250px] overflow-y-auto border rounded-2xl p-2 bg-black/5 dark:bg-white/5 space-y-1">
+                                        <div className="max-h-[250px] overflow-y-auto border rounded-2xl p-2 bg-muted/30 space-y-1">
                                             {benchmarks
                                                 .filter(b => b.name.toLowerCase().includes(searchTerm.toLowerCase()) || b.category?.toLowerCase().includes(searchTerm.toLowerCase()))
                                                 .map(b => (

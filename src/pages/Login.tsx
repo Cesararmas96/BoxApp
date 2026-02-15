@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Dumbbell, Loader2, Mail, Lock, Info, Zap, Eye, EyeOff } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { Loader2, Mail, Lock, Info, Eye, EyeOff, ChevronRight } from 'lucide-react';
 import { useLanguage, useNotification } from '@/hooks';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -9,9 +10,23 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Toast } from '@/components/ui/toast-custom';
 import { supabase } from '@/lib/supabaseClient';
 
+// Default CrossFit box hero image (Unsplash — royalty-free)
+const DEFAULT_BG =
+    'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1920&q=80';
+
+interface BoxBranding {
+    id: string;
+    name: string;
+    slug: string;
+    logo_url: string | null;
+    login_background_url: string | null;
+    theme_config: any;
+}
+
 export const Login: React.FC = () => {
     const { t } = useLanguage();
-    const { signIn, signUp, resetPassword } = useAuth();
+    const { boxSlug } = useParams<{ boxSlug?: string }>();
+    const { signIn, signInWithGoogle, signUp, resetPassword } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -22,7 +37,54 @@ export const Login: React.FC = () => {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [googleLoading, setGoogleLoading] = useState(false);
     const { notification, showNotification, hideNotification } = useNotification();
+
+    // Box branding from admin settings
+    const [branding, setBranding] = useState<BoxBranding | null>(null);
+    const [bgLoaded, setBgLoaded] = useState(false);
+    const [boxNotFound, setBoxNotFound] = useState(false);
+
+    // Fetch box branding — by slug if present, otherwise first box (backward compat)
+    useEffect(() => {
+        const fetchBranding = async () => {
+            try {
+                let query = supabase
+                    .from('boxes')
+                    .select('id, name, slug, logo_url, login_background_url, theme_config');
+
+                if (boxSlug) {
+                    query = query.eq('slug', boxSlug);
+                } else {
+                    query = query.limit(1);
+                }
+
+                const { data, error: fetchErr } = await query.single();
+
+                if (fetchErr || !data) {
+                    if (boxSlug) setBoxNotFound(true);
+                    return;
+                }
+
+                setBranding(data as BoxBranding);
+            } catch {
+                // Silently ignore — use defaults
+            }
+        };
+        fetchBranding();
+    }, [boxSlug]);
+
+    // Pre-load background image for smooth transition
+    useEffect(() => {
+        const src = branding?.login_background_url || DEFAULT_BG;
+        const img = new Image();
+        img.onload = () => setBgLoaded(true);
+        img.src = src;
+    }, [branding]);
+
+    const backgroundUrl = branding?.login_background_url || DEFAULT_BG;
+    const boxName = branding?.name || 'BoxApp';
+    const logoUrl = branding?.logo_url;
 
     const validateForm = () => {
         if (!email.includes('@')) {
@@ -67,7 +129,6 @@ export const Login: React.FC = () => {
             if (updateError) {
                 setError(updateError.message);
             } else {
-                // Update profile flag
                 const { data: { user } } = await supabase.auth.getUser();
                 if (user) {
                     await supabase
@@ -78,12 +139,20 @@ export const Login: React.FC = () => {
 
                 showNotification('success', t('auth.password_updated_success'));
                 setIsForcedReset(false);
-                // The Session change should automatically trigger redirect if handled by router
                 window.location.href = '/dashboard';
             }
         } else {
             const { data, error } = isSignUp
-                ? await signUp({ email, password })
+                ? await signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            box_id: branding?.id,
+                            box_slug: branding?.slug,
+                        }
+                    }
+                })
                 : await signIn({ email, password });
 
             if (error) {
@@ -91,7 +160,6 @@ export const Login: React.FC = () => {
             } else if (isSignUp) {
                 showNotification('success', t('auth.verification_sent'));
             } else if (data?.user) {
-                // Check if force_password_change is true
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('force_password_change')
@@ -107,223 +175,300 @@ export const Login: React.FC = () => {
         setLoading(false);
     };
 
-    return (
-        <div className="min-h-screen w-full flex items-center justify-center bg-[#050508] p-4 lg:p-0 relative overflow-hidden font-inter">
-            {/* Animated background elements */}
-            <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/20 blur-[120px] rounded-full animate-pulse" />
-            <div className="absolute bottom-[-10%] left-[-10%] w-[30%] h-[30%] bg-indigo-500/10 blur-[100px] rounded-full animate-bounce duration-[10s]" />
+    const getTitle = () => {
+        if (isForcedReset) return t('auth.security_policy');
+        if (isResetting) return t('auth.recovery_mode');
+        if (isSignUp) return t('auth.new_recruitment');
+        return t('auth.login_welcome');
+    };
 
-            {/* Grid background */}
-            <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none"
-                style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+    const getSubtitle = () => {
+        if (isForcedReset) return t('auth.force_change_subtitle');
+        if (isResetting) return t('auth.identify_profile');
+        if (isSignUp) return t('auth.initialize_data');
+        return t('auth.login_subtitle');
+    };
 
-            <div className="relative z-10 w-full max-w-[1100px] grid lg:grid-cols-2 gap-0 glass rounded-[2rem] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.5)] border-white/5 animate-premium-in">
+    const handleGoogleSignIn = async () => {
+        setError(null);
+        setGoogleLoading(true);
+        const { error } = await signInWithGoogle();
+        if (error) {
+            setError(error.message);
+            setGoogleLoading(false);
+        }
+        // If no error, page will redirect — no need to reset loading
+    };
 
-                {/* Left Side: Visual/Branding */}
-                <div className="hidden lg:flex flex-col justify-between p-12 relative overflow-hidden bg-zinc-950">
-                    <div className="absolute inset-0 opacity-20 grayscale pointer-events-none">
-                        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent z-10" />
+    const showSocialLogin = !isResetting && !isForcedReset;
+
+    const getSubmitLabel = () => {
+        if (isForcedReset) return t('auth.update_credentials');
+        if (isResetting) return t('auth.initiate_recovery');
+        if (isSignUp) return t('auth.confirm_deployment');
+        return t('auth.login');
+    };
+
+    // Show "Box not found" if slug was provided but doesn't match any box
+    if (boxNotFound) {
+        return (
+            <div className="min-h-[100dvh] w-full flex flex-col items-center justify-center bg-[#050508] px-4">
+                <div className="text-center max-w-sm">
+                    <div className="h-20 w-20 rounded-[1.75rem] bg-white/10 backdrop-blur-2xl flex items-center justify-center mx-auto mb-6 ring-1 ring-white/10">
+                        <span className="text-3xl">🏋️</span>
                     </div>
-
-                    <div className="relative z-20">
-                        <div className="flex items-center gap-3 mb-12">
-                            <div className="p-2.5 bg-primary rounded-xl shadow-[0_0_20px_rgba(255,50,50,0.4)]">
-                                <Dumbbell className="h-6 w-6 text-white" />
-                            </div>
-                            <span className="text-xl font-black italic tracking-tighter text-white uppercase">Box Manager <span className="text-primary italic">OS</span></span>
-                        </div>
-
-                        <div className="space-y-6">
-                            <h2 className="text-5xl font-black italic tracking-tighter text-white uppercase leading-[0.9]">
-                                Push your <br />
-                                <span className="text-primary">Limits</span> today.
-                            </h2>
-                            <p className="text-zinc-400 text-lg max-w-sm font-medium leading-relaxed">
-                                Manage your athletes, tracking benchmarks, and scaling your programming with precision.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="relative z-20 flex gap-8">
-                        <div>
-                            <p className="text-2xl font-black text-white italic tracking-tighter">+500</p>
-                            <p className="text-[10px] text-zinc-500 uppercase font-black tracking-widest">Active Athletes</p>
-                        </div>
-                        <div>
-                            <p className="text-2xl font-black text-white italic tracking-tighter">99.9%</p>
-                            <p className="text-[10px] text-zinc-500 uppercase font-black tracking-widest">Uptime Performance</p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Right Side: Form */}
-                <div className="p-8 lg:p-16 flex flex-col justify-center bg-card/10 backdrop-blur-xl">
-                    <div className="lg:hidden flex items-center justify-center gap-3 mb-10">
-                        <div className="p-2 bg-primary rounded-lg">
-                            <Dumbbell className="h-5 w-5 text-white" />
-                        </div>
-                        <span className="text-lg font-black italic tracking-tighter text-white uppercase">Box Manager</span>
-                    </div>
-
-                    <div className="space-y-2 mb-10">
-                        <h3 className="text-3xl font-black italic tracking-tighter text-white uppercase">
-                            {isForcedReset ? t('auth.security_policy') : (isResetting ? t('auth.recovery_mode') : (isSignUp ? t('auth.new_recruitment') : t('auth.system_access')))}
-                        </h3>
-                        <p className="text-zinc-500 text-sm font-bold uppercase tracking-widest">
-                            {isForcedReset ? t('auth.force_change_subtitle') : (isResetting ? t('auth.identify_profile') : (isSignUp ? t('auth.initialize_data') : t('auth.enter_credentials')))}
-                        </p>
-                    </div>
-
-                    <form onSubmit={handleAuth} className="space-y-6">
-                        {error && (
-                            <Alert variant="destructive" className="glass border-destructive/20 py-3 animate-in fade-in zoom-in duration-300">
-                                <Info className="h-4 w-4" />
-                                <AlertDescription className="text-xs font-bold uppercase tracking-wider">{error}</AlertDescription>
-                            </Alert>
-                        )}
-
-                        {!isForcedReset && (
-                            <div className="space-y-2">
-                                <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">{t('auth.email')}</Label>
-                                <div className="relative group">
-                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600 transition-colors group-focus-within:text-primary" />
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        placeholder="operator@system.com"
-                                        className="bg-zinc-950/50 border-white/5 pl-12 h-14 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all text-white font-medium italic"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        required
-                                    />
-                                </div>
-                            </div>
-                        )}
-
-                        {isForcedReset && (
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">{t('auth.new_password_force')}</Label>
-                                    <div className="relative group">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600 transition-colors group-focus-within:text-primary" />
-                                        <Input
-                                            type="password"
-                                            placeholder="••••••••"
-                                            className="bg-zinc-950/50 border-white/5 pl-12 h-14 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all text-white font-mono italic"
-                                            value={newPassword}
-                                            onChange={(e) => setNewPassword(e.target.value)}
-                                            required
-                                        />
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">{t('auth.confirm_password_force')}</Label>
-                                    <div className="relative group">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600 transition-colors group-focus-within:text-primary" />
-                                        <Input
-                                            type="password"
-                                            placeholder="••••••••"
-                                            className="bg-zinc-950/50 border-white/5 pl-12 h-14 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all text-white font-mono italic"
-                                            value={confirmPassword}
-                                            onChange={(e) => setConfirmPassword(e.target.value)}
-                                            required
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {!isResetting && !isForcedReset && (
-                            <div className="space-y-2">
-                                <div className="flex justify-between items-end ml-1">
-                                    <Label htmlFor="pass" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">{t('auth.password')}</Label>
-                                    {!isSignUp && (
-                                        <Button
-                                            variant="link"
-                                            type="button"
-                                            className="text-[9px] h-auto p-0 text-zinc-600 font-black uppercase tracking-widest hover:text-primary transition-colors"
-                                            onClick={() => setIsResetting(true)}
-                                        >
-                                            {t('auth.forgot_password')}
-                                        </Button>
-                                    )}
-                                </div>
-                                <div className="relative group">
-                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600 transition-colors group-focus-within:text-primary" />
-                                    <Input
-                                        id="pass"
-                                        type={showPassword ? "text" : "password"}
-                                        placeholder="••••••••"
-                                        className="bg-zinc-950/50 border-white/5 pl-12 pr-12 h-14 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all text-white font-mono italic"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        required
-                                    />
-                                    <button
-                                        type="button"
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-primary transition-colors"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                    >
-                                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-
-                        <Button
-                            type="submit"
-                            variant="premium"
-                            className="w-full h-14 group"
-                            disabled={loading}
-                        >
-                            {loading ? (
-                                <Loader2 className="h-5 w-5 animate-spin" />
-                            ) : (
-                                <>
-                                    <span>
-                                        {isForcedReset
-                                            ? t('auth.update_credentials')
-                                            : (isResetting ? t('auth.initiate_recovery') : (isSignUp ? t('auth.confirm_deployment') : t('auth.establish_connection')))}
-                                    </span>
-                                    <Zap className="ml-2 h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-primary" />
-                                </>
-                            )}
-                        </Button>
-                    </form>
-
-                    <div className="mt-12 pt-8 border-t border-white/5 flex items-center justify-center gap-2">
-                        <p className="text-zinc-600 text-[10px] font-black uppercase tracking-widest">
-                            {isForcedReset
-                                ? t('auth.logout_cancel')
-                                : (isResetting ? t('auth.back_to_id') : (isSignUp ? t('auth.existing_operative') : t('auth.new_operative')))}
-                        </p>
-                        <Button
-                            variant="link"
-                            className="text-primary font-black uppercase text-[10px] tracking-widest h-auto p-0 hover:scale-105 transition-transform"
-                            onClick={async () => {
-                                if (isForcedReset) {
-                                    await supabase.auth.signOut();
-                                    setIsForcedReset(false);
-                                } else if (isResetting) {
-                                    setIsResetting(false);
-                                } else {
-                                    setIsSignUp(!isSignUp);
-                                }
-                                setError(null);
-                            }}
-                        >
-                            {isForcedReset
-                                ? t('auth.logout') // Using t('auth.logout') or similar
-                                : (isResetting ? t('auth.login') : (isSignUp ? t('auth.login') : t('auth.register')))}
-                        </Button>
-                    </div>
+                    <h1 className="text-2xl font-bold text-white mb-2">{t('auth.box_not_found')}</h1>
+                    <p className="text-white/50 text-sm mb-6">{t('auth.box_not_found_desc')}</p>
+                    <a
+                        href="/login"
+                        className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-white text-black font-semibold text-sm hover:bg-white/90 transition-all"
+                    >
+                        {t('auth.go_to_login')}
+                        <ChevronRight className="h-4 w-4" />
+                    </a>
                 </div>
             </div>
+        );
+    }
 
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center">
-                <p className="text-[10px] text-zinc-700 font-black uppercase tracking-[0.4em]">
-                    Core Engine BoxManager 2.0.26 // All systems nominal
-                </p>
+    return (
+        <div className="min-h-[100dvh] w-full flex flex-col relative overflow-hidden bg-black">
+            {/* ── Full-screen background image ── */}
+            <div
+                className={`absolute inset-0 transition-opacity duration-1000 ${bgLoaded ? 'opacity-100' : 'opacity-0'}`}
+            >
+                <img
+                    src={backgroundUrl}
+                    alt=""
+                    className="w-full h-full object-cover"
+                    aria-hidden="true"
+                />
+                {/* Gradient overlays for readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/20" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent" />
+            </div>
+
+            {/* ── Content container — centered vertically ── */}
+            <div className="relative z-10 flex-1 flex flex-col items-center justify-center safe-area-inset px-4 py-8 sm:px-6">
+
+                {/* ── Centered branding: logo + name + tagline ── */}
+                <div className="flex flex-col items-center mb-8 animate-premium-in">
+                    {logoUrl ? (
+                        <img
+                            src={logoUrl}
+                            alt={boxName}
+                            className="h-20 w-20 sm:h-24 sm:w-24 rounded-[1.75rem] object-contain shadow-[0_8px_40px_rgba(0,0,0,0.4)] ring-1 ring-white/10"
+                        />
+                    ) : (
+                        <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-[1.75rem] bg-white/10 backdrop-blur-2xl flex items-center justify-center shadow-[0_8px_40px_rgba(0,0,0,0.4)] ring-1 ring-white/10">
+                            <span className="text-3xl sm:text-4xl font-black text-white">{boxName.charAt(0)}</span>
+                        </div>
+                    )}
+                    <h1 className="mt-5 text-2xl sm:text-3xl font-bold text-white tracking-tight text-center drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">{boxName}</h1>
+                    <p className="text-white/70 text-sm mt-1.5 font-medium tracking-wide text-center drop-shadow-[0_1px_6px_rgba(0,0,0,0.5)]">{t('auth.login_tagline')}</p>
+                </div>
+
+                {/* ── Form card — glass card, always centered ── */}
+                <div className="w-full max-w-[400px] mx-auto">
+                    <div className="rounded-3xl bg-white/[0.07] backdrop-blur-2xl border border-white/[0.10] shadow-[0_8px_60px_rgba(0,0,0,0.5)] overflow-hidden animate-premium-in" style={{ animationDelay: '120ms' }}>
+
+                        {/* Title section */}
+                        <div className="px-7 pt-8 pb-2 sm:px-9 sm:pt-10 text-center">
+                            <h3 className="text-xl sm:text-2xl font-semibold text-white tracking-tight">
+                                {getTitle()}
+                            </h3>
+                            <p className="text-white/40 text-[13px] mt-1.5 font-medium">
+                                {getSubtitle()}
+                            </p>
+                        </div>
+
+                        {/* Google OAuth button + divider (only on login/signup) */}
+                        {showSocialLogin && (
+                            <div className="px-7 pt-5 sm:px-9 space-y-5">
+                                <button
+                                    type="button"
+                                    onClick={handleGoogleSignIn}
+                                    disabled={googleLoading || loading}
+                                    className="w-full h-[52px] rounded-2xl bg-white/[0.06] border border-white/[0.10] text-white font-medium text-[15px] flex items-center justify-center gap-3 hover:bg-white/[0.12] active:scale-[0.98] transition-all duration-200 disabled:opacity-50"
+                                >
+                                    {googleLoading ? (
+                                        <Loader2 className="h-5 w-5 animate-spin text-white/60" />
+                                    ) : (
+                                        <>
+                                            <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
+                                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                                            </svg>
+                                            {t('auth.continue_with_google')}
+                                        </>
+                                    )}
+                                </button>
+
+                                {/* "or" divider */}
+                                <div className="flex items-center gap-4">
+                                    <div className="flex-1 h-px bg-white/[0.08]" />
+                                    <span className="text-white/25 text-[11px] font-medium uppercase tracking-widest">{t('auth.or_divider')}</span>
+                                    <div className="flex-1 h-px bg-white/[0.08]" />
+                                </div>
+                            </div>
+                        )}
+
+                        <form onSubmit={handleAuth} className="px-7 pb-7 pt-3 sm:px-9 sm:pb-9 space-y-5">
+                            {error && (
+                                <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 py-3 animate-in fade-in zoom-in duration-300 rounded-2xl">
+                                    <Info className="h-4 w-4 text-red-400" />
+                                    <AlertDescription className="text-xs font-semibold text-red-300">{error}</AlertDescription>
+                                </Alert>
+                            )}
+
+                            {/* Email field */}
+                            {!isForcedReset && (
+                                <div className="space-y-2.5">
+                                    <Label htmlFor="email" className="text-[11px] font-semibold uppercase tracking-wider text-white/40 ml-1">{t('auth.email')}</Label>
+                                    <div className="relative group">
+                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-white/30 transition-colors group-focus-within:text-white/70" />
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            placeholder={t('auth.email_placeholder')}
+                                            className="bg-white/[0.06] border-white/[0.08] pl-12 h-[52px] rounded-2xl text-white placeholder:text-white/25 focus:border-white/20 focus:ring-1 focus:ring-white/10 transition-all text-[15px] font-medium"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            required
+                                            autoComplete="email"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Force-reset password fields */}
+                            {isForcedReset && (
+                                <div className="space-y-5">
+                                    <div className="space-y-2.5">
+                                        <Label className="text-[11px] font-semibold uppercase tracking-wider text-white/40 ml-1">{t('auth.new_password_force')}</Label>
+                                        <div className="relative group">
+                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-white/30 transition-colors group-focus-within:text-white/70" />
+                                            <Input
+                                                type="password"
+                                                placeholder="••••••••"
+                                                className="bg-white/[0.06] border-white/[0.08] pl-12 h-[52px] rounded-2xl text-white placeholder:text-white/25 focus:border-white/20 focus:ring-1 focus:ring-white/10 transition-all font-mono text-[15px]"
+                                                value={newPassword}
+                                                onChange={(e) => setNewPassword(e.target.value)}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2.5">
+                                        <Label className="text-[11px] font-semibold uppercase tracking-wider text-white/40 ml-1">{t('auth.confirm_password_force')}</Label>
+                                        <div className="relative group">
+                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-white/30 transition-colors group-focus-within:text-white/70" />
+                                            <Input
+                                                type="password"
+                                                placeholder="••••••••"
+                                                className="bg-white/[0.06] border-white/[0.08] pl-12 h-[52px] rounded-2xl text-white placeholder:text-white/25 focus:border-white/20 focus:ring-1 focus:ring-white/10 transition-all font-mono text-[15px]"
+                                                value={confirmPassword}
+                                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Password field */}
+                            {!isResetting && !isForcedReset && (
+                                <div className="space-y-2.5">
+                                    <div className="flex justify-between items-end ml-1">
+                                        <Label htmlFor="pass" className="text-[11px] font-semibold uppercase tracking-wider text-white/40">{t('auth.password')}</Label>
+                                        {!isSignUp && (
+                                            <button
+                                                type="button"
+                                                className="text-[11px] font-semibold text-white/40 hover:text-white/70 transition-colors"
+                                                onClick={() => setIsResetting(true)}
+                                            >
+                                                {t('auth.forgot_password')}
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="relative group">
+                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-white/30 transition-colors group-focus-within:text-white/70" />
+                                        <Input
+                                            id="pass"
+                                            type={showPassword ? "text" : "password"}
+                                            placeholder="••••••••"
+                                            className="bg-white/[0.06] border-white/[0.08] pl-12 pr-12 h-[52px] rounded-2xl text-white placeholder:text-white/25 focus:border-white/20 focus:ring-1 focus:ring-white/10 transition-all font-mono text-[15px]"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            required
+                                            autoComplete="current-password"
+                                        />
+                                        <button
+                                            type="button"
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors p-1"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            aria-label={showPassword ? t('auth.hide_password') : t('auth.show_password')}
+                                        >
+                                            {showPassword ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Submit button */}
+                            <Button
+                                type="submit"
+                                className="w-full h-[52px] rounded-2xl bg-white text-black font-semibold text-[15px] shadow-lg hover:bg-white/90 active:scale-[0.98] transition-all duration-200 group mt-1"
+                                disabled={loading}
+                            >
+                                {loading ? (
+                                    <Loader2 className="h-5 w-5 animate-spin text-black/60" />
+                                ) : (
+                                    <span className="flex items-center gap-2">
+                                        {getSubmitLabel()}
+                                        <ChevronRight className="h-4 w-4 opacity-60 group-hover:translate-x-0.5 transition-transform" />
+                                    </span>
+                                )}
+                            </Button>
+                        </form>
+
+                        {/* Bottom toggle */}
+                        <div className="px-7 pb-7 sm:px-9 sm:pb-9 -mt-2">
+                            <div className="flex items-center justify-center gap-1.5">
+                                <p className="text-white/30 text-[13px] font-medium">
+                                    {isForcedReset
+                                        ? t('auth.logout_cancel')
+                                        : (isResetting ? t('auth.back_to_id') : (isSignUp ? t('auth.existing_operative') : t('auth.new_operative')))}
+                                </p>
+                                <button
+                                    type="button"
+                                    className="text-white text-[13px] font-semibold hover:underline underline-offset-2 transition-colors"
+                                    onClick={async () => {
+                                        if (isForcedReset) {
+                                            await supabase.auth.signOut();
+                                            setIsForcedReset(false);
+                                        } else if (isResetting) {
+                                            setIsResetting(false);
+                                        } else {
+                                            setIsSignUp(!isSignUp);
+                                        }
+                                        setError(null);
+                                    }}
+                                >
+                                    {isForcedReset
+                                        ? t('auth.logout')
+                                        : (isResetting ? t('auth.login') : (isSignUp ? t('auth.login') : t('auth.register')))}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Footer */}
+                    <p className="text-center text-[11px] text-white/15 font-medium mt-5">
+                        {t('auth.powered_by')}
+                    </p>
+                </div>
             </div>
 
             {notification && (
@@ -336,4 +481,3 @@ export const Login: React.FC = () => {
         </div>
     );
 };
-

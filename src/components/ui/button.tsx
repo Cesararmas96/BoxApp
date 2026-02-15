@@ -4,26 +4,23 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-    "inline-flex items-center justify-center whitespace-nowrap rounded-[1.25rem] text-sm font-bold uppercase tracking-widest ring-offset-background transition-all duration-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.97] active:duration-100",
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.97] active:brightness-95",
     {
         variants: {
             variant: {
-                default: "bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90 hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/10 before:to-transparent",
-                destructive:
-                    "bg-destructive text-destructive-foreground shadow-lg shadow-destructive/20 hover:bg-destructive/90 hover:shadow-destructive/40 hover:-translate-y-0.5 active:translate-y-0",
-                outline:
-                    "border-2 border-primary/20 bg-background/50 backdrop-blur-md hover:bg-primary/5 hover:border-primary/40 hover:text-primary hover:-translate-y-0.5",
-                secondary:
-                    "bg-secondary/80 backdrop-blur-md text-secondary-foreground hover:bg-secondary hover:-translate-y-0.5",
-                ghost: "hover:bg-primary/10 hover:text-primary hover:scale-[1.02]",
+                default: "bg-primary text-primary-foreground shadow-apple-sm hover:brightness-110",
+                destructive: "bg-destructive text-destructive-foreground shadow-apple-sm hover:brightness-110",
+                outline: "border border-border bg-background hover:bg-accent hover:text-accent-foreground",
+                secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+                ghost: "hover:bg-accent hover:text-accent-foreground",
                 link: "text-primary underline-offset-4 hover:underline",
-                premium: "relative overflow-hidden bg-zinc-950 text-white shadow-2xl transition-all duration-500 hover:shadow-primary/30 hover:-translate-y-1 before:absolute before:inset-0 before:bg-gradient-to-tr before:from-primary/30 before:to-transparent before:opacity-0 hover:before:opacity-100 active:scale-[0.98]",
+                premium: "bg-foreground text-background shadow-apple hover:opacity-90",
             },
             size: {
-                default: "h-12 px-8 py-3",
-                sm: "h-10 rounded-xl px-5 text-[11px]",
-                lg: "h-16 rounded-[1.5rem] px-12 text-base",
-                icon: "h-12 w-12 rounded-full",
+                default: "h-11 px-6 py-2",
+                sm: "h-9 rounded-lg px-4 text-xs",
+                lg: "h-12 rounded-xl px-8 text-base",
+                icon: "h-10 w-10 rounded-full",
             },
         },
         defaultVariants: {

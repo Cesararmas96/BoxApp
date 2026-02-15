@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { MainLayout } from './layouts/MainLayout';
 import { Login } from './pages/Login';
+import { AuthCallback } from './pages/AuthCallback';
 import { Members } from './pages/Members';
 import { Leads } from './pages/Leads';
 import { Wods } from './pages/Wods';
@@ -57,10 +58,10 @@ function AppContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-[#050508]">
+      <div className="min-h-screen w-full flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4"></div>
-          <p className="text-zinc-500 font-black italic uppercase tracking-[0.2em] text-xs">Synchronizing Core OS...</p>
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4"></div>
+          <p className="text-sm text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -69,6 +70,11 @@ function AppContent() {
   if (!session) {
     return (
       <Routes>
+        {/* OAuth callback — must be available before session is fully established */}
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        {/* Multi-tenant: box-specific login via slug */}
+        <Route path="/box/:boxSlug" element={<Login />} />
+        {/* Default login (resolves first box for backward compat) */}
         <Route path="/login" element={<Login />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>

@@ -24,7 +24,7 @@ interface TooltipProps {
 const Tooltip: React.FC<TooltipProps> = ({ content, children }) => (
     <div className="group relative">
         {children}
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block whitespace-nowrap bg-black/90 text-white text-xs py-1 px-2 rounded">
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block whitespace-nowrap bg-black/90 text-foreground text-xs py-1 px-2 rounded">
             {content}
         </div>
     </div>
@@ -174,7 +174,7 @@ export const JudgesTab: React.FC<JudgesTabProps> = ({ competition }) => {
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                             placeholder={t('common.search_by_name', { defaultValue: 'Search by name or email...' })}
-                            className="bg-white/5 border-white/10 pl-11 h-12 rounded-xl"
+                            className="bg-muted/50 border-border pl-11 h-12 rounded-xl"
                             value={searchQuery}
                             onChange={(e) => handleSearch(e.target.value)}
                         />
@@ -189,14 +189,14 @@ export const JudgesTab: React.FC<JudgesTabProps> = ({ competition }) => {
                     )}
 
                     {searchResults.map((user) => (
-                        <div key={user.id} className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 transition-colors animate-in fade-in slide-in-from-bottom-2">
+                        <div key={user.id} className="flex items-center justify-between p-4 bg-muted/50 border border-border rounded-2xl hover:bg-muted transition-colors animate-in fade-in slide-in-from-bottom-2">
                             <div className="flex items-center gap-4">
-                                <Avatar className="h-10 w-10 border border-white/10">
+                                <Avatar className="h-10 w-10 border border-border">
                                     <AvatarImage src={user.avatar_url} />
                                     <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <p className="font-bold text-sm leading-none text-white">{user.first_name} {user.last_name}</p>
+                                    <p className="font-bold text-sm leading-none text-foreground">{user.first_name} {user.last_name}</p>
                                     <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mt-1">{user.email}</p>
                                 </div>
                             </div>
@@ -226,7 +226,7 @@ export const JudgesTab: React.FC<JudgesTabProps> = ({ competition }) => {
                     </div>
                 </div>
 
-                <div className="bg-white/5 border border-white/5 rounded-[2rem] flex-1 overflow-hidden flex flex-col shadow-2xl">
+                <div className="bg-muted/50 border border-border rounded-[2rem] flex-1 overflow-hidden flex flex-col shadow-2xl">
                     <div className="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
                         {loading ? (
                             <div className="flex items-center justify-center h-full">
@@ -234,7 +234,7 @@ export const JudgesTab: React.FC<JudgesTabProps> = ({ competition }) => {
                             </div>
                         ) : judges.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-full text-center p-10 space-y-4 opacity-50">
-                                <div className="h-20 w-20 rounded-full bg-white/5 flex items-center justify-center">
+                                <div className="h-20 w-20 rounded-full bg-muted/50 flex items-center justify-center">
                                     <ShieldCheck className="h-10 w-10 text-muted-foreground" />
                                 </div>
                                 <div className="space-y-2">
@@ -245,12 +245,12 @@ export const JudgesTab: React.FC<JudgesTabProps> = ({ competition }) => {
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 p-4">
                                 {judges.map((judge) => (
-                                    <div key={judge.id} className="group relative bg-black/20 hover:bg-primary/5 border border-white/5 hover:border-primary/20 p-5 rounded-2xl transition-all duration-300 flex items-center justify-between">
+                                    <div key={judge.id} className="group relative bg-muted/50 hover:bg-primary/5 border border-border hover:border-primary/20 p-5 rounded-2xl transition-all duration-300 flex items-center justify-between">
                                         <div className="flex items-center gap-4">
                                             <div className="relative">
-                                                <Avatar className="h-12 w-12 border-2 border-white/10 group-hover:border-primary transition-colors">
+                                                <Avatar className="h-12 w-12 border-2 border-border group-hover:border-primary transition-colors">
                                                     <AvatarImage src={judge.profile.avatar_url || undefined} />
-                                                    <AvatarFallback className="bg-zinc-800 text-muted-foreground font-black"><User className="h-5 w-5" /></AvatarFallback>
+                                                    <AvatarFallback className="bg-muted text-muted-foreground font-black"><User className="h-5 w-5" /></AvatarFallback>
                                                 </Avatar>
                                                 <div className="absolute -bottom-1 -right-1 bg-primary text-[8px] font-black px-1.5 py-0.5 rounded text-primary-foreground uppercase tracking-wider shadow-sm">
                                                     {t('competitions.official_judge')}
@@ -258,7 +258,7 @@ export const JudgesTab: React.FC<JudgesTabProps> = ({ competition }) => {
                                             </div>
 
                                             <div>
-                                                <p className="font-black text-sm uppercase tracking-tight text-white/90 group-hover:text-primary transition-colors">
+                                                <p className="font-black text-sm uppercase tracking-tight text-foreground group-hover:text-primary transition-colors">
                                                     {judge.profile.first_name} {judge.profile.last_name}
                                                 </p>
                                                 <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider mt-0.5 truncate max-w-[150px]">

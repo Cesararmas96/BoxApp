@@ -298,7 +298,7 @@ export const Profile: React.FC = () => {
                                 <button
                                     onClick={handleAvatarClick}
                                     disabled={isUploadingAvatar}
-                                    className="absolute bottom-1 right-1 p-2.5 bg-primary text-white rounded-full shadow-lg hover:scale-110 active:scale-95 transition-all disabled:opacity-50 ring-4 border-4 border-card"
+                                    className="absolute bottom-1 right-1 p-2.5 bg-primary text-foreground rounded-full shadow-lg hover:scale-110 active:scale-95 transition-all disabled:opacity-50 ring-4 border-4 border-card"
                                 >
                                     <Camera className="h-4 w-4" />
                                 </button>

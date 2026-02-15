@@ -136,14 +136,14 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ competition }) => {
                     <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">{t('competitions.team_details', { defaultValue: 'TEAM DETAILS' })}</p>
                 </div>
 
-                <div className="space-y-4 bg-white/5 p-6 rounded-[2rem] border border-white/5">
+                <div className="space-y-4 bg-muted/50 p-6 rounded-[2rem] border border-border">
                     <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('common.name')}</Label>
                         <Input
                             value={newTeam.name}
                             onChange={(e) => setNewTeam({ ...newTeam, name: e.target.value })}
                             placeholder="ex. Fittest on Earth"
-                            className="bg-zinc-900/50 border-white/10"
+                            className="bg-muted border-border"
                         />
                     </div>
 
@@ -153,7 +153,7 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ competition }) => {
                             value={newTeam.captain_user_id}
                             onValueChange={(val) => setNewTeam({ ...newTeam, captain_user_id: val })}
                         >
-                            <SelectTrigger className="bg-zinc-900/50 border-white/10">
+                            <SelectTrigger className="bg-muted border-border">
                                 <SelectValue placeholder="Select Captain" />
                             </SelectTrigger>
                             <SelectContent>
@@ -173,7 +173,7 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ competition }) => {
                             value={newTeam.join_code}
                             onChange={(e) => setNewTeam({ ...newTeam, join_code: e.target.value })}
                             placeholder={t('competitions.auto_generated_hint', { defaultValue: 'Auto-generated if empty' })}
-                            className="bg-zinc-900/50 border-white/10"
+                            className="bg-muted border-border"
                         />
                     </div>
 
@@ -199,7 +199,7 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ competition }) => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto scrollbar-none pr-2">
                     {teams.map((team) => (
-                        <div key={team.id} className="p-5 rounded-[2rem] bg-white/5 border border-white/5 hover:border-primary/30 transition-all group relative overflow-hidden flex flex-col justify-between h-full">
+                        <div key={team.id} className="p-5 rounded-[2rem] bg-muted/50 border border-border hover:border-primary/30 transition-all group relative overflow-hidden flex flex-col justify-between h-full">
                             <div className="space-y-3">
                                 <div className="flex justify-between items-start">
                                     <h4 className="font-black italic uppercase text-lg tracking-tight truncate pr-8" title={team.name}>{team.name}</h4>
@@ -220,21 +220,21 @@ export const TeamsTab: React.FC<TeamsTabProps> = ({ competition }) => {
                                             <span className="truncate">{team.captain.first_name} {team.captain.last_name}</span>
                                         </div>
                                     )}
-                                    <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground bg-black/20 p-2 rounded-lg w-fit">
+                                    <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground bg-muted/50 p-2 rounded-lg w-fit">
                                         <Shield className="h-3 w-3" />
                                         <span className="font-mono tracking-widest">{team.join_code}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-end">
+                            <div className="mt-4 pt-4 border-t border-border flex justify-between items-end">
                                 <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">{t('competitions.members_count')}</div>
                                 <div className="text-2xl font-black italic">{team.members?.[0]?.count || 0}</div>
                             </div>
                         </div>
                     ))}
                     {teams.length === 0 && (
-                        <div className="col-span-full py-20 text-center text-muted-foreground space-y-2 bg-white/5 rounded-[2rem] border-dashed border-2 border-white/10">
+                        <div className="col-span-full py-20 text-center text-muted-foreground space-y-2 bg-muted/50 rounded-[2rem] border-dashed border-2 border-border">
                             <Users className="h-10 w-10 mx-auto opacity-20" />
                             <p className="text-[10px] font-black uppercase tracking-widest opacity-50">{t('competitions.no_teams', { defaultValue: 'NO TEAMS FOUND' })}</p>
                         </div>

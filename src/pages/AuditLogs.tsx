@@ -210,7 +210,7 @@ export const AuditLogs: React.FC = () => {
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         <div className="space-y-2">
                                                             <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-2">{t('audit.state_previous')}</h4>
-                                                            <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800 border-dashed">
+                                                            <div className="bg-card p-3 rounded-lg border border-border border-dashed">
                                                                 <pre className="text-[10px] text-emerald-500/80 font-mono overflow-auto max-h-[200px]">
                                                                     {log.old_data ? JSON.stringify(log.old_data, null, 2) : t('audit.no_previous')}
                                                                 </pre>
@@ -218,7 +218,7 @@ export const AuditLogs: React.FC = () => {
                                                         </div>
                                                         <div className="space-y-2">
                                                             <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-2">{t('audit.state_result')}</h4>
-                                                            <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800">
+                                                            <div className="bg-card p-3 rounded-lg border border-border">
                                                                 <pre className="text-[10px] text-primary/90 font-mono overflow-auto max-h-[200px]">
                                                                     {log.new_data ? JSON.stringify(log.new_data, null, 2) : t('audit.terminal_destruction')}
                                                                 </pre>

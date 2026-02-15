@@ -119,24 +119,24 @@ export const DivisionsTab: React.FC<DivisionsTabProps> = ({ competition }) => {
                     <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">{t('competitions.division_details', { defaultValue: 'DIVISION DETAILS' })}</p>
                 </div>
 
-                <div className="space-y-4 bg-white/5 p-6 rounded-[2rem] border border-white/5">
+                <div className="space-y-4 bg-muted/50 p-6 rounded-[2rem] border border-border">
                     <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('common.name')}</Label>
                         <Input
                             value={newDivision.name}
                             onChange={(e) => setNewDivision({ ...newDivision, name: e.target.value })}
                             placeholder="ex. RX Male"
-                            className="bg-zinc-900/50 border-white/10"
+                            className="bg-muted border-border"
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('common.gender')}</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('common.gender_label')}</Label>
                         <Select
                             value={newDivision.gender}
                             onValueChange={(val: any) => setNewDivision({ ...newDivision, gender: val })}
                         >
-                            <SelectTrigger className="bg-zinc-900/50 border-white/10">
+                            <SelectTrigger className="bg-muted border-border">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -154,7 +154,7 @@ export const DivisionsTab: React.FC<DivisionsTabProps> = ({ competition }) => {
                             value={newDivision.description}
                             onChange={(e) => setNewDivision({ ...newDivision, description: e.target.value })}
                             placeholder={t('common.description_optional', { defaultValue: 'Optional description' })}
-                            className="bg-zinc-900/50 border-white/10"
+                            className="bg-muted border-border"
                         />
                     </div>
 
@@ -180,7 +180,7 @@ export const DivisionsTab: React.FC<DivisionsTabProps> = ({ competition }) => {
 
                 <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
                     {divisions.map((division) => (
-                        <div key={division.id} className="p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/30 transition-all group relative overflow-hidden flex justify-between items-center">
+                        <div key={division.id} className="p-4 rounded-2xl bg-muted/50 border border-border hover:border-primary/30 transition-all group relative overflow-hidden flex justify-between items-center">
                             <div className="space-y-1">
                                 <h4 className="font-black italic uppercase text-lg tracking-tight">{division.name}</h4>
                                 <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
@@ -201,7 +201,7 @@ export const DivisionsTab: React.FC<DivisionsTabProps> = ({ competition }) => {
                         </div>
                     ))}
                     {divisions.length === 0 && (
-                        <div className="py-20 text-center text-muted-foreground space-y-2 bg-white/5 rounded-[2rem] border-dashed border-2 border-white/10">
+                        <div className="py-20 text-center text-muted-foreground space-y-2 bg-muted/50 rounded-[2rem] border-dashed border-2 border-border">
                             <Dumbbell className="h-10 w-10 mx-auto opacity-20" />
                             <p className="text-[10px] font-black uppercase tracking-widest opacity-50">{t('competitions.no_divisions', { defaultValue: 'NO DIVISIONS FOUND' })}</p>
                         </div>

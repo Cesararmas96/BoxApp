@@ -32,8 +32,8 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     if (!userProfile) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-                <ShieldAlert className="h-12 w-12 text-zinc-500 animate-pulse" />
-                <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs italic">
+                <ShieldAlert className="h-12 w-12 text-muted-foreground animate-pulse" />
+                <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs italic">
                     Access Denied: Terminal Not Identified
                 </p>
             </div>
@@ -42,7 +42,7 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
 
     if (allowedRoles && (!userProfile.role_id || !allowedRoles.includes(userProfile.role_id))) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[400px] space-y-6 bg-card/20 backdrop-blur-3xl rounded-[2rem] border border-white/5 m-4">
+            <div className="flex flex-col items-center justify-center min-h-[400px] space-y-6 bg-card/20 backdrop-blur-3xl rounded-[2rem] border border-border m-4">
                 <div className="p-6 bg-destructive/10 rounded-full shadow-2xl shadow-destructive/20 animate-bounce">
                     <ShieldAlert className="h-12 w-12 text-destructive" />
                 </div>

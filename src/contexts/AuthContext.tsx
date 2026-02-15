@@ -17,6 +17,7 @@ interface AuthContextType {
     isRoot: boolean;
     isAthlete: boolean;
     signIn: (credentials: any) => Promise<{ error: any; data?: any }>;
+    signInWithGoogle: (boxId?: string) => Promise<{ error: any }>;
     signUp: (credentials: any) => Promise<{ data: any; error: any }>;
     resetPassword: (email: string) => Promise<{ error: any }>;
     updateUser: (attributes: any) => Promise<{ data: any; error: any }>;
@@ -59,6 +60,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setUserProfile(null);
             } else if (data) {
                 console.log('[AuthContext] Profile loaded successfully');
+
+                // Multi-tenant: reconcile box_id after OAuth redirect
+                // The trigger may have assigned a fallback box_id; correct it if needed
+                const pendingBoxId = localStorage.getItem('pending_box_id');
+                if (pendingBoxId) {
+                    const profileData = data as any;
+                    if (!profileData.box_id || profileData.box_id !== pendingBoxId) {
+                        console.log('[AuthContext] Reconciling box_id from OAuth context:', pendingBoxId);
+                        const { error: updateErr } = await supabase
+                            .from('profiles')
+                            .update({ box_id: pendingBoxId })
+                            .eq('id', userId);
+                        if (!updateErr) {
+                            profileData.box_id = pendingBoxId;
+                        }
+                    }
+                    localStorage.removeItem('pending_box_id');
+                }
+
                 setUserProfile(data as Profile);
 
                 // Fetch Box settings if profile has box_id
@@ -142,6 +162,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return result;
     };
 
+    const signInWithGoogle = async (boxId?: string) => {
+        console.log('[AuthContext] Google OAuth started, boxId:', boxId);
+
+        // Store box context in localStorage so fetchProfile can reconcile it after redirect
+        if (boxId) {
+            localStorage.setItem('pending_box_id', boxId);
+        }
+
+        const result = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: `${window.location.origin}/auth/callback`,
+            },
+        });
+        // onAuthStateChange will handle session + profile fetch after redirect
+        return { error: result.error };
+    };
+
     const signUp = async (credentials: any) => {
         setLoading(true);
         const result = await supabase.auth.signUp(credentials);
@@ -188,6 +226,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isRoot,
         isAthlete,
         signIn,
+        signInWithGoogle,
         signUp,
         resetPassword,
         updateUser,

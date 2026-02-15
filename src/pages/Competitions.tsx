@@ -21,13 +21,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger
+    ResponsiveDialog as Dialog,
+    ResponsiveDialogContent as DialogContent,
+    ResponsiveDialogDescription as DialogDescription,
+    ResponsiveDialogFooter as DialogFooter,
+    ResponsiveDialogHeader as DialogHeader,
+    ResponsiveDialogTitle as DialogTitle,
+    ResponsiveDialogTrigger as DialogTrigger
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -146,8 +146,8 @@ export const Competitions: React.FC = () => {
                             {t('competitions.create_btn')}
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden border-white/10 glass rounded-[2.5rem]">
-                        <div className="bg-primary/10 p-10 border-b border-white/5 relative overflow-hidden">
+                    <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden border-border glass rounded-[2.5rem]">
+                        <div className="bg-primary/10 p-10 border-b border-border relative overflow-hidden">
                             <Trophy className="absolute -right-10 -bottom-10 h-40 w-40 text-primary/5 -rotate-12" />
                             <DialogHeader>
                                 <DialogTitle className="text-4xl font-black italic uppercase tracking-tighter">{t('competitions.new_title')}</DialogTitle>
@@ -164,7 +164,7 @@ export const Competitions: React.FC = () => {
                                     required
                                     value={newComp.name}
                                     onChange={(e) => setNewComp({ ...newComp, name: e.target.value })}
-                                    className="h-14 bg-white/5 border-white/10 text-lg font-bold rounded-2xl focus:ring-primary/20 px-6"
+                                    className="h-14 bg-muted/50 border-border text-lg font-bold rounded-2xl focus:ring-primary/20 px-6"
                                 />
                             </div>
                             <div className="space-y-3">
@@ -173,7 +173,7 @@ export const Competitions: React.FC = () => {
                                     placeholder={t('competitions.placeholders.comp_desc')}
                                     value={newComp.description}
                                     onChange={(e) => setNewComp({ ...newComp, description: e.target.value })}
-                                    className="h-14 bg-white/5 border-white/10 text-lg font-bold rounded-2xl focus:ring-primary/20 px-6"
+                                    className="h-14 bg-muted/50 border-border text-lg font-bold rounded-2xl focus:ring-primary/20 px-6"
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-6">
@@ -184,7 +184,7 @@ export const Competitions: React.FC = () => {
                                         required
                                         value={newComp.start_date}
                                         onChange={(e) => setNewComp({ ...newComp, start_date: e.target.value })}
-                                        className="h-14 bg-white/5 border-white/10 font-bold rounded-2xl focus:ring-primary/20 px-6"
+                                        className="h-14 bg-muted/50 border-border font-bold rounded-2xl focus:ring-primary/20 px-6"
                                     />
                                 </div>
                                 <div className="space-y-3">
@@ -194,7 +194,7 @@ export const Competitions: React.FC = () => {
                                         required
                                         value={newComp.end_date}
                                         onChange={(e) => setNewComp({ ...newComp, end_date: e.target.value })}
-                                        className="h-14 bg-white/5 border-white/10 font-bold rounded-2xl focus:ring-primary/20 px-6"
+                                        className="h-14 bg-muted/50 border-border font-bold rounded-2xl focus:ring-primary/20 px-6"
                                     />
                                 </div>
                             </div>
@@ -231,7 +231,7 @@ export const Competitions: React.FC = () => {
                             <>
                                 <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                                     {getPaginatedCompetitions(status).map((comp) => (
-                                        <Card key={comp.id} className="overflow-hidden group hover:border-primary/30 transition-all duration-500 shadow-xl hover:shadow-primary/5 border-white/5 glass rounded-[2rem] flex flex-col">
+                                        <Card key={comp.id} className="overflow-hidden group hover:border-primary/30 transition-all duration-500 shadow-xl hover:shadow-primary/5 border-border glass rounded-[2rem] flex flex-col">
                                             <CardHeader className="pb-4 pt-8 px-8">
                                                 <div className="flex justify-between items-start mb-4">
                                                     <Badge variant="glow" className="uppercase text-[10px] font-black px-3 py-1 rounded-full border-primary/20">
@@ -265,17 +265,17 @@ export const Competitions: React.FC = () => {
                                                     </div>
                                                 </div>
                                             </CardContent>
-                                            <CardFooter className="bg-white/5 border-t border-white/5 grid grid-cols-2 lg:grid-cols-4 gap-2 p-4 mt-auto">
-                                                <Button variant="ghost" size="sm" className="h-10 text-[9px] uppercase font-black tracking-widest gap-1.5 bg-white/5 hover:bg-white/10 rounded-xl px-2" onClick={() => handleManageCompetition(comp)}>
+                                            <CardFooter className="bg-muted/50 border-t border-border grid grid-cols-2 lg:grid-cols-4 gap-2 p-4 mt-auto">
+                                                <Button variant="ghost" size="sm" className="h-10 text-[9px] uppercase font-black tracking-widest gap-1.5 bg-muted/50 hover:bg-muted rounded-xl px-2" onClick={() => handleManageCompetition(comp)}>
                                                     <Users className="h-3.5 w-3.5 text-primary" /> {t('competitions.athletes')}
                                                 </Button>
-                                                <Button variant="ghost" size="sm" className="h-10 text-[9px] uppercase font-black tracking-widest gap-1.5 bg-white/5 hover:bg-white/10 rounded-xl px-2" onClick={() => handleManageCompetition(comp)}>
+                                                <Button variant="ghost" size="sm" className="h-10 text-[9px] uppercase font-black tracking-widest gap-1.5 bg-muted/50 hover:bg-muted rounded-xl px-2" onClick={() => handleManageCompetition(comp)}>
                                                     <ListChecks className="h-3.5 w-3.5 text-primary" /> {t('competitions.events')}
                                                 </Button>
-                                                <Button variant="ghost" size="sm" className="h-10 text-[9px] uppercase font-black tracking-widest gap-1.5 bg-white/5 hover:bg-white/10 rounded-xl px-2" onClick={() => handleManageCompetition(comp)}>
+                                                <Button variant="ghost" size="sm" className="h-10 text-[9px] uppercase font-black tracking-widest gap-1.5 bg-muted/50 hover:bg-muted rounded-xl px-2" onClick={() => handleManageCompetition(comp)}>
                                                     <ShieldCheck className="h-3.5 w-3.5 text-primary" /> {t('competitions.manage_judges_short')}
                                                 </Button>
-                                                <Button variant="ghost" size="sm" className="h-10 text-[9px] uppercase font-black tracking-widest gap-1.5 bg-white/5 hover:bg-white/10 rounded-xl px-2" onClick={() => handleManageCompetition(comp)}>
+                                                <Button variant="ghost" size="sm" className="h-10 text-[9px] uppercase font-black tracking-widest gap-1.5 bg-muted/50 hover:bg-muted rounded-xl px-2" onClick={() => handleManageCompetition(comp)}>
                                                     <Medal className="h-3.5 w-3.5 text-primary" /> {t('competitions.manage_scoring_short')}
                                                 </Button>
                                                 <Button className="col-span-full h-12 text-[10px] uppercase font-black tracking-widest gap-2 rounded-xl shadow-lg shadow-primary/10 group/btn mt-1" onClick={() => handleManageCompetition(comp)}>
@@ -298,7 +298,7 @@ export const Competitions: React.FC = () => {
                                             <ChevronLeft className="h-4 w-4 mr-2" />
                                             {t('common.previous')}
                                         </Button>
-                                        <span className="text-xs font-black italic px-4 py-2 bg-white/5 rounded-lg border border-white/5">
+                                        <span className="text-xs font-black italic px-4 py-2 bg-muted/50 rounded-lg border border-border">
                                             {currentPage} / {getTotalPages(status)}
                                         </span>
                                         <Button
@@ -329,7 +329,7 @@ export const Competitions: React.FC = () => {
             </Dialog>
 
             <div className="grid gap-8 md:grid-cols-2 mt-16">
-                <Card className="glass border-white/5 rounded-[2.5rem] group hover:border-primary/30 transition-all duration-500 shadow-xl relative overflow-hidden">
+                <Card className="glass border-border rounded-[2.5rem] group hover:border-primary/30 transition-all duration-500 shadow-xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
                         <ShieldCheck className="h-24 w-24 text-primary" />
                     </div>
@@ -344,7 +344,7 @@ export const Competitions: React.FC = () => {
                     <CardContent className="px-10 pb-10 space-y-8">
                         <p className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-[0.1em] leading-relaxed line-clamp-2">{t('competitions.judge_desc')}</p>
                         <Button
-                            className="w-full gap-3 h-14 rounded-2xl bg-white/5 border border-white/10 hover:bg-primary hover:text-primary-foreground hover:border-primary uppercase font-black text-xs tracking-[0.2em] transition-all shadow-lg active:scale-[0.98]"
+                            className="w-full gap-3 h-14 rounded-2xl bg-muted/50 border border-border hover:bg-primary hover:text-primary-foreground hover:border-primary uppercase font-black text-xs tracking-[0.2em] transition-all shadow-lg active:scale-[0.98]"
                             onClick={() => {
                                 const activeComp = filteredCompetitions('active')[0];
                                 if (activeComp) handleManageCompetition(activeComp, 'judges');
@@ -356,7 +356,7 @@ export const Competitions: React.FC = () => {
                     </CardContent>
                 </Card>
 
-                <Card className="glass border-white/5 rounded-[2.5rem] group hover:border-yellow-500/30 transition-all duration-500 shadow-xl relative overflow-hidden">
+                <Card className="glass border-border rounded-[2.5rem] group hover:border-yellow-500/30 transition-all duration-500 shadow-xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
                         <Medal className="h-24 w-24 text-yellow-500" />
                     </div>
@@ -371,7 +371,7 @@ export const Competitions: React.FC = () => {
                     <CardContent className="px-10 pb-10 space-y-8">
                         <p className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-[0.1em] leading-relaxed line-clamp-2">{t('competitions.scoring_desc')}</p>
                         <Button
-                            className="w-full gap-3 h-14 rounded-2xl bg-white/5 border border-white/10 hover:bg-yellow-500 hover:text-white hover:border-yellow-500 uppercase font-black text-xs tracking-[0.2em] transition-all shadow-lg active:scale-[0.98]"
+                            className="w-full gap-3 h-14 rounded-2xl bg-muted/50 border border-border hover:bg-yellow-500 hover:text-white hover:border-yellow-500 uppercase font-black text-xs tracking-[0.2em] transition-all shadow-lg active:scale-[0.98]"
                             onClick={() => {
                                 const activeComp = filteredCompetitions('active')[0];
                                 if (activeComp) handleManageCompetition(activeComp, 'scoring');

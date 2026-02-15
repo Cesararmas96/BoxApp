@@ -1,0 +1,6 @@
+---
+alwaysApply: true
+description: Do not open the browser for testing
+---
+
+No habras el navegador para hacer las pruebas

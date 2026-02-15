@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
+    ResponsiveDialog as Dialog,
+    ResponsiveDialogContent as DialogContent,
+    ResponsiveDialogHeader as DialogHeader,
+    ResponsiveDialogTitle as DialogTitle,
+    ResponsiveDialogFooter as DialogFooter,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -109,7 +109,7 @@ export const ScoreEntry: React.FC<ScoreEntryProps> = ({ isOpen, onClose, assignm
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="bg-[#09090b] border-white/10 text-white rounded-[2rem] sm:max-w-[400px]">
+            <DialogContent className="bg-[#09090b] border-border text-foreground rounded-[2rem] sm:max-w-[400px]">
                 <DialogHeader className="text-center">
                     <DialogTitle className="text-2xl font-black uppercase italic tracking-tighter">
                         {assignment.competition_participants?.first_name} {assignment.competition_participants?.last_name}
@@ -118,7 +118,7 @@ export const ScoreEntry: React.FC<ScoreEntryProps> = ({ isOpen, onClose, assignm
                         <span className="bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded">
                             LANE {assignment.lane_number}
                         </span>
-                        <span className="bg-white/5 text-muted-foreground text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded">
+                        <span className="bg-muted/50 text-muted-foreground text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded">
                             {event.title}
                         </span>
                     </div>
@@ -139,7 +139,7 @@ export const ScoreEntry: React.FC<ScoreEntryProps> = ({ isOpen, onClose, assignm
                             <Input
                                 value={score}
                                 onChange={(e) => setScore(e.target.value)}
-                                className="text-center text-4xl font-black h-20 bg-black/40 border-white/10 rounded-2xl focus:border-primary/50 transition-colors"
+                                className="text-center text-4xl font-black h-20 bg-black/40 border-border rounded-2xl focus:border-primary/50 transition-colors"
                                 placeholder={event.wod_type === 'for_time' ? '00:00' : '0'}
                                 autoFocus
                             />
@@ -155,14 +155,14 @@ export const ScoreEntry: React.FC<ScoreEntryProps> = ({ isOpen, onClose, assignm
                             <Input
                                 value={tieBreak}
                                 onChange={(e) => setTieBreak(e.target.value)}
-                                className="text-center font-bold h-12 bg-white/5 border-white/10 rounded-xl w-1/2 mx-auto"
+                                className="text-center font-bold h-12 bg-muted/50 border-border rounded-xl w-1/2 mx-auto"
                                 placeholder="00:00"
                             />
                         </div>
                     )}
 
                     {/* Signatures */}
-                    <div className="grid grid-cols-1 gap-4 pt-4 border-t border-white/5">
+                    <div className="grid grid-cols-1 gap-4 pt-4 border-t border-border">
                         <SignaturePad
                             label="JUDGE SIGNATURE"
                             onChange={setJudgeSignature}
@@ -185,7 +185,7 @@ export const ScoreEntry: React.FC<ScoreEntryProps> = ({ isOpen, onClose, assignm
                     <Button
                         variant="ghost"
                         onClick={onClose}
-                        className="w-full h-10 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:bg-white/5 rounded-xl"
+                        className="w-full h-10 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted rounded-xl"
                     >
                         CANCEL
                     </Button>

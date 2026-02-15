@@ -202,8 +202,8 @@ export const Login: React.FC = () => {
                             <span className="text-3xl sm:text-4xl font-black text-white">{boxName.charAt(0)}</span>
                         </div>
                     )}
-                    <h1 className="mt-5 text-2xl sm:text-3xl font-bold text-white tracking-tight text-center">{boxName}</h1>
-                    <p className="text-white/40 text-sm mt-1.5 font-medium tracking-wide text-center">{t('auth.login_tagline')}</p>
+                    <h1 className="mt-5 text-2xl sm:text-3xl font-bold text-white tracking-tight text-center drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">{boxName}</h1>
+                    <p className="text-white/70 text-sm mt-1.5 font-medium tracking-wide text-center drop-shadow-[0_1px_6px_rgba(0,0,0,0.5)]">{t('auth.login_tagline')}</p>
                 </div>
 
                 {/* ── Form card — glass card, always centered ── */}

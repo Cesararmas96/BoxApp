@@ -839,6 +839,7 @@
         "add_prospect": "Añadir Prospecto",
         "acquire_lead": "Adquirir Lead",
         "convert_to_member": "Convertir en Miembro",
+        "mark_contacted": "Contactado",
         "confirm_conversion_title": "Convertir Prospecto",
         "confirm_conversion_description": "¿Estás seguro de que deseas convertir este prospecto en miembro? Esta acción creará un perfil de atleta y no se puede deshacer.",
         "first_name": "Nombre",

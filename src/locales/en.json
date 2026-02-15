@@ -839,6 +839,7 @@
         "add_prospect": "Add Prospect",
         "acquire_lead": "Acquire Lead",
         "convert_to_member": "Convert to Member",
+        "mark_contacted": "Contacted",
         "confirm_conversion_title": "Convert Prospect",
         "confirm_conversion_description": "Are you sure you want to convert this prospect into a member? This will create an athlete profile and cannot be undone.",
         "first_name": "First Name",

@@ -34,13 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+// Select components removed — replaced by action buttons
 import { Toast } from '@/components/ui/toast-custom';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { useNotification, useLanguage } from '@/hooks';
@@ -67,6 +61,7 @@ export const Leads: React.FC = () => {
     const [open, setOpen] = useState(false);
     const [newLead, setNewLead] = useState({ firstName: '', lastName: '', email: '', phone: '', source: '' });
     const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState<string>('all');
     const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [conversionSuccessOpen, setConversionSuccessOpen] = useState(false);
@@ -215,7 +210,9 @@ export const Leads: React.FC = () => {
                     showNotification('error', t('leads.error_generic').toUpperCase());
                 } else {
                     showNotification('success', t('common.success_update', { defaultValue: 'STATUS UPDATED' }).toUpperCase());
-                    fetchLeads();
+                    setStatusFilter(newStatus);
+                    setCurrentPage(1);
+                    await fetchLeads();
                 }
             }
             setLoading(false);
@@ -290,10 +287,20 @@ export const Leads: React.FC = () => {
         }
     };
 
-    const filteredLeads = leads.filter(lead =>
-        `${lead.first_name} ${lead.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.email?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Status counts for filter pills
+    const statusCounts = {
+        all: leads.length,
+        new: leads.filter(l => l.status === 'new').length,
+        contacted: leads.filter(l => l.status === 'contacted').length,
+        converted: leads.filter(l => l.status === 'converted').length,
+    };
+
+    const filteredLeads = leads.filter(lead => {
+        const matchesSearch = `${lead.first_name} ${lead.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            lead.email?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
+        return matchesSearch && matchesStatus;
+    });
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -426,7 +433,7 @@ export const Leads: React.FC = () => {
             </div>
 
             {/* Search Bar (sticky on mobile) */}
-            <div className="sticky top-0 z-20 md:hidden bg-background/80 backdrop-blur-xl pb-3 -mx-2 px-2">
+            <div className="sticky top-0 z-20 md:hidden bg-background/80 backdrop-blur-xl pb-3 -mx-2 px-2 space-y-3">
                 <div className="relative group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
                     <Input
@@ -438,6 +445,32 @@ export const Leads: React.FC = () => {
                             setCurrentPage(1);
                         }}
                     />
+                </div>
+                {/* Status Filter Pills */}
+                <div className="flex gap-2 overflow-x-auto no-scrollbar">
+                    {([
+                        { key: 'all', label: t('common.all', { defaultValue: 'All' }), count: statusCounts.all },
+                        { key: 'new', label: t('leads.status_new'), count: statusCounts.new },
+                        { key: 'contacted', label: t('leads.status_contacted'), count: statusCounts.contacted },
+                        { key: 'converted', label: t('leads.status_converted'), count: statusCounts.converted },
+                    ] as const).map(({ key, label, count }) => (
+                        <button
+                            key={key}
+                            onClick={() => { setStatusFilter(key); setCurrentPage(1); }}
+                            className={cn(
+                                "shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black italic uppercase tracking-widest transition-all border",
+                                statusFilter === key
+                                    ? "bg-primary/15 text-primary border-primary/30 shadow-sm"
+                                    : "bg-muted/20 text-muted-foreground/60 border-transparent hover:border-border/20"
+                            )}
+                        >
+                            {label}
+                            <span className={cn(
+                                "text-[9px] font-mono not-italic px-1.5 py-0.5 rounded-md",
+                                statusFilter === key ? "bg-primary/20" : "bg-muted/30"
+                            )}>{count}</span>
+                        </button>
+                    ))}
                 </div>
             </div>
 
@@ -496,31 +529,33 @@ export const Leads: React.FC = () => {
                             </div>
                             {lead.status !== 'converted' && (
                                 <div className="mt-3 pt-3 border-t border-white/5 flex gap-2">
-                                    <Select
-                                        defaultValue={lead.status || 'new'}
-                                        onValueChange={(val) => updateStatus(lead, val)}
-                                    >
-                                        <SelectTrigger
-                                            className="flex-1 h-9 bg-muted/30 border-border/10 text-[10px] font-black uppercase tracking-widest"
-                                            onClick={(e) => e.stopPropagation()}
+                                    {lead.status === 'new' && (
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="flex-1 h-9 text-[9px] font-black uppercase italic tracking-widest border-amber-500/20 text-amber-400 hover:bg-amber-500/10"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                updateStatus(lead, 'contacted');
+                                            }}
                                         >
-                                            <SelectValue placeholder="STATUS" />
-                                        </SelectTrigger>
-                                        <SelectContent className="glass border-border/40">
-                                            <SelectItem value="new" className="text-[10px] font-black uppercase tracking-widest italic">{t('leads.status_new')}</SelectItem>
-                                            <SelectItem value="contacted" className="text-[10px] font-black uppercase tracking-widest italic">{t('leads.status_contacted')}</SelectItem>
-                                            <SelectItem value="converted" className="text-[10px] font-black uppercase tracking-widest italic">{t('leads.status_converted')}</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                            <Clock className="h-3 w-3 mr-1.5" />
+                                            {t('leads.mark_contacted', { defaultValue: 'Contacted' })}
+                                        </Button>
+                                    )}
                                     <Button
                                         size="sm"
                                         variant="outline"
-                                        className="h-9 px-3 text-[9px] font-black uppercase italic tracking-widest border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/10"
+                                        className={cn(
+                                            "h-9 text-[9px] font-black uppercase italic tracking-widest border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/10",
+                                            lead.status === 'contacted' ? "flex-1" : "flex-1"
+                                        )}
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             updateStatus(lead, 'converted');
                                         }}
                                     >
+                                        <CheckCircle className="h-3 w-3 mr-1.5" />
                                         {t('leads.convert_to_member')}
                                     </Button>
                                 </div>
@@ -558,6 +593,32 @@ export const Leads: React.FC = () => {
                                 }}
                             />
                         </div>
+                    </div>
+                    {/* Desktop Status Filter Pills */}
+                    <div className="flex gap-2 mt-6">
+                        {([
+                            { key: 'all', label: t('common.all', { defaultValue: 'All' }), count: statusCounts.all },
+                            { key: 'new', label: t('leads.status_new'), count: statusCounts.new },
+                            { key: 'contacted', label: t('leads.status_contacted'), count: statusCounts.contacted },
+                            { key: 'converted', label: t('leads.status_converted'), count: statusCounts.converted },
+                        ] as const).map(({ key, label, count }) => (
+                            <button
+                                key={key}
+                                onClick={() => { setStatusFilter(key); setCurrentPage(1); }}
+                                className={cn(
+                                    "flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black italic uppercase tracking-widest transition-all border",
+                                    statusFilter === key
+                                        ? "bg-primary/15 text-primary border-primary/30 shadow-sm"
+                                        : "bg-muted/20 text-muted-foreground/60 border-transparent hover:border-border/20"
+                                )}
+                            >
+                                {label}
+                                <span className={cn(
+                                    "text-[9px] font-mono not-italic px-1.5 py-0.5 rounded-md",
+                                    statusFilter === key ? "bg-primary/20" : "bg-muted/30"
+                                )}>{count}</span>
+                            </button>
+                        ))}
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
@@ -629,22 +690,30 @@ export const Leads: React.FC = () => {
                                             </span>
                                         </TableCell>
                                         <TableCell className="text-right px-8">
-                                            <Select
-                                                defaultValue={lead.status || 'new'}
-                                                onValueChange={(val) => updateStatus(lead, val)}
-                                            >
-                                                <SelectTrigger
-                                                    className="w-[130px] h-9 bg-muted/40 border-border/10 hover:border-primary/50 text-[10px] font-black uppercase tracking-widest ml-auto transition-all"
-                                                    onClick={(e) => e.stopPropagation()}
-                                                >
-                                                    <SelectValue placeholder="STATUS" />
-                                                </SelectTrigger>
-                                                <SelectContent className="glass border-border/40">
-                                                    <SelectItem value="new" className="text-[10px] font-black uppercase tracking-widest italic">{t('leads.status_new')}</SelectItem>
-                                                    <SelectItem value="contacted" className="text-[10px] font-black uppercase tracking-widest italic">{t('leads.status_contacted')}</SelectItem>
-                                                    <SelectItem value="converted" className="text-[10px] font-black uppercase tracking-widest italic">{t('leads.status_converted')}</SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                            <div className="flex items-center gap-2 justify-end">
+                                                {lead.status === 'new' && (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        className="h-8 text-[9px] font-black uppercase italic tracking-widest border-amber-500/20 text-amber-400 hover:bg-amber-500/10"
+                                                        onClick={(e) => { e.stopPropagation(); updateStatus(lead, 'contacted'); }}
+                                                    >
+                                                        <Clock className="h-3 w-3 mr-1" />
+                                                        {t('leads.mark_contacted', { defaultValue: 'Contacted' })}
+                                                    </Button>
+                                                )}
+                                                {lead.status !== 'converted' && (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        className="h-8 text-[9px] font-black uppercase italic tracking-widest border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/10"
+                                                        onClick={(e) => { e.stopPropagation(); updateStatus(lead, 'converted'); }}
+                                                    >
+                                                        <CheckCircle className="h-3 w-3 mr-1" />
+                                                        {t('leads.convert_to_member')}
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))

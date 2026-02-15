@@ -186,49 +186,35 @@ export const Login: React.FC = () => {
                 <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent" />
             </div>
 
-            {/* ── Content container — mobile-first bottom sheet layout ── */}
-            <div className="relative z-10 flex-1 flex flex-col justify-end lg:justify-center lg:items-center safe-area-inset px-4 pb-6 pt-12 sm:px-6">
+            {/* ── Content container — centered vertically ── */}
+            <div className="relative z-10 flex-1 flex flex-col items-center justify-center safe-area-inset px-4 py-8 sm:px-6">
 
-                {/* ── Top branding area (mobile: centered at top, desktop: inside card) ── */}
-                <div className="flex-1 flex flex-col items-center justify-center lg:hidden mb-6">
+                {/* ── Centered branding: logo + name + tagline ── */}
+                <div className="flex flex-col items-center mb-8 animate-premium-in">
                     {logoUrl ? (
                         <img
                             src={logoUrl}
                             alt={boxName}
-                            className="h-16 w-16 rounded-2xl object-contain shadow-2xl ring-1 ring-white/10"
+                            className="h-20 w-20 sm:h-24 sm:w-24 rounded-[1.75rem] object-contain shadow-[0_8px_40px_rgba(0,0,0,0.4)] ring-1 ring-white/10"
                         />
                     ) : (
-                        <div className="h-16 w-16 rounded-2xl bg-white/10 backdrop-blur-xl flex items-center justify-center shadow-2xl ring-1 ring-white/10">
-                            <span className="text-2xl font-black text-white">{boxName.charAt(0)}</span>
+                        <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-[1.75rem] bg-white/10 backdrop-blur-2xl flex items-center justify-center shadow-[0_8px_40px_rgba(0,0,0,0.4)] ring-1 ring-white/10">
+                            <span className="text-3xl sm:text-4xl font-black text-white">{boxName.charAt(0)}</span>
                         </div>
                     )}
-                    <h1 className="mt-4 text-xl font-bold text-white tracking-tight">{boxName}</h1>
-                    <p className="text-white/50 text-xs mt-1 font-medium">{t('auth.login_tagline')}</p>
+                    <h1 className="mt-5 text-2xl sm:text-3xl font-bold text-white tracking-tight text-center">{boxName}</h1>
+                    <p className="text-white/40 text-sm mt-1.5 font-medium tracking-wide text-center">{t('auth.login_tagline')}</p>
                 </div>
 
-                {/* ── Form card — glass bottom sheet on mobile, centered card on desktop ── */}
-                <div className="w-full max-w-[420px] mx-auto lg:mx-0">
-                    <div className="rounded-3xl bg-white/[0.08] backdrop-blur-2xl border border-white/[0.12] shadow-[0_8px_60px_rgba(0,0,0,0.5)] overflow-hidden animate-premium-in">
-                        {/* Desktop-only header with branding */}
-                        <div className="hidden lg:flex items-center gap-3 px-8 pt-8 pb-2">
-                            {logoUrl ? (
-                                <img src={logoUrl} alt={boxName} className="h-10 w-10 rounded-xl object-contain" />
-                            ) : (
-                                <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center">
-                                    <span className="text-lg font-black text-white">{boxName.charAt(0)}</span>
-                                </div>
-                            )}
-                            <div>
-                                <h2 className="text-base font-bold text-white tracking-tight">{boxName}</h2>
-                                <p className="text-white/40 text-[11px] font-medium">{t('auth.login_tagline')}</p>
-                            </div>
-                        </div>
+                {/* ── Form card — glass card, always centered ── */}
+                <div className="w-full max-w-[400px] mx-auto">
+                    <div className="rounded-3xl bg-white/[0.07] backdrop-blur-2xl border border-white/[0.10] shadow-[0_8px_60px_rgba(0,0,0,0.5)] overflow-hidden animate-premium-in" style={{ animationDelay: '120ms' }}>
 
-                        <div className="px-6 pt-6 pb-2 sm:px-8 sm:pt-8">
-                            <h3 className="text-2xl font-bold text-white tracking-tight">
+                        <div className="px-6 pt-7 pb-1 sm:px-8 sm:pt-8 text-center">
+                            <h3 className="text-xl sm:text-2xl font-semibold text-white tracking-tight">
                                 {getTitle()}
                             </h3>
-                            <p className="text-white/50 text-sm mt-1 font-medium">
+                            <p className="text-white/40 text-[13px] mt-1 font-medium">
                                 {getSubtitle()}
                             </p>
                         </div>
@@ -383,7 +369,7 @@ export const Login: React.FC = () => {
                     </div>
 
                     {/* Footer */}
-                    <p className="text-center text-[11px] text-white/20 font-medium mt-4 mb-2">
+                    <p className="text-center text-[11px] text-white/15 font-medium mt-5">
                         {t('auth.powered_by')}
                     </p>
                 </div>

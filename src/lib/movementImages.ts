@@ -1,21 +1,60 @@
 /**
  * Movement Image Mapping Utility
  *
- * Maps movement names to their corresponding SVG icon paths.
- * Provides fallback to category-specific default icons when
- * no specific movement icon is available.
+ * Priority: custom upload > realistic photo (Pexels) > SVG icon > category default
+ * Realistic images from Pexels (CC0) for movements where we have clear context.
+ * Movements without a good match keep the SVG icon.
  *
  * Usage:
- *   getMovementImagePath('Back Squat')               → '/movements/back-squat.svg'
- *   getMovementImagePath('Some Unknown Movement')     → null
- *   getDefaultCategoryImage('Weightlifting')          → '/movements/default-weightlifting.svg'
  *   resolveMovementImage('Back Squat', null, 'Weightlifting')
- *     → '/movements/back-squat.svg'  (uses mapped icon)
- *   resolveMovementImage('Back Squat', 'https://uploaded.jpg', 'Weightlifting')
- *     → 'https://uploaded.jpg'       (uses uploaded image)
+ *     → Pexels URL (realistic photo)
+ *   resolveMovementImage('Muscle Snatch', null, 'Weightlifting')
+ *     → '/movements/snatch.svg' (SVG, no realistic image)
  */
 
 type Category = 'Weightlifting' | 'Gymnastics' | 'Monostructural' | 'Accessory' | 'Other' | string;
+
+/** Pexels CDN base - all images CC0, free to use */
+const PEXELS = (id: number, w = 600) =>
+  `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=${w}`;
+
+/**
+ * Realistic photos (Pexels CC0) for movements we have clear context for.
+ * IDs verified from Pexels search. Movements NOT listed here keep SVG.
+ */
+const MOVEMENT_REALISTIC_IMAGES: Record<string, string> = {
+  // Weightlifting - barbell movements (verified from pexels.com/search)
+  'back squat': PEXELS(31500880),      // Woman squat with barbell
+  'front squat': PEXELS(1552106),      // Barbell squat
+  'overhead squat': PEXELS(1552103),   // Overhead squat
+  'deadlift': PEXELS(949134),          // Barbell deadlift
+  'clean': PEXELS(13451903),           // Olympic clean
+  'clean & jerk': PEXELS(13451903),
+  'clean and jerk': PEXELS(13451903),
+  'power clean': PEXELS(13451903),
+  'snatch': PEXELS(13451628),          // Olympic snatch
+  'power snatch': PEXELS(13451628),
+  'push press': PEXELS(5743077),       // Overhead press
+  'thruster': PEXELS(4587364),         // Thruster
+  'strict press': PEXELS(5743077),
+  'bench press': PEXELS(3401403),      // Bench press
+  'goblet squat': PEXELS(5838911),     // KB goblet squat
+  'air squat': PEXELS(31500880),       // Bodyweight squat
+
+  // Gymnastics (verified)
+  'pull-up': PEXELS(4162478),          // Pull-up on bar
+  'pull up': PEXELS(4162478),
+  'kipping pull-up': PEXELS(4162478),
+  'strict pull-up': PEXELS(4162478),
+  'strict pull up': PEXELS(4162478),
+  'chest-to-bar': PEXELS(4162478),
+  'chest-to-bar pull-up': PEXELS(4162478),
+  'push-up': PEXELS(414029),           // Push-up (pexels 414029)
+  'push up': PEXELS(414029),
+  'box jump': PEXELS(1552249),         // Box jump
+  'ring dip': PEXELS(7187872),         // Dip
+  'ring row': PEXELS(4803660),         // Inverted row
+};
 
 /**
  * Slugifies a movement name to match SVG file names.
@@ -210,7 +249,7 @@ export function getDefaultCategoryImage(category: Category): string {
 
 /**
  * Resolve the best available image for a movement.
- * Priority: custom uploaded image > mapped SVG icon > category default
+ * Priority: custom upload > realistic photo (Pexels) > SVG icon > category default
  */
 export function resolveMovementImage(
   movementName: string,
@@ -222,11 +261,16 @@ export function resolveMovementImage(
     return customImageUrl;
   }
 
-  // 2. Try to find a dedicated movement icon
+  // 2. Realistic photo (Pexels) when we have clear context
+  const key = movementName.toLowerCase().trim();
+  const realistic = MOVEMENT_REALISTIC_IMAGES[key];
+  if (realistic) return realistic;
+
+  // 3. SVG icon for movements without a realistic image
   const movementPath = getMovementImagePath(movementName);
   if (movementPath) return movementPath;
 
-  // 3. Fallback to category default
+  // 4. Category default
   return getDefaultCategoryImage(category);
 }
 

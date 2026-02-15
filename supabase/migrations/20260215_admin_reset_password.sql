@@ -53,3 +53,6 @@ $$;
 
 -- Grant execute to authenticated users (RLS-style check is inside the function)
 GRANT EXECUTE ON FUNCTION public.admin_reset_password(UUID) TO authenticated;
+
+-- Force PostgREST to reload its schema cache so the function is available via RPC
+NOTIFY pgrst, 'reload schema';

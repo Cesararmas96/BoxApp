@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <polygon points="35,170 45,150 55,170" fill="#94a3b8"/>
+  <polygon points="145,170 155,150 165,170" fill="#94a3b8"/>
+  <circle cx="95" cy="48" r="12" fill="#64748b"/>
+  <line x1="95" y1="60" x2="100" y2="78" stroke="#64748b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="100" y1="78" x2="105" y2="108" stroke="#64748b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="95" y1="78" x2="118" y2="62" stroke="#64748b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="95" y1="78" x2="72" y2="92" stroke="#64748b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="105" y1="108" x2="130" y2="138" stroke="#64748b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="130" y1="138" x2="135" y2="165" stroke="#64748b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="105" y1="108" x2="80" y2="132" stroke="#64748b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="80" y1="132" x2="68" y2="155" stroke="#64748b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 60 180 L 140 180" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 135 175 L 145 180 L 135 185" stroke="#94a3b8" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

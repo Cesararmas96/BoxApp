@@ -1,0 +1,590 @@
+[
+  {
+    "name": "Back Squat",
+    "category": "Weightlifting",
+    "image": "back-squat",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Front Squat",
+    "category": "Weightlifting",
+    "image": "front-squat",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Overhead Squat",
+    "category": "Weightlifting",
+    "image": "overhead-squat",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Deadlift",
+    "category": "Weightlifting",
+    "image": "deadlift",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Sumo Deadlift",
+    "category": "Weightlifting",
+    "image": "sumo-deadlift",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Romanian Deadlift",
+    "category": "Weightlifting",
+    "image": "romanian-deadlift",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Clean",
+    "category": "Weightlifting",
+    "image": "clean",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Power Clean",
+    "category": "Weightlifting",
+    "image": "power-clean",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Hang Power Clean",
+    "category": "Weightlifting",
+    "image": "hang-power-clean",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Squat Clean",
+    "category": "Weightlifting",
+    "image": "squat-clean",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Hang Clean",
+    "category": "Weightlifting",
+    "image": "hang-clean",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Clean & Jerk",
+    "category": "Weightlifting",
+    "image": "clean-and-jerk",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Hang Clean & Jerk",
+    "category": "Weightlifting",
+    "image": "hang-clean-and-jerk",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Push Jerk",
+    "category": "Weightlifting",
+    "image": "push-jerk",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Split Jerk",
+    "category": "Weightlifting",
+    "image": "split-jerk",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Snatch",
+    "category": "Weightlifting",
+    "image": "snatch",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Power Snatch",
+    "category": "Weightlifting",
+    "image": "power-snatch",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Hang Power Snatch",
+    "category": "Weightlifting",
+    "image": "hang-power-snatch",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Squat Snatch",
+    "category": "Weightlifting",
+    "image": "squat-snatch",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Muscle Snatch",
+    "category": "Weightlifting",
+    "image": "muscle-snatch",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Snatch Balance",
+    "category": "Weightlifting",
+    "image": "snatch-balance",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Clean Pull",
+    "category": "Weightlifting",
+    "image": "clean-pull",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Snatch Pull",
+    "category": "Weightlifting",
+    "image": "snatch-pull",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Strict Press",
+    "category": "Weightlifting",
+    "image": "strict-press",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Push Press",
+    "category": "Weightlifting",
+    "image": "push-press",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Thruster",
+    "category": "Weightlifting",
+    "image": "thruster",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Cluster",
+    "category": "Weightlifting",
+    "image": "cluster",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Bench Press",
+    "category": "Weightlifting",
+    "image": "bench-press",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Sumo Deadlift High Pull",
+    "category": "Weightlifting",
+    "image": "sumo-deadlift-high-pull",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Walking Lunges",
+    "category": "Weightlifting",
+    "image": "walking-lunges",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Front Rack Lunges",
+    "category": "Weightlifting",
+    "image": "front-rack-lunges",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Pull-Up",
+    "category": "Gymnastics",
+    "image": "pull-up",
+    "equipment": "bar"
+  },
+  {
+    "name": "Kipping Pull-Up",
+    "category": "Gymnastics",
+    "image": "kipping-pull-up",
+    "equipment": "bar"
+  },
+  {
+    "name": "Chest-to-Bar Pull-Up",
+    "category": "Gymnastics",
+    "image": "chest-to-bar",
+    "equipment": "bar"
+  },
+  {
+    "name": "Strict Pull-Up",
+    "category": "Gymnastics",
+    "image": "strict-pull-up",
+    "equipment": "bar"
+  },
+  {
+    "name": "Bar Muscle-Up",
+    "category": "Gymnastics",
+    "image": "bar-muscle-up",
+    "equipment": "bar"
+  },
+  {
+    "name": "Ring Muscle-Up",
+    "category": "Gymnastics",
+    "image": "ring-muscle-up",
+    "equipment": "rings"
+  },
+  {
+    "name": "Ring Dip",
+    "category": "Gymnastics",
+    "image": "ring-dip",
+    "equipment": "rings"
+  },
+  {
+    "name": "Ring Row",
+    "category": "Gymnastics",
+    "image": "ring-row",
+    "equipment": "rings"
+  },
+  {
+    "name": "Handstand Push-Up",
+    "category": "Gymnastics",
+    "image": "handstand-push-up",
+    "equipment": "bodyweight"
+  },
+  {
+    "name": "Strict Handstand Push-Up",
+    "category": "Gymnastics",
+    "image": "strict-hspu",
+    "equipment": "bodyweight"
+  },
+  {
+    "name": "Deficit Handstand Push-Up",
+    "category": "Gymnastics",
+    "image": "deficit-hspu",
+    "equipment": "bodyweight"
+  },
+  {
+    "name": "Handstand Walk",
+    "category": "Gymnastics",
+    "image": "handstand-walk",
+    "equipment": "bodyweight"
+  },
+  {
+    "name": "Toes-to-Bar",
+    "category": "Gymnastics",
+    "image": "toes-to-bar",
+    "equipment": "bar"
+  },
+  {
+    "name": "Knees-to-Elbow",
+    "category": "Gymnastics",
+    "image": "knees-to-elbow",
+    "equipment": "bar"
+  },
+  {
+    "name": "Box Jump",
+    "category": "Gymnastics",
+    "image": "box-jump",
+    "equipment": "box"
+  },
+  {
+    "name": "Box Jump Over",
+    "category": "Gymnastics",
+    "image": "box-jump-over",
+    "equipment": "box"
+  },
+  {
+    "name": "Burpee",
+    "category": "Gymnastics",
+    "image": "burpee",
+    "equipment": "bodyweight"
+  },
+  {
+    "name": "Bar Facing Burpee",
+    "category": "Gymnastics",
+    "image": "bar-facing-burpee",
+    "equipment": "bodyweight"
+  },
+  {
+    "name": "Burpee Box Jump Over",
+    "category": "Gymnastics",
+    "image": "burpee-box-jump-over",
+    "equipment": "box"
+  },
+  {
+    "name": "Air Squat",
+    "category": "Gymnastics",
+    "image": "air-squat",
+    "equipment": "bodyweight"
+  },
+  {
+    "name": "Pistol Squat",
+    "category": "Gymnastics",
+    "image": "pistol-squat",
+    "equipment": "bodyweight"
+  },
+  {
+    "name": "Wall Walk",
+    "category": "Gymnastics",
+    "image": "wall-walk",
+    "equipment": "bodyweight"
+  },
+  {
+    "name": "Rope Climb",
+    "category": "Gymnastics",
+    "image": "rope-climb",
+    "equipment": "rope"
+  },
+  {
+    "name": "Legless Rope Climb",
+    "category": "Gymnastics",
+    "image": "legless-rope-climb",
+    "equipment": "rope"
+  },
+  {
+    "name": "Push-Up",
+    "category": "Gymnastics",
+    "image": "push-up",
+    "equipment": "bodyweight"
+  },
+  {
+    "name": "Hollow Hold",
+    "category": "Gymnastics",
+    "image": "hollow-hold",
+    "equipment": "bodyweight"
+  },
+  {
+    "name": "Hollow Rock",
+    "category": "Gymnastics",
+    "image": "hollow-rock",
+    "equipment": "bodyweight"
+  },
+  {
+    "name": "L-Sit",
+    "category": "Gymnastics",
+    "image": "l-sit",
+    "equipment": "bodyweight"
+  },
+  {
+    "name": "Running",
+    "category": "Monostructural",
+    "image": "running",
+    "equipment": "none"
+  },
+  {
+    "name": "Rowing",
+    "category": "Monostructural",
+    "image": "rowing",
+    "equipment": "rower"
+  },
+  {
+    "name": "Assault Bike",
+    "category": "Monostructural",
+    "image": "assault-bike",
+    "equipment": "bike"
+  },
+  {
+    "name": "Echo Bike",
+    "category": "Monostructural",
+    "image": "echo-bike",
+    "equipment": "bike"
+  },
+  {
+    "name": "Ski Erg",
+    "category": "Monostructural",
+    "image": "ski-erg",
+    "equipment": "ski"
+  },
+  {
+    "name": "Double Under",
+    "category": "Monostructural",
+    "image": "double-under",
+    "equipment": "jumprope"
+  },
+  {
+    "name": "Single Under",
+    "category": "Monostructural",
+    "image": "single-under",
+    "equipment": "jumprope"
+  },
+  {
+    "name": "Shuttle Run",
+    "category": "Monostructural",
+    "image": "shuttle-run",
+    "equipment": "none"
+  },
+  {
+    "name": "Wall Ball",
+    "category": "Accessory",
+    "image": "wall-ball",
+    "equipment": "medball"
+  },
+  {
+    "name": "Kettlebell Swing",
+    "category": "Accessory",
+    "image": "kettlebell-swing",
+    "equipment": "kettlebell"
+  },
+  {
+    "name": "Kettlebell Clean",
+    "category": "Accessory",
+    "image": "kettlebell-clean",
+    "equipment": "kettlebell"
+  },
+  {
+    "name": "Kettlebell Snatch",
+    "category": "Accessory",
+    "image": "kettlebell-snatch",
+    "equipment": "kettlebell"
+  },
+  {
+    "name": "Goblet Squat",
+    "category": "Accessory",
+    "image": "goblet-squat",
+    "equipment": "kettlebell"
+  },
+  {
+    "name": "Turkish Get-Up",
+    "category": "Accessory",
+    "image": "turkish-get-up",
+    "equipment": "kettlebell"
+  },
+  {
+    "name": "Dumbbell Snatch",
+    "category": "Accessory",
+    "image": "dumbbell-snatch",
+    "equipment": "dumbbell"
+  },
+  {
+    "name": "Dumbbell Clean & Jerk",
+    "category": "Accessory",
+    "image": "dumbbell-clean-jerk",
+    "equipment": "dumbbell"
+  },
+  {
+    "name": "Dumbbell Thruster",
+    "category": "Accessory",
+    "image": "dumbbell-thruster",
+    "equipment": "dumbbell"
+  },
+  {
+    "name": "Dumbbell Front Squat",
+    "category": "Accessory",
+    "image": "dumbbell-front-squat",
+    "equipment": "dumbbell"
+  },
+  {
+    "name": "Dumbbell Overhead Squat",
+    "category": "Accessory",
+    "image": "dumbbell-overhead-squat",
+    "equipment": "dumbbell"
+  },
+  {
+    "name": "Devil Press",
+    "category": "Accessory",
+    "image": "devil-press",
+    "equipment": "dumbbell"
+  },
+  {
+    "name": "Farmer's Carry",
+    "category": "Accessory",
+    "image": "farmers-carry",
+    "equipment": "dumbbell"
+  },
+  {
+    "name": "Sled Push",
+    "category": "Accessory",
+    "image": "sled-push",
+    "equipment": "sled"
+  },
+  {
+    "name": "Sled Pull",
+    "category": "Accessory",
+    "image": "sled-pull",
+    "equipment": "sled"
+  },
+  {
+    "name": "Hip Thrust",
+    "category": "Accessory",
+    "image": "hip-thrust",
+    "equipment": "barbell"
+  },
+  {
+    "name": "Glute Bridge",
+    "category": "Accessory",
+    "image": "glute-bridge",
+    "equipment": "bodyweight"
+  },
+  {
+    "name": "Good Morning",
+    "category": "Accessory",
+    "image": "good-morning",
+    "equipment": "barbell"
+  },
+  {
+    "name": "GHD Sit-Up",
+    "category": "Accessory",
+    "image": "ghd-sit-up",
+    "equipment": "ghd"
+  },
+  {
+    "name": "GHD Hip Extension",
+    "category": "Accessory",
+    "image": "ghd-hip-extension",
+    "equipment": "ghd"
+  },
+  {
+    "name": "Sit-Up",
+    "category": "Accessory",
+    "image": "sit-up",
+    "equipment": "bodyweight"
+  },
+  {
+    "name": "Dead Bug",
+    "category": "Accessory",
+    "image": "dead-bug",
+    "equipment": "bodyweight"
+  },
+  {
+    "name": "Plank",
+    "category": "Accessory",
+    "image": "plank",
+    "equipment": "bodyweight"
+  },
+  {
+    "name": "Side Plank",
+    "category": "Accessory",
+    "image": "side-plank",
+    "equipment": "bodyweight"
+  },
+  {
+    "name": "Broad Jump",
+    "category": "Accessory",
+    "image": "broad-jump",
+    "equipment": "bodyweight"
+  },
+  {
+    "name": "Sandbag Clean",
+    "category": "Accessory",
+    "image": "sandbag-clean",
+    "equipment": "sandbag"
+  },
+  {
+    "name": "Med Ball Clean",
+    "category": "Accessory",
+    "image": "med-ball-clean",
+    "equipment": "medball"
+  },
+  {
+    "name": "Med Ball Slam",
+    "category": "Accessory",
+    "image": "med-ball-slam",
+    "equipment": "medball"
+  },
+  {
+    "name": "Cossack Squat",
+    "category": "Accessory",
+    "image": "cossack-squat",
+    "equipment": "bodyweight"
+  },
+  {
+    "name": "Face Pull",
+    "category": "Accessory",
+    "image": "face-pull",
+    "equipment": "band"
+  },
+  {
+    "name": "Banded Pull-Apart",
+    "category": "Accessory",
+    "image": "banded-pull-apart",
+    "equipment": "band"
+  }
+]

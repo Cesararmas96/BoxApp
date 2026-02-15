@@ -1200,6 +1200,8 @@ export type Database = {
                     category: string | null
                     description: string | null
                     video_url: string | null
+                    image_url: string | null
+                    demo_url: string | null
                     box_id: string | null
                     created_at: string | null
                 }
@@ -1209,6 +1211,8 @@ export type Database = {
                     category?: string | null
                     description?: string | null
                     video_url?: string | null
+                    image_url?: string | null
+                    demo_url?: string | null
                     box_id?: string | null
                     created_at?: string | null
                 }
@@ -1218,6 +1222,8 @@ export type Database = {
                     category?: string | null
                     description?: string | null
                     video_url?: string | null
+                    image_url?: string | null
+                    demo_url?: string | null
                     box_id?: string | null
                     created_at?: string | null
                 }

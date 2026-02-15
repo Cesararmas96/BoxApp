@@ -872,7 +872,17 @@
         "expired_no_renewal": "{{count}} membresías vencidas sin renovar",
         "plan_rentability": "Ingresos por Plan",
         "active_members": "Miembros Activos",
-        "monthly_revenue": "Ingreso Mensual"
+        "monthly_revenue": "Ingreso Mensual",
+        "filter_dates": "Filtrar por Fechas",
+        "start_date": "Fecha Inicio",
+        "end_date": "Fecha Fin",
+        "export_pdf": "Exportar Reporte PDF",
+        "export_csv": "Exportar CSV",
+        "report_title": "Reporte Financiero",
+        "report_generated": "Reporte generado con éxito.",
+        "invoice_history": "Historial de Cobros",
+        "expense_history": "Historial de Gastos",
+        "period": "Periodo"
     },
     "leads": {
         "title": "Prospectos",

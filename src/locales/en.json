@@ -872,7 +872,17 @@
         "expired_no_renewal": "{{count}} expired memberships without renewal",
         "plan_rentability": "Revenue by Plan",
         "active_members": "Active Members",
-        "monthly_revenue": "Monthly Revenue"
+        "monthly_revenue": "Monthly Revenue",
+        "filter_dates": "Filter by Dates",
+        "start_date": "Start Date",
+        "end_date": "End Date",
+        "export_pdf": "Export PDF Report",
+        "export_csv": "Export CSV",
+        "report_title": "Financial Report",
+        "report_generated": "Report generated successfully.",
+        "invoice_history": "Invoice History",
+        "expense_history": "Expense History",
+        "period": "Period"
     },
     "leads": {
         "title": "Prospects",

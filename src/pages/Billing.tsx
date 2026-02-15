@@ -5,6 +5,9 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
     ResponsiveContainer, PieChart, Pie, Cell, Legend
 } from 'recharts';
+import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 import {
     Plus,
@@ -32,7 +35,10 @@ import {
     Activity,
     Target,
     Percent,
-    UserMinus
+    UserMinus,
+    Download,
+    FileSpreadsheet,
+    Filter
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -136,7 +142,6 @@ export const Billing: React.FC = () => {
     const activeTab = searchParams.get('tab') || 'dashboard';
     const [plans, setPlans] = useState<Plan[]>([]);
     const [expenses, setExpenses] = useState<Expense[]>([]);
-    const [memberships, setMemberships] = useState<any[]>([]);
     const [allMemberships, setAllMemberships] = useState<any[]>([]);
     const [invoices, setInvoices] = useState<Invoice[]>([]);
     const [loading, setLoading] = useState(true);
@@ -147,6 +152,10 @@ export const Billing: React.FC = () => {
 
     const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
     const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+
+    // Filter states
+    const [startDate, setStartDate] = useState(format(startOfMonth(new Date()), 'yyyy-MM-dd'));
+    const [endDate, setEndDate] = useState(format(endOfMonth(new Date()), 'yyyy-MM-dd'));
 
     // Form states
     const [newPlan, setNewPlan] = useState({ name: '', price: '', interval: 'monthly', duration_days: 30, total_credits: 0 });
@@ -205,7 +214,6 @@ export const Billing: React.FC = () => {
                 .eq('role_id', 'athlete');
 
             setAllAthletes(athletesData.data || []);
-            setMemberships(allMembershipsRes.data || []);
         } catch (error: any) {
             console.error('Error fetching finance data:', error);
             addNotification('error', t('common.error_loading'));
@@ -215,13 +223,29 @@ export const Billing: React.FC = () => {
     };
 
     /* ---------------------------------------------------------------- */
+    /* Filtered Data                                                     */
+    /* ---------------------------------------------------------------- */
+
+    const filteredExpensesByDate = useMemo(() => {
+        return expenses.filter(e => {
+            const date = parseISO(e.date);
+            return isWithinInterval(date, { start: parseISO(startDate), end: parseISO(endDate) });
+        });
+    }, [expenses, startDate, endDate]);
+
+    const filteredInvoicesByDate = useMemo(() => {
+        return invoices.filter(inv => {
+            const date = parseISO(inv.created_at.split('T')[0]);
+            return isWithinInterval(date, { start: parseISO(startDate), end: parseISO(endDate) });
+        });
+    }, [invoices, startDate, endDate]);
+
+    /* ---------------------------------------------------------------- */
     /* Computed KPIs                                                      */
     /* ---------------------------------------------------------------- */
 
     const kpis = useMemo(() => {
         const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
 
         // Active memberships
         const activeMemberships = allMemberships.filter(m => m.status === 'active');
@@ -234,76 +258,69 @@ export const Billing: React.FC = () => {
             return acc + planPrice;
         }, 0);
 
-        // Total expenses this month
-        const monthlyExpenses = expenses.filter(e => {
-            const d = new Date(e.date);
-            return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-        }).reduce((acc, e) => acc + Number(e.amount), 0);
+        // Total expenses in period
+        const periodExpenses = filteredExpensesByDate.reduce((acc, e) => acc + Number(e.amount), 0);
 
-        // Total expenses all time
-        const totalExpenses = expenses.reduce((acc, e) => acc + Number(e.amount), 0);
+        // Actual revenue in period (from invoices)
+        const periodRevenue = filteredInvoicesByDate.filter(inv => inv.status === 'paid')
+            .reduce((acc, inv) => acc + Number(inv.amount), 0);
 
-        // Actual revenue this month (from invoices)
-        const monthlyRevenue = invoices.filter(inv => {
-            const d = new Date(inv.created_at);
-            return d.getMonth() === currentMonth && d.getFullYear() === currentYear && inv.status === 'paid';
-        }).reduce((acc, inv) => acc + Number(inv.amount), 0);
-
-        // Total revenue all time
+        // Total revenue all time (for LTV context)
         const totalRevenue = invoices.filter(inv => inv.status === 'paid')
             .reduce((acc, inv) => acc + Number(inv.amount), 0);
 
         // ARPU
         const arpu = activeMemberships.length > 0 ? mrr / activeMemberships.length : 0;
 
-        // Collection Rate: actual revenue / expected revenue (MRR) this month
-        const collectionRate = mrr > 0 ? Math.min((monthlyRevenue / mrr) * 100, 100) : 0;
+        // Collection Rate: actual revenue / expected revenue (MRR)
+        // Since the period might be different from exactly one month, we use MRR as a benchmark
+        const collectionRate = mrr > 0 ? Math.min((periodRevenue / mrr) * 100, 100) : 0;
 
         // Net Operating Margin
-        const netMarginAmount = monthlyRevenue - monthlyExpenses;
-        const netMarginPercent = monthlyRevenue > 0 ? (netMarginAmount / monthlyRevenue) * 100 : 0;
+        const netMarginAmount = periodRevenue - periodExpenses;
+        const netMarginPercent = periodRevenue > 0 ? (netMarginAmount / periodRevenue) * 100 : 0;
 
-        // Churn: memberships that expired this month vs total last month
-        const expiredThisMonth = allMemberships.filter(m => {
-            if (!m.end_date) return false;
-            const endDate = new Date(m.end_date);
-            return endDate.getMonth() === currentMonth && endDate.getFullYear() === currentYear && m.status !== 'active';
+        // Churn: memberships that expired in period
+        const expiredInPeriod = allMemberships.filter(m => {
+            if (!m.end_date || m.status === 'active') return false;
+            const endDateObj = parseISO(m.end_date);
+            return isWithinInterval(endDateObj, { start: parseISO(startDate), end: parseISO(endDate) });
         }).length;
-        const totalLastMonth = allMemberships.filter(m => {
-            const created = new Date(m.created_at);
-            return created <= new Date(currentYear, currentMonth, 1);
-        }).length;
-        const churnRate = totalLastMonth > 0 ? (expiredThisMonth / totalLastMonth) * 100 : 0;
+        
+        const totalAtStart = allMemberships.filter(m => {
+            const created = parseISO(m.created_at.split('T')[0]);
+            return created <= parseISO(startDate);
+        }).length || 1;
+        const churnRate = (expiredInPeriod / totalAtStart) * 100;
 
         // LTV: ARPU * average membership lifespan in months
         const avgLifespanMonths = activeMemberships.length > 0
             ? activeMemberships.reduce((acc: number, m: any) => {
-                const start = m.start_date ? new Date(m.start_date) : new Date(m.created_at);
+                const start = m.start_date ? parseISO(m.start_date) : parseISO(m.created_at.split('T')[0]);
                 const months = Math.max(1, (now.getTime() - start.getTime()) / (30 * 24 * 60 * 60 * 1000));
                 return acc + months;
             }, 0) / activeMemberships.length
             : 1;
         const ltv = arpu * avgLifespanMonths;
 
-        // Delinquency alerts
+        // Delinquency alerts (always based on 'now', not filtered by period for safety)
         const expiringIn7Days = allMemberships.filter(m => {
             if (!m.end_date || m.status !== 'active') return false;
-            const endDate = new Date(m.end_date);
-            const diffDays = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+            const endDateObj = parseISO(m.end_date);
+            const diffDays = Math.ceil((endDateObj.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
             return diffDays >= 0 && diffDays <= 7;
         });
 
         const expiredNoRenewal = allMemberships.filter(m => {
             if (!m.end_date) return false;
-            const endDate = new Date(m.end_date);
-            return endDate < now && (m.status === 'active' || m.status === 'expired');
+            const endDateObj = parseISO(m.end_date);
+            return endDateObj < now && (m.status === 'active' || m.status === 'expired');
         });
 
         return {
             mrr,
-            monthlyExpenses,
-            totalExpenses,
-            monthlyRevenue,
+            periodExpenses,
+            periodRevenue,
             totalRevenue,
             arpu,
             collectionRate,
@@ -316,7 +333,7 @@ export const Billing: React.FC = () => {
             expiringIn7Days,
             expiredNoRenewal
         };
-    }, [allMemberships, expenses, invoices, plans]);
+    }, [allMemberships, filteredExpensesByDate, filteredInvoicesByDate, invoices, plans, startDate, endDate]);
 
     /* ---------------------------------------------------------------- */
     /* Monthly Chart Data (Income vs Expenses last 6 months)             */
@@ -329,18 +346,18 @@ export const Billing: React.FC = () => {
             const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
             const month = d.getMonth();
             const year = d.getFullYear();
-            const monthLabel = t(`billing.months.${d.toLocaleString('en', { month: 'short' })}`, { defaultValue: d.toLocaleString('en', { month: 'short' }) });
+            const monthLabel = t(`billing.months.${format(d, 'MMM')}`, { defaultValue: format(d, 'MMM') });
 
             const income = invoices
                 .filter(inv => {
-                    const id = new Date(inv.created_at);
+                    const id = parseISO(inv.created_at.split('T')[0]);
                     return id.getMonth() === month && id.getFullYear() === year && inv.status === 'paid';
                 })
                 .reduce((acc, inv) => acc + Number(inv.amount), 0);
 
             const expense = expenses
                 .filter(e => {
-                    const ed = new Date(e.date);
+                    const ed = parseISO(e.date);
                     return ed.getMonth() === month && ed.getFullYear() === year;
                 })
                 .reduce((acc, e) => acc + Number(e.amount), 0);
@@ -355,20 +372,13 @@ export const Billing: React.FC = () => {
     /* ---------------------------------------------------------------- */
 
     const expensePieData = useMemo(() => {
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-
         const categoryMap: Record<string, number> = {};
-        expenses.forEach(e => {
-            const d = new Date(e.date);
-            if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
-                categoryMap[e.category] = (categoryMap[e.category] || 0) + Number(e.amount);
-            }
+        filteredExpensesByDate.forEach(e => {
+            categoryMap[e.category] = (categoryMap[e.category] || 0) + Number(e.amount);
         });
 
         return Object.entries(categoryMap).map(([name, value]) => ({ name: t(`billing.categories.${name}`, { defaultValue: name }), value }));
-    }, [expenses, t]);
+    }, [filteredExpensesByDate, t]);
 
     /* ---------------------------------------------------------------- */
     /* Rentability per Plan                                              */
@@ -381,6 +391,125 @@ export const Billing: React.FC = () => {
             return { ...plan, membersOnPlan, revenue };
         }).sort((a, b) => b.revenue - a.revenue);
     }, [plans, allMemberships]);
+
+    /* ---------------------------------------------------------------- */
+    /* PDF and CSV Generation                                            */
+    /* ---------------------------------------------------------------- */
+
+    const generatePDFReport = () => {
+        const doc = new jsPDF();
+        
+        // Header
+        doc.setFontSize(20);
+        doc.text(t('billing.report_title'), 14, 20);
+        doc.setFontSize(10);
+        doc.text(`${t('billing.period')}: ${startDate} - ${endDate}`, 14, 28);
+        doc.text(`${t('common.date')}: ${format(new Date(), 'yyyy-MM-dd HH:mm')}`, 14, 34);
+        
+        // KPI Summary
+        doc.setFontSize(14);
+        doc.text(t('common.overview'), 14, 45);
+        const kpiData = [
+            [t('billing.kpi_mrr'), `$${kpis.mrr.toFixed(2)}`],
+            [t('billing.chart_income'), `$${kpis.periodRevenue.toFixed(2)}`],
+            [t('billing.chart_expenses'), `$${kpis.periodExpenses.toFixed(2)}`],
+            [t('billing.kpi_net_margin'), `$${kpis.netMarginAmount.toFixed(2)} (${kpis.netMarginPercent.toFixed(1)}%)`],
+            [t('billing.kpi_collection_rate'), `${kpis.collectionRate.toFixed(1)}%`],
+            [t('billing.kpi_churn_rate'), `${kpis.churnRate.toFixed(1)}%`]
+        ];
+        
+        autoTable(doc, {
+            startY: 50,
+            head: [[t('common.category'), t('common.description')]],
+            body: kpiData,
+            theme: 'grid',
+            headStyles: { fillColor: [66, 66, 66] }
+        });
+
+        // Invoices Table
+        doc.addPage();
+        doc.text(t('billing.invoice_history'), 14, 20);
+        const invoiceRows = filteredInvoicesByDate.map(inv => {
+            const athlete = allAthletes.find(a => a.id === (inv.athlete_id || inv.user_id));
+            return [
+                athlete ? `${athlete.first_name} ${athlete.last_name}` : 'N/A',
+                `$${Number(inv.amount).toFixed(2)}`,
+                inv.status,
+                format(parseISO(inv.created_at.split('T')[0]), 'yyyy-MM-dd')
+            ];
+        });
+
+        autoTable(doc, {
+            startY: 25,
+            head: [[t('common.athlete'), t('billing.amount'), t('common.status'), t('common.date')]],
+            body: invoiceRows,
+            theme: 'striped'
+        });
+
+        // Expenses Table
+        doc.addPage();
+        doc.text(t('billing.expense_history'), 14, 20);
+        const expenseRows = filteredExpensesByDate.map(e => [
+            e.description,
+            t(`billing.categories.${e.category}`, { defaultValue: e.category }),
+            `$${Number(e.amount).toFixed(2)}`,
+            e.date
+        ]);
+
+        autoTable(doc, {
+            startY: 25,
+            head: [[t('billing.description'), t('billing.category'), t('billing.amount'), t('common.date')]],
+            body: expenseRows,
+            theme: 'striped'
+        });
+
+        doc.save(`BoxApp_Report_${startDate}_${endDate}.pdf`);
+        addNotification('success', t('billing.report_generated'));
+    };
+
+    const exportCSV = (type: 'invoices' | 'expenses') => {
+        let csvRows: string[] = [];
+        let filename = "";
+
+        if (type === 'invoices') {
+            const headers = [t('common.athlete'), t('billing.amount'), t('common.status'), t('common.date')];
+            csvRows = [headers.join(",")];
+            filteredInvoicesByDate.forEach(inv => {
+                const athlete = allAthletes.find(a => a.id === (inv.athlete_id || inv.user_id));
+                const row = [
+                    `"${athlete ? `${athlete.first_name} ${athlete.last_name}` : 'N/A'}"`,
+                    inv.amount,
+                    inv.status,
+                    inv.created_at
+                ];
+                csvRows.push(row.join(","));
+            });
+            filename = `Invoices_${startDate}_${endDate}.csv`;
+        } else {
+            const headers = [t('billing.description'), t('billing.category'), t('billing.amount'), t('common.date')];
+            csvRows = [headers.join(",")];
+            filteredExpensesByDate.forEach(e => {
+                const row = [
+                    `"${e.description}"`,
+                    e.category,
+                    e.amount,
+                    e.date
+                ];
+                csvRows.push(row.join(","));
+            });
+            filename = `Expenses_${startDate}_${endDate}.csv`;
+        }
+
+        const blob = new Blob([csvRows.join("\n")], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     /* ---------------------------------------------------------------- */
     /* Handlers (Plans, Expenses, Memberships)                           */
@@ -615,7 +744,7 @@ export const Billing: React.FC = () => {
             return;
         }
 
-        const existingMembership = memberships.find(m => (m.athlete_id || m.user_id) === newMembership.userId);
+        const existingMembership = allMemberships.find(m => (m.athlete_id || m.user_id) === newMembership.userId);
         if (existingMembership) {
             addNotification('error', t('billing.error_existing_membership'));
             return;
@@ -624,16 +753,16 @@ export const Billing: React.FC = () => {
         setLoading(true);
         try {
             const plan = plans.find(p => p.id === newMembership.planId);
-            const startDate = newMembership.isUnclear ? null : new Date(newMembership.startDate + 'T12:00:00');
-            let endDate = null;
+            const startDateObj = newMembership.isUnclear ? null : new Date(newMembership.startDate + 'T12:00:00');
+            let endDateObj = null;
             let status = 'pending';
 
-            if (startDate) {
-                endDate = new Date(startDate);
-                endDate.setDate(endDate.getDate() + (plan?.duration_days || 30));
+            if (startDateObj) {
+                endDateObj = new Date(startDateObj);
+                endDateObj.setDate(endDateObj.getDate() + (plan?.duration_days || 30));
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
-                const compareDate = new Date(startDate);
+                const compareDate = new Date(startDateObj);
                 compareDate.setHours(0, 0, 0, 0);
                 status = compareDate <= today ? 'active' : 'pending';
             }
@@ -645,8 +774,8 @@ export const Billing: React.FC = () => {
                     user_id: newMembership.userId,
                     plan_id: newMembership.planId,
                     box_id: currentBox?.id,
-                    start_date: startDate ? startDate.toISOString() : null,
-                    end_date: endDate ? endDate.toISOString() : null,
+                    start_date: startDateObj ? startDateObj.toISOString() : null,
+                    end_date: endDateObj ? endDateObj.toISOString() : null,
                     status
                 }]);
 
@@ -693,22 +822,22 @@ export const Billing: React.FC = () => {
     /* Filtered/Paginated Data                                           */
     /* ---------------------------------------------------------------- */
 
-    const filteredMemberships = memberships.filter(m => {
+    const filteredMembershipsSearch = allMemberships.filter(m => {
         const fullName = `${m.profiles?.first_name} ${m.profiles?.last_name} ${m.profiles?.email}`.toLowerCase();
         return fullName.includes(membershipSearch.toLowerCase());
     });
 
-    const paginatedMemberships = filteredMemberships.slice((membershipsPage - 1) * itemsPerPage, membershipsPage * itemsPerPage);
-    const membershipsTotalPages = Math.ceil(filteredMemberships.length / itemsPerPage);
+    const paginatedMemberships = filteredMembershipsSearch.slice((membershipsPage - 1) * itemsPerPage, membershipsPage * itemsPerPage);
+    const membershipsTotalPages = Math.ceil(filteredMembershipsSearch.length / itemsPerPage);
 
-    const filteredInvoices = invoices.filter(inv => {
+    const filteredInvoicesSearch = filteredInvoicesByDate.filter(inv => {
         if (!invoiceSearch) return true;
         const athlete = allAthletes.find(a => a.id === (inv.athlete_id || inv.user_id));
         const name = athlete ? `${athlete.first_name} ${athlete.last_name} ${athlete.email}`.toLowerCase() : '';
         return name.includes(invoiceSearch.toLowerCase()) || inv.status.toLowerCase().includes(invoiceSearch.toLowerCase());
     });
-    const paginatedInvoices = filteredInvoices.slice((invoicesPage - 1) * itemsPerPage, invoicesPage * itemsPerPage);
-    const invoicesTotalPages = Math.ceil(filteredInvoices.length / itemsPerPage);
+    const paginatedInvoices = filteredInvoicesSearch.slice((invoicesPage - 1) * itemsPerPage, invoicesPage * itemsPerPage);
+    const invoicesTotalPages = Math.ceil(filteredInvoicesSearch.length / itemsPerPage);
 
     /* ---------------------------------------------------------------- */
     /* Render                                                            */
@@ -724,9 +853,53 @@ export const Billing: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">{t('billing.title')}</h1>
-                <p className="text-muted-foreground text-sm">{t('billing.subtitle')}</p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">{t('billing.title')}</h1>
+                    <p className="text-muted-foreground text-sm">{t('billing.subtitle')}</p>
+                </div>
+                
+                {/* Global Date Filter & Export */}
+                <div className="flex items-center gap-2 bg-muted/30 p-2 rounded-2xl border border-border/50">
+                    <div className="flex items-center gap-2 px-2 border-r border-border/50">
+                        <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+                        <Input 
+                            type="date" 
+                            className="h-8 w-32 text-[10px] bg-background border-none focus-visible:ring-0" 
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                        />
+                        <span className="text-muted-foreground text-[10px]">to</span>
+                        <Input 
+                            type="date" 
+                            className="h-8 w-32 text-[10px] bg-background border-none focus-visible:ring-0" 
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                        />
+                    </div>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 gap-2 text-[10px] uppercase font-bold tracking-widest">
+                                <Download className="h-3.5 w-3.5" />
+                                {t('common.actions')}
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuLabel>{t('billing.export_pdf')}</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={generatePDFReport} className="gap-2 cursor-pointer">
+                                <FileText className="h-4 w-4 text-red-500" /> PDF Report
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuLabel>{t('billing.export_csv')}</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => exportCSV('invoices')} className="gap-2 cursor-pointer">
+                                <FileSpreadsheet className="h-4 w-4 text-green-500" /> Invoices CSV
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => exportCSV('expenses')} className="gap-2 cursor-pointer">
+                                <FileSpreadsheet className="h-4 w-4 text-green-500" /> Expenses CSV
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
             </div>
 
             <Tabs value={activeTab} onValueChange={(val) => setSearchParams({ tab: val })} className="w-full">
@@ -749,12 +922,7 @@ export const Billing: React.FC = () => {
                     </TabsTrigger>
                 </TabsList>
 
-                {/* ============================================================ */}
-                {/* TAB 1: DASHBOARD - Executive KPIs + Charts                    */}
-                {/* ============================================================ */}
                 <TabsContent value="dashboard" className="space-y-6 m-0">
-
-                    {/* KPI Cards Row 1 */}
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                         <KpiCard
                             label={t('billing.kpi_mrr')}
@@ -765,7 +933,7 @@ export const Billing: React.FC = () => {
                         />
                         <KpiCard
                             label={t('billing.kpi_monthly_expenses')}
-                            value={`$${kpis.monthlyExpenses.toFixed(0)}`}
+                            value={`$${kpis.periodExpenses.toFixed(0)}`}
                             icon={<TrendingDown className="h-4 w-4" />}
                             color="text-red-500"
                             bgColor="bg-red-500/5 border-red-500/20"
@@ -801,7 +969,6 @@ export const Billing: React.FC = () => {
                         />
                     </div>
 
-                    {/* Collection Rate Progress */}
                     <Card>
                         <CardHeader className="pb-2">
                             <div className="flex items-center justify-between">
@@ -815,14 +982,12 @@ export const Billing: React.FC = () => {
                         <CardContent>
                             <Progress value={kpis.collectionRate} className="h-2" />
                             <p className="text-xs text-muted-foreground mt-2">
-                                {t('billing.collection_rate_desc', { actual: kpis.monthlyRevenue.toFixed(0), expected: kpis.mrr.toFixed(0) })}
+                                {t('billing.collection_rate_desc', { actual: kpis.periodRevenue.toFixed(0), expected: kpis.mrr.toFixed(0) })}
                             </p>
                         </CardContent>
                     </Card>
 
-                    {/* Charts Row */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Bar Chart: Income vs Expenses */}
                         <Card className="lg:col-span-2">
                             <CardHeader>
                                 <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -847,7 +1012,6 @@ export const Billing: React.FC = () => {
                             </CardContent>
                         </Card>
 
-                        {/* Pie Chart: Expense Distribution */}
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -886,7 +1050,6 @@ export const Billing: React.FC = () => {
                         </Card>
                     </div>
 
-                    {/* Delinquency Alerts */}
                     {(kpis.expiringIn7Days.length > 0 || kpis.expiredNoRenewal.length > 0) && (
                         <Card className="border-amber-500/30 bg-amber-500/5">
                             <CardHeader>
@@ -903,10 +1066,11 @@ export const Billing: React.FC = () => {
                                         </p>
                                         <div className="flex flex-wrap gap-2">
                                             {kpis.expiringIn7Days.map((m: any) => {
-                                                const daysLeft = Math.ceil((new Date(m.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                                                const endDateObj = parseISO(m.end_date);
+                                                const diffDays = Math.ceil((endDateObj.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
                                                 return (
                                                     <Badge key={m.id} variant="outline" className="bg-amber-500/10 text-amber-700 border-amber-500/30 text-xs">
-                                                        {m.profiles?.first_name} {m.profiles?.last_name} — {daysLeft}d
+                                                        {m.profiles?.first_name} {m.profiles?.last_name} — {diffDays}d
                                                     </Badge>
                                                 );
                                             })}
@@ -934,7 +1098,6 @@ export const Billing: React.FC = () => {
                         </Card>
                     )}
 
-                    {/* Rentability per Plan */}
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -975,12 +1138,8 @@ export const Billing: React.FC = () => {
                     </Card>
                 </TabsContent>
 
-                {/* ============================================================ */}
-                {/* TAB 2: FINANCES - Plans & Expenses CRUD                       */}
-                {/* ============================================================ */}
                 <TabsContent value="finance" className="space-y-6 m-0">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {/* Plans Card */}
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between">
                                 <CardTitle className="text-lg">{t('billing.plans_title')}</CardTitle>
@@ -1005,7 +1164,6 @@ export const Billing: React.FC = () => {
                                                 {editingPlan ? t('billing.edit_plan') : t('billing.create_plan')}
                                             </DialogTitle>
                                             <DialogDescription>{t('billing.plan_desc')}</DialogDescription>
-                                            <DialogDescription className="sr-only">{t('billing.plan_config_hint')}</DialogDescription>
                                         </DialogHeader>
                                         <div className="grid gap-4 py-4">
                                             <div className="grid gap-2">
@@ -1084,7 +1242,6 @@ export const Billing: React.FC = () => {
                             </CardContent>
                         </Card>
 
-                        {/* Expenses Card */}
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between">
                                 <CardTitle className="text-lg">{t('billing.expenses_title')}</CardTitle>
@@ -1107,7 +1264,6 @@ export const Billing: React.FC = () => {
                                                 {editingExpense ? t('billing.edit_expense') : t('billing.add_expense')}
                                             </DialogTitle>
                                             <DialogDescription>{t('billing.expense_desc')}</DialogDescription>
-                                            <DialogDescription className="sr-only">{t('billing.expense_hint')}</DialogDescription>
                                         </DialogHeader>
                                         <div className="grid gap-4 py-4">
                                             <div className="grid gap-2">
@@ -1156,15 +1312,15 @@ export const Billing: React.FC = () => {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {expenses.length === 0 ? (
+                                        {filteredExpensesByDate.length === 0 ? (
                                             <TableRow>
                                                 <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">{t('common.no_data')}</TableCell>
                                             </TableRow>
-                                        ) : expenses.slice(0, 10).map((expense: Expense) => (
+                                        ) : filteredExpensesByDate.slice(0, 10).map((expense: Expense) => (
                                             <TableRow key={expense.id}>
                                                 <TableCell className="text-sm">
                                                     <p className="font-medium leading-none">{expense.description}</p>
-                                                    <p className="text-[10px] text-muted-foreground">{new Date(expense.date).toLocaleDateString()}</p>
+                                                    <p className="text-[10px] text-muted-foreground">{expense.date}</p>
                                                 </TableCell>
                                                 <TableCell>
                                                     <Badge variant="outline" className="text-[10px]">
@@ -1196,9 +1352,6 @@ export const Billing: React.FC = () => {
                     </div>
                 </TabsContent>
 
-                {/* ============================================================ */}
-                {/* TAB 3: INVOICES - Payment History                              */}
-                {/* ============================================================ */}
                 <TabsContent value="invoices" className="m-0">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
@@ -1228,7 +1381,7 @@ export const Billing: React.FC = () => {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {filteredInvoices.length === 0 ? (
+                                        {filteredInvoicesSearch.length === 0 ? (
                                             <TableRow>
                                                 <TableCell colSpan={4} className="text-center py-10 text-muted-foreground text-sm">
                                                     {t('billing.no_invoices')}
@@ -1257,7 +1410,7 @@ export const Billing: React.FC = () => {
                                                         </Badge>
                                                     </TableCell>
                                                     <TableCell className="text-xs text-muted-foreground">
-                                                        {new Date(inv.created_at).toLocaleDateString()} {new Date(inv.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        {inv.created_at.split('T')[0]} {inv.created_at.split('T')[1]?.substring(0, 5) || ''}
                                                     </TableCell>
                                                 </TableRow>
                                             );
@@ -1268,7 +1421,7 @@ export const Billing: React.FC = () => {
                                     <PaginationBar
                                         currentPage={invoicesPage}
                                         totalPages={invoicesTotalPages}
-                                        totalItems={filteredInvoices.length}
+                                        totalItems={filteredInvoicesSearch.length}
                                         itemsPerPage={itemsPerPage}
                                         onPageChange={setInvoicesPage}
                                         t={t}
@@ -1279,9 +1432,6 @@ export const Billing: React.FC = () => {
                     </Card>
                 </TabsContent>
 
-                {/* ============================================================ */}
-                {/* TAB 4: ATHLETES STATUS                                        */}
-                {/* ============================================================ */}
                 <TabsContent value="athletes" className="m-0">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
@@ -1431,7 +1581,7 @@ export const Billing: React.FC = () => {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {memberships.length === 0 ? (
+                                        {paginatedMemberships.length === 0 ? (
                                             <TableRow>
                                                 <TableCell colSpan={6} className="text-center py-10 text-muted-foreground italic">
                                                     {t('billing.no_memberships')}
@@ -1457,7 +1607,7 @@ export const Billing: React.FC = () => {
                                                                 const date = new Date();
                                                                 date.setDate(1);
                                                                 date.setMonth(date.getMonth() + offset);
-                                                                const monthStr = date.toLocaleString('default', { month: 'short' });
+                                                                const monthStr = format(date, 'MMM').toUpperCase();
                                                                 const hasPayment = invoices.some(inv =>
                                                                     ((inv.athlete_id || inv.user_id) === (m.athlete_id || m.user_id)) &&
                                                                     new Date(inv.created_at).getMonth() === date.getMonth() &&
@@ -1471,7 +1621,7 @@ export const Billing: React.FC = () => {
                                                                             hasPayment ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)] border-green-400" : "bg-muted border-border"
                                                                         )} />
                                                                         <span className={cn("text-[7px] uppercase font-bold tracking-tighter", offset === 0 ? "text-primary" : "text-muted-foreground")}>
-                                                                            {monthStr.toUpperCase()}
+                                                                            {monthStr}
                                                                         </span>
                                                                     </div>
                                                                 );
@@ -1506,7 +1656,7 @@ export const Billing: React.FC = () => {
                                                     <TableCell>
                                                         <div className="flex items-center gap-2 text-[11px] font-mono text-muted-foreground">
                                                             <Calendar className="h-3 w-3" />
-                                                            {m.end_date ? new Date(m.end_date).toLocaleDateString() : 'N/A'}
+                                                            {m.end_date ? m.end_date : 'N/A'}
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="text-right">
@@ -1545,7 +1695,7 @@ export const Billing: React.FC = () => {
                                     <PaginationBar
                                         currentPage={membershipsPage}
                                         totalPages={membershipsTotalPages}
-                                        totalItems={filteredMemberships.length}
+                                        totalItems={filteredMembershipsSearch.length}
                                         itemsPerPage={itemsPerPage}
                                         onPageChange={setMembershipsPage}
                                         t={t}

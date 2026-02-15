@@ -11,7 +11,8 @@ import {
     ShieldAlert,
     ChevronLeft,
     ChevronRight,
-    Loader2
+    Loader2,
+    KeyRound
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -62,7 +63,7 @@ interface MembersProps {
 
 export const Members: React.FC<MembersProps> = ({ userProfile }) => {
     const { t } = useLanguage();
-    const { currentBox } = useAuth();
+    const { currentBox, isAdmin, isRoot } = useAuth();
     const [members, setMembers] = useState<Profile[]>([]);
     const [loading, setLoading] = useState(true);
     const [open, setOpen] = useState(false);
@@ -96,7 +97,7 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
     const [selectedPlanId, setSelectedPlanId] = useState('');
     const [assigningPlan, setAssigningPlan] = useState(false);
     const itemsPerPage = 8;
-    const { notification, showNotification, hideNotification, confirmState, hideConfirm } = useNotification();
+    const { notification, showNotification, hideNotification, confirmState, showConfirm, hideConfirm } = useNotification();
 
     const filteredMembers = members.filter(member =>
         member.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -141,6 +142,30 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
         }
         if (!error && data) setMembers(data as any[]);
         setLoading(false);
+    };
+
+    const handleResetPassword = (memberId: string, memberName: string) => {
+        showConfirm({
+            title: t('members.reset_password_title', { defaultValue: 'Reset Password' }),
+            description: t('members.reset_password_confirm', { name: memberName, defaultValue: `The password for ${memberName} will be reset to 12345678. They will be required to change it on their next login.` }),
+            variant: 'default',
+            icon: 'warning',
+            onConfirm: async () => {
+                try {
+                    const { data, error } = await supabase.functions.invoke('reset-password', {
+                        body: { user_id: memberId }
+                    });
+
+                    if (error) throw error;
+                    if (data?.error) throw new Error(data.error);
+
+                    showNotification('success', t('members.reset_password_success', { defaultValue: 'PASSWORD RESET SUCCESSFULLY' }));
+                } catch (err: any) {
+                    console.error('Error resetting password:', err);
+                    showNotification('error', (err.message || 'Error').toUpperCase());
+                }
+            }
+        });
     };
 
     const handleQuickAssignPlan = async (memberId: string) => {
@@ -819,14 +844,34 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
                         </div>
 
                         <DialogFooter className="bg-muted/30 p-4 md:p-6 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-white/5">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setDetailsOpen(false)}
-                                className="text-[10px] font-black italic uppercase tracking-widest opacity-60 hover:opacity-100"
-                            >
-                                {t('common.cancel')}
-                            </Button>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setDetailsOpen(false)}
+                                    className="text-[10px] font-black italic uppercase tracking-widest opacity-60 hover:opacity-100"
+                                >
+                                    {t('common.cancel')}
+                                </Button>
+                                {(isAdmin || isRoot) && (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-9 gap-1.5 text-[9px] font-black italic uppercase tracking-widest border-amber-500/30 text-amber-500 hover:bg-amber-500/10 hover:text-amber-400"
+                                        onClick={() => {
+                                            if (selectedMember) {
+                                                handleResetPassword(
+                                                    selectedMember.id,
+                                                    `${selectedMember.first_name} ${selectedMember.last_name}`
+                                                );
+                                            }
+                                        }}
+                                    >
+                                        <KeyRound className="h-3.5 w-3.5" />
+                                        {t('members.reset_password', { defaultValue: 'Reset Password' })}
+                                    </Button>
+                                )}
+                            </div>
                             <Button
                                 variant="default"
                                 size="sm"

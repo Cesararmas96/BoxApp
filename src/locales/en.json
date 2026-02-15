@@ -599,6 +599,10 @@
         "contact_name": "Contact Name",
         "phone_number": "Phone Number",
         "no_date": "NO DATE",
+        "reset_password": "Reset Password",
+        "reset_password_title": "Reset Password",
+        "reset_password_confirm": "The password for {{name}} will be reset to 12345678. They will be required to change it on their next login.",
+        "reset_password_success": "PASSWORD RESET SUCCESSFULLY!",
         "member_details_desc": "View member details and information"
     },
     "schedule": {

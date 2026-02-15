@@ -599,6 +599,10 @@
         "contact_name": "Nombre de Contacto",
         "phone_number": "Número de Teléfono",
         "no_date": "SIN FECHA",
+        "reset_password": "Restablecer Contraseña",
+        "reset_password_title": "Restablecer Contraseña",
+        "reset_password_confirm": "La contraseña de {{name}} será restablecida a 12345678. Se le pedirá que la cambie en su próximo inicio de sesión.",
+        "reset_password_success": "¡CONTRASEÑA RESTABLECIDA EXITOSAMENTE!",
         "member_details_desc": "Ver detalles e información del miembro"
     },
     "schedule": {

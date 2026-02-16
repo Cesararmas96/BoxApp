@@ -852,16 +852,16 @@ export const Billing: React.FC = () => {
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 md:space-y-6">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">{t('billing.title')}</h1>
-                    <p className="text-muted-foreground text-sm">{t('billing.subtitle')}</p>
+                    <p className="text-muted-foreground text-xs sm:text-sm">{t('billing.subtitle')}</p>
                 </div>
                 
                 {/* Global Date Filter & Export */}
-                <div className="flex items-center gap-2 bg-muted/30 p-2 rounded-2xl border border-border/50">
-                    <div className="flex items-center gap-2 px-2 border-r border-border/50">
+                <div className="flex flex-col gap-2 w-full md:w-auto md:flex-row md:items-center bg-muted rounded-md p-1 border border-border">
+                    <div className="flex items-center gap-2 px-2 md:border-r md:border-border/50">
                         <Filter className="h-3.5 w-3.5 text-muted-foreground" />
                         <Input 
                             type="date" 
@@ -879,7 +879,7 @@ export const Billing: React.FC = () => {
                     </div>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 gap-2 text-[10px] uppercase font-bold tracking-widest">
+                            <Button variant="ghost" size="sm" className="h-9 md:h-8 gap-2 text-[10px] uppercase font-bold tracking-widest justify-center">
                                 <Download className="h-3.5 w-3.5" />
                                 {t('common.actions')}
                             </Button>

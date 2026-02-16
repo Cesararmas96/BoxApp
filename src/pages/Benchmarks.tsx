@@ -128,16 +128,16 @@ export const Benchmarks: React.FC = () => {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
+        <div className="space-y-4 md:space-y-6">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div>
-                    <h1 className="text-4xl font-black italic uppercase tracking-tighter">{t('benchmarks.title')}</h1>
-                    <p className="text-muted-foreground text-xs font-medium uppercase tracking-widest opacity-70">{t('benchmarks.subtitle')}</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t('benchmarks.title')}</h1>
+                    <p className="text-muted-foreground text-xs sm:text-sm">{t('benchmarks.subtitle')}</p>
                 </div>
 
                 <Dialog open={open} onOpenChange={setOpen}>
                     <DialogTrigger asChild>
-                        <Button className="gap-2 font-black uppercase tracking-widest text-[10px] py-6 px-8 rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 transition-all">
+                        <Button className="gap-2 w-full md:w-auto h-10 md:h-9 text-[10px] font-black uppercase tracking-widest">
                             <Plus className="h-4 w-4" /> {t('benchmarks.log_new')}
                         </Button>
                     </DialogTrigger>

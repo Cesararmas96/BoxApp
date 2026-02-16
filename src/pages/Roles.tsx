@@ -213,12 +213,12 @@ export const Roles: React.FC = () => {
     const isAdmin = userProfile?.role_id === 'admin';
 
     return (
-        <div className="space-y-6 text-left">
-            <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-black italic tracking-tighter uppercase text-primary flex items-center gap-3">
-                    <Shield className="h-8 w-8 text-primary" /> {t('roles.title')}
-                </h1>
-                <p className="text-muted-foreground">{t('roles.subtitle')}</p>
+        <div className="space-y-4 md:space-y-6 text-left">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t('roles.title')}</h1>
+                    <p className="text-muted-foreground text-xs sm:text-sm">{t('roles.subtitle')}</p>
+                </div>
             </div>
 
             {message && (

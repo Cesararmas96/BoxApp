@@ -260,16 +260,11 @@ export const Profile: React.FC = () => {
     };
 
     return (
-        <div className="space-y-8 max-w-5xl mx-auto px-4 py-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                    <div className="p-4 bg-primary/10 rounded-2xl border border-primary/20">
-                        <UserIcon className="h-8 w-8 text-primary" />
-                    </div>
-                    <div>
-                        <h1 className="text-4xl font-black italic tracking-tighter text-foreground uppercase">{t('profile.title')}</h1>
-                        <p className="text-muted-foreground text-sm font-bold uppercase tracking-widest">{t('profile.subtitle')}</p>
-                    </div>
+        <div className="space-y-4 md:space-y-6">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t('profile.title')}</h1>
+                    <p className="text-muted-foreground text-xs sm:text-sm">{t('profile.subtitle')}</p>
                 </div>
             </div>
 

@@ -309,23 +309,23 @@ export const Members: React.FC<MembersProps> = ({ userProfile }) => {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
             {/* Header */}
-            <div className="flex flex-col gap-4 md:gap-6 md:flex-row md:items-end md:justify-between mb-4 md:mb-10">
-                <div className="space-y-1">
-                    <h1 className="text-3xl md:text-4xl font-black italic tracking-tighter uppercase text-glow">{t('members.title')}</h1>
-                    <p className="text-muted-foreground/60 text-xs font-bold uppercase tracking-[0.3em]">{t('members.subtitle')}</p>
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t('members.title')}</h1>
+                    <p className="text-muted-foreground text-xs sm:text-sm">{t('members.subtitle')}</p>
                 </div>
 
                 {userProfile?.role_id === 'admin' && (
                     <Dialog open={open} onOpenChange={setOpen}>
                         <DialogTrigger asChild>
-                            <Button className="h-12 md:h-14 px-8 rounded-2xl shadow-xl shadow-primary/20 group w-full md:w-auto">
-                                <UserPlus className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                                <span className="ml-2 font-black italic uppercase tracking-wider">{t('members.add_btn')}</span>
+                            <Button className="gap-2 w-full md:w-auto h-10 md:h-9 text-[10px] font-black uppercase tracking-widest">
+                                <UserPlus className="h-4 w-4" />
+                                {t('members.add_btn')}
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+                        <DialogContent className="sm:max-w-[520px] border-border glass rounded-3xl p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
                                 <DialogTitle>{t('members.new_title')}</DialogTitle>
                                 <DialogDescription>

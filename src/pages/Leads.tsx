@@ -312,25 +312,21 @@ export const Leads: React.FC = () => {
     };
 
     return (
-        <div className="space-y-6 md:space-y-8 pb-12">
+        <div className="space-y-4 md:space-y-6 pb-12">
             {/* Header */}
-            <div className="flex flex-col gap-4 md:gap-6 md:flex-row md:items-end md:justify-between">
-                <div className="space-y-1">
-                    <h1 className="text-3xl md:text-5xl font-black italic tracking-tighter uppercase text-glow">
-                        Growth <span className="text-primary not-italic">Pipeline</span>
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                        {t('leads.title', { defaultValue: 'Growth Pipeline' })}
                     </h1>
-                    <p className="text-muted-foreground/80 text-xs md:text-sm font-medium tracking-wide max-w-lg">
-                        {t('leads.subtitle')}
-                    </p>
+                    <p className="text-muted-foreground text-xs sm:text-sm">{t('leads.subtitle')}</p>
                 </div>
 
                 <Dialog open={open} onOpenChange={setOpen}>
                     <DialogTrigger asChild>
-                        <Button size="lg" className="shadow-2xl shadow-primary/20 gap-3 group px-8 w-full md:w-auto">
-                            <div className="p-1 bg-white/20 rounded-lg group-hover:scale-110 transition-transform">
-                                <UserPlus className="h-5 w-5" />
-                            </div>
-                            <span className="font-black italic uppercase tracking-widest text-xs">{t('leads.acquire_lead')}</span>
+                        <Button className="gap-2 w-full md:w-auto h-10 md:h-9">
+                            <UserPlus className="h-4 w-4" />
+                            {t('leads.acquire_lead')}
                         </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-[480px] max-h-[90vh] overflow-y-auto p-0 overflow-hidden border-border glass rounded-[2rem] md:rounded-[2.5rem]">

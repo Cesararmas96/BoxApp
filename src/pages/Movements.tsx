@@ -264,40 +264,48 @@ export const Movements: React.FC = () => {
     const totalPages = Math.ceil(filteredMovements.length / itemsPerPage);
 
     return (
-        <div className="space-y-6 text-left">
-            <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div className="space-y-1">
-                    <h1 className="text-3xl font-bold italic tracking-tighter uppercase text-primary flex items-center gap-2">
-                        <Dumbbell className="h-8 w-8 text-primary" /> {t('movements.title', { defaultValue: 'MOVEMENTS LIBRARY' })}
-                    </h1>
-                    <p className="text-muted-foreground text-sm font-bold uppercase italic opacity-70">
-                        {t('movements.subtitle', { defaultValue: 'Manage all exercises and movements' })}
-                    </p>
+        <div className="space-y-4 md:space-y-6 text-left">
+            <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t('movements.title', { defaultValue: 'MOVEMENTS LIBRARY' })}</h1>
+                    <p className="text-muted-foreground text-xs sm:text-sm">{t('movements.subtitle', { defaultValue: 'Manage all exercises and movements' })}</p>
                 </div>
 
-                <Dialog open={showEditor} onOpenChange={(open) => {
-                    setShowEditor(open);
-                    if (!open) {
-                        setEditingMovement(null);
-                        setFormData({ name: '', category: 'Weightlifting', demo_url: '', image_url: '' });
-                    }
-                }}>
-                    <DialogTrigger asChild>
-                        <Button className="gap-2 font-black uppercase italic shadow-lg shadow-primary/20">
-                            <Plus className="h-4 w-4" /> {t('movements.new', { defaultValue: 'NEW MOVEMENT' })}
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent shadow-none className="border bg-background/95 backdrop-blur-md">
-                        <DialogHeader>
-                            <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter flex items-center gap-2">
-                                <Zap className="h-6 w-6 text-primary" />
-                                {editingMovement ? 'EDIT MOVEMENT' : 'CREATE MOVEMENT'}
-                            </DialogTitle>
-                            <DialogDescription className="sr-only">
-                                {editingMovement ? `Editing ${editingMovement.name}` : 'Create a new movement in the library'}
-                            </DialogDescription>
-                        </DialogHeader>
-                        <form onSubmit={handleSave} className="space-y-4 pt-4">
+                <div className="flex flex-col gap-2 w-full md:w-auto md:flex-row md:items-center">
+                    <div className="relative flex items-center bg-muted rounded-md p-1 w-full md:w-[300px]">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Search movement..."
+                            className="h-10 md:h-9 pl-9 text-xs font-bold uppercase italic bg-transparent border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+
+                    <Dialog open={showEditor} onOpenChange={(open) => {
+                        setShowEditor(open);
+                        if (!open) {
+                            setEditingMovement(null);
+                            setFormData({ name: '', category: 'Weightlifting', demo_url: '', image_url: '' });
+                        }
+                    }}>
+                        <DialogTrigger asChild>
+                            <Button className="gap-2 w-full md:w-auto h-10 md:h-9 text-[10px] font-black uppercase tracking-widest">
+                                <Plus className="h-4 w-4" /> {t('movements.new', { defaultValue: 'NEW MOVEMENT' })}
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[520px] rounded-3xl border-border bg-card backdrop-blur-2xl shadow-2xl p-4 sm:p-6">
+                            <DialogHeader className="mb-6">
+                                <DialogTitle className="text-3xl font-black italic uppercase tracking-tighter text-foreground flex items-center gap-2">
+                                    <Dumbbell className="h-6 w-6 text-primary" />
+                                    {editingMovement ? 'EDIT MOVEMENT' : 'CREATE MOVEMENT'}
+                                </DialogTitle>
+                                <DialogDescription className="text-muted-foreground text-[10px] font-black uppercase tracking-widest mt-1">
+                                    {editingMovement ? `Editing ${editingMovement.name}` : 'Create a new movement in the library'}
+                                </DialogDescription>
+                            </DialogHeader>
+
+                            <form onSubmit={handleSave} className="space-y-4">
                             <div className="space-y-2">
                                 <Label className="uppercase text-[10px] font-black tracking-widest opacity-70">NAME</Label>
                                 <Input
@@ -367,7 +375,7 @@ export const Movements: React.FC = () => {
                                             </button>
                                             <button
                                                 type="button"
-                                                className="absolute bottom-2 right-2 h-7 px-2.5 rounded-full bg-muted/300 backdrop-blur-md text-foreground flex items-center justify-center gap-1.5 opacity-0 group-hover/img:opacity-100 transition-all text-[8px] font-black uppercase tracking-widest hover:bg-black/70"
+                                                className="absolute bottom-2 right-2 h-7 px-2.5 rounded-full bg-muted/80 backdrop-blur-md text-foreground flex items-center justify-center gap-1.5 opacity-0 group-hover/img:opacity-100 transition-all text-[8px] font-black uppercase tracking-widest hover:bg-muted"
                                                 onClick={(e) => { e.stopPropagation(); imageInputRef.current?.click(); }}
                                             >
                                                 <Upload className="h-3 w-3" /> Change
@@ -393,22 +401,13 @@ export const Movements: React.FC = () => {
                             <Button type="submit" className="w-full font-black uppercase italic h-12 text-lg shadow-xl shadow-primary/20" disabled={loading}>
                                 {loading ? <Loader2 className="animate-spin h-5 w-5" /> : 'SAVE MOVEMENT'}
                             </Button>
-                        </form>
-                    </DialogContent>
-                </Dialog>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
+                </div>
             </header>
 
-            <div className="relative w-full max-w-sm group">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                <Input
-                    placeholder="Search movement..."
-                    className="pl-10 h-11 text-xs font-bold uppercase italic bg-muted/20 border-muted-foreground/10 focus-visible:ring-primary"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
                 {loading && movements.length === 0 ? (
                     <div className="col-span-full py-20 flex flex-col items-center gap-4 opacity-50">
                         <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -418,11 +417,11 @@ export const Movements: React.FC = () => {
                     paginatedMovements.map(m => (
                         <Card
                             key={m.id}
-                            className="group relative overflow-hidden cursor-pointer border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-background/60 backdrop-blur-sm"
+                            className="group glass overflow-hidden transition-all duration-500 border border-border cursor-pointer opacity-90 hover:opacity-100 hover:scale-[1.01] active:scale-[0.98]"
                             onClick={() => setSelectedMovement(m)}
                         >
                             {/* Image area */}
-                            <div className="relative h-40 w-full bg-gradient-to-br from-muted/20 to-muted/5 overflow-hidden rounded-2xl">
+                            <div className="relative h-36 sm:h-40 w-full bg-gradient-to-br from-muted/20 to-muted/5 overflow-hidden rounded-2xl">
                                 <img
                                     src={resolveMovementImage(m.name, m.image_url, m.category || 'Other')}
                                     alt={m.name}
@@ -498,19 +497,26 @@ export const Movements: React.FC = () => {
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-                <div className="flex items-center justify-between gap-4 mt-8 bg-muted/20 p-4 rounded-2xl border border-muted-foreground/10">
-                    <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mt-6 md:mt-8 bg-muted rounded-md p-1 border border-border">
+                    <div className="flex items-center justify-between gap-2 w-full sm:w-auto">
                         <Button
                             variant="outline"
                             size="sm"
                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                             disabled={currentPage === 1}
-                            className="h-9 px-3 font-bold uppercase text-[10px] tracking-widest gap-2 italic"
+                            className="h-10 sm:h-9 px-3 font-bold uppercase text-[10px] tracking-widest gap-2 italic flex-1 sm:flex-none"
                         >
                             <ChevronLeft className="h-4 w-4" />
                             {t('common.previous', { defaultValue: 'PREVIOUS' })}
                         </Button>
-                        <div className="flex items-center gap-1">
+
+                        <div className="sm:hidden px-2">
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70 italic whitespace-nowrap">
+                                {t('common.page', { defaultValue: 'PAGE' })} <span className="text-primary">{currentPage}</span> / {totalPages}
+                            </p>
+                        </div>
+
+                        <div className="hidden sm:flex items-center gap-1">
                             {[...Array(totalPages)].map((_, i) => {
                                 const pageNumber = i + 1;
                                 if (
@@ -543,7 +549,7 @@ export const Movements: React.FC = () => {
                             size="sm"
                             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                             disabled={currentPage === totalPages}
-                            className="h-9 px-3 font-bold uppercase text-[10px] tracking-widest gap-2 italic"
+                            className="h-10 sm:h-9 px-3 font-bold uppercase text-[10px] tracking-widest gap-2 italic flex-1 sm:flex-none"
                         >
                             {t('common.next', { defaultValue: 'NEXT' })}
                             <ChevronRight className="h-4 w-4" />
@@ -559,7 +565,7 @@ export const Movements: React.FC = () => {
 
             {/* Movement Detail Modal */}
             <Dialog open={!!selectedMovement} onOpenChange={(open) => { if (!open) setSelectedMovement(null); }}>
-                <DialogContent className="sm:max-w-lg border-0 bg-background/95 backdrop-blur-xl shadow-2xl p-0 overflow-hidden">
+                <DialogContent className="sm:max-w-lg border-border glass rounded-3xl shadow-2xl p-0 overflow-hidden max-h-[90vh] overflow-y-auto">
                     <DialogHeader className="sr-only">
                         <DialogTitle>{selectedMovement?.name || 'Movement Detail'}</DialogTitle>
                         <DialogDescription>Detailed view of the {selectedMovement?.name} movement</DialogDescription>
@@ -568,7 +574,7 @@ export const Movements: React.FC = () => {
                     {selectedMovement && (
                         <div>
                             {/* Image section */}
-                            <div className="relative h-64 w-full bg-gradient-to-br from-muted/20 to-muted/5">
+                            <div className="relative h-56 sm:h-64 w-full bg-gradient-to-br from-muted/20 to-muted/5">
                                 <img
                                     src={resolveMovementImage(selectedMovement.name, selectedMovement.image_url, selectedMovement.category || 'Other')}
                                     alt={selectedMovement.name}
@@ -584,7 +590,7 @@ export const Movements: React.FC = () => {
                             </div>
 
                             {/* Info section */}
-                            <div className="p-6 space-y-4">
+                            <div className="p-4 sm:p-6 space-y-4">
                                 <h2 className="text-2xl font-black uppercase italic tracking-tighter">{selectedMovement.name}</h2>
 
                                 {selectedMovement.demo_url && (
@@ -599,10 +605,10 @@ export const Movements: React.FC = () => {
                                     </a>
                                 )}
 
-                                <div className="flex gap-2 pt-2">
+                                <div className="flex flex-col sm:flex-row gap-2 pt-2">
                                     <Button
                                         variant="outline"
-                                        className="flex-1 gap-2 font-bold uppercase italic text-xs h-10"
+                                        className="flex-1 gap-2 font-bold uppercase italic text-xs h-11 sm:h-10"
                                         onClick={() => {
                                             setEditingMovement(selectedMovement);
                                             setFormData({ name: selectedMovement.name, category: selectedMovement.category || 'Other', demo_url: selectedMovement.demo_url || '', image_url: selectedMovement.image_url || '' });
@@ -614,7 +620,7 @@ export const Movements: React.FC = () => {
                                     </Button>
                                     <Button
                                         variant="outline"
-                                        className="gap-2 font-bold uppercase italic text-xs h-10 text-destructive hover:bg-destructive/10 border-destructive/20"
+                                        className="gap-2 font-bold uppercase italic text-xs h-11 sm:h-10 text-destructive hover:bg-destructive/10 border-destructive/20"
                                         onClick={() => {
                                             setSelectedMovement(null);
                                             showConfirm({

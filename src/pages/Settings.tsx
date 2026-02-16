@@ -9,7 +9,6 @@ import {
     Zap,
     Feather,
     Square,
-    Settings as SettingsIcon,
     Upload,
     Loader2,
     Menu,
@@ -346,14 +345,11 @@ export const Settings: React.FC = () => {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center gap-4">
-                <div className="p-3 bg-primary/10 rounded-2xl">
-                    <SettingsIcon className="h-8 w-8 text-primary" />
-                </div>
+        <div className="space-y-4 md:space-y-6">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">{t('settings.title')}</h1>
-                    <p className="text-muted-foreground text-sm">{t('settings.subtitle')}</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t('settings.title')}</h1>
+                    <p className="text-muted-foreground text-xs sm:text-sm">{t('settings.subtitle')}</p>
                 </div>
             </div>
 

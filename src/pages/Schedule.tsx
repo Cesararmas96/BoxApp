@@ -75,6 +75,14 @@ export const Schedule: React.FC = () => {
         }
     }, [viewDate, currentBox?.id]);
 
+    // Keep selected day pill visible on small screens
+    useEffect(() => {
+        const el = dayScrollRef.current;
+        if (!el) return;
+        const btn = el.querySelector<HTMLButtonElement>(`button[data-day-index="${selectedDayIndex}"]`);
+        btn?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }, [selectedDayIndex]);
+
     // Sync mobile day selector when navigating weeks
     useEffect(() => {
         const today = new Date();
@@ -215,27 +223,27 @@ export const Schedule: React.FC = () => {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-4 md:space-y-6">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">{t('schedule.title')}</h1>
-                    <p className="text-muted-foreground text-sm">{t('schedule.subtitle')}</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t('schedule.title')}</h1>
+                    <p className="text-muted-foreground text-xs sm:text-sm">{t('schedule.subtitle')}</p>
                 </div>
 
-                <div className="flex items-center gap-2">
-                    <div className="flex items-center bg-muted rounded-md p-1">
-                        <Button variant="ghost" size="icon" onClick={() => {
+                <div className="flex flex-col gap-2 w-full md:w-auto md:flex-row md:items-center">
+                    <div className="flex items-center bg-muted rounded-md p-1 w-full md:w-auto">
+                        <Button variant="ghost" size="icon" className="h-10 w-10 md:h-9 md:w-9" onClick={() => {
                             const d = new Date(viewDate);
                             d.setDate(d.getDate() - 7);
                             setViewDate(d);
                         }}>
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
-                        <span className="px-4 text-sm font-medium">
+                        <span className="flex-1 px-2 md:px-4 text-xs md:text-sm font-medium text-center whitespace-nowrap">
                             {getDatesOfWeek()[0].toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} -
                             {getDatesOfWeek()[5].toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                         </span>
-                        <Button variant="ghost" size="icon" onClick={() => {
+                        <Button variant="ghost" size="icon" className="h-10 w-10 md:h-9 md:w-9" onClick={() => {
                             const d = new Date(viewDate);
                             d.setDate(d.getDate() + 7);
                             setViewDate(d);
@@ -244,34 +252,35 @@ export const Schedule: React.FC = () => {
                         </Button>
                     </div>
 
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 px-3 text-[10px] font-black uppercase tracking-widest border-primary/20 text-primary hover:bg-primary/10"
-                        onClick={() => setViewDate(new Date())}
-                    >
-                        <Zap className="h-3 w-3 mr-1" />
-                        {t('schedule.today', { defaultValue: 'Today' })}
-                    </Button>
+                    <div className="grid grid-cols-2 gap-2 w-full md:w-auto md:flex md:items-center">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-10 md:h-8 w-full px-3 text-[10px] font-black uppercase tracking-widest border-primary/20 text-primary hover:bg-primary/10"
+                            onClick={() => setViewDate(new Date())}
+                        >
+                            <Zap className="h-3 w-3 mr-1" />
+                            {t('schedule.today', { defaultValue: 'Today' })}
+                        </Button>
 
-                    <Dialog open={isCreateOpen} onOpenChange={(open) => {
-                        setIsCreateOpen(open);
-                        if (open) setSelectedViewerDate(new Date());
-                    }}>
-                        <DialogTrigger asChild>
-                            <Button className="gap-2">
-                                <Plus className="h-4 w-4" /> {t('schedule.program_btn')}
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[700px] rounded-3xl border-border bg-card backdrop-blur-2xl shadow-2xl p-6">
-                            <DialogHeader className="mb-6">
-                                <DialogTitle className="text-3xl font-black italic uppercase tracking-tighter text-foreground">
-                                    {t('schedule.programming_viewer', { defaultValue: 'PROGRAMMING VIEWER' })}
-                                </DialogTitle>
-                                <DialogDescription className="text-muted-foreground text-[10px] font-black uppercase tracking-widest mt-1">
-                                    Manage and assign WODs to specific tracks
-                                </DialogDescription>
-                            </DialogHeader>
+                        <Dialog open={isCreateOpen} onOpenChange={(open) => {
+                            setIsCreateOpen(open);
+                            if (open) setSelectedViewerDate(new Date());
+                        }}>
+                            <DialogTrigger asChild>
+                                <Button className="gap-2 h-10 md:h-9 w-full md:w-auto">
+                                    <Plus className="h-4 w-4" /> {t('schedule.program_btn')}
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[700px] rounded-3xl border-border bg-card backdrop-blur-2xl shadow-2xl p-4 sm:p-6">
+                                <DialogHeader className="mb-6">
+                                    <DialogTitle className="text-3xl font-black italic uppercase tracking-tighter text-foreground">
+                                        {t('schedule.programming_viewer', { defaultValue: 'PROGRAMMING VIEWER' })}
+                                    </DialogTitle>
+                                    <DialogDescription className="text-muted-foreground text-[10px] font-black uppercase tracking-widest mt-1">
+                                        Manage and assign WODs to specific tracks
+                                    </DialogDescription>
+                                </DialogHeader>
 
                             {/* Day Selector within Modal - Enhanced touch targets */}
                             <div className="flex items-center justify-between bg-muted p-1.5 rounded-2xl border border-border mb-8 shadow-inner gap-1">
@@ -417,13 +426,17 @@ export const Schedule: React.FC = () => {
                                 <Button variant="outline" className="w-full rounded-2xl border-border h-12 uppercase font-black tracking-widest text-[10px]" onClick={() => setIsCreateOpen(false)}>{t('common.close', { defaultValue: 'CLOSE' })}</Button>
                             </DialogFooter>
                         </DialogContent>
-                    </Dialog>
+                        </Dialog>
+                    </div>
                 </div>
             </div>
 
             {/* Mobile Day Selector Pills */}
-            <div className="md:hidden" ref={dayScrollRef}>
-                <div className="flex items-center bg-muted/30 p-1.5 rounded-2xl border border-border gap-1">
+            <div className="md:hidden">
+                <div
+                    ref={dayScrollRef}
+                    className="flex items-center bg-muted/30 p-1.5 rounded-2xl border border-border gap-1 overflow-x-auto"
+                >
                     {getDatesOfWeek().map((date, i) => {
                         const isToday = date.toDateString() === new Date().toDateString();
                         const isSelected = selectedDayIndex === i;
@@ -434,9 +447,10 @@ export const Schedule: React.FC = () => {
                         return (
                             <button
                                 key={i}
+                                data-day-index={i}
                                 onClick={() => setSelectedDayIndex(i)}
                                 className={cn(
-                                    "flex-1 min-w-[48px] py-2.5 rounded-xl transition-all duration-300 flex flex-col items-center gap-0.5 relative",
+                                    "flex-none w-[56px] min-h-[52px] py-2 rounded-xl transition-all duration-300 flex flex-col items-center justify-center gap-0.5 relative active:scale-[0.98]",
                                     isSelected
                                         ? "bg-primary text-foreground shadow-lg shadow-primary/20 scale-[1.05] z-10"
                                         : isToday
@@ -458,7 +472,7 @@ export const Schedule: React.FC = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-4 md:gap-6">
                 {getDatesOfWeek().map((date, i) => {
                     const isToday = date.toDateString() === new Date().toDateString();
                     const daySessions = sessions.filter(s => new Date(s.start_time).toDateString() === date.toDateString());
@@ -481,7 +495,7 @@ export const Schedule: React.FC = () => {
                                     {date.getDate()}
                                 </p>
                             </CardHeader>
-                            <CardContent className="p-3 space-y-4 min-h-[300px] flex flex-col">
+                            <CardContent className="p-3 space-y-4 min-h-[260px] md:min-h-[300px] flex flex-col">
                                 {loading ? (
                                     <div className="animate-pulse space-y-3">
                                         <div className="h-20 bg-muted/50 rounded-2xl" />
@@ -751,7 +765,7 @@ export const Schedule: React.FC = () => {
 
             {/* Assign WOD Dialog */}
             <Dialog open={!!isAssigningWod} onOpenChange={(open) => !open && setIsAssigningWod(null)}>
-                <DialogContent className="sm:max-w-[450px] border-border glass rounded-3xl p-6">
+                <DialogContent className="sm:max-w-[450px] border-border glass rounded-3xl p-4 sm:p-6">
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-black uppercase italic tracking-tight text-primary">Assign Programming</DialogTitle>
                         <DialogDescription className="text-[10px] font-bold uppercase opacity-60">

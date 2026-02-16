@@ -128,21 +128,17 @@ export const Competitions: React.FC = () => {
     };
 
     return (
-        <div className="p-6 lg:p-10 space-y-10 max-w-7xl mx-auto pb-20">
-            <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div className="space-y-2">
-                    <h1 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter text-foreground leading-none">
-                        {t('competitions.title')}
-                    </h1>
-                    <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] text-muted-foreground/60 px-1">
-                        {t('competitions.subtitle')}
-                    </p>
+        <div className="space-y-4 md:space-y-6 pb-12">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t('competitions.title')}</h1>
+                    <p className="text-muted-foreground text-xs sm:text-sm">{t('competitions.subtitle')}</p>
                 </div>
 
                 <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                     <DialogTrigger asChild>
-                        <Button className="h-14 px-8 rounded-2xl gap-3 shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] font-black uppercase tracking-widest text-xs">
-                            <Plus className="h-5 w-5" />
+                        <Button className="gap-2 w-full md:w-auto h-10 md:h-9 text-[10px] font-black uppercase tracking-widest">
+                            <Plus className="h-4 w-4" />
                             {t('competitions.create_btn')}
                         </Button>
                     </DialogTrigger>
@@ -206,7 +202,7 @@ export const Competitions: React.FC = () => {
                         </form>
                     </DialogContent>
                 </Dialog>
-            </header>
+            </div>
 
             <Tabs defaultValue="active" className="w-full" onValueChange={() => setCurrentPage(1)}>
                 <TabsList className="bg-transparent border-b rounded-none h-12 p-0 gap-8">

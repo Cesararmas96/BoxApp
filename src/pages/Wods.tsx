@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import {
     Plus,
     Trophy,
-    Activity,
     Timer,
     Target,
     Loader2,
@@ -460,19 +459,14 @@ export const Wods: React.FC = () => {
     }, [wods, newWOD.modalities, newWOD.track, newWOD.date, editingWodId]);
 
     return (
-        <div className="space-y-6 text-left">
-            <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div className="space-y-2">
-                    <h1 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter text-foreground leading-none flex items-center gap-4">
-                        <Activity className="h-8 w-8 md:h-12 md:w-12 text-primary" />
-                        {t('wods.title')}
-                    </h1>
-                    <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] text-muted-foreground/60 px-1">
-                        {t('wods.subtitle')}
-                    </p>
+        <div className="space-y-4 md:space-y-6 text-left">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t('wods.title')}</h1>
+                    <p className="text-muted-foreground text-xs sm:text-sm">{t('wods.subtitle')}</p>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2 w-full md:w-auto md:flex-row md:items-center">
                     <Dialog open={showEditor} onOpenChange={(open) => {
                         if (open && !editingWodId) {
                             const now = new Date();
@@ -496,8 +490,8 @@ export const Wods: React.FC = () => {
                         }
                     }}>
                         <DialogTrigger asChild>
-                            <Button className="h-14 px-8 rounded-2xl gap-3 shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] font-black uppercase tracking-widest text-xs">
-                                <Plus className="h-5 w-5" />
+                            <Button className="gap-2 w-full md:w-auto h-10 md:h-9 text-[10px] font-black uppercase tracking-widest">
+                                <Plus className="h-4 w-4" />
                                 {t('wods.new_session')}
                             </Button>
                         </DialogTrigger>
@@ -652,7 +646,7 @@ export const Wods: React.FC = () => {
                         </DialogContent>
                     </Dialog>
                 </div>
-            </header>
+            </div>
 
             {/* Quick Actions & Filters Bar */}
             <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between bg-muted/50 p-2 rounded-[2rem] border border-border" >

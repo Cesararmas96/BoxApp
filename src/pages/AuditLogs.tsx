@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import {
-    History,
     Search,
     ChevronDown,
     ChevronUp,
@@ -111,33 +110,33 @@ export const AuditLogs: React.FC = () => {
     const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-black italic tracking-tighter uppercase text-primary flex items-center gap-3">
-                    <History className="h-8 w-8 text-primary" /> {t('audit.title')}
-                </h1>
-                <p className="text-muted-foreground">{t('audit.subtitle')}</p>
+        <div className="space-y-4 md:space-y-6">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t('audit.title')}</h1>
+                    <p className="text-muted-foreground text-xs sm:text-sm">{t('audit.subtitle')}</p>
+                </div>
             </div>
 
-            <Card className="border shadow-xl">
-                <CardHeader className="pb-3 border-b bg-muted/20">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <Card className="glass overflow-hidden border-border">
+                <CardHeader className="pb-3 border-b border-border bg-muted/20">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                         <div className="space-y-1 w-full">
                             <CardTitle className="text-lg font-bold uppercase tracking-tight italic">{t('audit.pipeline')}</CardTitle>
                             <CardDescription>{t('audit.realtime')}</CardDescription>
                         </div>
-                        <div className="flex items-center gap-2 w-full md:max-w-md">
-                            <div className="relative flex-1">
-                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <div className="flex flex-col gap-2 w-full md:w-auto md:flex-row md:items-center">
+                            <div className="relative flex items-center bg-muted rounded-md p-1 w-full md:w-[360px]">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     type="search"
                                     placeholder={t('audit.filter_placeholder')}
-                                    className="pl-8 focus-visible:ring-primary"
+                                    className="h-10 md:h-9 pl-9 bg-transparent border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
                             </div>
-                            <Button variant="outline" size="icon" onClick={fetchLogs} disabled={loading}>
+                            <Button variant="outline" size="icon" className="h-10 w-10 md:h-9 md:w-9" onClick={fetchLogs} disabled={loading}>
                                 <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                             </Button>
                         </div>

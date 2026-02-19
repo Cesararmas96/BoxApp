@@ -20,6 +20,7 @@ import { Movements } from './pages/Movements';
 import { Profile } from './pages/Profile';
 import { LiveLeaderboard } from './pages/LiveLeaderboard';
 import { ForceChangePassword } from './pages/ForceChangePassword';
+import { SuperAdmin } from './pages/SuperAdmin';
 import { ThemeProvider, useTheme } from './components/theme-provider';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -81,8 +82,10 @@ function AppContent() {
         <Route path="/" element={hasOAuthHash ? <AuthCallback /> : <Navigate to="/login" replace />} />
         {/* Multi-tenant: box-specific login via slug */}
         <Route path="/box/:boxSlug" element={<Login />} />
-        {/* Default login (resolves first box for backward compat) */}
+        {/* Default login — also used by super-admin */}
         <Route path="/login" element={<Login />} />
+        {/* Admin route redirects to login when unauthenticated */}
+        <Route path="/admin" element={<Navigate to="/login" replace />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     );
@@ -92,11 +95,25 @@ function AppContent() {
     return <ForceChangePassword />;
   }
 
+  // Super-admin: root user sees the admin panel
+  const isSuperAdmin = session?.user?.email === 'root@test.com' || session?.user?.user_metadata?.is_root === true;
+
   return (
     <Routes>
+      {/* ── Super-admin panel ── */}
+      <Route
+        path="/admin"
+        element={
+          isSuperAdmin ? <SuperAdmin /> : <Navigate to="/dashboard" replace />
+        }
+      />
+
       {/* Standalone pages */}
       <Route path="/box-display" element={<BoxDisplay />} />
       <Route path="/competitions/:id/live" element={<LiveLeaderboard />} />
+
+      {/* Multi-tenant: box-specific login (redirect to dashboard if already logged in) */}
+      <Route path="/box/:boxSlug" element={<Navigate to="/dashboard" replace />} />
 
       {/* Layout wrapper pages */}
       <Route element={<MainLayout userProfile={userProfile} />}>
@@ -171,9 +188,9 @@ function AppContent() {
         />
         <Route path="/profile" element={<Profile />} />
 
-        {/* Default Redirect */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        {/* Default Redirect — root goes to admin panel, others to dashboard */}
+        <Route path="/" element={<Navigate to={isSuperAdmin ? '/admin' : '/dashboard'} replace />} />
+        <Route path="*" element={<Navigate to={isSuperAdmin ? '/admin' : '/dashboard'} replace />} />
       </Route>
     </Routes>
   );

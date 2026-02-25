@@ -17,6 +17,8 @@ import {
     ChevronRight,
     X,
     ExternalLink,
+    Play,
+    Image,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,6 +46,7 @@ import { useNotification, useLanguage } from '@/hooks';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Toast } from '@/components/ui/toast-custom';
 import { resolveMovementImage } from '@/lib/movementImages';
+import { resolveVideoEmbed } from '@/lib/videoEmbed';
 
 interface Movement {
     id: string;
@@ -134,6 +137,7 @@ export const Movements: React.FC = () => {
     const [showEditor, setShowEditor] = useState(false);
     const [editingMovement, setEditingMovement] = useState<Movement | null>(null);
     const [selectedMovement, setSelectedMovement] = useState<Movement | null>(null);
+    const [detailTab, setDetailTab] = useState<'image' | 'video'>('image');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 12;
     const [formData, setFormData] = useState({
@@ -392,11 +396,43 @@ export const Movements: React.FC = () => {
                             <div className="space-y-2">
                                 <Label className="uppercase text-[10px] font-black tracking-widest opacity-70">DEMO URL (OPTIONAL)</Label>
                                 <Input
-                                    placeholder="https://..."
+                                    placeholder="https://youtube.com/watch?v=..."
                                     className="italic font-bold h-12 bg-muted/20 border-muted-foreground/10 focus-visible:ring-primary"
                                     value={formData.demo_url}
                                     onChange={e => setFormData({ ...formData, demo_url: e.target.value })}
                                 />
+                                {(() => {
+                                    const preview = resolveVideoEmbed(formData.demo_url);
+                                    if (!preview.thumbnailUrl && preview.type !== 'vimeo' && preview.type !== 'direct') return null;
+                                    return (
+                                        <div className="relative w-full rounded-xl overflow-hidden border border-muted-foreground/10 bg-muted/10">
+                                            {preview.thumbnailUrl ? (
+                                                <div className="relative">
+                                                    <img
+                                                        src={preview.thumbnailUrl}
+                                                        alt="Video preview"
+                                                        className="w-full aspect-video object-cover"
+                                                    />
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                                                        <div className="h-10 w-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
+                                                            <Play className="h-5 w-5 fill-white text-white ml-0.5" />
+                                                        </div>
+                                                    </div>
+                                                    <span className="absolute bottom-2 left-2 text-[8px] font-black uppercase tracking-widest bg-black/60 text-white px-2 py-0.5 rounded-full">
+                                                        {preview.type === 'youtube' ? 'YouTube' : preview.type === 'vimeo' ? 'Vimeo' : 'Video'}
+                                                    </span>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-3 px-4 py-3">
+                                                    <Play className="h-4 w-4 text-primary" />
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                                                        {preview.type === 'vimeo' ? 'Vimeo video detected' : 'Direct video detected'}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
                             </div>
                             <Button type="submit" className="w-full font-black uppercase italic h-12 text-lg shadow-xl shadow-primary/20" disabled={loading}>
                                 {loading ? <Loader2 className="animate-spin h-5 w-5" /> : 'SAVE MOVEMENT'}
@@ -564,80 +600,147 @@ export const Movements: React.FC = () => {
             )}
 
             {/* Movement Detail Modal */}
-            <Dialog open={!!selectedMovement} onOpenChange={(open) => { if (!open) setSelectedMovement(null); }}>
+            <Dialog open={!!selectedMovement} onOpenChange={(open) => {
+                if (!open) {
+                    setSelectedMovement(null);
+                    setDetailTab('image');
+                }
+            }}>
                 <DialogContent className="sm:max-w-lg border-border glass rounded-3xl shadow-2xl p-0 overflow-hidden max-h-[90vh] overflow-y-auto">
                     <DialogHeader className="sr-only">
                         <DialogTitle>{selectedMovement?.name || 'Movement Detail'}</DialogTitle>
                         <DialogDescription>Detailed view of the {selectedMovement?.name} movement</DialogDescription>
                     </DialogHeader>
 
-                    {selectedMovement && (
-                        <div>
-                            {/* Image section */}
-                            <div className="relative h-56 sm:h-64 w-full bg-gradient-to-br from-muted/20 to-muted/5">
-                                <img
-                                    src={resolveMovementImage(selectedMovement.name, selectedMovement.image_url, selectedMovement.category || 'Other')}
-                                    alt={selectedMovement.name}
-                                    className="w-full h-full object-contain p-6"
-                                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                                />
-                                <div className={`absolute top-4 left-4 px-3 py-1 rounded-full bg-gradient-to-r ${CATEGORY_COLORS[selectedMovement.category || 'Other'] || 'from-gray-500/80 to-gray-400/80'} backdrop-blur-md`}>
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-foreground drop-shadow-sm flex items-center gap-1.5">
-                                        {CATEGORY_ICONS[selectedMovement.category || 'Other']}
-                                        {selectedMovement.category}
-                                    </span>
-                                </div>
-                            </div>
+                    {selectedMovement && (() => {
+                        const videoResult = resolveVideoEmbed(selectedMovement.demo_url);
+                        const hasVideo = videoResult.type !== null;
+                        const hasImage = !!(selectedMovement.image_url);
+                        const showTabs = hasVideo && hasImage;
 
-                            {/* Info section */}
-                            <div className="p-4 sm:p-6 space-y-4">
-                                <h2 className="text-2xl font-black uppercase italic tracking-tighter">{selectedMovement.name}</h2>
-
-                                {selectedMovement.demo_url && (
-                                    <a
-                                        href={selectedMovement.demo_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-xs font-black uppercase tracking-widest"
-                                    >
-                                        <ExternalLink className="h-3.5 w-3.5" />
-                                        VIEW DEMO
-                                    </a>
+                        return (
+                            <div>
+                                {/* Tabs (only when both image and video exist) */}
+                                {showTabs && (
+                                    <div className="flex border-b border-border">
+                                        <button
+                                            className={`flex-1 flex items-center justify-center gap-2 py-3 text-[10px] font-black uppercase tracking-widest transition-colors ${detailTab === 'image' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                            onClick={() => setDetailTab('image')}
+                                        >
+                                            <Image className="h-3.5 w-3.5" /> IMAGE
+                                        </button>
+                                        <button
+                                            className={`flex-1 flex items-center justify-center gap-2 py-3 text-[10px] font-black uppercase tracking-widest transition-colors ${detailTab === 'video' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                            onClick={() => setDetailTab('video')}
+                                        >
+                                            <Play className="h-3.5 w-3.5" /> VIDEO
+                                        </button>
+                                    </div>
                                 )}
 
-                                <div className="flex flex-col sm:flex-row gap-2 pt-2">
-                                    <Button
-                                        variant="outline"
-                                        className="flex-1 gap-2 font-bold uppercase italic text-xs h-11 sm:h-10"
-                                        onClick={() => {
-                                            setEditingMovement(selectedMovement);
-                                            setFormData({ name: selectedMovement.name, category: selectedMovement.category || 'Other', demo_url: selectedMovement.demo_url || '', image_url: selectedMovement.image_url || '' });
-                                            setSelectedMovement(null);
-                                            setShowEditor(true);
-                                        }}
-                                    >
-                                        <Pencil className="h-3.5 w-3.5" /> EDIT
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        className="gap-2 font-bold uppercase italic text-xs h-11 sm:h-10 text-destructive hover:bg-destructive/10 border-destructive/20"
-                                        onClick={() => {
-                                            setSelectedMovement(null);
-                                            showConfirm({
-                                                title: t('common.confirm_delete', { defaultValue: 'CONFIRMAR ELIMINACIÓN' }),
-                                                description: t('movements.delete_warning', { defaultValue: '¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR ESTE MOVIMIENTO? ESTA ACCIÓN NO SE PUEDE DESHACER.' }),
-                                                onConfirm: () => handleDelete(selectedMovement.id),
-                                                variant: 'destructive',
-                                                icon: 'destructive'
-                                            });
-                                        }}
-                                    >
-                                        <Trash2 className="h-3.5 w-3.5" /> DELETE
-                                    </Button>
+                                {/* Media section */}
+                                {(hasVideo && (!hasImage || detailTab === 'video')) ? (
+                                    <div className="relative w-full bg-black">
+                                        {videoResult.type === 'direct' ? (
+                                            <video
+                                                src={videoResult.embedUrl!}
+                                                controls
+                                                className="w-full aspect-video"
+                                            />
+                                        ) : (
+                                            <iframe
+                                                src={videoResult.embedUrl!}
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                allowFullScreen
+                                                className="w-full aspect-video"
+                                                title={`${selectedMovement.name} demo`}
+                                            />
+                                        )}
+                                        <div className={`absolute top-4 left-4 px-3 py-1 rounded-full bg-gradient-to-r ${CATEGORY_COLORS[selectedMovement.category || 'Other'] || 'from-gray-500/80 to-gray-400/80'} backdrop-blur-md`}>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-foreground drop-shadow-sm flex items-center gap-1.5">
+                                                {CATEGORY_ICONS[selectedMovement.category || 'Other']}
+                                                {selectedMovement.category}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="relative h-56 sm:h-64 w-full bg-gradient-to-br from-muted/20 to-muted/5">
+                                        <img
+                                            src={resolveMovementImage(selectedMovement.name, selectedMovement.image_url, selectedMovement.category || 'Other')}
+                                            alt={selectedMovement.name}
+                                            className="w-full h-full object-contain p-6"
+                                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                        />
+                                        <div className={`absolute top-4 left-4 px-3 py-1 rounded-full bg-gradient-to-r ${CATEGORY_COLORS[selectedMovement.category || 'Other'] || 'from-gray-500/80 to-gray-400/80'} backdrop-blur-md`}>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-foreground drop-shadow-sm flex items-center gap-1.5">
+                                                {CATEGORY_ICONS[selectedMovement.category || 'Other']}
+                                                {selectedMovement.category}
+                                            </span>
+                                        </div>
+                                        {/* Video badge when video exists but showing image tab */}
+                                        {hasVideo && (
+                                            <button
+                                                className="absolute bottom-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-widest hover:bg-black/80 transition-colors"
+                                                onClick={() => setDetailTab('video')}
+                                            >
+                                                <Play className="h-3 w-3 fill-current" /> WATCH VIDEO
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Info section */}
+                                <div className="p-4 sm:p-6 space-y-4">
+                                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">{selectedMovement.name}</h2>
+
+                                    {selectedMovement.demo_url && !hasVideo && (
+                                        <a
+                                            href={selectedMovement.demo_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-xs font-black uppercase tracking-widest"
+                                        >
+                                            <ExternalLink className="h-3.5 w-3.5" />
+                                            VIEW DEMO
+                                        </a>
+                                    )}
+
+                                    <div className="flex flex-col sm:flex-row gap-2 pt-2">
+                                        <Button
+                                            variant="outline"
+                                            className="flex-1 gap-2 font-bold uppercase italic text-xs h-11 sm:h-10"
+                                            onClick={() => {
+                                                setEditingMovement(selectedMovement);
+                                                setFormData({ name: selectedMovement.name, category: selectedMovement.category || 'Other', demo_url: selectedMovement.demo_url || '', image_url: selectedMovement.image_url || '' });
+                                                setSelectedMovement(null);
+                                                setDetailTab('image');
+                                                setShowEditor(true);
+                                            }}
+                                        >
+                                            <Pencil className="h-3.5 w-3.5" /> EDIT
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            className="gap-2 font-bold uppercase italic text-xs h-11 sm:h-10 text-destructive hover:bg-destructive/10 border-destructive/20"
+                                            onClick={() => {
+                                                setSelectedMovement(null);
+                                                setDetailTab('image');
+                                                showConfirm({
+                                                    title: t('common.confirm_delete', { defaultValue: 'CONFIRMAR ELIMINACIÓN' }),
+                                                    description: t('movements.delete_warning', { defaultValue: '¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR ESTE MOVIMIENTO? ESTA ACCIÓN NO SE PUEDE DESHACER.' }),
+                                                    onConfirm: () => handleDelete(selectedMovement.id),
+                                                    variant: 'destructive',
+                                                    icon: 'destructive'
+                                                });
+                                            }}
+                                        >
+                                            <Trash2 className="h-3.5 w-3.5" /> DELETE
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        );
+                    })()}
                 </DialogContent>
             </Dialog>
 

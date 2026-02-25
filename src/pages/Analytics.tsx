@@ -24,6 +24,43 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
+interface PerformanceCardProps {
+    title: string;
+    value: string | number;
+    label: string;
+    trend: 'up' | 'down';
+    icon: React.ElementType;
+    color: string;
+}
+
+const PerformanceCard: React.FC<PerformanceCardProps> = ({ title, value, label, trend, icon: Icon, color }) => {
+    const { t } = useLanguage();
+    return (
+        <Card className="overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{title}</CardTitle>
+                <div className={`p-2 rounded-lg bg-${color}/10`}>
+                    <Icon className={`h-4 w-4 text-${color}`} />
+                </div>
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{value}</div>
+                <div className="flex items-center mt-1">
+                    {trend === 'up' ? (
+                        <ArrowUpRight className="h-3 w-3 text-emerald-500 mr-1" />
+                    ) : (
+                        <ArrowDownRight className="h-3 w-3 text-rose-500 mr-1" />
+                    )}
+                    <p className="text-xs font-medium text-muted-foreground">
+                        <span className={trend === 'up' ? 'text-emerald-500' : 'text-rose-500'}>{label}</span> {t('analytics.vs_last_month')}
+                    </p>
+                </div>
+            </CardContent>
+            <div className={`h-1 w-full bg-${color}/20`} />
+        </Card>
+    );
+};
+
 export const Analytics: React.FC = () => {
     const { t } = useLanguage();
     const { currentBox } = useAuth();
@@ -67,30 +104,23 @@ export const Analytics: React.FC = () => {
         const riskAthletes = members.data?.filter(m => m.role_id === 'athlete' && !activeIds.has(m.id)) || [];
         setAtRiskAthletes(riskAthletes);
 
-        // Payment Risk Detection (Unpaid Invoices)
-        const overdueInvoices = invoices.data?.filter(inv =>
-            inv.status === 'unpaid' || inv.status === 'overdue'
-        ) || [];
-
-        // Group by user to avoid duplicates
-        const uniqueUnpaidUsers = Array.from(new Set(overdueInvoices.map(inv => inv.user_id)))
-            .map(userId => {
-                const userInvoices = overdueInvoices.filter(inv => inv.user_id === userId);
-                const firstInvoice = userInvoices[0];
-                const totalDebt = userInvoices.reduce((acc, inv) => acc + (inv.amount || 0), 0);
-
-                // Handle different potential return formats for joined data
-                const profile = Array.isArray(firstInvoice.profiles)
-                    ? firstInvoice.profiles[0]
-                    : firstInvoice.profiles;
-
-                return {
-                    ...profile,
-                    totalDebt,
-                    invoiceCount: userInvoices.length
-                };
-            })
-            .filter(u => u.id); // Ensure we only show users with profile data
+        // Payment Risk Detection — single pass with Map to avoid multiple iterations
+        const unpaidByUser = new Map<string, { totalDebt: number; invoiceCount: number; profile: any }>();
+        for (const inv of invoices.data || []) {
+            if (inv.status !== 'unpaid' && inv.status !== 'overdue') continue;
+            if (!inv.user_id) continue;
+            const profile = Array.isArray(inv.profiles) ? inv.profiles[0] : inv.profiles;
+            const existing = unpaidByUser.get(inv.user_id as string);
+            if (existing) {
+                existing.totalDebt += inv.amount || 0;
+                existing.invoiceCount += 1;
+            } else {
+                unpaidByUser.set(inv.user_id as string, { totalDebt: inv.amount || 0, invoiceCount: 1, profile });
+            }
+        }
+        const uniqueUnpaidUsers = Array.from(unpaidByUser.values())
+            .filter(({ profile }) => profile?.id)
+            .map(({ totalDebt, invoiceCount, profile }) => ({ ...profile, totalDebt, invoiceCount }));
 
         setUnpaidAthletes(uniqueUnpaidUsers);
 
@@ -125,31 +155,6 @@ export const Analytics: React.FC = () => {
 
         showNotification('success', 'COACH ALERTED SUCCESSFULLY');
     };
-
-    const PerformanceCard = ({ title, value, label, trend, icon: Icon, color }: any) => (
-        <Card className="overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{title}</CardTitle>
-                <div className={`p-2 rounded-lg bg-${color}/10`}>
-                    <Icon className={`h-4 w-4 text-${color}`} />
-                </div>
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">{value}</div>
-                <div className="flex items-center mt-1">
-                    {trend === 'up' ? (
-                        <ArrowUpRight className="h-3 w-3 text-emerald-500 mr-1" />
-                    ) : (
-                        <ArrowDownRight className="h-3 w-3 text-rose-500 mr-1" />
-                    )}
-                    <p className="text-xs font-medium text-muted-foreground">
-                        <span className={trend === 'up' ? 'text-emerald-500' : 'text-rose-500'}>{label}</span> {t('analytics.vs_last_month')}
-                    </p>
-                </div>
-            </CardContent>
-            <div className={`h-1 w-full bg-${color}/20`} />
-        </Card>
-    );
 
     return (
         <div className="space-y-4 md:space-y-6">

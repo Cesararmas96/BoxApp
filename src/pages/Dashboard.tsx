@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+
+const ATTENDANCE_BAR_STATIC = [0.8, 0.9, 0.7, 0.85, 0.92];
 import { supabase } from '@/lib/supabaseClient';
 import {
     Users,
@@ -44,56 +46,49 @@ export const Dashboard: React.FC = () => {
     const fetchStats = async () => {
         try {
             const today = new Date().toISOString().split('T')[0];
-
-            // 1. Members Count
-            const { count: membersCount } = await supabase
-                .from('profiles')
-                .select('*', { count: 'exact', head: true })
-                .eq('box_id', currentBox?.id || '');
-
-            // 2. Pending Leads Count
-            const { count: leadsCount } = await supabase
-                .from('leads')
-                .select('*', { count: 'exact', head: true })
-                .eq('box_id', currentBox?.id || '')
-                .eq('status', 'new');
-
-            // 3. Today's WOD (CrossFit track preferred)
-            const { data: wodData } = await supabase
-                .from('wods')
-                .select('*')
-                .eq('box_id', currentBox?.id || '')
-                .eq('date', today)
-                .order('track', { ascending: true })
-                .limit(1);
-
-            // 4. Attendance (Simple avg from last 30 days)
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            const boxId = currentBox?.id || '';
 
-            const { data: bookingsData } = await supabase
-                .from('bookings')
-                .select('status')
-                .eq('box_id', currentBox?.id || '')
-                .gt('created_at', thirtyDaysAgo.toISOString());
+            const [
+                { count: membersCount },
+                { count: leadsCount },
+                { data: wodData },
+                { data: bookingsData },
+                { data: resultsData }
+            ] = await Promise.all([
+                supabase
+                    .from('profiles')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('box_id', boxId),
+                supabase
+                    .from('leads')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('box_id', boxId)
+                    .eq('status', 'new'),
+                supabase
+                    .from('wods')
+                    .select('*')
+                    .eq('box_id', boxId)
+                    .eq('date', today)
+                    .order('track', { ascending: true })
+                    .limit(1),
+                supabase
+                    .from('bookings')
+                    .select('status')
+                    .eq('box_id', boxId)
+                    .gt('created_at', thirtyDaysAgo.toISOString()),
+                supabase
+                    .from('results')
+                    .select('id, result, rx, wods (title), profiles (first_name, last_name)')
+                    .eq('box_id', boxId)
+                    .order('created_at', { ascending: false })
+                    .limit(3)
+            ]);
 
             const totalBookings = bookingsData?.length || 0;
             const attendedBookings = bookingsData?.filter(b => b.status === 'attended').length || 0;
             const attendanceRate = totalBookings > 0 ? Math.round((attendedBookings / totalBookings) * 100) : 0;
-
-            // 5. Recent Results
-            const { data: resultsData } = await supabase
-                .from('results')
-                .select(`
-                    id, 
-                    result, 
-                    rx, 
-                    wods (title), 
-                    profiles (first_name, last_name)
-                `)
-                .eq('box_id', currentBox?.id || '')
-                .order('created_at', { ascending: false })
-                .limit(3);
 
             setStats({
                 members: membersCount || 0,
@@ -212,7 +207,7 @@ export const Dashboard: React.FC = () => {
                         <div className="text-4xl font-bold mb-2 text-foreground">{stats.attendance}%</div>
                         <p className="text-xs text-muted-foreground">{t('dashboard.attendance_avg')}</p>
                         <div className="mt-6 flex gap-1.5 h-1.5">
-                            {[0.8, 0.9, 0.7, 0.85, 0.92, stats.attendance / 100, stats.attendance / 100].map((v, i) => (
+                            {[...ATTENDANCE_BAR_STATIC, stats.attendance / 100, stats.attendance / 100].map((v, i) => (
                                 <div key={i} className="flex-1 rounded-full bg-muted overflow-hidden">
                                     <div className="h-full bg-emerald-500 transition-all duration-700" style={{ width: (v * 100) + '%' }} />
                                 </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
 import {
@@ -33,37 +33,33 @@ export const LiveLeaderboard: React.FC = () => {
     const fetchData = async () => {
         if (!id) return;
 
-        // Fetch Competition
-        const { data: compData } = await supabase
-            .from('competitions')
-            .select('*')
-            .eq('id', id)
-            .single();
+        // Fetch competition, participants and events in parallel
+        const [
+            { data: compData },
+            { data: partData },
+            { data: eventData }
+        ] = await Promise.all([
+            supabase.from('competitions').select('*').eq('id', id).single(),
+            supabase
+                .from('competition_participants')
+                .select(`id, division, athlete:profiles!user_id(first_name, last_name, avatar_url)`)
+                .eq('competition_id', id)
+                .eq('status', 'active'),
+            supabase
+                .from('competition_events')
+                .select('*')
+                .eq('competition_id', id)
+                .order('order_index')
+        ]);
 
-        // Fetch Participants
-        const { data: partData } = await supabase
-            .from('competition_participants')
-            .select(`id, division, athlete:profiles!user_id(first_name, last_name, avatar_url)`)
-            .eq('competition_id', id)
-            .eq('status', 'active');
-
-        // Fetch Events
-        const { data: eventData } = await supabase
-            .from('competition_events')
-            .select('*')
-            .eq('competition_id', id)
-            .order('order_index');
-
-        // Fetch Scores
+        // Fetch scores only after we have event IDs (true dependency)
         const eventIds = eventData?.map(e => e.id) || [];
         let scoreData: CompetitionScore[] = [];
-
         if (eventIds.length > 0) {
             const { data: sData } = await supabase
                 .from('competition_scores')
                 .select('*')
                 .in('event_id', eventIds);
-
             scoreData = (sData || []) as unknown as CompetitionScore[];
         }
 
@@ -126,8 +122,19 @@ export const LiveLeaderboard: React.FC = () => {
         return { value, display };
     };
 
-    const calculateRankings = (division: string) => {
-        const divParticipants = participants.filter(p => p.division === division);
+    const divisions = useMemo(
+        () => Array.from(new Set(participants.map(p => p.division).filter(Boolean))),
+        [participants]
+    );
+
+    const currentDivision = divisions[currentDivisionIndex] as string;
+
+    const rankings = useMemo(() => {
+        if (!currentDivision) return [];
+
+        const divParticipants = participants.filter(p => p.division === currentDivision);
+        // O(1) lookup instead of O(N) .some() on every filter pass
+        const divParticipantIds = new Set(divParticipants.map(p => p.id));
 
         return divParticipants.map(p => {
             let totalPoints = 0;
@@ -135,13 +142,12 @@ export const LiveLeaderboard: React.FC = () => {
                 const pScore = scores.find(s => s.participant_id === p.id && s.event_id === event.id);
                 const { value: _value, display } = parseScore(pScore?.score_data, event.wod_type || 'for_time');
 
-                const eventScoresInDiv = scores.filter(s =>
-                    s.event_id === event.id &&
-                    participants.some(part => part.id === s.participant_id && part.division === division)
-                ).map(s => {
-                    const parsed = parseScore(s.score_data, event.wod_type || 'for_time');
-                    return { ...s, value: parsed.value };
-                });
+                const eventScoresInDiv = scores
+                    .filter(s => s.event_id === event.id && divParticipantIds.has(s.participant_id))
+                    .map(s => {
+                        const parsed = parseScore(s.score_data, event.wod_type || 'for_time');
+                        return { ...s, value: parsed.value };
+                    });
 
                 if (!pScore) {
                     return { score: '-', points: divParticipants.length + 1, rank: '-' };
@@ -152,7 +158,7 @@ export const LiveLeaderboard: React.FC = () => {
                     return b.value - a.value;
                 });
 
-                let rank = sortedScores.findIndex(s => s.participant_id === p.id) + 1;
+                const rank = sortedScores.findIndex(s => s.participant_id === p.id) + 1;
                 totalPoints += rank;
 
                 return { score: display, points: rank, rank };
@@ -160,11 +166,7 @@ export const LiveLeaderboard: React.FC = () => {
 
             return { participant: p, totalPoints, eventResults };
         }).sort((a, b) => a.totalPoints - b.totalPoints);
-    };
-
-    const divisions = Array.from(new Set(participants.map(p => p.division).filter(Boolean)));
-    const currentDivision = divisions[currentDivisionIndex] as string;
-    const rankings = currentDivision ? calculateRankings(currentDivision) : [];
+    }, [currentDivision, participants, events, scores]);
 
     if (loading) {
         return (

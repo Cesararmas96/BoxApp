@@ -52,13 +52,21 @@ export const Profile: React.FC = () => {
     const [passSuccess, setPassSuccess] = useState(false);
 
     useEffect(() => {
-        if (userProfile) {
-            setProfile({
+        if (!userProfile) return;
+        // Only update state if values actually changed to avoid unnecessary re-renders
+        setProfile(prev => {
+            const next = {
                 first_name: userProfile.first_name || '',
                 last_name: userProfile.last_name || '',
                 avatar_url: userProfile.avatar_url || ''
-            });
-        }
+            };
+            if (
+                prev.first_name === next.first_name &&
+                prev.last_name === next.last_name &&
+                prev.avatar_url === next.avatar_url
+            ) return prev;
+            return next;
+        });
     }, [userProfile]);
 
     const handleProfileUpdate = async () => {

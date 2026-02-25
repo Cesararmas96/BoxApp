@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import {
     History,
@@ -103,6 +103,25 @@ export const Benchmarks: React.FC = () => {
     );
 
     const totalPages = Math.ceil(prs.length / itemsPerPage);
+
+    const topLifts = useMemo(() => {
+        const parseWeight = (val: string) => {
+            const num = parseFloat(val.replace(/[^0-9.]/g, ''));
+            return isNaN(num) ? 0 : num;
+        };
+
+        return ['Back Squat', 'Front Squat', 'Deadlift', 'Clean & Jerk', 'Snatch', 'Bench Press'].map(movementName => {
+            const movementsPRs = prs.filter(p => p.movements.name.toLowerCase() === movementName.toLowerCase());
+            const best = movementsPRs.length > 0
+                ? movementsPRs.reduce((prev, curr) => parseWeight(curr.value) > parseWeight(prev.value) ? curr : prev)
+                : null;
+
+            const isCore = ['Back Squat', 'Clean & Jerk', 'Snatch'].includes(movementName);
+            if (!best && !isCore) return null;
+
+            return { movementName, value: best?.value || '---' };
+        }).filter(Boolean) as { movementName: string; value: string }[];
+    }, [prs]);
 
     const handleAddPR = async () => {
         if (!user || !currentBox) return;
@@ -352,33 +371,14 @@ export const Benchmarks: React.FC = () => {
                             <CardTitle className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60">{t('benchmarks.top_lifts')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            {(() => {
-                                // Extract numeric value for comparison
-                                const parseWeight = (val: string) => {
-                                    const num = parseFloat(val.replace(/[^0-9.]/g, ''));
-                                    return isNaN(num) ? 0 : num;
-                                };
-
-                                return ['Back Squat', 'Front Squat', 'Deadlift', 'Clean & Jerk', 'Snatch', 'Bench Press'].map(movementName => {
-                                    const movementsPRs = prs.filter(p => p.movements.name.toLowerCase() === movementName.toLowerCase());
-                                    const best = movementsPRs.length > 0
-                                        ? movementsPRs.reduce((prev, curr) => parseWeight(curr.value) > parseWeight(prev.value) ? curr : prev)
-                                        : null;
-
-                                    // Always show these three, others only if they exist
-                                    const isCore = ['Back Squat', 'Clean & Jerk', 'Snatch'].includes(movementName);
-                                    if (!best && !isCore) return null;
-
-                                    return (
-                                        <div key={movementName} className="flex items-center justify-between border-b pb-2 last:border-0 group">
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">{movementName}</span>
-                                            <span className="font-mono font-black text-primary group-hover:scale-110 transition-transform">
-                                                {best?.value || "---"}
-                                            </span>
-                                        </div>
-                                    )
-                                }).filter(Boolean);
-                            })()}
+                            {topLifts.map(({ movementName, value }) => (
+                                <div key={movementName} className="flex items-center justify-between border-b pb-2 last:border-0 group">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">{movementName}</span>
+                                    <span className="font-mono font-black text-primary group-hover:scale-110 transition-transform">
+                                        {value}
+                                    </span>
+                                </div>
+                            ))}
                         </CardContent>
                     </Card>
 

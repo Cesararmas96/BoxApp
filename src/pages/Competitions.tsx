@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -65,14 +65,21 @@ export const Competitions: React.FC = () => {
         setIsManageOpen(true);
     };
 
-    const filteredCompetitions = (status: string) => {
-        return competitions.filter(c => {
+    const filteredCompetitionsMap = useMemo(() => {
+        const map: Record<string, Competition[]> = { active: [], finished: [] };
+        for (const c of competitions) {
             const s = c.status?.toLowerCase() || 'upcoming';
-            if (status === 'active') return s === 'active' || s === 'upcoming' || s === 'scheduled';
-            if (status === 'finished') return s === 'finished' || s === 'completed';
-            return s === status;
-        });
-    };
+            if (s === 'active' || s === 'upcoming' || s === 'scheduled') {
+                map.active.push(c);
+            } else if (s === 'finished' || s === 'completed') {
+                map.finished.push(c);
+            }
+        }
+        return map;
+    }, [competitions]);
+
+    const filteredCompetitions = (status: string): Competition[] =>
+        filteredCompetitionsMap[status] || [];
 
     const getPaginatedCompetitions = (status: string) => {
         const filtered = filteredCompetitions(status);

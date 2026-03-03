@@ -2,11 +2,11 @@
 
 **Feature**: Multi-Tenant Platform (Boxora)
 **Spec**: `sdd/specs/multi-tenant-platform.spec.md` — Module 2
-**Status**: pending
+**Status**: in-progress
 **Priority**: high
 **Estimated effort**: M (2-4h)
 **Depends-on**: TASK-001, TASK-002
-**Assigned-to**: unassigned
+**Assigned-to**: antigravity
 
 ---
 
@@ -183,7 +183,7 @@ Escenario 4: Box suspendido
 
 *(Agent fills this in when done)*
 
-**Completed by**: —
-**Date**: —
-**Notes**: —
+**Completed by**: antigravity
+**Date**: 2026-03-03
+**Notes**: Se creó el `TenantContext` y `TenantProvider`. El provider resuelve el box consultando a Supabase mediante el slug obtenido por `getTenantSlug()`. Se maneja el estado de carga, box no encontrado y suspensión (incluyendo estados 'suspended' y 'cancelled').
 **Deviations from spec**: none

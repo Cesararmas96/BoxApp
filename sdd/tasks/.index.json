@@ -29,15 +29,15 @@
       "id": "TASK-003",
       "slug": "tenant-context",
       "title": "Create TenantContext and TenantProvider",
-      "status": "pending",
+      "status": "done",
       "priority": "high",
       "effort": "M",
       "depends_on": [
         "TASK-001",
         "TASK-002"
       ],
-      "assigned_to": null,
-      "file": "sdd/tasks/active/TASK-003-tenant-context.md"
+      "assigned_to": "antigravity",
+      "file": "sdd/tasks/completed/TASK-003-tenant-context.md"
     },
     {
       "id": "TASK-004",

@@ -103,6 +103,7 @@ export type Database = {
                     logo_url: string | null
                     name: string
                     slug: string
+                    subscription_status: 'trial' | 'active' | 'suspended' | 'cancelled'
                     theme_config: Json | null
                     updated_at: string | null
                 }
@@ -114,6 +115,7 @@ export type Database = {
                     logo_url?: string | null
                     name: string
                     slug: string
+                    subscription_status?: 'trial' | 'active' | 'suspended' | 'cancelled' | null
                     theme_config?: Json | null
                     updated_at?: string | null
                 }
@@ -125,6 +127,7 @@ export type Database = {
                     logo_url?: string | null
                     name?: string
                     slug?: string
+                    subscription_status?: 'trial' | 'active' | 'suspended' | 'cancelled' | null
                     theme_config?: Json | null
                     updated_at?: string | null
                 }

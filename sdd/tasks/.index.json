@@ -1,0 +1,135 @@
+{
+  "feature": "multi-tenant-platform",
+  "spec": "sdd/specs/multi-tenant-platform.spec.md",
+  "created_at": "2026-03-02T00:00:00Z",
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "slug": "db-subscription-status",
+      "title": "Add subscription_status to boxes table",
+      "status": "done",
+      "priority": "high",
+      "effort": "S",
+      "depends_on": [],
+      "assigned_to": "claude-sonnet-4-6",
+      "file": "sdd/tasks/completed/TASK-001-db-subscription-status.md"
+    },
+    {
+      "id": "TASK-002",
+      "slug": "tenant-resolver",
+      "title": "Implement subdomain-based Tenant Resolver",
+      "status": "done",
+      "priority": "high",
+      "effort": "S",
+      "depends_on": [],
+      "assigned_to": "antigravity",
+      "file": "sdd/tasks/completed/TASK-002-tenant-resolver.md"
+    },
+    {
+      "id": "TASK-003",
+      "slug": "tenant-context",
+      "title": "Create TenantContext and TenantProvider",
+      "status": "pending",
+      "priority": "high",
+      "effort": "M",
+      "depends_on": [
+        "TASK-001",
+        "TASK-002"
+      ],
+      "assigned_to": null,
+      "file": "sdd/tasks/active/TASK-003-tenant-context.md"
+    },
+    {
+      "id": "TASK-004",
+      "slug": "auth-context-update",
+      "title": "Update AuthContext to accept tenantBoxId prop",
+      "status": "pending",
+      "priority": "high",
+      "effort": "S",
+      "depends_on": [
+        "TASK-003"
+      ],
+      "assigned_to": null,
+      "file": "sdd/tasks/active/TASK-004-auth-context-update.md"
+    },
+    {
+      "id": "TASK-005",
+      "slug": "suspended-screen",
+      "title": "Create SuspendedScreen component",
+      "status": "pending",
+      "priority": "medium",
+      "effort": "S",
+      "depends_on": [
+        "TASK-003"
+      ],
+      "assigned_to": null,
+      "file": "sdd/tasks/active/TASK-005-suspended-screen.md"
+    },
+    {
+      "id": "TASK-006",
+      "slug": "app-router-update",
+      "title": "Update App Router — integrate TenantProvider and clean routes",
+      "status": "pending",
+      "priority": "high",
+      "effort": "M",
+      "depends_on": [
+        "TASK-003",
+        "TASK-004",
+        "TASK-005"
+      ],
+      "assigned_to": null,
+      "file": "sdd/tasks/active/TASK-006-app-router-update.md"
+    },
+    {
+      "id": "TASK-007",
+      "slug": "register-box-wizard",
+      "title": "Implement RegisterBox self-service wizard",
+      "status": "pending",
+      "priority": "high",
+      "effort": "L",
+      "depends_on": [
+        "TASK-002",
+        "TASK-003"
+      ],
+      "assigned_to": null,
+      "file": "sdd/tasks/active/TASK-007-register-box-wizard.md"
+    },
+    {
+      "id": "TASK-008",
+      "slug": "login-update",
+      "title": "Update Login page to use TenantContext",
+      "status": "pending",
+      "priority": "medium",
+      "effort": "S",
+      "depends_on": [
+        "TASK-003"
+      ],
+      "assigned_to": null,
+      "file": "sdd/tasks/active/TASK-008-login-update.md"
+    },
+    {
+      "id": "TASK-009",
+      "slug": "superadmin-subscription-status",
+      "title": "Update SuperAdmin with subscription_status management",
+      "status": "pending",
+      "priority": "medium",
+      "effort": "M",
+      "depends_on": [
+        "TASK-001"
+      ],
+      "assigned_to": null,
+      "file": "sdd/tasks/active/TASK-009-superadmin-subscription-status.md"
+    },
+    {
+      "id": "TASK-010",
+      "slug": "vercel-dns-config",
+      "title": "Configure Vercel wildcard subdomain + DNS (Namecheap)",
+      "status": "pending",
+      "priority": "high",
+      "effort": "S",
+      "depends_on": [],
+      "assigned_to": null,
+      "file": "sdd/tasks/active/TASK-010-vercel-dns-config.md"
+    }
+  ]
+}

@@ -1,18 +1,8 @@
-/**
- * Tenant resolver utility.
- *
- * MVP: Extracts the box slug from the URL path (`/box/:slug`).
- * Future: Will extract from hostname (`slug.boxora.website`).
- *
- * Centralised here so migration to subdomain-based routing
- * requires changing only this file.
- */
-
 const MAIN_DOMAIN = 'boxora.website';
 
 /**
  * Checks whether the current hostname is the "main" domain
- * (i.e. not a tenant subdomain).  In dev mode `localhost`
+ * (i.e. not a tenant subdomain). In dev mode `localhost`
  * and `127.0.0.1` are treated as main.
  */
 export function isMainDomain(): boolean {
@@ -21,33 +11,48 @@ export function isMainDomain(): boolean {
         host === 'localhost' ||
         host === '127.0.0.1' ||
         host === MAIN_DOMAIN ||
-        host === `www.${MAIN_DOMAIN}`
+        host === `www.${MAIN_DOMAIN}` ||
+        host === `admin.${MAIN_DOMAIN}`
     );
 }
 
 /**
- * Extracts the tenant slug from the current URL path.
- * Expects a route like `/box/:slug/...` and returns the slug portion.
- * Returns `null` when on a non-tenant route.
- *
- * Future (subdomain mode): extract from `slug.boxora.website`.
+ * Extracts the tenant slug according to the environment:
+ * - Prod: from subdomain ({slug}.boxora.website)
+ * - Dev: from query param ?box=<slug>
+ * Returns null if on the main domain or system subdomain.
  */
-export function getTenantSlugFromPath(pathname: string): string | null {
-    const match = pathname.match(/^\/box\/([a-zA-Z0-9_-]+)/);
-    return match ? match[1] : null;
+export function getTenantSlug(): string | null {
+    const host = window.location.hostname;
+
+    // Dev mode: localhost or 127.0.0.1
+    if (host === 'localhost' || host === '127.0.0.1') {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('box') || null;
+    }
+
+    // Prod: extract subdomain from *.boxora.website
+    if (host.endsWith(`.${MAIN_DOMAIN}`)) {
+        const slug = host.slice(0, host.length - MAIN_DOMAIN.length - 1);
+        // Exclude system subdomains
+        if (slug && slug !== 'www' && slug !== 'admin') {
+            return slug;
+        }
+    }
+
+    return null;
 }
 
 /**
  * Builds the full URL for a specific box tenant.
- *
- * MVP (path-based):  `/box/{slug}`
- * Future (subdomain): `https://{slug}.boxora.website`
+ * - Prod: https://{slug}.boxora.website
+ * - Dev: /?box={slug} (for testing without real subdomains)
  */
 export function buildTenantUrl(slug: string): string {
-    // MVP: path-based
-    return `/box/${slug}`;
-
-    // TODO: (Agent) Future subdomain mode:
-    // const protocol = window.location.protocol;
-    // return `${protocol}//${slug}.${MAIN_DOMAIN}`;
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') {
+        return `/?box=${slug}`;
+    }
+    return `https://${slug}.${MAIN_DOMAIN}`;
 }
+

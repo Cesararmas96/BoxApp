@@ -420,7 +420,14 @@ export const SuperAdmin: React.FC = () => {
 
                                             {/* Visit button */}
                                             <Button
-                                                onClick={() => navigate(buildTenantUrl(box.slug))}
+                                                onClick={() => {
+                                                    const url = buildTenantUrl(box.slug);
+                                                    if (url.startsWith('http')) {
+                                                        window.location.href = url;
+                                                    } else {
+                                                        navigate(url);
+                                                    }
+                                                }}
                                                 className="w-full mt-4 bg-white/[0.06] hover:bg-white/[0.10] text-white border border-white/[0.08] rounded-xl h-10 text-sm font-medium group/btn"
                                                 variant="ghost"
                                             >

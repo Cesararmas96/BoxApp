@@ -20,6 +20,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+type SubscriptionStatus = 'trial' | 'active' | 'suspended' | 'cancelled';
+
 interface BoxRow {
     id: string;
     name: string;
@@ -27,8 +29,25 @@ interface BoxRow {
     logo_url: string | null;
     login_background_url: string | null;
     created_at: string | null;
+    subscription_status: SubscriptionStatus | null;
     member_count?: number;
 }
+
+const STATUS_CONFIG: Record<SubscriptionStatus, { label: string; className: string }> = {
+    active:    { label: 'Activo',     className: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
+    trial:     { label: 'Trial',      className: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
+    suspended: { label: 'Suspendido', className: 'bg-red-500/20 text-red-400 border-red-500/30' },
+    cancelled: { label: 'Cancelado',  className: 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30' },
+};
+
+const StatusBadge = ({ status }: { status: SubscriptionStatus | null }) => {
+    const c = STATUS_CONFIG[status ?? 'trial'];
+    return (
+        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${c.className}`}>
+            {c.label}
+        </span>
+    );
+};
 
 export const SuperAdmin: React.FC = () => {
     const { signOut } = useAuth();
@@ -48,12 +67,15 @@ export const SuperAdmin: React.FC = () => {
     const [editName, setEditName] = useState('');
     const [editSlug, setEditSlug] = useState('');
 
+    // Subscription status
+    const [statusError, setStatusError] = useState<string | null>(null);
+
     const fetchBoxes = async () => {
         setLoading(true);
         try {
             const { data, error } = await supabase
                 .from('boxes')
-                .select('id, name, slug, logo_url, login_background_url, created_at')
+                .select('id, name, slug, logo_url, login_background_url, created_at, subscription_status')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -130,6 +152,25 @@ export const SuperAdmin: React.FC = () => {
         setEditSlug('');
     };
 
+    const handleStatusChange = async (boxId: string, newStatus: SubscriptionStatus) => {
+        setStatusError(null);
+        const previousBoxes = boxes;
+        // Optimistic update
+        setBoxes((prev) =>
+            prev.map((b) => (b.id === boxId ? { ...b, subscription_status: newStatus } : b))
+        );
+        try {
+            const { error } = await supabase
+                .from('boxes')
+                .update({ subscription_status: newStatus } as any)
+                .eq('id', boxId);
+            if (error) throw error;
+        } catch (err: any) {
+            setBoxes(previousBoxes);
+            setStatusError(err.message || 'Error actualizando estado');
+        }
+    };
+
     const saveEdit = async (id: string) => {
         if (!editName.trim() || !editSlug.trim()) return;
         try {
@@ -150,6 +191,12 @@ export const SuperAdmin: React.FC = () => {
             b.name.toLowerCase().includes(search.toLowerCase()) ||
             b.slug.toLowerCase().includes(search.toLowerCase())
     );
+
+    const metrics = {
+        active:    boxes.filter((b) => b.subscription_status === 'active').length,
+        trial:     boxes.filter((b) => b.subscription_status === 'trial' || b.subscription_status === null).length,
+        suspended: boxes.filter((b) => b.subscription_status === 'suspended').length,
+    };
 
     return (
         <div className="min-h-screen bg-[#050508] text-white">
@@ -186,7 +233,7 @@ export const SuperAdmin: React.FC = () => {
                     <div>
                         <h2 className="text-2xl font-bold tracking-tight">Boxes registrados</h2>
                         <p className="text-sm text-white/40 mt-1">
-                            {boxes.length} box{boxes.length !== 1 ? 'es' : ''} en la plataforma
+                            {boxes.length} boxes · {metrics.active} activos · {metrics.trial} en trial · {metrics.suspended} suspendidos
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
@@ -297,6 +344,19 @@ export const SuperAdmin: React.FC = () => {
                     </div>
                 )}
 
+                {/* ── Status change error ── */}
+                {statusError && (
+                    <div className="mb-4 flex items-center justify-between gap-3 rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3">
+                        <p className="text-sm text-red-400">{statusError}</p>
+                        <button
+                            onClick={() => setStatusError(null)}
+                            className="text-red-400/60 hover:text-red-400 transition-colors"
+                        >
+                            <X className="h-4 w-4" />
+                        </button>
+                    </div>
+                )}
+
                 {/* ── Box cards grid ── */}
                 {!loading && filteredBoxes.length > 0 && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -393,12 +453,31 @@ export const SuperAdmin: React.FC = () => {
                                         </div>
                                     ) : (
                                         <>
-                                            <h3 className="text-base font-bold truncate">
-                                                {box.name}
-                                            </h3>
-                                            <p className="text-xs text-white/30 font-mono mt-0.5 truncate">
-                                                /box/{box.slug}
-                                            </p>
+                                            <div className="flex items-start justify-between gap-2">
+                                                <div className="min-w-0">
+                                                    <h3 className="text-base font-bold truncate">
+                                                        {box.name}
+                                                    </h3>
+                                                    <p className="text-xs text-white/30 font-mono mt-0.5 truncate">
+                                                        /box/{box.slug}
+                                                    </p>
+                                                </div>
+                                                <StatusBadge status={box.subscription_status} />
+                                            </div>
+
+                                            {/* Status selector */}
+                                            <select
+                                                value={box.subscription_status ?? 'trial'}
+                                                onChange={(e) =>
+                                                    handleStatusChange(box.id, e.target.value as SubscriptionStatus)
+                                                }
+                                                className="mt-3 w-full text-xs bg-white/[0.04] border border-white/[0.08] rounded-lg px-2 py-1.5 text-white/60 focus:text-white focus:outline-none focus:border-white/20 cursor-pointer"
+                                            >
+                                                <option value="trial">Trial</option>
+                                                <option value="active">Activo</option>
+                                                <option value="suspended">Suspendido</option>
+                                                <option value="cancelled">Cancelado</option>
+                                            </select>
 
                                             {/* Stats */}
                                             <div className="flex items-center gap-4 mt-4">

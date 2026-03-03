@@ -69,7 +69,7 @@
       "id": "TASK-006",
       "slug": "app-router-update",
       "title": "Update App Router — integrate TenantProvider and clean routes",
-      "status": "pending",
+      "status": "done",
       "priority": "high",
       "effort": "M",
       "depends_on": [
@@ -77,8 +77,8 @@
         "TASK-004",
         "TASK-005"
       ],
-      "assigned_to": null,
-      "file": "sdd/tasks/active/TASK-006-app-router-update.md"
+      "assigned_to": "claude-sonnet-4-6",
+      "file": "sdd/tasks/completed/TASK-006-app-router-update.md"
     },
     {
       "id": "TASK-007",
@@ -98,27 +98,27 @@
       "id": "TASK-008",
       "slug": "login-update",
       "title": "Update Login page to use TenantContext",
-      "status": "pending",
+      "status": "done",
       "priority": "medium",
       "effort": "S",
       "depends_on": [
         "TASK-003"
       ],
-      "assigned_to": null,
-      "file": "sdd/tasks/active/TASK-008-login-update.md"
+      "assigned_to": "claude-sonnet-4-6",
+      "file": "sdd/tasks/completed/TASK-008-login-update.md"
     },
     {
       "id": "TASK-009",
       "slug": "superadmin-subscription-status",
       "title": "Update SuperAdmin with subscription_status management",
-      "status": "pending",
+      "status": "done",
       "priority": "medium",
       "effort": "M",
       "depends_on": [
         "TASK-001"
       ],
-      "assigned_to": null,
-      "file": "sdd/tasks/active/TASK-009-superadmin-subscription-status.md"
+      "assigned_to": "claude-sonnet-4-6",
+      "file": "sdd/tasks/completed/TASK-009-superadmin-subscription-status.md"
     },
     {
       "id": "TASK-010",

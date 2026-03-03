@@ -124,12 +124,12 @@
       "id": "TASK-010",
       "slug": "vercel-dns-config",
       "title": "Configure Vercel wildcard subdomain + DNS (Namecheap)",
-      "status": "pending",
+      "status": "done",
       "priority": "high",
       "effort": "S",
       "depends_on": [],
-      "assigned_to": null,
-      "file": "sdd/tasks/active/TASK-010-vercel-dns-config.md"
+      "assigned_to": "antigravity",
+      "file": "sdd/tasks/completed/TASK-010-vercel-dns-config.md"
     }
   ]
 }

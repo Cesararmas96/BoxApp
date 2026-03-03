@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
 import { Loader2, Mail, Lock, Info, Eye, EyeOff, ChevronRight } from 'lucide-react';
 import { useLanguage, useNotification } from '@/hooks';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTenant } from '@/contexts/TenantContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,18 +14,9 @@ import { supabase } from '@/lib/supabaseClient';
 const DEFAULT_BG =
     'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1920&q=80';
 
-interface BoxBranding {
-    id: string;
-    name: string;
-    slug: string;
-    logo_url: string | null;
-    login_background_url: string | null;
-    theme_config: any;
-}
-
 export const Login: React.FC = () => {
     const { t } = useLanguage();
-    const { boxSlug } = useParams<{ boxSlug?: string }>();
+    const { tenantBox } = useTenant();
     const { signIn, signInWithGoogle, signUp, resetPassword } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -40,51 +31,19 @@ export const Login: React.FC = () => {
     const [googleLoading, setGoogleLoading] = useState(false);
     const { notification, showNotification, hideNotification } = useNotification();
 
-    // Box branding from admin settings
-    const [branding, setBranding] = useState<BoxBranding | null>(null);
     const [bgLoaded, setBgLoaded] = useState(false);
-    const [boxNotFound, setBoxNotFound] = useState(false);
-
-    // Fetch box branding — by slug if present, otherwise first box (backward compat)
-    useEffect(() => {
-        const fetchBranding = async () => {
-            try {
-                let query = supabase
-                    .from('boxes')
-                    .select('id, name, slug, logo_url, login_background_url, theme_config');
-
-                if (boxSlug) {
-                    query = query.eq('slug', boxSlug);
-                } else {
-                    query = query.limit(1);
-                }
-
-                const { data, error: fetchErr } = await query.single();
-
-                if (fetchErr || !data) {
-                    if (boxSlug) setBoxNotFound(true);
-                    return;
-                }
-
-                setBranding(data as BoxBranding);
-            } catch {
-                // Silently ignore — use defaults
-            }
-        };
-        fetchBranding();
-    }, [boxSlug]);
 
     // Pre-load background image for smooth transition
     useEffect(() => {
-        const src = branding?.login_background_url || DEFAULT_BG;
+        const src = tenantBox?.login_background_url || DEFAULT_BG;
         const img = new Image();
         img.onload = () => setBgLoaded(true);
         img.src = src;
-    }, [branding]);
+    }, [tenantBox]);
 
-    const backgroundUrl = branding?.login_background_url || DEFAULT_BG;
-    const boxName = branding?.name || 'BoxApp';
-    const logoUrl = branding?.logo_url;
+    const backgroundUrl = tenantBox?.login_background_url || DEFAULT_BG;
+    const boxName = tenantBox?.name || 'BoxApp';
+    const logoUrl = tenantBox?.logo_url;
 
     const validateForm = () => {
         if (!email.includes('@')) {
@@ -148,8 +107,8 @@ export const Login: React.FC = () => {
                     password,
                     options: {
                         data: {
-                            box_id: branding?.id,
-                            box_slug: branding?.slug,
+                            box_id: tenantBox?.id,
+                            box_slug: tenantBox?.slug,
                         }
                     }
                 })
@@ -192,7 +151,8 @@ export const Login: React.FC = () => {
     const handleGoogleSignIn = async () => {
         setError(null);
         setGoogleLoading(true);
-        const { error } = await signInWithGoogle();
+        // Pass tenantBox?.id so AuthContext can reconcile the box after OAuth redirect
+        const { error } = await signInWithGoogle(tenantBox?.id);
         if (error) {
             setError(error.message);
             setGoogleLoading(false);
@@ -208,28 +168,6 @@ export const Login: React.FC = () => {
         if (isSignUp) return t('auth.confirm_deployment');
         return t('auth.login');
     };
-
-    // Show "Box not found" if slug was provided but doesn't match any box
-    if (boxNotFound) {
-        return (
-            <div className="min-h-[100dvh] w-full flex flex-col items-center justify-center bg-[#050508] px-4">
-                <div className="text-center max-w-sm">
-                    <div className="h-20 w-20 rounded-[1.75rem] bg-white/10 backdrop-blur-2xl flex items-center justify-center mx-auto mb-6 ring-1 ring-white/10">
-                        <span className="text-3xl">🏋️</span>
-                    </div>
-                    <h1 className="text-2xl font-bold text-white mb-2">{t('auth.box_not_found')}</h1>
-                    <p className="text-white/50 text-sm mb-6">{t('auth.box_not_found_desc')}</p>
-                    <a
-                        href="/login"
-                        className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-white text-black font-semibold text-sm hover:bg-white/90 transition-all"
-                    >
-                        {t('auth.go_to_login')}
-                        <ChevronRight className="h-4 w-4" />
-                    </a>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="min-h-[100dvh] w-full flex flex-col relative overflow-hidden bg-black">

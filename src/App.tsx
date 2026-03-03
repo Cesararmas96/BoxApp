@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { MainLayout } from './layouts/MainLayout';
 import { Login } from './pages/Login';
@@ -24,10 +24,45 @@ import { SuperAdmin } from './pages/SuperAdmin';
 import { RegisterBox } from './pages/RegisterBox';
 import { ThemeProvider, useTheme } from './components/theme-provider';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { SuspendedScreen } from './components/SuspendedScreen';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { TenantProvider, useTenant } from './contexts/TenantContext';
 import './index.css';
 
+// ── Inline screen for unknown tenant slugs ──────────────────────────────────
+const TenantNotFoundScreen: React.FC = () => (
+  <div className="min-h-screen bg-[#050508] text-white flex items-center justify-center p-4">
+    <div className="text-center space-y-4 max-w-sm">
+      <div className="h-14 w-14 mx-auto rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
+        <span className="text-2xl">🔍</span>
+      </div>
+      <h1 className="text-xl font-bold">Box no encontrado</h1>
+      <p className="text-sm text-white/40">
+        Este box no existe o ha sido eliminado.
+      </p>
+      <a
+        href="/register"
+        className="inline-block text-sm text-white/50 hover:text-white transition-colors mt-2"
+      >
+        ¿Quieres registrar tu box? →
+      </a>
+    </div>
+  </div>
+);
+
+// ── Inline loading spinner ──────────────────────────────────────────────────
+const LoadingSpinner: React.FC = () => (
+  <div className="min-h-screen w-full flex items-center justify-center bg-background">
+    <div className="text-center">
+      <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
+      <p className="text-sm text-muted-foreground">Cargando...</p>
+    </div>
+  </div>
+);
+
+// ── AppContent — requires both TenantContext and AuthContext ─────────────────
 function AppContent() {
+  const { isSuspended, tenantNotFound, isLoading: tenantLoading } = useTenant();
   const { session, userProfile, currentBox, loading } = useAuth();
   const { setPrimaryColor, setRadius, setDesignStyle } = useTheme();
 
@@ -58,17 +93,27 @@ function AppContent() {
     }
   }, [currentBox, setPrimaryColor, setRadius, setDesignStyle]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4"></div>
-          <p className="text-sm text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
+  // 1. Wait for tenant resolution (slug → box fetch)
+  if (tenantLoading) {
+    return <LoadingSpinner />;
   }
 
+  // 2. Unknown slug — show friendly error instead of blank screen
+  if (tenantNotFound) {
+    return <TenantNotFoundScreen />;
+  }
+
+  // 3. Suspended tenant — block ALL access, including authenticated users
+  if (isSuspended) {
+    return <SuspendedScreen />;
+  }
+
+  // 4. Wait for auth session resolution
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  // 5. Unauthenticated — show public routes only
   if (!session) {
     const hasOAuthHash =
       window.location.hash.includes('access_token=') ||
@@ -77,17 +122,15 @@ function AppContent() {
 
     return (
       <Routes>
-        {/* OAuth callback — must be available before session is fully established */}
+        {/* OAuth callback — must be available before session is established */}
         <Route path="/auth/callback" element={<AuthCallback />} />
-        {/* Some providers may return tokens on root hash (/#access_token=...). Handle that too. */}
+        {/* Root hash from some OAuth providers (e.g. magic link) */}
         <Route path="/" element={hasOAuthHash ? <AuthCallback /> : <Navigate to="/login" replace />} />
-        {/* Multi-tenant: box-specific login via slug */}
-        <Route path="/box/:boxSlug" element={<Login />} />
-        {/* Default login — also used by super-admin */}
+        {/* Main login — used by all users and super-admin */}
         <Route path="/login" element={<Login />} />
         {/* Self-service box registration */}
         <Route path="/register" element={<RegisterBox />} />
-        {/* Admin route redirects to login when unauthenticated */}
+        {/* Admin redirects to login when unauthenticated */}
         <Route path="/admin" element={<Navigate to="/login" replace />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
@@ -99,24 +142,21 @@ function AppContent() {
   }
 
   // Super-admin: root user sees the admin panel
-  const isSuperAdmin = session?.user?.email === 'root@test.com' || session?.user?.user_metadata?.is_root === true;
+  const isSuperAdmin =
+    session?.user?.email === 'root@test.com' ||
+    session?.user?.user_metadata?.is_root === true;
 
   return (
     <Routes>
       {/* ── Super-admin panel ── */}
       <Route
         path="/admin"
-        element={
-          isSuperAdmin ? <SuperAdmin /> : <Navigate to="/dashboard" replace />
-        }
+        element={isSuperAdmin ? <SuperAdmin /> : <Navigate to="/dashboard" replace />}
       />
 
-      {/* Standalone pages */}
+      {/* Standalone pages (no layout wrapper) */}
       <Route path="/box-display" element={<BoxDisplay />} />
       <Route path="/competitions/:id/live" element={<LiveLeaderboard />} />
-
-      {/* Multi-tenant: box-specific login (redirect to dashboard if already logged in) */}
-      <Route path="/box/:boxSlug" element={<Navigate to="/dashboard" replace />} />
 
       {/* Layout wrapper pages */}
       <Route element={<MainLayout userProfile={userProfile} />}>
@@ -191,7 +231,7 @@ function AppContent() {
         />
         <Route path="/profile" element={<Profile />} />
 
-        {/* Default Redirect — root goes to admin panel, others to dashboard */}
+        {/* Default redirect */}
         <Route path="/" element={<Navigate to={isSuperAdmin ? '/admin' : '/dashboard'} replace />} />
         <Route path="*" element={<Navigate to={isSuperAdmin ? '/admin' : '/dashboard'} replace />} />
       </Route>
@@ -199,17 +239,29 @@ function AppContent() {
   );
 }
 
+// ── Bridge: reads TenantContext to inject tenantBoxId into AuthProvider ──────
+function AuthProviderWithTenant({ children }: { children: React.ReactNode }) {
+  const { tenantBox } = useTenant();
+  return (
+    <AuthProvider tenantBoxId={tenantBox?.id}>
+      {children}
+    </AuthProvider>
+  );
+}
+
+// ── Root: TenantProvider → BrowserRouter → AuthProviderWithTenant → AppContent
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <AuthProvider>
+      <TenantProvider>
         <BrowserRouter>
-          <AppContent />
+          <AuthProviderWithTenant>
+            <AppContent />
+          </AuthProviderWithTenant>
         </BrowserRouter>
-      </AuthProvider>
+      </TenantProvider>
     </ThemeProvider>
   );
 }
 
 export default App;
-

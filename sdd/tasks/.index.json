@@ -84,15 +84,15 @@
       "id": "TASK-007",
       "slug": "register-box-wizard",
       "title": "Implement RegisterBox self-service wizard",
-      "status": "pending",
+      "status": "done",
       "priority": "high",
       "effort": "L",
       "depends_on": [
         "TASK-002",
         "TASK-003"
       ],
-      "assigned_to": null,
-      "file": "sdd/tasks/active/TASK-007-register-box-wizard.md"
+      "assigned_to": "antigravity",
+      "file": "sdd/tasks/completed/TASK-007-register-box-wizard.md"
     },
     {
       "id": "TASK-008",

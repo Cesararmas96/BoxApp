@@ -2,11 +2,11 @@
 
 **Feature**: Multi-Tenant Platform (Boxora)
 **Spec**: `sdd/specs/multi-tenant-platform.spec.md` — Module 10
-**Status**: pending
+**Status**: done
 **Priority**: medium
 **Estimated effort**: S (< 2h)
 **Depends-on**: TASK-003
-**Assigned-to**: unassigned
+**Assigned-to**: claude-sonnet-4-6
 
 ---
 
@@ -159,9 +159,7 @@ Tests manuales:
 
 ## Completion Note
 
-*(Agent fills this in when done)*
-
-**Completed by**: —
-**Date**: —
-**Notes**: —
-**Deviations from spec**: none
+**Completed by**: claude-sonnet-4-6
+**Date**: 2026-03-03
+**Notes**: Eliminados: `useParams`, interfaz `BoxBranding`, estado `branding`/`boxNotFound`, useEffect de fetch, bloque `if (boxNotFound)`. Añadido: `import { useTenant }`, `const { tenantBox } = useTenant()`. Actualizados: backgroundUrl/boxName/logoUrl, signUp metadata, handleGoogleSignIn (pasa `tenantBox?.id`), pre-load useEffect (dep: tenantBox). Cero errores TypeScript nuevos.
+**Deviations from spec**: ninguna.

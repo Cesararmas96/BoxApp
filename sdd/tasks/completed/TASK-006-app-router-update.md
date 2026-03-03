@@ -2,11 +2,11 @@
 
 **Feature**: Multi-Tenant Platform (Boxora)
 **Spec**: `sdd/specs/multi-tenant-platform.spec.md` — Module 4
-**Status**: pending
+**Status**: done
 **Priority**: high
 **Estimated effort**: M (2-4h)
 **Depends-on**: TASK-003, TASK-004, TASK-005
-**Assigned-to**: unassigned
+**Assigned-to**: claude-sonnet-4-6
 
 ---
 
@@ -196,9 +196,7 @@ Tests manuales de integración:
 
 ## Completion Note
 
-*(Agent fills this in when done)*
-
-**Completed by**: —
-**Date**: —
-**Notes**: —
-**Deviations from spec**: none
+**Completed by**: claude-sonnet-4-6
+**Date**: 2026-03-03
+**Notes**: App.tsx reescrito con: (1) `TenantProvider` envolviendo `BrowserRouter`, (2) `AuthProviderWithTenant` como bridge que lee `useTenant().tenantBox?.id` y lo inyecta en `AuthProvider`, (3) guards en orden correcto: tenantLoading → tenantNotFound → isSuspended → authLoading → !session, (4) `TenantNotFoundScreen` y `LoadingSpinner` inline, (5) routes `/box/:boxSlug` eliminadas completamente, (6) `/register` mantenida. npx tsc --noEmit --skipLibCheck sin nuevos errores.
+**Deviations from spec**: `TenantNotFoundScreen` implementada inline en App.tsx en vez de componente separado (simplifica la estructura sin pérdida funcional).

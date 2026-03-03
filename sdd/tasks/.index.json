@@ -43,14 +43,14 @@
       "id": "TASK-004",
       "slug": "auth-context-update",
       "title": "Update AuthContext to accept tenantBoxId prop",
-      "status": "pending",
+      "status": "done",
       "priority": "high",
       "effort": "S",
       "depends_on": [
         "TASK-003"
       ],
-      "assigned_to": null,
-      "file": "sdd/tasks/active/TASK-004-auth-context-update.md"
+      "assigned_to": "antigravity",
+      "file": "sdd/tasks/completed/TASK-004-auth-context-update.md"
     },
     {
       "id": "TASK-005",

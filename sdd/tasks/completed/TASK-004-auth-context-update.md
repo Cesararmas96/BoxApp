@@ -2,11 +2,11 @@
 
 **Feature**: Multi-Tenant Platform (Boxora)
 **Spec**: `sdd/specs/multi-tenant-platform.spec.md` — Module 3
-**Status**: pending
+**Status**: in-progress
 **Priority**: high
 **Estimated effort**: S (< 2h)
 **Depends-on**: TASK-003
-**Assigned-to**: unassigned
+**Assigned-to**: antigravity
 
 ---
 
@@ -145,7 +145,7 @@ Escenario 2: AuthProvider con tenantBoxId = '<uuid-del-box>'
 
 *(Agent fills this in when done)*
 
-**Completed by**: —
-**Date**: —
-**Notes**: —
+**Completed by**: antigravity
+**Date**: 2026-03-03
+**Notes**: Se actualizó el `AuthProvider` para recibir `tenantBoxId` como prop prop opcional. Se utiliza este prop en `fetchProfile` para reconciliar el `box_id` del perfil si falta, y en `signUp` para inyectar el `box_id` en el metadata del usuario. Esto permite que el flujo de multi-tenant funcione correctamente incluso si el trigger de Supabase no está configurado o falla inicialmente.
 **Deviations from spec**: none

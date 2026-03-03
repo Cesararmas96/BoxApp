@@ -28,7 +28,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode; tenantBoxId?: string }> = ({ children, tenantBoxId }) => {
     const [session, setSession] = useState<Session | null>(null);
     const [user, setUser] = useState<User | null>(null);
     const [userProfile, setUserProfile] = useState<Profile | null>(null);
@@ -61,21 +61,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             } else if (data) {
                 console.log('[AuthContext] Profile loaded successfully');
 
-                // Multi-tenant: reconcile box_id after OAuth redirect
-                // The trigger may have assigned a fallback box_id; correct it if needed
-                const pendingBoxId = localStorage.getItem('pending_box_id');
-                if (pendingBoxId) {
-                    const profileData = data as any;
-                    if (!profileData.box_id || profileData.box_id !== pendingBoxId) {
-                        console.log('[AuthContext] Reconciling box_id from OAuth context:', pendingBoxId);
-                        const { error: updateErr } = await supabase
-                            .from('profiles')
-                            .update({ box_id: pendingBoxId })
-                            .eq('id', userId);
-                        if (!updateErr) {
-                            profileData.box_id = pendingBoxId;
-                        }
+                const profileData = data as any;
+
+                // Multi-tenant: reconcile box_id after OAuth redirect or if missing in profile
+                // but known by the current tenant context.
+                const oauthStoreBoxId = localStorage.getItem('pending_box_id');
+                const effectiveBoxId = oauthStoreBoxId || tenantBoxId;
+
+                if (effectiveBoxId && (!profileData.box_id || profileData.box_id !== effectiveBoxId)) {
+                    console.log('[AuthContext] Reconciling box_id from context:', effectiveBoxId);
+                    const { error: updateErr } = await supabase
+                        .from('profiles')
+                        .update({ box_id: effectiveBoxId })
+                        .eq('id', userId);
+                    if (!updateErr) {
+                        profileData.box_id = effectiveBoxId;
                     }
+                }
+
+                if (oauthStoreBoxId) {
                     localStorage.removeItem('pending_box_id');
                 }
 
@@ -166,8 +170,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('[AuthContext] Google OAuth started, boxId:', boxId);
 
         // Store box context in localStorage so fetchProfile can reconcile it after redirect
-        if (boxId) {
-            localStorage.setItem('pending_box_id', boxId);
+        if (boxId || tenantBoxId) {
+            localStorage.setItem('pending_box_id', boxId || (tenantBoxId as string));
         }
 
         const result = await supabase.auth.signInWithOAuth({
@@ -182,7 +186,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const signUp = async (credentials: any) => {
         setLoading(true);
-        const result = await supabase.auth.signUp(credentials);
+
+        // Multi-tenant: inject box_id into metadata if tenantBoxId is available
+        const enrichedCredentials = tenantBoxId
+            ? {
+                ...credentials,
+                options: {
+                    ...credentials.options,
+                    data: { ...credentials.options?.data, box_id: tenantBoxId },
+                },
+            }
+            : credentials;
+
+        const result = await supabase.auth.signUp(enrichedCredentials);
         if (result.error || !result.data.user) {
             setLoading(false);
         } else {
@@ -192,6 +208,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         return result;
     };
+
 
     const resetPassword = async (email: string) => {
         setLoading(true);

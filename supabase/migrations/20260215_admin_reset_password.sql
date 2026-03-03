@@ -34,7 +34,9 @@ BEGIN
     END IF;
 
     -- 3. Hash the default password with bcrypt (same algo GoTrue uses)
-    hashed := extensions.crypt(default_pw, extensions.gen_salt('bf'));
+    -- NOTE: cost factor 10 matches GoTrue's default; using gen_salt('bf') without
+    -- an explicit cost defaults to 6 which causes "Invalid login credentials" errors.
+    hashed := extensions.crypt(default_pw, extensions.gen_salt('bf', 10));
 
     -- 4. Update the password in auth.users
     UPDATE auth.users

@@ -517,7 +517,9 @@ BEGIN
     IF caller_email IS DISTINCT FROM 'root@test.com' AND target_box_id IS DISTINCT FROM caller_box_id THEN
         RETURN json_build_object('error', 'Cannot reset password for user outside your box');
     END IF;
-    hashed := extensions.crypt(default_pw, extensions.gen_salt('bf'));
+    -- NOTE: cost factor 10 matches GoTrue's default; gen_salt('bf') without explicit
+    -- cost defaults to 6 which causes "Invalid login credentials" errors.
+    hashed := extensions.crypt(default_pw, extensions.gen_salt('bf', 10));
     UPDATE auth.users SET encrypted_password = hashed, updated_at = now() WHERE id = target_user_id;
     UPDATE public.profiles SET force_password_change = true WHERE id = target_user_id;
     RETURN json_build_object('success', true);

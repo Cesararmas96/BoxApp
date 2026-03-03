@@ -56,14 +56,14 @@
       "id": "TASK-005",
       "slug": "suspended-screen",
       "title": "Create SuspendedScreen component",
-      "status": "pending",
+      "status": "done",
       "priority": "medium",
       "effort": "S",
       "depends_on": [
         "TASK-003"
       ],
-      "assigned_to": null,
-      "file": "sdd/tasks/active/TASK-005-suspended-screen.md"
+      "assigned_to": "claude-sonnet-4-6",
+      "file": "sdd/tasks/completed/TASK-005-suspended-screen.md"
     },
     {
       "id": "TASK-006",

@@ -2,11 +2,11 @@
 
 **Feature**: Multi-Tenant Platform (Boxora)
 **Spec**: `sdd/specs/multi-tenant-platform.spec.md` — Module 6
-**Status**: pending
+**Status**: in-progress
 **Priority**: high
 **Estimated effort**: L (4-8h)
 **Depends-on**: TASK-002, TASK-003
-**Assigned-to**: unassigned
+**Assigned-to**: antigravity
 
 ---
 
@@ -290,7 +290,7 @@ Tests manuales end-to-end:
 
 *(Agent fills this in when done)*
 
-**Completed by**: —
-**Date**: —
-**Notes**: —
+**Completed by**: antigravity
+**Date**: 2026-03-03
+**Notes**: Se implementó el wizard de registro de boxes de 2 pasos en `src/pages/RegisterBox.tsx`. El flujo incluye validación de slug en tiempo real, registro del box en Supabase, signup del usuario administrador con inyección de `box_id` en metadata, y redirección automática al nuevo subdominio/tenant. Se incluyó lógica de rollback para eliminar el box si el registro del usuario falla.
 **Deviations from spec**: none

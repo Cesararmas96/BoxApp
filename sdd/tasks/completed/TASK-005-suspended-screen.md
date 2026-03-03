@@ -2,11 +2,11 @@
 
 **Feature**: Multi-Tenant Platform (Boxora)
 **Spec**: `sdd/specs/multi-tenant-platform.spec.md` — Module 5
-**Status**: pending
+**Status**: done
 **Priority**: medium
 **Estimated effort**: S (< 2h)
 **Depends-on**: TASK-003
-**Assigned-to**: unassigned
+**Assigned-to**: claude-sonnet-4-6
 
 ---
 
@@ -164,9 +164,7 @@ Escenario 3: Box suspendido con logo
 
 ## Completion Note
 
-*(Agent fills this in when done)*
-
-**Completed by**: —
-**Date**: —
-**Notes**: —
-**Deviations from spec**: none
+**Completed by**: claude-sonnet-4-6
+**Date**: 2026-03-03
+**Notes**: Componente creado en `src/components/SuspendedScreen.tsx`. Usa `useTenant()` para logo/nombre del box y `useAuth()` para `session` + `signOut()`. El botón de logout solo se renderiza si hay sesión activa (evita errores sin login). `npx tsc --noEmit --skipLibCheck` no reporta errores en este archivo.
+**Deviations from spec**: El botón "Cerrar sesión" se condiciona a `session !== null` (mejora respecto al spec que no lo especificaba).

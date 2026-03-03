@@ -21,6 +21,7 @@ import { Profile } from './pages/Profile';
 import { LiveLeaderboard } from './pages/LiveLeaderboard';
 import { ForceChangePassword } from './pages/ForceChangePassword';
 import { SuperAdmin } from './pages/SuperAdmin';
+import { RegisterBox } from './pages/RegisterBox';
 import { ThemeProvider, useTheme } from './components/theme-provider';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -84,6 +85,8 @@ function AppContent() {
         <Route path="/box/:boxSlug" element={<Login />} />
         {/* Default login — also used by super-admin */}
         <Route path="/login" element={<Login />} />
+        {/* Self-service box registration */}
+        <Route path="/register" element={<RegisterBox />} />
         {/* Admin route redirects to login when unauthenticated */}
         <Route path="/admin" element={<Navigate to="/login" replace />} />
         <Route path="*" element={<Navigate to="/login" replace />} />

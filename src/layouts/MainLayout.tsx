@@ -15,6 +15,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from '@/contexts/AuthContext';
+import { SubscriptionBanner } from '@/components/admin';
 
 interface LayoutProps {
     userProfile?: any;
@@ -39,7 +40,7 @@ const getNavItems = (t: any): any[] => [
 export const MainLayout: React.FC<LayoutProps> = ({ userProfile }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const { t, i18n } = useLanguage();
-    const { currentBox, signOut } = useAuth();
+    const { currentBox, signOut, isAdmin } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -278,6 +279,16 @@ export const MainLayout: React.FC<LayoutProps> = ({ userProfile }) => {
                         </DropdownMenu>
                     </div>
                 </header>
+
+                {/* Subscription Banner — only for admin, shows trial/suspended/cancelled states */}
+                {isAdmin && currentBox && currentBox.subscription_status !== 'active' && (
+                    <div className="sticky top-14 z-20 px-4 md:px-6 py-1.5 bg-background/80 backdrop-blur-xl border-b border-border/30">
+                        <SubscriptionBanner
+                            status={currentBox.subscription_status}
+                            trialEndsAt={currentBox.trial_ends_at}
+                        />
+                    </div>
+                )}
 
                 {/* Main Content Area */}
                 <main className="flex-1">

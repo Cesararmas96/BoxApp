@@ -105,6 +105,7 @@ export type Database = {
                     slug: string
                     subscription_status: 'trial' | 'active' | 'suspended' | 'cancelled'
                     theme_config: Json | null
+                    trial_ends_at: string | null
                     updated_at: string | null
                 }
                 Insert: {
@@ -117,6 +118,7 @@ export type Database = {
                     slug: string
                     subscription_status?: 'trial' | 'active' | 'suspended' | 'cancelled' | null
                     theme_config?: Json | null
+                    trial_ends_at?: string | null
                     updated_at?: string | null
                 }
                 Update: {
@@ -129,6 +131,7 @@ export type Database = {
                     slug?: string
                     subscription_status?: 'trial' | 'active' | 'suspended' | 'cancelled' | null
                     theme_config?: Json | null
+                    trial_ends_at?: string | null
                     updated_at?: string | null
                 }
                 Relationships: []

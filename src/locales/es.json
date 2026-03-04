@@ -460,7 +460,39 @@
             "appearance": "Apariencia",
             "localization": "Localización",
             "notifications": "Notificaciones",
-            "navigation": "Navegación"
+            "navigation": "Navegación",
+            "subscription": "Suscripción",
+            "danger_zone": "Zona de Peligro"
+        },
+        "subscription": {
+            "title": "Plan de Suscripción",
+            "desc": "Estado actual de tu suscripción a Boxora.",
+            "current_plan": "Plan actual",
+            "plan_desc": "Tu box en la plataforma Boxora",
+            "trial_ends": "Tiempo restante de prueba",
+            "days_left": "días restantes",
+            "trial_ends_on": "Vence el",
+            "upgrade_cta": "Contactar para upgrade",
+            "upgrade_help": "Escríbenos a soporte@boxora.com para conocer los planes disponibles."
+        },
+        "danger": {
+            "change_slug_title": "Cambiar URL del Box",
+            "change_slug_desc": "Cambia el slug que identifica tu box en la URL. La URL anterior dejará de funcionar inmediatamente.",
+            "new_slug": "Nuevo slug",
+            "slug_invalid": "El slug solo puede contener letras minúsculas, números y guiones, y debe tener entre 3 y 50 caracteres.",
+            "slug_taken": "Este slug ya está en uso por otro box.",
+            "slug_warning": "⚠️ La URL anterior dejará de funcionar tras el cambio.",
+            "change_slug_btn": "Cambiar slug",
+            "confirm_slug_title": "¿Cambiar el slug del box?",
+            "confirm_slug_desc": "El slug cambiará a '{{slug}}'. La URL anterior dejará de funcionar.",
+            "slug_success": "Slug actualizado correctamente. Recuerda compartir la nueva URL.",
+            "pause_title": "Pausar Box",
+            "pause_desc": "Suspende temporalmente tu box. Solo el soporte de Boxora puede reactivarlo.",
+            "pause_btn": "Pausar Box",
+            "confirm_pause_title": "¿Pausar el box?",
+            "confirm_pause_desc": "Tu box quedará suspendido y no estará accesible para los miembros. Solo el soporte de Boxora puede reactivarlo. ¿Continuar?",
+            "confirm_pause_btn": "Sí, pausar",
+            "pause_success": "Box pausado. Contacta a soporte@boxora.com para reactivarlo."
         },
         "branding": {
             "title": "Branding Global",
@@ -992,5 +1024,70 @@
     },
     "logistics": {
         "no_heats_scheduled": "No hay heats programados"
+    },
+    "admin": {
+        "tabs": {
+            "resumen": "Resumen",
+            "operaciones": "Operaciones",
+            "mi_box": "Mi Box"
+        },
+        "kpi": {
+            "revenue": "Ingresos del mes",
+            "members": "Nuevos miembros",
+            "sessions_today": "Clases hoy",
+            "occupancy": "Ocupación promedio"
+        },
+        "alerts": {
+            "title": "Alertas operativas",
+            "empty": "Todo en orden",
+            "empty_desc": "No hay alertas operativas pendientes.",
+            "overdue_payments": "{{count}} pago vencido",
+            "overdue_payments_plural": "{{count}} pagos vencidos",
+            "inactive_members": "{{count}} miembro sin actividad en 30 días",
+            "inactive_members_plural": "{{count}} miembros sin actividad en 30 días",
+            "high_occupancy": "{{count}} clase con ocupación alta",
+            "view_payments": "Ver pagos",
+            "view_members": "Ver miembros"
+        },
+        "quick_actions": {
+            "title": "Acciones rápidas",
+            "new_class": "Nueva Clase",
+            "register_payment": "Registrar Pago",
+            "invite_member": "Invitar Miembro",
+            "new_class_dialog_title": "Nueva Clase",
+            "new_class_name": "Nombre de la clase",
+            "new_class_date": "Fecha y hora",
+            "new_class_capacity": "Capacidad máxima",
+            "payment_dialog_title": "Registrar Pago",
+            "payment_amount": "Monto",
+            "payment_description": "Descripción",
+            "member_dialog_title": "Invitar Miembro",
+            "member_email": "Email del miembro",
+            "member_name": "Nombre completo",
+            "save": "Guardar",
+            "cancel": "Cancelar",
+            "success_class": "Clase creada exitosamente",
+            "success_payment": "Pago registrado exitosamente",
+            "success_member": "Miembro invitado exitosamente"
+        },
+        "my_box": {
+            "title": "Mi Box",
+            "name": "Nombre",
+            "slug": "Slug (URL)",
+            "status": "Estado",
+            "configure": "Configurar Box →",
+            "trial_ends": "Trial vence",
+            "links_title": "Configuración rápida"
+        }
+    },
+    "subscription": {
+        "banner": {
+            "trial": "Trial · {{days}} días restantes",
+            "trial_urgent": "⚠️ Trial vence en {{days}} días",
+            "suspended": "Tu box está suspendido.",
+            "cancelled": "Tu suscripción fue cancelada.",
+            "upgrade_btn": "Actualizar plan",
+            "contact_support": "Contactar soporte →"
+        }
     }
 }

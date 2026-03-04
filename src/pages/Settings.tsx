@@ -13,7 +13,10 @@ import {
     Loader2,
     Menu,
     ArrowUp,
-    ArrowDown
+    ArrowDown,
+    CreditCard,
+    ArrowUpCircle,
+    AlertTriangle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,7 +47,7 @@ export const Settings: React.FC = () => {
     } = useTheme();
 
     const { t } = useTranslation();
-    const { currentBox, setCurrentBox } = useAuth();
+    const { currentBox, setCurrentBox, isAdmin } = useAuth();
 
     const logoInputRef = useRef<HTMLInputElement>(null);
     const faviconInputRef = useRef<HTMLInputElement>(null);
@@ -59,6 +62,32 @@ export const Settings: React.FC = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [isUploading, setIsUploading] = useState<'logo' | 'favicon' | 'login_bg' | null>(null);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+    // ── Subscription tab ──────────────────────────────────────────────────────
+    const trialEndsAt = currentBox?.trial_ends_at ?? null;
+    const daysRemaining = trialEndsAt
+        ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000))
+        : 0;
+    const formattedTrialEnd = trialEndsAt
+        ? new Date(trialEndsAt).toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' })
+        : '—';
+
+    const STATUS_LABELS: Record<string, { label: string; className: string }> = {
+        active:    { label: 'Activo',     className: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' },
+        trial:     { label: 'Trial',      className: 'bg-amber-500/20 text-amber-400 border border-amber-500/30' },
+        suspended: { label: 'Suspendido', className: 'bg-red-500/20 text-red-400 border border-red-500/30' },
+        cancelled: { label: 'Cancelado',  className: 'bg-zinc-500/20 text-zinc-400 border border-zinc-500/30' },
+    };
+
+    // ── Danger Zone tab ───────────────────────────────────────────────────────
+    const [newSlug, setNewSlug] = useState('');
+    const [slugError, setSlugError] = useState<string | null>(null);
+    const [isSavingSlug, setIsSavingSlug] = useState(false);
+    const [showSlugConfirm, setShowSlugConfirm] = useState(false);
+    const [showPauseDialog, setShowPauseDialog] = useState(false);
+
+    const SLUG_REGEX = /^[a-z0-9][a-z0-9-]{2,49}$/;
+    const isSlugValid = SLUG_REGEX.test(newSlug);
 
     const [navigationConfig, setNavigationConfig] = useState<any[]>([]);
 
@@ -344,6 +373,53 @@ export const Settings: React.FC = () => {
         setNavigationConfig(finalConfig);
     };
 
+    const handleChangeSlug = async () => {
+        if (!isSlugValid) {
+            setSlugError('El slug solo puede contener letras minúsculas, números y guiones, y debe tener entre 3 y 50 caracteres.');
+            return;
+        }
+        const { data } = await supabase.from('boxes').select('id').eq('slug', newSlug).maybeSingle();
+        if (data) {
+            setSlugError('Este slug ya está en uso por otro box.');
+            return;
+        }
+        setShowSlugConfirm(true);
+    };
+
+    const executeSlugChange = async () => {
+        setShowSlugConfirm(false);
+        setIsSavingSlug(true);
+        try {
+            const { error } = await supabase
+                .from('boxes')
+                .update({ slug: newSlug })
+                .eq('id', currentBox!.id);
+            if (error) throw error;
+            setCurrentBox({ ...currentBox!, slug: newSlug });
+            setMessage({ type: 'success', text: 'Slug actualizado correctamente. Recuerda compartir la nueva URL.' });
+            setNewSlug('');
+        } catch (err: any) {
+            setMessage({ type: 'error', text: err.message });
+        } finally {
+            setIsSavingSlug(false);
+        }
+    };
+
+    const executePause = async () => {
+        setShowPauseDialog(false);
+        try {
+            const { error } = await supabase
+                .from('boxes')
+                .update({ subscription_status: 'suspended' })
+                .eq('id', currentBox!.id);
+            if (error) throw error;
+            setCurrentBox({ ...currentBox!, subscription_status: 'suspended' });
+            setMessage({ type: 'success', text: 'Box pausado. Contacta a soporte@boxora.com para reactivarlo.' });
+        } catch (err: any) {
+            setMessage({ type: 'error', text: err.message });
+        }
+    };
+
     return (
         <div className="space-y-4 md:space-y-6">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -360,6 +436,16 @@ export const Settings: React.FC = () => {
                     <TabsTrigger value="navigation" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 shrink-0">{t('settings.tabs.navigation')}</TabsTrigger>
                     <TabsTrigger value="localization" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 shrink-0">{t('settings.tabs.localization')}</TabsTrigger>
                     <TabsTrigger value="notifications" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 shrink-0">{t('settings.tabs.notifications')}</TabsTrigger>
+                    {isAdmin && (
+                        <TabsTrigger value="subscription" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 shrink-0">
+                            {t('settings.tabs.subscription')}
+                        </TabsTrigger>
+                    )}
+                    {isAdmin && (
+                        <TabsTrigger value="danger-zone" className="rounded-none border-b-2 border-transparent data-[state=active]:border-destructive data-[state=active]:bg-transparent px-0 py-2 shrink-0 text-destructive">
+                            {t('settings.tabs.danger_zone')}
+                        </TabsTrigger>
+                    )}
                 </TabsList>
 
                 <TabsContent value="branding" className="py-6">
@@ -838,6 +924,178 @@ export const Settings: React.FC = () => {
                         </CardContent>
                     </Card>
                 </TabsContent>
+
+                {/* ── Subscription Tab (admin only) ──────────────────────────── */}
+                {isAdmin && (
+                    <TabsContent value="subscription" className="py-6">
+                        <div className="grid gap-6">
+                            <Card className="border-none shadow-premium bg-card/50 backdrop-blur-xl">
+                                <CardHeader>
+                                    <div className="flex items-center gap-2">
+                                        <CreditCard className="h-5 w-5 text-primary" />
+                                        <CardTitle>{t('settings.subscription.title')}</CardTitle>
+                                    </div>
+                                    <CardDescription>{t('settings.subscription.desc')}</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-sm font-medium">{t('settings.subscription.current_plan')}</p>
+                                            <p className="text-xs text-muted-foreground mt-0.5">{t('settings.subscription.plan_desc')}</p>
+                                        </div>
+                                        {currentBox?.subscription_status && (
+                                            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${STATUS_LABELS[currentBox.subscription_status]?.className ?? ''}`}>
+                                                {STATUS_LABELS[currentBox.subscription_status]?.label ?? currentBox.subscription_status}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <Separator className="bg-primary/5" />
+
+                                    {currentBox?.subscription_status === 'trial' && (
+                                        <div className="space-y-1">
+                                            <p className="text-sm font-medium">{t('settings.subscription.trial_ends')}</p>
+                                            <p className="text-2xl font-bold">
+                                                {daysRemaining} <span className="text-sm font-normal text-muted-foreground">{t('settings.subscription.days_left')}</span>
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {t('settings.subscription.trial_ends_on')}: {formattedTrialEnd}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    <Button asChild className="w-full gap-2">
+                                        <a href="mailto:soporte@boxora.com">
+                                            <ArrowUpCircle className="h-4 w-4" />
+                                            {t('settings.subscription.upgrade_cta')}
+                                        </a>
+                                    </Button>
+                                    <p className="text-xs text-muted-foreground text-center">
+                                        {t('settings.subscription.upgrade_help')}
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </TabsContent>
+                )}
+
+                {/* ── Danger Zone Tab (admin only) ───────────────────────────── */}
+                {isAdmin && (
+                    <TabsContent value="danger-zone" className="py-6">
+                        <div className="grid gap-6">
+                            {/* Cambiar slug */}
+                            <Card className="border-destructive/20 bg-destructive/5">
+                                <CardHeader>
+                                    <CardTitle className="text-destructive">{t('settings.danger.change_slug_title')}</CardTitle>
+                                    <CardDescription>{t('settings.danger.change_slug_desc')}</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label>{t('settings.danger.new_slug')}</Label>
+                                        <Input
+                                            value={newSlug}
+                                            onChange={(e) => {
+                                                const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+                                                setNewSlug(val);
+                                                setSlugError(null);
+                                            }}
+                                            placeholder={currentBox?.slug}
+                                            className={slugError ? 'border-destructive' : ''}
+                                        />
+                                        {slugError && <p className="text-xs text-destructive">{slugError}</p>}
+                                        <p className="text-xs text-muted-foreground">
+                                            ⚠️ {t('settings.danger.slug_warning')}
+                                        </p>
+                                    </div>
+                                </CardContent>
+                                <CardFooter>
+                                    <Button
+                                        variant="destructive"
+                                        onClick={handleChangeSlug}
+                                        disabled={!isSlugValid || isSavingSlug || newSlug === currentBox?.slug}
+                                    >
+                                        {isSavingSlug && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                                        {t('settings.danger.change_slug_btn')}
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+
+                            {/* Pausar box */}
+                            <Card className="border-destructive/20 bg-destructive/5">
+                                <CardHeader>
+                                    <CardTitle className="text-destructive">{t('settings.danger.pause_title')}</CardTitle>
+                                    <CardDescription>{t('settings.danger.pause_desc')}</CardDescription>
+                                </CardHeader>
+                                <CardFooter>
+                                    <Button
+                                        variant="destructive"
+                                        onClick={() => setShowPauseDialog(true)}
+                                        disabled={currentBox?.subscription_status === 'suspended'}
+                                    >
+                                        {t('settings.danger.pause_btn')}
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+
+                            {/* Message feedback */}
+                            {message && (
+                                <div className={`p-3 rounded-xl text-xs font-medium text-center border ${message.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-destructive/10 border-destructive/20 text-destructive'}`}>
+                                    {message.text}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Slug confirmation inline dialog */}
+                        {showSlugConfirm && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                                <div className="bg-card border border-border rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl space-y-4">
+                                    <div className="flex items-start gap-3">
+                                        <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                                        <div>
+                                            <h3 className="font-semibold text-sm">{t('settings.danger.confirm_slug_title')}</h3>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                {t('settings.danger.confirm_slug_desc', { slug: newSlug })}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2 justify-end">
+                                        <Button variant="ghost" size="sm" onClick={() => setShowSlugConfirm(false)}>
+                                            {t('admin.quick_actions.cancel')}
+                                        </Button>
+                                        <Button variant="destructive" size="sm" onClick={executeSlugChange}>
+                                            {t('settings.danger.change_slug_btn')}
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Pause confirmation inline dialog */}
+                        {showPauseDialog && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                                <div className="bg-card border border-border rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl space-y-4">
+                                    <div className="flex items-start gap-3">
+                                        <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                                        <div>
+                                            <h3 className="font-semibold text-sm">{t('settings.danger.confirm_pause_title')}</h3>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                {t('settings.danger.confirm_pause_desc')}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2 justify-end">
+                                        <Button variant="ghost" size="sm" onClick={() => setShowPauseDialog(false)}>
+                                            {t('admin.quick_actions.cancel')}
+                                        </Button>
+                                        <Button variant="destructive" size="sm" onClick={executePause}>
+                                            {t('settings.danger.confirm_pause_btn')}
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </TabsContent>
+                )}
             </Tabs>
         </div >
     );

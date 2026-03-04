@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const ATTENDANCE_BAR_STATIC = [0.8, 0.9, 0.7, 0.85, 0.92];
 import { supabase } from '@/lib/supabaseClient';
@@ -10,6 +11,9 @@ import {
     Clock,
     Flame,
     Calendar,
+    DollarSign,
+    UserCheck,
+    LayoutDashboard,
 } from 'lucide-react';
 import {
     Card,
@@ -22,14 +26,29 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from "@/components/ui/progress"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AthleteDashboard } from '@/components/AthleteDashboard';
 import { CoachDashboard } from '@/components/CoachDashboard';
+import { KpiCard, AlertsPanel, QuickActionsBar } from '@/components/admin';
+import type { AdminAlert } from '@/components/admin';
 import { useLanguage } from '@/hooks';
 import { useAuth } from '@/contexts/AuthContext';
 
+// ─── KPI metric shape ────────────────────────────────────────────────────────
+interface KpiState { value: number | string; loading: boolean; error: boolean; delta?: number; }
+const KPI_INIT: KpiState = { value: 0, loading: true, error: false };
+
+// ─── Status badge for Mi Box tab ─────────────────────────────────────────────
+const BOX_STATUS_LABELS: Record<string, { label: string; className: string }> = {
+    active:    { label: 'Activo',     className: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' },
+    trial:     { label: 'Trial',      className: 'bg-amber-500/20 text-amber-400 border border-amber-500/30' },
+    suspended: { label: 'Suspendido', className: 'bg-red-500/20 text-red-400 border border-red-500/30' },
+    cancelled: { label: 'Cancelado',  className: 'bg-zinc-500/20 text-zinc-400 border border-zinc-500/30' },
+};
+
 export const Dashboard: React.FC = () => {
     const { t } = useLanguage();
-    const { userProfile, currentBox } = useAuth();
+    const { userProfile, currentBox, isAdmin } = useAuth();
     const [stats, setStats] = useState({
         members: 0,
         activeWOD: null as any,
@@ -38,6 +57,14 @@ export const Dashboard: React.FC = () => {
         totalBookings: 0,
         recentResults: [] as any[]
     });
+
+    // ── Admin KPI state ───────────────────────────────────────────────────────
+    const [kpiRevenue, setKpiRevenue] = useState<KpiState>(KPI_INIT);
+    const [kpiMembers, setKpiMembers] = useState<KpiState>(KPI_INIT);
+    const [kpiSessions, setKpiSessions] = useState<KpiState>(KPI_INIT);
+    const [kpiLeads, setKpiLeads] = useState<KpiState>(KPI_INIT);
+    const [alerts, setAlerts] = useState<AdminAlert[]>([]);
+    const [alertsLoading, setAlertsLoading] = useState(true);
 
     useEffect(() => {
         fetchStats();
@@ -103,6 +130,90 @@ export const Dashboard: React.FC = () => {
         }
     };
 
+    // ── Admin: load KPIs and alerts ───────────────────────────────────────────
+    useEffect(() => {
+        if (!isAdmin || !currentBox?.id) return;
+
+        const boxId = currentBox.id;
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0, 0, 0, 0);
+        const today = new Date().toISOString().split('T')[0];
+
+        const loadKpis = async () => {
+            const [revenueRes, membersRes, sessionsRes, leadsRes] = await Promise.allSettled([
+                supabase.from('invoices').select('amount').eq('box_id', boxId).gte('created_at', startOfMonth.toISOString()),
+                supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('box_id', boxId).gte('created_at', startOfMonth.toISOString()),
+                supabase.from('sessions').select('id', { count: 'exact', head: true }).eq('box_id', boxId).gte('start_time', `${today}T00:00:00`).lte('start_time', `${today}T23:59:59`),
+                supabase.from('leads').select('id', { count: 'exact', head: true }).eq('box_id', boxId).eq('status', 'new'),
+            ]);
+
+            if (revenueRes.status === 'fulfilled' && !revenueRes.value.error) {
+                const total = (revenueRes.value.data as any[])?.reduce((s, r) => s + Number(r.amount ?? 0), 0) ?? 0;
+                setKpiRevenue({ value: total, loading: false, error: false });
+            } else {
+                setKpiRevenue({ value: 0, loading: false, error: true });
+            }
+
+            if (membersRes.status === 'fulfilled' && !membersRes.value.error) {
+                setKpiMembers({ value: membersRes.value.count ?? 0, loading: false, error: false });
+            } else {
+                setKpiMembers({ value: 0, loading: false, error: true });
+            }
+
+            if (sessionsRes.status === 'fulfilled' && !sessionsRes.value.error) {
+                setKpiSessions({ value: sessionsRes.value.count ?? 0, loading: false, error: false });
+            } else {
+                setKpiSessions({ value: 0, loading: false, error: true });
+            }
+
+            if (leadsRes.status === 'fulfilled' && !leadsRes.value.error) {
+                setKpiLeads({ value: leadsRes.value.count ?? 0, loading: false, error: false });
+            } else {
+                setKpiLeads({ value: 0, loading: false, error: true });
+            }
+        };
+
+        const loadAlerts = async () => {
+            const generated: AdminAlert[] = [];
+            // Pending invoices (no due_date column — surface all pending as potential attention items)
+            const { count: pendingCount } = await supabase
+                .from('invoices')
+                .select('id', { count: 'exact', head: true })
+                .eq('box_id', boxId)
+                .eq('status', 'pending');
+            if (pendingCount && pendingCount > 0) {
+                generated.push({
+                    id: 'pending-payments',
+                    type: 'warning',
+                    message: `${pendingCount} pago${pendingCount > 1 ? 's' : ''} pendiente${pendingCount > 1 ? 's' : ''} de confirmar`,
+                    actionLabel: 'Ver pagos',
+                    actionHref: '/billing',
+                });
+            }
+            // New leads waiting
+            const { count: newLeads } = await supabase
+                .from('leads')
+                .select('id', { count: 'exact', head: true })
+                .eq('box_id', boxId)
+                .eq('status', 'new');
+            if (newLeads && newLeads > 0) {
+                generated.push({
+                    id: 'new-leads',
+                    type: 'info',
+                    message: `${newLeads} lead${newLeads > 1 ? 's' : ''} nuevo${newLeads > 1 ? 's' : ''} esperando contacto`,
+                    actionLabel: 'Ver leads',
+                    actionHref: '/leads',
+                });
+            }
+            setAlerts(generated.slice(0, 5));
+            setAlertsLoading(false);
+        };
+
+        loadKpis();
+        loadAlerts();
+    }, [isAdmin, currentBox?.id]);
+
     // Role-based rendering
     if (userProfile?.role_id === 'athlete') {
         return (
@@ -129,7 +240,7 @@ export const Dashboard: React.FC = () => {
     }
 
     return (
-        <div className="space-y-8 animate-premium-in">
+        <div className="space-y-6 animate-premium-in">
             <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2 mb-1">
                     <div className="h-2 w-2 rounded-full bg-emerald-500" />
@@ -139,6 +250,25 @@ export const Dashboard: React.FC = () => {
                 <p className="text-muted-foreground text-sm mt-1">{t('dashboard.analytics_subtitle', { defaultValue: 'Operational Analytics & Global Oversight' })}</p>
             </div>
 
+            <Tabs defaultValue="resumen" className="w-full">
+                <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent space-x-6 overflow-x-auto overflow-y-hidden scrollbar-none">
+                    <TabsTrigger value="resumen" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 shrink-0">
+                        Resumen
+                    </TabsTrigger>
+                    {isAdmin && (
+                        <TabsTrigger value="operaciones" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 shrink-0">
+                            Operaciones
+                        </TabsTrigger>
+                    )}
+                    {isAdmin && (
+                        <TabsTrigger value="mi-box" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 shrink-0">
+                            Mi Box
+                        </TabsTrigger>
+                    )}
+                </TabsList>
+
+                {/* ── Tab: Resumen (existing content) ──────────────────────── */}
+                <TabsContent value="resumen" className="pt-6">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {/* Members card */}
                 <Card className="overflow-hidden relative group bg-primary/5 border-primary/10">
@@ -286,7 +416,111 @@ export const Dashboard: React.FC = () => {
                         </Button>
                     </CardFooter>
                 </Card>
-            </div>
+                    </div>
+                </TabsContent>
+
+                {/* ── Tab: Operaciones (admin only) ────────────────────────── */}
+                {isAdmin && (
+                    <TabsContent value="operaciones" className="pt-6 space-y-6">
+                        {/* KPI Cards */}
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            <KpiCard
+                                label="Ingresos del mes"
+                                value={kpiRevenue.value}
+                                icon={<DollarSign className="h-4 w-4" />}
+                                loading={kpiRevenue.loading}
+                                error={kpiRevenue.error}
+                                unit="$"
+                            />
+                            <KpiCard
+                                label="Nuevos miembros"
+                                value={kpiMembers.value}
+                                icon={<Users className="h-4 w-4" />}
+                                loading={kpiMembers.loading}
+                                error={kpiMembers.error}
+                            />
+                            <KpiCard
+                                label="Clases hoy"
+                                value={kpiSessions.value}
+                                icon={<Calendar className="h-4 w-4" />}
+                                loading={kpiSessions.loading}
+                                error={kpiSessions.error}
+                            />
+                            <KpiCard
+                                label="Leads nuevos"
+                                value={kpiLeads.value}
+                                icon={<UserCheck className="h-4 w-4" />}
+                                loading={kpiLeads.loading}
+                                error={kpiLeads.error}
+                            />
+                        </div>
+
+                        {/* Alerts + Quick Actions */}
+                        <div className="grid gap-6 md:grid-cols-2">
+                            <AlertsPanel alerts={alerts} loading={alertsLoading} />
+                            <Card className="border-none shadow-premium bg-card/50 backdrop-blur-xl">
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-base font-semibold">Acciones rápidas</CardTitle>
+                                    <CardDescription className="text-xs">Ejecuta tareas operativas sin salir del dashboard</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <QuickActionsBar />
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </TabsContent>
+                )}
+
+                {/* ── Tab: Mi Box (admin only) ─────────────────────────────── */}
+                {isAdmin && (
+                    <TabsContent value="mi-box" className="pt-6">
+                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                            <Card className="border-none shadow-premium bg-card/50 backdrop-blur-xl">
+                                <CardHeader>
+                                    <div className="flex items-center gap-2">
+                                        <LayoutDashboard className="h-5 w-5 text-primary" />
+                                        <CardTitle className="text-base">Estado del Box</CardTitle>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div>
+                                        <p className="text-xs text-muted-foreground uppercase tracking-wider">Nombre</p>
+                                        <p className="font-medium mt-0.5">{currentBox?.name ?? '—'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground uppercase tracking-wider">URL (slug)</p>
+                                        <p className="font-mono text-sm mt-0.5">{currentBox?.slug ?? '—'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Estado</p>
+                                        {currentBox?.subscription_status && (
+                                            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${BOX_STATUS_LABELS[currentBox.subscription_status]?.className ?? ''}`}>
+                                                {BOX_STATUS_LABELS[currentBox.subscription_status]?.label ?? currentBox.subscription_status}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {currentBox?.trial_ends_at && currentBox.subscription_status === 'trial' && (
+                                        <div>
+                                            <p className="text-xs text-muted-foreground uppercase tracking-wider">Trial vence</p>
+                                            <p className="text-sm mt-0.5">
+                                                {new Date(currentBox.trial_ends_at).toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                            </p>
+                                        </div>
+                                    )}
+                                </CardContent>
+                                <CardFooter className="gap-2 flex-wrap">
+                                    <Button variant="outline" size="sm" asChild>
+                                        <Link to="/settings">Configurar Box →</Link>
+                                    </Button>
+                                    <Button variant="ghost" size="sm" asChild>
+                                        <Link to="/settings?tab=subscription">Suscripción</Link>
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        </div>
+                    </TabsContent>
+                )}
+            </Tabs>
         </div>
     );
 };

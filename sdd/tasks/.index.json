@@ -130,6 +130,132 @@
       "depends_on": [],
       "assigned_to": "antigravity",
       "file": "sdd/tasks/completed/TASK-010-vercel-dns-config.md"
+    },
+    {
+      "id": "TASK-011",
+      "slug": "db-admin-panel-migration",
+      "title": "Add trial_ends_at column and admin RLS policy to boxes table",
+      "status": "done",
+      "priority": "high",
+      "effort": "S",
+      "depends_on": [],
+      "assigned_to": "claude-sonnet-4-6",
+      "file": "sdd/tasks/completed/TASK-011-db-admin-panel-migration.md"
+    },
+    {
+      "id": "TASK-012",
+      "slug": "subscription-banner-component",
+      "title": "Implement SubscriptionBanner component",
+      "status": "done",
+      "priority": "high",
+      "effort": "S",
+      "depends_on": [
+        "TASK-011"
+      ],
+      "assigned_to": "antigravity",
+      "file": "sdd/tasks/completed/TASK-012-subscription-banner-component.md"
+    },
+    {
+      "id": "TASK-013",
+      "slug": "main-layout-banner-integration",
+      "title": "Integrate SubscriptionBanner into MainLayout header",
+      "status": "done",
+      "priority": "high",
+      "effort": "S",
+      "depends_on": [
+        "TASK-011",
+        "TASK-012"
+      ],
+      "assigned_to": "antigravity",
+      "file": "sdd/tasks/completed/TASK-013-main-layout-banner-integration.md"
+    },
+    {
+      "id": "TASK-014",
+      "slug": "kpi-card-component",
+      "title": "Implement KpiCard reusable component",
+      "status": "done",
+      "priority": "high",
+      "effort": "S",
+      "depends_on": [],
+      "assigned_to": "claude-sonnet-4-6",
+      "file": "sdd/tasks/completed/TASK-014-kpi-card-component.md"
+    },
+    {
+      "id": "TASK-015",
+      "slug": "alerts-panel-component",
+      "title": "Implement AlertsPanel component",
+      "status": "done",
+      "priority": "medium",
+      "effort": "S",
+      "depends_on": [],
+      "assigned_to": "claude-sonnet-4-6",
+      "file": "sdd/tasks/completed/TASK-015-alerts-panel-component.md"
+    },
+    {
+      "id": "TASK-016",
+      "slug": "quick-actions-bar",
+      "title": "Implement QuickActionsBar with inline dialogs",
+      "status": "done",
+      "priority": "high",
+      "effort": "L",
+      "depends_on": [
+        "TASK-011"
+      ],
+      "assigned_to": "claude-sonnet-4-6",
+      "file": "sdd/tasks/completed/TASK-016-quick-actions-bar.md"
+    },
+    {
+      "id": "TASK-017",
+      "slug": "dashboard-admin-tabs",
+      "title": "Add admin tabs (Operaciones + Mi Box) to Dashboard",
+      "status": "done",
+      "priority": "high",
+      "effort": "L",
+      "depends_on": [
+        "TASK-014",
+        "TASK-015",
+        "TASK-016"
+      ],
+      "assigned_to": "claude-sonnet-4-6",
+      "file": "sdd/tasks/completed/TASK-017-dashboard-admin-tabs.md"
+    },
+    {
+      "id": "TASK-018",
+      "slug": "settings-subscription-tab",
+      "title": "Add Subscription tab to Settings page",
+      "status": "done",
+      "priority": "medium",
+      "effort": "S",
+      "depends_on": [
+        "TASK-011"
+      ],
+      "assigned_to": "antigravity",
+      "file": "sdd/tasks/completed/TASK-018-settings-subscription-tab.md"
+    },
+    {
+      "id": "TASK-019",
+      "slug": "settings-danger-zone-tab",
+      "title": "Add Danger Zone tab to Settings page",
+      "status": "done",
+      "priority": "medium",
+      "effort": "M",
+      "depends_on": [
+        "TASK-011",
+        "TASK-018"
+      ],
+      "assigned_to": "antigravity",
+      "file": "sdd/tasks/completed/TASK-019-settings-danger-zone-tab.md"
+    },
+    {
+      "id": "TASK-020",
+      "slug": "i18n-admin-keys",
+      "title": "Add i18n translation keys for admin panel",
+      "status": "done",
+      "priority": "low",
+      "effort": "S",
+      "depends_on": [],
+      "assigned_to": "claude-sonnet-4-6",
+      "file": "sdd/tasks/completed/TASK-020-i18n-admin-keys.md"
     }
   ]
 }

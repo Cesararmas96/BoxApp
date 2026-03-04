@@ -16,10 +16,13 @@ export function isMainDomain(): boolean {
     );
 }
 
+const DEV_TENANT_KEY = 'dev_tenant_slug';
+
 /**
  * Extracts the tenant slug according to the environment:
  * - Prod: from subdomain ({slug}.boxora.website)
- * - Dev: from query param ?box=<slug>
+ * - Dev: from query param ?box=<slug> with sessionStorage fallback
+ *        so the slug survives React Router navigation (no hard refresh loss).
  * Returns null if on the main domain or system subdomain.
  */
 export function getTenantSlug(): string | null {
@@ -28,7 +31,14 @@ export function getTenantSlug(): string | null {
     // Dev mode: localhost or 127.0.0.1
     if (host === 'localhost' || host === '127.0.0.1') {
         const params = new URLSearchParams(window.location.search);
-        return params.get('box') || null;
+        const fromUrl = params.get('box');
+        if (fromUrl) {
+            // Persist so subsequent navigations (which drop the param) still resolve
+            sessionStorage.setItem(DEV_TENANT_KEY, fromUrl);
+            return fromUrl;
+        }
+        // Fallback to previously stored slug (survives SPA navigation / refresh)
+        return sessionStorage.getItem(DEV_TENANT_KEY) || null;
     }
 
     // Prod: extract subdomain from *.boxora.website
@@ -41,6 +51,14 @@ export function getTenantSlug(): string | null {
     }
 
     return null;
+}
+
+/**
+ * Clears the dev tenant session so the next page load starts clean.
+ * Call this on sign-out when in dev mode.
+ */
+export function clearDevTenantSlug(): void {
+    sessionStorage.removeItem(DEV_TENANT_KEY);
 }
 
 /**

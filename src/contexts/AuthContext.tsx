@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Session, User } from '@supabase/supabase-js';
 import { Database } from '@/types/supabase';
+import { clearDevTenantSlug } from '@/utils/tenant';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type Box = Database['public']['Tables']['boxes']['Row'];
@@ -228,6 +229,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode; tenantBoxId?: s
 
     const signOut = async () => {
         setLoading(true);
+        clearDevTenantSlug(); // remove dev ?box= session so next login starts clean
         await supabase.auth.signOut();
         // onAuthStateChange will handle resetting state
     };

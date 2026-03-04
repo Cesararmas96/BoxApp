@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+./scripts
+./docs
+./node_modules
+./agents

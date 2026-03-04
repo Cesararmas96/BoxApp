@@ -201,14 +201,14 @@
       "depends_on": [
         "TASK-011"
       ],
-      "assigned_to": "claude-sonnet-4-6",
+      "assigned_to": "antigravity",
       "file": "sdd/tasks/completed/TASK-016-quick-actions-bar.md"
     },
     {
       "id": "TASK-017",
       "slug": "dashboard-admin-tabs",
       "title": "Add admin tabs (Operaciones + Mi Box) to Dashboard",
-      "status": "done",
+      "status": "pending",
       "priority": "high",
       "effort": "L",
       "depends_on": [
@@ -216,35 +216,35 @@
         "TASK-015",
         "TASK-016"
       ],
-      "assigned_to": "claude-sonnet-4-6",
-      "file": "sdd/tasks/completed/TASK-017-dashboard-admin-tabs.md"
+      "assigned_to": null,
+      "file": "sdd/tasks/active/TASK-017-dashboard-admin-tabs.md"
     },
     {
       "id": "TASK-018",
       "slug": "settings-subscription-tab",
       "title": "Add Subscription tab to Settings page",
-      "status": "done",
+      "status": "pending",
       "priority": "medium",
       "effort": "S",
       "depends_on": [
         "TASK-011"
       ],
-      "assigned_to": "antigravity",
-      "file": "sdd/tasks/completed/TASK-018-settings-subscription-tab.md"
+      "assigned_to": null,
+      "file": "sdd/tasks/active/TASK-018-settings-subscription-tab.md"
     },
     {
       "id": "TASK-019",
       "slug": "settings-danger-zone-tab",
       "title": "Add Danger Zone tab to Settings page",
-      "status": "done",
+      "status": "pending",
       "priority": "medium",
       "effort": "M",
       "depends_on": [
         "TASK-011",
         "TASK-018"
       ],
-      "assigned_to": "antigravity",
-      "file": "sdd/tasks/completed/TASK-019-settings-danger-zone-tab.md"
+      "assigned_to": null,
+      "file": "sdd/tasks/active/TASK-019-settings-danger-zone-tab.md"
     },
     {
       "id": "TASK-020",

@@ -2,11 +2,11 @@
 
 **Feature**: Panel Administrativo de Box
 **Spec**: `sdd/specs/panel-administrativo.spec.md`
-**Status**: pending
+**Status**: done
 **Priority**: high
 **Estimated effort**: L (4-8h)
 **Depends-on**: TASK-011
-**Assigned-to**: unassigned
+**Assigned-to**: antigravity
 
 ---
 
@@ -214,9 +214,10 @@ When you pick up this task:
 
 ## Completion Note
 
-*(Agent fills this in when done)*
-
-**Completed by**: unassigned
-**Date**: —
-**Notes**: —
-**Deviations from spec**: none
+**Completed by**: antigravity
+**Date**: 2026-03-04
+**Notes**: Implementada la barra de acciones rápidas con 3 diálogos responsivos (que se convierten en Drawers en móvil).
+- Nueva Clase: Inserta en `classes` con campos de nombre, capacidad y horarios.
+- Registrar Pago: Inserta en `invoices` con estado 'paid' y asociación opcional a miembro.
+- Invitar Miembro: Crea un perfil placeholder en `profiles` con un UUID generado.
+**Deviations from spec**: Se usó la tabla `classes` en lugar de `sessions` para el diálogo de "Nueva Clase" ya que permite definir el nombre y capacidad de forma más directa como una entidad persistente.

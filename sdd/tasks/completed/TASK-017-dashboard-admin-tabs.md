@@ -290,9 +290,7 @@ When you pick up this task:
 
 ## Completion Note
 
-*(Agent fills this in when done)*
-
-**Completed by**: unassigned
-**Date**: —
-**Notes**: —
-**Deviations from spec**: none
+**Completed by**: claude-sonnet-4-6
+**Date**: 2026-03-06
+**Notes**: Implementation was already present in `src/pages/Dashboard.tsx`. All three tabs (Resumen, Operaciones, Mi Box) fully implemented. KPIs use `Promise.allSettled` for parallel fetch with per-card error isolation. BoxStatusCard is inline as specified. Pre-existing TS errors in `QuickActionsBar.tsx` (unused `cn` import) and `Movements.tsx` are unrelated to this task.
+**Deviations from spec**: `due_date` column not present on `invoices` — overdue-payments alert replaced with pending-payments warning. `last_class_at` column not present on `profiles` — inactive-members alert omitted in MVP (as noted in task spec).

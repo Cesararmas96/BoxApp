@@ -159,6 +159,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode; tenantBoxId?: s
         return () => subscription.unsubscribe();
     }, []);
 
+    // When tenantBoxId arrives late (after auth already resolved), update currentBox for root.
+    // This fixes the race condition where getSession() resolves before TenantProvider fetches
+    // the box by slug, causing root to see currentBox = null and get 0 results everywhere.
+    useEffect(() => {
+        if (!tenantBoxId || !session?.user) return;
+        const isRootUser =
+            session.user.email === 'root@test.com' ||
+            session.user.user_metadata?.is_root === true;
+        if (!isRootUser) return;
+
+        supabase
+            .from('boxes' as any)
+            .select('*')
+            .eq('id', tenantBoxId)
+            .single()
+            .then(({ data: boxData }) => {
+                if (boxData) {
+                    setCurrentBox(boxData as unknown as Box);
+                    console.log('[AuthContext] Root: currentBox updated for tenantBoxId', tenantBoxId);
+                }
+            });
+    }, [tenantBoxId, session?.user?.id]);
+
     const signIn = async (credentials: any) => {
         setLoading(true);
         console.log('[AuthContext] SignIn process started');

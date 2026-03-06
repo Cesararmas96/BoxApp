@@ -67,8 +67,8 @@ export const Dashboard: React.FC = () => {
     const [alertsLoading, setAlertsLoading] = useState(true);
 
     useEffect(() => {
-        fetchStats();
-    }, []);
+        if (currentBox?.id) fetchStats();
+    }, [currentBox?.id]);
 
     const fetchStats = async () => {
         try {
@@ -107,8 +107,8 @@ export const Dashboard: React.FC = () => {
                     .gt('created_at', thirtyDaysAgo.toISOString()),
                 supabase
                     .from('results')
-                    .select('id, result, rx, wods (title), profiles (first_name, last_name)')
-                    .eq('box_id', boxId)
+                    .select('id, result, rx, wods!inner (title, box_id), profiles:user_id (first_name, last_name)')
+                    .eq('wods.box_id', boxId)
                     .order('created_at', { ascending: false })
                     .limit(3)
             ]);

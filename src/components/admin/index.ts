@@ -8,3 +8,5 @@ export { SubscriptionBanner } from './SubscriptionBanner';
 export type { SubscriptionBannerProps } from './SubscriptionBanner';
 
 export { QuickActionsBar } from './QuickActionsBar';
+
+export { RootControlBar } from './RootControlBar';

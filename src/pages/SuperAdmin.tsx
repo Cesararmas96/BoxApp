@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
     Plus,
     ExternalLink,
@@ -51,7 +50,6 @@ const StatusBadge = ({ status }: { status: SubscriptionStatus | null }) => {
 
 export const SuperAdmin: React.FC = () => {
     const { signOut } = useAuth();
-    const navigate = useNavigate();
     const [boxes, setBoxes] = useState<BoxRow[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -459,7 +457,7 @@ export const SuperAdmin: React.FC = () => {
                                                         {box.name}
                                                     </h3>
                                                     <p className="text-xs text-white/30 font-mono mt-0.5 truncate">
-                                                        /box/{box.slug}
+                                                        {box.slug}.boxora.website
                                                     </p>
                                                 </div>
                                                 <StatusBadge status={box.subscription_status} />
@@ -501,11 +499,12 @@ export const SuperAdmin: React.FC = () => {
                                             <Button
                                                 onClick={() => {
                                                     const url = buildTenantUrl(box.slug);
-                                                    if (url.startsWith('http')) {
-                                                        window.location.href = url;
-                                                    } else {
-                                                        navigate(url);
-                                                    }
+                                                    // Prod: open subdomain in new tab
+                                                    // Dev: navigate directly to /dashboard?box= to bypass root-path redirect
+                                                    const target = url.startsWith('http')
+                                                        ? url
+                                                        : `${window.location.origin}/dashboard?box=${box.slug}`;
+                                                    window.open(target, '_blank');
                                                 }}
                                                 className="w-full mt-4 bg-white/[0.06] hover:bg-white/[0.10] text-white border border-white/[0.08] rounded-xl h-10 text-sm font-medium group/btn"
                                                 variant="ghost"

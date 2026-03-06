@@ -63,7 +63,7 @@ const LoadingSpinner: React.FC = () => (
 // ── AppContent — requires both TenantContext and AuthContext ─────────────────
 function AppContent() {
   const { isSuspended, tenantNotFound, isLoading: tenantLoading } = useTenant();
-  const { session, userProfile, currentBox, loading } = useAuth();
+  const { session, userProfile, currentBox, loading, isRoot } = useAuth();
   const { setPrimaryColor, setRadius, setDesignStyle } = useTheme();
 
   useEffect(() => {
@@ -103,8 +103,8 @@ function AppContent() {
     return <TenantNotFoundScreen />;
   }
 
-  // 3. Suspended tenant — block ALL access, including authenticated users
-  if (isSuspended) {
+  // 3. Suspended tenant — block access, but allow root to inspect suspended boxes
+  if (isSuspended && !isRoot) {
     return <SuspendedScreen />;
   }
 

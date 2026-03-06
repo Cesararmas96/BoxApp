@@ -15,7 +15,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from '@/contexts/AuthContext';
-import { SubscriptionBanner } from '@/components/admin';
+import { SubscriptionBanner, RootControlBar } from '@/components/admin';
 
 interface LayoutProps {
     userProfile?: any;
@@ -40,7 +40,7 @@ const getNavItems = (t: any): any[] => [
 export const MainLayout: React.FC<LayoutProps> = ({ userProfile }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const { t, i18n } = useLanguage();
-    const { currentBox, signOut, isAdmin } = useAuth();
+    const { currentBox, signOut, isAdmin, isRoot } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -206,6 +206,9 @@ export const MainLayout: React.FC<LayoutProps> = ({ userProfile }) => {
 
             {/* Content Wrapper */}
             <div className="flex-1 flex flex-col min-w-0 lg:pl-[272px]">
+                {/* Root Control Bar — inspector mode indicator, visible only to root */}
+                {isRoot && <RootControlBar />}
+
                 {/* Header — Apple-style navigation bar */}
                 <header className="sticky top-0 z-30 flex h-14 items-center justify-between px-4 md:px-6 bg-background/80 backdrop-blur-xl border-b border-border/50">
                     {/* Left: hamburger + logo on mobile */}

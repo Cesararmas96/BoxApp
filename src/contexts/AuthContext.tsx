@@ -40,8 +40,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode; tenantBoxId?: s
     const isRoot = session?.user?.email === 'root@test.com' || session?.user?.user_metadata?.is_root === true;
     const isAthlete = userProfile?.role_id === 'athlete';
 
-    const fetchProfile = async (userId: string) => {
+    // sessionUser is passed explicitly because React state (session/user) may be stale
+    // at the time fetchProfile is called from getSession() or onAuthStateChange callbacks.
+    const fetchProfile = async (userId: string, sessionUser?: User) => {
         console.log('[AuthContext] fetchProfile started for:', userId);
+
+        const isRootUser =
+            sessionUser?.email === 'root@test.com' ||
+            sessionUser?.user_metadata?.is_root === true;
 
         // Safety timeout to prevent indefinite loading
         const timeoutId = setTimeout(() => {
@@ -64,30 +70,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode; tenantBoxId?: s
 
                 const profileData = data as any;
 
-                // Multi-tenant: reconcile box_id after OAuth redirect or if missing in profile
-                // but known by the current tenant context.
+                // OAuth redirect reconciliation: only apply when the user explicitly signed in
+                // via OAuth from a box subdomain. Never overwrite an existing box_id from
+                // tenantBoxId alone — that would corrupt any user's profile when they visit
+                // another box's subdomain and cause cross-box data leakage.
                 const oauthStoreBoxId = localStorage.getItem('pending_box_id');
-                const effectiveBoxId = oauthStoreBoxId || tenantBoxId;
-
-                if (effectiveBoxId && (!profileData.box_id || profileData.box_id !== effectiveBoxId)) {
-                    console.log('[AuthContext] Reconciling box_id from context:', effectiveBoxId);
-                    const { error: updateErr } = await supabase
-                        .from('profiles')
-                        .update({ box_id: effectiveBoxId })
-                        .eq('id', userId);
-                    if (!updateErr) {
-                        profileData.box_id = effectiveBoxId;
-                    }
-                }
-
                 if (oauthStoreBoxId) {
                     localStorage.removeItem('pending_box_id');
+                    if (!isRootUser && oauthStoreBoxId !== profileData.box_id) {
+                        console.log('[AuthContext] Reconciling box_id from OAuth redirect:', oauthStoreBoxId);
+                        const { error: updateErr } = await supabase
+                            .from('profiles')
+                            .update({ box_id: oauthStoreBoxId })
+                            .eq('id', userId);
+                        if (!updateErr) {
+                            profileData.box_id = oauthStoreBoxId;
+                        }
+                    }
                 }
 
                 setUserProfile(data as Profile);
 
-                // Fetch Box settings if profile has box_id
-                const boxId = (data as any).box_id;
+                // Resolve which box to display:
+                // - Root users: always use tenantBoxId so they see the currently visited box's
+                //   data (not their own profile's box, which may point to a different box).
+                // - Regular users: their profile's box_id (home box). tenantBoxId is a fallback
+                //   only for new users whose trigger hasn't set box_id yet.
+                // tenantBoxId is NEVER written to the DB here — it is read-only context.
+                const boxId = isRootUser ? tenantBoxId : (profileData.box_id || tenantBoxId);
                 if (boxId) {
                     const { data: boxData, error: boxError } = await supabase
                         .from('boxes' as any)
@@ -112,7 +122,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode; tenantBoxId?: s
 
     const refreshProfile = async () => {
         if (user) {
-            await fetchProfile(user.id);
+            await fetchProfile(user.id, user);
         }
     };
 
@@ -123,7 +133,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode; tenantBoxId?: s
             setSession(session);
             setUser(session?.user ?? null);
             if (session?.user) {
-                fetchProfile(session.user.id);
+                fetchProfile(session.user.id, session.user);
             } else {
                 setLoading(false);
                 console.log('[AuthContext] No initial session, loading set to false');
@@ -138,9 +148,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode; tenantBoxId?: s
             setUser(newSession?.user ?? null);
 
             if (newSession?.user) {
-                // Only fetch if session changed or event is SIGNED_IN
-                // This helps avoid redundant fetches but ensures we get the latest profile
-                fetchProfile(newSession.user.id);
+                fetchProfile(newSession.user.id, newSession.user);
             } else {
                 setUserProfile(null);
                 setLoading(false);
@@ -161,7 +169,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode; tenantBoxId?: s
             console.log('[AuthContext] SignIn error, loading set to false');
         } else if (result.data.user) {
             // Explicitly fetch profile to ensure it's ready when the promise resolves
-            await fetchProfile(result.data.user.id);
+            await fetchProfile(result.data.user.id, result.data.user);
         }
 
         return result;
@@ -205,7 +213,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode; tenantBoxId?: s
         } else {
             // For sign up, we might not have a profile yet if it's created via trigger
             // but we call it anyway to be sure
-            await fetchProfile(result.data.user.id);
+            await fetchProfile(result.data.user.id, result.data.user);
         }
         return result;
     };

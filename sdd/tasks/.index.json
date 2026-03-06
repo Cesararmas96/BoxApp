@@ -208,7 +208,7 @@
       "id": "TASK-017",
       "slug": "dashboard-admin-tabs",
       "title": "Add admin tabs (Operaciones + Mi Box) to Dashboard",
-      "status": "pending",
+      "status": "done",
       "priority": "high",
       "effort": "L",
       "depends_on": [
@@ -216,35 +216,35 @@
         "TASK-015",
         "TASK-016"
       ],
-      "assigned_to": null,
-      "file": "sdd/tasks/active/TASK-017-dashboard-admin-tabs.md"
+      "assigned_to": "claude-sonnet-4-6",
+      "file": "sdd/tasks/completed/TASK-017-dashboard-admin-tabs.md"
     },
     {
       "id": "TASK-018",
       "slug": "settings-subscription-tab",
       "title": "Add Subscription tab to Settings page",
-      "status": "pending",
+      "status": "done",
       "priority": "medium",
       "effort": "S",
       "depends_on": [
         "TASK-011"
       ],
-      "assigned_to": null,
-      "file": "sdd/tasks/active/TASK-018-settings-subscription-tab.md"
+      "assigned_to": "antigravity",
+      "file": "sdd/tasks/completed/TASK-018-settings-subscription-tab.md"
     },
     {
       "id": "TASK-019",
       "slug": "settings-danger-zone-tab",
       "title": "Add Danger Zone tab to Settings page",
-      "status": "pending",
+      "status": "done",
       "priority": "medium",
       "effort": "M",
       "depends_on": [
         "TASK-011",
         "TASK-018"
       ],
-      "assigned_to": null,
-      "file": "sdd/tasks/active/TASK-019-settings-danger-zone-tab.md"
+      "assigned_to": "antigravity",
+      "file": "sdd/tasks/completed/TASK-019-settings-danger-zone-tab.md"
     },
     {
       "id": "TASK-020",
@@ -256,6 +256,50 @@
       "depends_on": [],
       "assigned_to": "claude-sonnet-4-6",
       "file": "sdd/tasks/completed/TASK-020-i18n-admin-keys.md"
+    },
+    {
+      "id": "TASK-021",
+      "slug": "fix-cross-box-data-leakage",
+      "title": "Fix cross-box data leakage and Visitar Box navigation",
+      "status": "done",
+      "priority": "high",
+      "effort": "M",
+      "depends_on": ["TASK-002", "TASK-003", "TASK-004", "TASK-006"],
+      "assigned_to": "claude-sonnet-4-6",
+      "file": "sdd/tasks/completed/TASK-021-fix-cross-box-data-leakage.md"
+    },
+    {
+      "id": "TASK-022",
+      "slug": "superadmin-rls-all-tables",
+      "title": "Add is_super_admin() RLS bypass to all box data tables",
+      "status": "done",
+      "priority": "high",
+      "effort": "S",
+      "depends_on": [],
+      "assigned_to": "claude-sonnet-4-6",
+      "file": "sdd/tasks/completed/TASK-022-superadmin-rls-all-tables.md"
+    },
+    {
+      "id": "TASK-023",
+      "slug": "root-control-bar",
+      "title": "Implement RootControlBar component",
+      "status": "done",
+      "priority": "high",
+      "effort": "M",
+      "depends_on": ["TASK-022"],
+      "assigned_to": "claude-sonnet-4-6",
+      "file": "sdd/tasks/completed/TASK-023-root-control-bar.md"
+    },
+    {
+      "id": "TASK-024",
+      "slug": "main-layout-root-bar-integration",
+      "title": "Integrate RootControlBar into MainLayout",
+      "status": "done",
+      "priority": "high",
+      "effort": "S",
+      "depends_on": ["TASK-023"],
+      "assigned_to": "claude-sonnet-4-6",
+      "file": "sdd/tasks/completed/TASK-024-main-layout-root-bar-integration.md"
     }
   ]
 }

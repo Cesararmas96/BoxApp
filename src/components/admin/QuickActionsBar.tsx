@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/hooks';
 import { supabase } from '@/lib/supabaseClient';
-import { cn } from '@/lib/utils';
+
 
 export const QuickActionsBar: React.FC = () => {
     const { currentBox } = useAuth();

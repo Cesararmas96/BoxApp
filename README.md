@@ -1,3 +1,16 @@
+# BoxApp
+
+**Live**: [https://boxora.website](https://boxora.website)
+
+## Deployment
+
+La app se despliega automáticamente en Vercel al hacer push a `main`.
+
+> ⚠️ Si tu PR incluye cambios de schema de BD, correr migraciones **antes** de hacer merge:
+> Ver [docs/deployment/migrations.md](docs/deployment/migrations.md)
+
+---
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

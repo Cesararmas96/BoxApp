@@ -305,34 +305,34 @@
       "id": "TASK-030",
       "slug": "i18n-athlete-wod-keys",
       "title": "Add i18n translation keys for Athlete Today WOD",
-      "status": "pending",
+      "status": "done",
       "priority": "medium",
       "effort": "S",
       "depends_on": [],
-      "assigned_to": null,
-      "file": "sdd/tasks/active/TASK-030-i18n-athlete-wod-keys.md"
+      "assigned_to": "claude-opus-4-6",
+      "file": "sdd/tasks/completed/TASK-030-i18n-athlete-wod-keys.md"
     },
     {
       "id": "TASK-031",
       "slug": "today-wod-component",
       "title": "Implement TodayWod component",
-      "status": "pending",
+      "status": "done",
       "priority": "high",
       "effort": "L",
       "depends_on": ["TASK-030"],
-      "assigned_to": null,
-      "file": "sdd/tasks/active/TASK-031-today-wod-component.md"
+      "assigned_to": "claude-opus-4-6",
+      "file": "sdd/tasks/completed/TASK-031-today-wod-component.md"
     },
     {
       "id": "TASK-032",
       "slug": "athlete-dashboard-integration",
       "title": "Integrate TodayWod into AthleteDashboard",
-      "status": "pending",
+      "status": "done",
       "priority": "high",
       "effort": "S",
       "depends_on": ["TASK-031"],
-      "assigned_to": null,
-      "file": "sdd/tasks/active/TASK-032-athlete-dashboard-integration.md"
+      "assigned_to": "claude-opus-4-6",
+      "file": "sdd/tasks/completed/TASK-032-athlete-dashboard-integration.md"
     }
   ]
 }

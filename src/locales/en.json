@@ -992,5 +992,21 @@
     },
     "logistics": {
         "no_heats_scheduled": "No heats scheduled"
+    },
+    "athlete": {
+        "today_wod": "Today's Programming",
+        "rest_day": "Rest Day",
+        "rest_day_message": "Take time to recover. Check the schedule for upcoming sessions.",
+        "view_schedule": "View Weekly Schedule",
+        "scaling_levels": "Scaling Options",
+        "show_scaling": "Show Scaling",
+        "hide_scaling": "Hide Scaling",
+        "target_stimulus": "Target Stimulus",
+        "watch_demo": "Watch Demo",
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced",
+        "injured": "Injured / Modified",
+        "select_track": "Select Track"
     }
 }

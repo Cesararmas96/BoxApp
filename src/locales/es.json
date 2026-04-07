@@ -1095,5 +1095,21 @@
             "upgrade_btn": "Actualizar plan",
             "contact_support": "Contactar soporte →"
         }
+    },
+    "athlete": {
+        "today_wod": "Programación del Día",
+        "rest_day": "Día de Descanso",
+        "rest_day_message": "Toma tiempo para recuperarte. Revisa el horario para las próximas sesiones.",
+        "view_schedule": "Ver Horario Semanal",
+        "scaling_levels": "Opciones de Escalado",
+        "show_scaling": "Ver Escalado",
+        "hide_scaling": "Ocultar Escalado",
+        "target_stimulus": "Estímulo Objetivo",
+        "watch_demo": "Ver Demo",
+        "beginner": "Principiante",
+        "intermediate": "Intermedio",
+        "advanced": "Avanzado",
+        "injured": "Lesionado / Modificado",
+        "select_track": "Seleccionar Track"
     }
 }

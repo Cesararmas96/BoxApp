@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Trophy, Activity, Calendar } from 'lucide-react';
+import { Activity, Calendar } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
+import { TodayWod } from '@/components/TodayWod';
 
 export const AthleteDashboard: React.FC = () => {
     const { user } = useAuth();
@@ -53,20 +54,7 @@ export const AthleteDashboard: React.FC = () => {
 
     return (
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            <Card className="col-span-full bg-primary/20 border-primary/30 shadow-premium overflow-hidden relative group">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-50" />
-                <CardHeader className="relative z-10 pt-8 px-8">
-                    <CardTitle className="flex items-center gap-3 text-2xl font-black italic uppercase tracking-tighter text-glow translate-y-0 group-hover:-translate-y-1 transition-transform">
-                        <div className="h-12 w-12 rounded-2xl glass flex items-center justify-center border-primary/30">
-                            <Trophy className="h-6 w-6 text-primary group-hover:scale-125 transition-transform" />
-                        </div>
-                        Today's Mission
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="relative z-10 px-8 pb-8">
-                    <p className="text-base font-bold uppercase tracking-wide opacity-80 leading-relaxed max-w-2xl italic">Master the day's challenge. Check the WOD section and dominate your performance logging!</p>
-                </CardContent>
-            </Card>
+            <TodayWod />
 
             <Card className="glass relative group overflow-hidden border-border">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />

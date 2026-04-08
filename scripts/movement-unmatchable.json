@@ -1,0 +1,110 @@
+{
+  "_comment": "Movements that are unlikely to have a good match in ExerciseDB. These will keep their existing SVG/Pexels fallback images. The seed script will skip these without marking them as errors.",
+  "_updated": "2026-04-07",
+  "unmatchable": [
+    {
+      "name": "Pause Back Squat",
+      "reason": "Tempo/pause variant — ExerciseDB only has standard back squat"
+    },
+    {
+      "name": "Pause Front Squat",
+      "reason": "Tempo/pause variant — ExerciseDB only has standard front squat"
+    },
+    {
+      "name": "Box Squat",
+      "reason": "CrossFit-specific variant, may not exist in ExerciseDB"
+    },
+    {
+      "name": "Hang Squat Clean",
+      "reason": "Very specific Olympic lift variant, unlikely exact match"
+    },
+    {
+      "name": "Hang Squat Snatch",
+      "reason": "Very specific Olympic lift variant, unlikely exact match"
+    },
+    {
+      "name": "Drop Snatch",
+      "reason": "Rare Olympic lift drill"
+    },
+    {
+      "name": "Deficit Snatch",
+      "reason": "Rare Olympic lift variant"
+    },
+    {
+      "name": "Cluster",
+      "reason": "CrossFit-specific compound movement (clean + thruster), not a standard exercise"
+    },
+    {
+      "name": "Butterfly Pull-Up",
+      "reason": "CrossFit-specific pull-up technique, ExerciseDB unlikely to have"
+    },
+    {
+      "name": "Plyo Push-Up",
+      "reason": "May exist as 'plyometric push up' but uncertain"
+    },
+    {
+      "name": "Wall Pike Push-Up",
+      "reason": "CrossFit-specific drill, unlikely in ExerciseDB"
+    },
+    {
+      "name": "Bar Facing Burpee",
+      "reason": "CrossFit-specific burpee variant"
+    },
+    {
+      "name": "Burpee Box Jump Over",
+      "reason": "CrossFit-specific compound movement"
+    },
+    {
+      "name": "Wall Climb",
+      "reason": "CrossFit-specific gymnastics drill"
+    },
+    {
+      "name": "Shoulder Tap",
+      "reason": "Simple accessory movement, may not be in ExerciseDB"
+    },
+    {
+      "name": "Skin the Cat",
+      "reason": "Gymnastics skill, unlikely in ExerciseDB"
+    },
+    {
+      "name": "Legless Rope Climb",
+      "reason": "CrossFit-specific rope climb variant"
+    },
+    {
+      "name": "Shuttle Run",
+      "reason": "Cardio movement, unlikely as a distinct exercise in ExerciseDB"
+    },
+    {
+      "name": "Swimming",
+      "reason": "Too generic for ExerciseDB's format"
+    },
+    {
+      "name": "Sled Push",
+      "reason": "Equipment-specific, may not exist in ExerciseDB"
+    },
+    {
+      "name": "Sled Pull",
+      "reason": "Equipment-specific, may not exist in ExerciseDB"
+    },
+    {
+      "name": "Sandbag Carry",
+      "reason": "Mapped to farmer walk, but won't be exact match"
+    },
+    {
+      "name": "Overhead Med Ball Throw",
+      "reason": "CrossFit-specific accessory"
+    },
+    {
+      "name": "Devil Press",
+      "reason": "CrossFit-specific compound (dumbbell burpee + snatch), mapped to dumbbell burpee"
+    },
+    {
+      "name": "Kettlebell Clean & Jerk",
+      "reason": "Compound movement, may not exist as single exercise"
+    },
+    {
+      "name": "Wall Balls",
+      "reason": "Duplicate of Wall Ball — use same GIF"
+    }
+  ]
+}

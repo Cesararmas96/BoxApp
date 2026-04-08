@@ -333,6 +333,66 @@
       "depends_on": ["TASK-031"],
       "assigned_to": "claude-opus-4-6",
       "file": "sdd/tasks/completed/TASK-032-athlete-dashboard-integration.md"
+    },
+    {
+      "id": "TASK-033",
+      "slug": "storage-bucket-setup",
+      "title": "Create Supabase Storage bucket for movement media",
+      "status": "done",
+      "priority": "high",
+      "effort": "S",
+      "depends_on": [],
+      "assigned_to": "claude-opus-4-6",
+      "file": "sdd/tasks/completed/TASK-033-storage-bucket-setup.md",
+      "feature": "movement-media-library"
+    },
+    {
+      "id": "TASK-034",
+      "slug": "movement-name-mapping",
+      "title": "Create movement name mapping JSON",
+      "status": "done",
+      "priority": "high",
+      "effort": "M",
+      "depends_on": [],
+      "assigned_to": "claude-opus-4-6",
+      "file": "sdd/tasks/completed/TASK-034-movement-name-mapping.md",
+      "feature": "movement-media-library"
+    },
+    {
+      "id": "TASK-035",
+      "slug": "seed-movement-media",
+      "title": "Implement seed-movement-media script",
+      "status": "done",
+      "priority": "high",
+      "effort": "L",
+      "depends_on": ["TASK-033", "TASK-034"],
+      "assigned_to": "claude-opus-4-6",
+      "file": "sdd/tasks/completed/TASK-035-seed-movement-media.md",
+      "feature": "movement-media-library"
+    },
+    {
+      "id": "TASK-036",
+      "slug": "image-resolution-update",
+      "title": "Update movementImages.ts with Storage GIF priority",
+      "status": "done",
+      "priority": "high",
+      "effort": "S",
+      "depends_on": ["TASK-033"],
+      "assigned_to": "claude-opus-4-6",
+      "file": "sdd/tasks/completed/TASK-036-image-resolution-update.md",
+      "feature": "movement-media-library"
+    },
+    {
+      "id": "TASK-037",
+      "slug": "seed-verification",
+      "title": "Run seed and verify media coverage",
+      "status": "done",
+      "priority": "medium",
+      "effort": "M",
+      "depends_on": ["TASK-033", "TASK-034", "TASK-035", "TASK-036"],
+      "assigned_to": "claude-opus-4-6",
+      "file": "sdd/tasks/completed/TASK-037-seed-verification.md",
+      "feature": "movement-media-library"
     }
   ]
 }

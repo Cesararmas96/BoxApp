@@ -248,29 +248,45 @@ export function getDefaultCategoryImage(category: Category): string {
 }
 
 /**
+ * Check if a URL points to our Supabase Storage movement-media bucket.
+ * These are GIFs seeded from ExerciseDB (FEAT-009).
+ */
+export function isStorageGif(url: string | null | undefined): boolean {
+  if (!url) return false;
+  return url.includes('/storage/v1/object/public/movement-media/');
+}
+
+/**
  * Resolve the best available image for a movement.
- * Priority: custom upload > realistic photo (Pexels) > SVG icon > category default
+ * Priority: custom upload > Supabase Storage GIF > Pexels photo > SVG icon > category default
  */
 export function resolveMovementImage(
   movementName: string,
   customImageUrl: string | null | undefined,
   category: Category
 ): string {
-  // 1. Custom uploaded image takes priority
-  if (customImageUrl && customImageUrl.trim() !== '') {
-    return customImageUrl;
+  const url = customImageUrl?.trim() || '';
+
+  // 1. Custom uploaded image (non-storage, e.g. admin uploaded via UI)
+  if (url && !isStorageGif(url)) {
+    return url;
   }
 
-  // 2. Realistic photo (Pexels) when we have clear context
+  // 2. Supabase Storage GIF (seeded from ExerciseDB)
+  if (isStorageGif(url)) {
+    return url;
+  }
+
+  // 3. Realistic photo (Pexels) when we have clear context
   const key = movementName.toLowerCase().trim();
   const realistic = MOVEMENT_REALISTIC_IMAGES[key];
   if (realistic) return realistic;
 
-  // 3. SVG icon for movements without a realistic image
+  // 4. SVG icon for movements without a realistic image
   const movementPath = getMovementImagePath(movementName);
   if (movementPath) return movementPath;
 
-  // 4. Category default
+  // 5. Category default
   return getDefaultCategoryImage(category);
 }
 
